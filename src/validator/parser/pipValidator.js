@@ -85,14 +85,22 @@ function trialTest(trial) {
 			return [error('Interactions must be an array.', true)];
 		}
 
-		return [
-			interactions.some(i=>!i.conditions) ? error('All interactions must have conditions', true) : [
-				error('All conditions must have a type', interactions.some(i=>!!i.conditions.type))
-			],
-			interactions.some(i=>!i.actions) ? error('All interactions must have actions', true) : [
-				error('All actions must have a type', interactions.some(i=>!!i.actions.type))
-			]
-		];
+		return  interactions.map((interaction, index) => {
+			return [
+				!interaction.conditions ? error(`Interaction [${index}] must have conditions`, true) : [
+					error(`Interaction conditon [${index}] must have a type`, toArray(interaction.conditions).some(c=>!c.type))
+				],
+				!interaction.actions ? error(`Interaction [${index}] must have actions`, true) : [
+					error(`Interaction action [${index}] must have a type`, toArray(interaction.actions).some(a=>!a.type))
+				]
+			];
+		});
+
+
+		function toArray(arr){
+			return Array.isArray(arr) ? arr : [arr];
+		}
+
 	}
 
 	function testInput(input){

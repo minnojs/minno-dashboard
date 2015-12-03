@@ -128,9 +128,7 @@
 	}
 
 	function row(element, testArr){
-
-		var messages = testArr
-			.reduce((previous, current)=>previous.concat(current), []) // concatAll
+		var messages = flatten(testArr)
 			.filter(msg => msg) // clean empty
 			.filter(msg => typeof msg.test == 'function' ? msg.test(element) : !!msg.test); // run test...
 
@@ -138,6 +136,12 @@
 			element: element,
 			messages: messages
 		};
+	}
+
+	function flatten(arr) {
+		return arr.reduce(function (flat, toFlatten) {
+			return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+		}, []);
 	}
 
 	function multiPick(arr, propArr){
@@ -271,14 +275,22 @@
 				return [error('Interactions must be an array.', true)];
 			}
 
-			return [
-				interactions.some(i=>!i.conditions) ? error('All interactions must have conditions', true) : [
-					error('All conditions must have a type', interactions.some(i=>!!i.conditions.type))
-				],
-				interactions.some(i=>!i.actions) ? error('All interactions must have actions', true) : [
-					error('All actions must have a type', interactions.some(i=>!!i.actions.type))
-				]
-			];
+			return  interactions.map((interaction, index) => {
+				return [
+					!interaction.conditions ? error(`Interaction [${index}] must have conditions`, true) : [
+						error(`Interaction conditon [${index}] must have a type`, toArray(interaction.conditions).some(c=>!c.type))
+					],
+					!interaction.actions ? error(`Interaction [${index}] must have actions`, true) : [
+						error(`Interaction action [${index}] must have a type`, toArray(interaction.actions).some(a=>!a.type))
+					]
+				];
+			});
+
+
+			function toArray(arr){
+				return Array.isArray(arr) ? arr : [arr];
+			}
+
 		}
 
 		function testInput(input){

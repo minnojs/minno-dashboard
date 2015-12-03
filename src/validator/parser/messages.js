@@ -7,9 +7,7 @@ export function error(message, test){
 }
 
 export function row(element, testArr){
-
-	var messages = testArr
-		.reduce((previous, current)=>previous.concat(current), []) // concatAll
+	var messages = flatten(testArr)
 		.filter(msg => msg) // clean empty
 		.filter(msg => typeof msg.test == 'function' ? msg.test(element) : !!msg.test); // run test...
 
@@ -17,4 +15,10 @@ export function row(element, testArr){
 		element: element,
 		messages: messages
 	};
+}
+
+function flatten(arr) {
+	return arr.reduce(function (flat, toFlatten) {
+		return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+	}, []);
 }
