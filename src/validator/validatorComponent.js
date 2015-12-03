@@ -7,16 +7,17 @@ import scriptTest from './scriptTestComponent';
  * @type {Object}
  */
 var validator = {
-	controller: args => {
+	controller: function() {
+		var url = m.route.param('url');
 		var ctrl = {
 			loaded: false,
 			syntaxModel: {},
-			url: args.url,
+			url: url,
 			script: m.prop()
 		};
 
 		m
-			.request({method:'GET', url:args.url,background:true, deserialize: text => text})
+			.request({method:'GET', url:url,background:true, deserialize: text => text})
 			.then(ctrl.script, ()=>ctrl.error = true)
 			.then(script => {
 				m.startComputation();
@@ -38,7 +39,7 @@ var validator = {
 					?
 					m('div', {class:'alert alert-danger'}, [
 						m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-						`There was a problem loading ${ctrl.url}`
+						`The file "${ctrl.url}" was not found`
 					])
 					:
 					[

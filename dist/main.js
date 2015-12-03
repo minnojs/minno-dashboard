@@ -330,9 +330,10 @@
 					m.startComputation();
 					ctrl.validations(validate(script, args.url));
 					m.endComputation();
-				}, err => {
+				}, () => {
+					m.startComputation();
 					ctrl.isError = true;
-					throw err;
+					m.endComputation();
 				});
 			} catch(e) {
 				ctrl.isError = true;
@@ -347,7 +348,7 @@
 
 				!ctrl.isError ? '' :	m('div', {class:'alert alert-danger'}, [
 					m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-					`There was a problem parsing this script. Are you sure that it is a valid PI script?`
+					`There was a problem parsing this script. Are you sure that it is a valid PI script? Make sure you fix all syntax errors.`
 				]),
 
 				ctrl.validations().map(validationReport => {
@@ -386,16 +387,17 @@
 	 * @type {Object}
 	 */
 	var validator = {
-		controller: args => {
+		controller: function() {
+			var url = m.route.param('url');
 			var ctrl = {
 				loaded: false,
 				syntaxModel: {},
-				url: args.url,
+				url: url,
 				script: m.prop()
 			};
 
 			m
-				.request({method:'GET', url:args.url,background:true, deserialize: text => text})
+				.request({method:'GET', url:url,background:true, deserialize: text => text})
 				.then(ctrl.script, ()=>ctrl.error = true)
 				.then(script => {
 					m.startComputation();
@@ -417,7 +419,7 @@
 						?
 						m('div', {class:'alert alert-danger'}, [
 							m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-							`There was a problem loading ${ctrl.url}`
+							`The file "${ctrl.url}" was not found`
 						])
 						:
 						[
@@ -435,18 +437,10 @@
 		}
 	};
 
-	m.mount(document.body, {
-		view: () => {
-			return m.component(validator, {url: getParameterByName('url') || '/test/distance.js'});
-		}
+	m.route(document.body, '', {
+		'' : {view:() => m('a[href="/validator//test/carlee.js"]', {config: m.route}, 'cool anchor')},
+		'/validator/:url...': validator
 	});
-
-	function getParameterByName(name) {
-		name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
-		var regex = new RegExp('[\\?&]' + name + '=([^&#]*)'),
-			results = regex.exec(location.search);
-		return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-	}
 
 })();
 //# sourceMappingURL=main.js.map

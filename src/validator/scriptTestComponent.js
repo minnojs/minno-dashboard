@@ -14,9 +14,10 @@ var scriptTestComponent = {
 				m.startComputation();
 				ctrl.validations(validator(script, args.url));
 				m.endComputation();
-			}, err => {
+			}, () => {
+				m.startComputation();
 				ctrl.isError = true;
-				throw err;
+				m.endComputation();
 			});
 		} catch(e) {
 			ctrl.isError = true;
@@ -31,7 +32,7 @@ var scriptTestComponent = {
 
 			!ctrl.isError ? '' :	m('div', {class:'alert alert-danger'}, [
 				m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-				`There was a problem parsing this script. Are you sure that it is a valid PI script?`
+				`There was a problem parsing this script. Are you sure that it is a valid PI script? Make sure you fix all syntax errors.`
 			]),
 
 			ctrl.validations().map(validationReport => {

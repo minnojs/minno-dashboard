@@ -1,16 +1,6 @@
-import validator from './validator/validatorComponent';
+import validatorComponent from './validator/validatorComponent';
 
-
-
-m.mount(document.body, {
-	view: () => {
-		return m.component(validator, {url: getParameterByName('url') || '/test/distance.js'});
-	}
+m.route(document.body, '', {
+	'' : {view:() => m('a[href="/validator//test/carlee.js"]', {config: m.route}, 'cool anchor')},
+	'/validator/:url...': validatorComponent
 });
-
-function getParameterByName(name) {
-	name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
-	var regex = new RegExp('[\\?&]' + name + '=([^&#]*)'),
-		results = regex.exec(location.search);
-	return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-}
