@@ -220,8 +220,17 @@
 		var errors = [
 			r('base_url', [
 				w('Your base_url is not in the same directory as your script.', e => {
-					var path = url.substring(0, url.lastIndexOf('/') + 1);
-					var t = s => (!s || s.indexOf(path) !== 0);
+					// use this!!!
+					// http://stackoverflow.com/questions/4497531/javascript-get-url-path
+					var getPath = url => {
+						var a = document.createElement('a');
+						a.href = url;
+						return a.pathname;
+					};
+
+					var path = getPath(url).substring(0, url.lastIndexOf('/') + 1); // get path but remove file name
+					var t = s => (!s || getPath(s).indexOf(path) !== 0);
+
 					return (typeof e == 'object') ? t(e.image) && t(e.template) : t(e);
 				})
 			])
