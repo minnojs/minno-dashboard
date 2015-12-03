@@ -1,0 +1,102 @@
+<!doctype html>
+<head>
+	<title>Validator</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+	<style type="text/css">
+			/**
+			 * The spinner
+			 * http://www.css-spinners.com/spinner/throbber
+			 */
+			@-moz-keyframes loader {
+			  0% {background: #dde2e7;}
+			  10% {background: #6b9dc8;}
+			  40% {background: #dde2e7;}
+			}
+			@-webkit-keyframes loader {
+			  0% {background: #dde2e7;}
+			  10% {background: #6b9dc8;}
+			  40% {background: #dde2e7;}
+			}
+			@keyframes loader {
+			  0% {background: #dde2e7;}
+			  10% {background: #6b9dc8;}
+			  40% {background: #dde2e7;}
+			}
+			/* :not(:required) hides these rules from IE9 and below */
+			.loader:not(:required) {
+			  -moz-animation: loader 2000ms 300ms infinite ease-out;
+			  -webkit-animation: loader 2000ms 300ms infinite ease-out;
+			  animation: loader 2000ms 300ms infinite ease-out;
+			  background: #dde2e7;
+			  display: inline-block;
+			  position: relative;
+			  text-indent: -9999px;
+			  width: 0.9em;
+			  height: 1.5em;
+			  margin: 0 1.6em;
+			}
+			.loader:not(:required):before, .loader:not(:required):after {
+			  background: #dde2e7;
+			  content: '\x200B';
+			  display: inline-block;
+			  width: 0.9em;
+			  height: 1.5em;
+			  position: absolute;
+			  top: 0;
+			}
+			.loader:not(:required):before {
+			  -moz-animation: loader 2000ms 150ms infinite ease-out;
+			  -webkit-animation: loader 2000ms 150ms infinite ease-out;
+			  animation: loader 2000ms 150ms infinite ease-out;
+			  left: -1.6em;
+			}
+			.loader:not(:required):after {
+			  -moz-animation: loader 2000ms 450ms infinite ease-out;
+			  -webkit-animation: loader 2000ms 450ms infinite ease-out;
+			  animation: loader 2000ms 450ms infinite ease-out;
+			  right: -1.6em;
+			}
+	</style>
+
+	<script src="node_modules/mithril/mithril.js"></script>
+	<script src="bower_components/jshint/dist/jshint.js"></script>
+	<script src="bower_components/requirejs/require.js"></script>
+	<script>
+		require.config({
+			// in order to catch IE errors
+			enforceDefine: true,
+			paths: {
+				// libs
+				underscore: 'bower_components/lodash-compat/lodash.min',
+				angular: 'bower_components/angular/angular',
+				animate: 'bower_components/angular-animate/angular-animate.min',
+				text: 'bower_components/requirejs-text/text',
+				fastclick: 'bower_components/fastclick/lib/fastclick',
+
+				// this lib is needed for pipScorer
+				jquery: ['bower_components/jquery/dist/jquery.min']
+			},
+
+			packages:[
+				{
+					name: 'pipScorer',
+					location: 'bower_components/PIPlayer/dist/js/extensions/dscore',
+					main: 'Scorer'
+				}
+			],
+			shim: {
+				angular : {exports : 'angular'},
+				animate : {deps: ['angular'], exports: 'angular'}
+			},
+			map: {
+				'*': {
+					pipAPI: 'bower_components/piquest/src/js/APIs/PIpipAPI',
+					questAPI: 'bower_components/piquest/src/js/APIs/PIquestAPI',
+					managerAPI: 'bower_components/piquest/src/js/APIs/PImanagerAPI'
+				}
+			}
+		});
+	</script>
+</head>
+<body></body>
+<script src="dist/main.js"></script>
