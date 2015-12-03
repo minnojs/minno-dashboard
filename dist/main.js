@@ -363,7 +363,9 @@
 							:
 							validationReport.errors.map(err => {
 								return m('.row',[
-									m('.col-md-4', err.element),
+									m('.col-md-4.stringified',
+										m('div', {class:'pre'}, m.trust(stringify(err.element)))
+									),
 									m('.col-md-8',[
 										m('ul', err.messages.map(msg => {
 											return m('li.list-unstyled', {class: msg.level == 'error' ? 'text-danger' : 'text-info'}, [
@@ -380,6 +382,56 @@
 			]);
 		}
 	};
+
+
+		function stringify(value, pretty) {
+			if (value == null) { // null || undefined
+				return '<i class="text-muted">undefined</i>';
+			}
+			if (value === '') {
+				return '<i class="text-muted">an empty string</i>';
+			}
+
+			switch (typeof value) {
+				case 'string':
+					break;
+				case 'number':
+					value = '' + value;
+					break;
+				case 'object':
+					// display the error message not the full thing...
+					if (value instanceof Error){
+						value = value.message;
+						break;
+					}
+				/* fall through */
+				default:
+					// @TODO: implement this: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+					value = syntaxHighlight(JSON.stringify(value));
+			}
+
+			return value;
+		}
+
+
+	function syntaxHighlight(json) {
+	    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+	        var cls = 'number';
+	        if (/^"/.test(match)) {
+	            if (/:$/.test(match)) {
+	                cls = 'key';
+	            } else {
+	                cls = 'string';
+	            }
+	        } else if (/true|false/.test(match)) {
+	            cls = 'boolean';
+	        } else if (/null/.test(match)) {
+	            cls = 'null';
+	        }
+	        return '<span class="' + cls + '">' + match + '</span>';
+	    });
+	}
 
 	/**
 	 * Validator component
