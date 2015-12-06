@@ -618,7 +618,21 @@
 			}
 
 			function play(){
-				console.log('play')
+				var playground;
+				playground = window.open('playground.html', 'Playground');
+
+				playground.onload = function(){
+					// first set the unload listener
+					playground.addEventListener('unload', function() {
+						// get focus back here
+						window.focus();
+					});
+
+					// then activate the player (this ensures that when )
+					console.log(playground, +Date())
+					playground.activate(content());
+				};
+
 			}
 		},
 
