@@ -428,7 +428,7 @@
 			/* fall through */
 			default:
 				// @TODO: implement this: http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-				value = syntaxHighlight(JSON.stringify(value));
+				value = syntaxHighlight(JSON.stringify(value, null, 4));
 		}
 
 		return value;
@@ -436,7 +436,9 @@
 
 
 	function syntaxHighlight(json) {
+		console.log(json)
 	    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 	    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
 	        var cls = 'number';
 	        if (/^"/.test(match)) {
@@ -510,6 +512,148 @@
 		}
 	};
 
+	var noop = function(){};
+
+	var aceComponent = {
+		controller: function controller(args){
+			var ctrl = {
+				content: args.content
+			};
+
+			return ctrl;
+		},
+
+		view: function editorView(ctrl){
+			return m('.editor', {config: aceComponent.config(ctrl)});
+		},
+
+		config: function(ctrl){
+			return function(element, isInitialized, ctx){
+				var editor;
+				var content = ctrl.content;
+
+				if (!isInitialized){
+					require(['ace/ace'], function(ace){
+						ace.config.set('packaged', true);
+						ace.config.set('basePath', require.toUrl('ace'));
+
+						editor = ace.edit(element);
+						var commands = editor.commands;
+
+						editor.setTheme('ace/theme/monokai');
+						editor.getSession().setMode('ace/mode/javascript');
+						editor.setHighlightActiveLine(true);
+						editor.setShowPrintMargin(false);
+						editor.setFontSize('18px');
+
+
+
+
+
+						editor.getSession().on('change', function(){
+							m.startComputation();
+							content(editor.getValue());
+							m.endComputation();
+						});
+
+
+
+						commands.addCommand({
+							name: 'save',
+							bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+							exec: ctrl.onSave || noop
+						});
+
+
+						editor.setValue(content());
+						editor.moveCursorTo(1,1); // scroll up
+					});
+				}
+
+				editor && editor.setValue(content());
+				onResize();
+
+				window.addEventListener('resize', onResize, true);
+
+				ctx.onunload = function(){
+					window.removeEventListener(onResize);
+					editor && editor.destroy();
+				};
+
+				function onResize(){
+					element.style.height = document.documentElement.clientHeight - element.offsetTop + 'px';
+				}
+
+			};
+		}
+	};
+
+	var editorPage = {
+		controller: function(){
+			var url =  m.route.param('url');
+			var content = m.prop('');
+
+			var ctrl = {
+				url: url,
+				content:content,
+				save: save,
+				play: play
+			};
+
+			m
+				.request({method:'GET', url:url,background:true, deserialize: text => text})
+				.then(ctrl.script, ()=>ctrl.error = true)
+				.then(script => {
+					m.startComputation();
+					content(script);
+					ctrl.loaded = true;
+					m.endComputation();
+				});
+
+			return ctrl;
+
+			// @TODO: have the glyph inddicate saving and stuff
+			function save(){
+				alert('this button is not wired yet...');
+			}
+
+			function play(){
+				console.log('play')
+			}
+		},
+
+		view: function(ctrl){
+			return m('.container', [
+				m('h2', 'Editor', [m('small', ctrl.url)]),
+				!ctrl.loaded
+					?
+					m('.loader')
+					:
+					ctrl.error
+						?
+						m('div', {class:'alert alert-danger'}, [
+							m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
+							`The file "${ctrl.url}" was not found`
+						])
+						:
+						[
+							m('.btn-toolbar', [
+								m('.btn-group', [
+									m('a.btn.btn-default', {onclick: ctrl.save},[
+										m('strong.glyphicon.glyphicon-floppy-disk')
+									]),
+									m('a.btn.btn-default', {onclick: ctrl.play},[
+										m('strong.glyphicon.glyphicon-play')
+									])
+								])
+							]),
+							m.component(aceComponent, {content:ctrl.content})
+						]
+
+			]);
+		}
+	};
+
 	var mainComponent = {
 		controller: function(){
 			var ctrl = {
@@ -534,8 +678,9 @@
 		}
 	};
 
-	m.route(document.body, '', {
+	m.route(document.body, '/editor', {
 		'' : mainComponent,
+		'/editor/:url...': editorPage,
 		'/validator/:url...': validator
 	});
 

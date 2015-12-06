@@ -14,7 +14,8 @@
         "modules": true
     },
     "globals": {
-        "m" : true
+        "m" : true,
+        "require" : true
     },
     "extends": "eslint:recommended"
 }
