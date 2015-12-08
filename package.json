@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init" : "bower install"
+    "init": "bower install"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -13,6 +13,7 @@
     "bower": "^1.6.8",
     "eslint": "^1.10.2",
     "gulp": "^3.9.0",
+    "gulp-plumber": "^1.0.1",
     "gulp-rollup": "^1.4.0",
     "gulp-sourcemaps": "^1.6.0",
     "rollup": "^0.21.1",

@@ -42,7 +42,6 @@ var editorPage = {
 				});
 
 				// then activate the player (this ensures that when )
-				console.log(playground, +Date())
 				playground.activate(content());
 			};
 

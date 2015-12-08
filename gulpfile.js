@@ -1,10 +1,12 @@
 /*eslint-env node*/
 var gulp       = require('gulp'),
+	plumber	   = require('gulp-plumber'),
 	rollup     = require('gulp-rollup'),
 	sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('bundle', function(){
 	gulp.src('src/main.js', {read: false})
+		.pipe(plumber())
 		.pipe(rollup({
 			format: 'iife',
 			// any option supported by rollup can be set here, including sourceMap

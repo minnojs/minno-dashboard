@@ -74,6 +74,7 @@
 			var scriptTypeRegExp = /['|"](quest|pip|manager)API['|"]/;
 			var element = document.getElementById('task');
 
+			// @TODO: change method to support yoavs thingie expanssions.
 			var typeMatch = contents.replace(commentRegExp,'').match(scriptTypeRegExp);
 
 			if (!typeMatch) {
