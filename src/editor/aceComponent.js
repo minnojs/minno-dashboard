@@ -64,7 +64,7 @@ var aceComponent = {
 			window.addEventListener('resize', onResize, true);
 
 			ctx.onunload = function(){
-				window.removeEventListener(onResize);
+				window.removeEventListener('resize', onResize);
 				editor && editor.destroy();
 			};
 

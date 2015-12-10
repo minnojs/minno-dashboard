@@ -1,18 +1,19 @@
 import validator from './parser/validator';
-export default scriptTestComponent;
+export default validateComponent;
 
-var scriptTestComponent = {
+var validateComponent = {
 	controller: args => {
+		var file = args.file;
 		var ctrl = {
 			validations : m.prop([]),
 			isError: false
 		};
 
 		try {
-			eval(args.script.replace('define(', 'define("myTask",'));
+			eval(file.content().replace('define(', 'define("myTask",'));
 			window.requirejs(['myTask'], script => {
 				m.startComputation();
-				ctrl.validations(validator(script, args.url));
+				ctrl.validations(validator(script, file.url));
 				m.endComputation();
 			}, () => {
 				m.startComputation();
@@ -28,8 +29,6 @@ var scriptTestComponent = {
 	},
 	view: ctrl => {
 		return  m('div', [
-			m('h3', 'Script Analysis'),
-
 			!ctrl.isError ? '' :	m('div', {class:'alert alert-danger'}, [
 				m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
 				`There was a problem parsing this script. Are you sure that it is a valid PI script? Make sure you fix all syntax errors.`

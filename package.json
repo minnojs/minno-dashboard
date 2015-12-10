@@ -10,11 +10,14 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.0.0",
     "bower": "^1.6.8",
     "eslint": "^1.10.2",
     "gulp": "^3.9.0",
+    "gulp-debug": "^2.1.2",
     "gulp-plumber": "^1.0.1",
     "gulp-rollup": "^1.4.0",
+    "gulp-sass": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",
     "rollup": "^0.21.1",
     "rollup-plugin-babel": "^2.2.0"

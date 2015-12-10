@@ -1,9 +1,7 @@
 import mainComponent from './mainComponent';
-import editorComponent from './editor/editorComponent';
-import validatorComponent from './validator/validatorComponent';
+import fileEditorComponent from './editor/fileEditorComponent';
 
-m.route(document.body, '/editor', {
+m.route(document.body, '', {
 	'' : mainComponent,
-	'/editor/:url...': editorComponent,
-	'/validator/:url...': validatorComponent
+	'/file/:url...': fileEditorComponent
 });

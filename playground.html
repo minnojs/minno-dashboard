@@ -69,7 +69,9 @@
 			baseUrl: 'js'
 		});
 
-		window.activate = function(contents){
+		window.activate = function(file){
+			var contents = file.content();
+			var name = file.url;
 			var commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg;
 			var scriptTypeRegExp = /['|"](quest|pip|manager)API['|"]/;
 			var element = document.getElementById('task');
@@ -85,24 +87,25 @@
 
 			switch (type) {
 			case 'quest' :
-				element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:'myTask'}));
+				element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:name}));
 				break;
 			case 'pip' :
-				element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:'myTask'}));
+				element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name}));
 				break;
 			case 'manager' :
-				element.setAttribute('pi-manager', JSON.stringify('myTask'));
+				element.setAttribute('pi-manager', JSON.stringify(name));
 				break;
 			default:
 				throw new Error('Unknow task type: ' + type);
 			}
 
-			eval(contents.replace('define(', 'define("myTask",'));
-			require(['bootstrap'], function(){
-				require(['myTask'], function(script){
-					script.settings || (script.settings = {});
-					script.settings.onEnd = window.close;
-					script.settings.hooks = {endTask:window.close};
+			file.define(window).then(() => {
+				require(['pibootstrap'], function(){
+					require([name], function(script){
+						script.settings || (script.settings = {});
+						script.settings.onEnd = window.close;
+						script.settings.hooks = {endTask:window.close};
+					});
 				});
 			});
 		};

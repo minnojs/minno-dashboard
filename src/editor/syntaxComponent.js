@@ -13,21 +13,17 @@ var syntax = {
 	 * @param  {String} script A script to analyze
 	 * @return {Object}
 	 * {
-	 *      valid: Boolean,
+	 *      isValid: Boolean,
 	 *      data: Object, // raw data
 	 *      errors: Array, // an array of analyzed errors
 	 *      errorCount: Number, // the number of errors
 	 *      warningCount: Number // the number of warnings
 	 * }
 	 */
-	analize: script => {
-		var jshint = window.JSHINT;
-		var valid = jshint(script, syntax.jshintOptions);
-		var data = jshint.data();
+	analize: (isValid, data) => {
 		var errorCount = 0;
 		var warningCount = 0;
-
-		var errors = valid ? [] : data.errors
+		var errors = isValid ? [] : data.errors
 			.filter(e => e) // clean null values
 			.map(err => {
 				var isError = err.code && (err.code[0] === 'E');
@@ -42,9 +38,8 @@ var syntax = {
 					evidence: err.evidence
 				};
 			});
-
 		return {
-			valid: valid,
+			isValid: isValid,
 			data: data,
 			errors : errors,
 			errorCount: errorCount,
@@ -73,14 +68,14 @@ var syntax = {
 	},
 
 	controller:  args => {
-		return args.model;
+		var file = args.file;
+		file.checkSyntax();
+		return syntax.analize(file.syntaxValid, file.syntaxData);
 	},
 
 	view: ctrl => {
 		return m('div', [
-			m('h3', 'Syntax'),
-
-			ctrl.valid
+			ctrl.isValid
 				?
 				m('div', {class:'alert alert-success'}, [
 					m('strong','Well done!'),
