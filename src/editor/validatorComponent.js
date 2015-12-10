@@ -9,21 +9,20 @@ var validateComponent = {
 			isError: false
 		};
 
-		try {
-			eval(file.content().replace('define(', 'define("myTask",'));
-			window.requirejs(['myTask'], script => {
-				m.startComputation();
+		m.startComputation();
+		file
+			.define()
+			.then(()=>{
+				return file.require();
+			})
+			.then(script => {
 				ctrl.validations(validator(script, file.url));
 				m.endComputation();
-			}, () => {
-				m.startComputation();
+			})
+			.catch(() => {
 				ctrl.isError = true;
 				m.endComputation();
 			});
-		} catch(e) {
-			ctrl.isError = true;
-		}
-
 
 		return ctrl;
 	},

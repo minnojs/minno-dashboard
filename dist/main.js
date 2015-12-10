@@ -101,8 +101,10 @@
 			}
 		}, {
 			key: 'define',
-			value: function define(context) {
-				var requirejs = (context || window).requirejs;
+			value: function define() {
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
 				var name = this.url;
 				var content = this.content();
 
@@ -114,10 +116,12 @@
 			}
 		}, {
 			key: 'require',
-			value: function require(context) {
+			value: function require() {
 				var _this3 = this;
 
-				var requirejs = (context || window).requirejs;
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
 				return new Promise(function (resolve, reject) {
 					requirejs([_this3.url], resolve, reject);
 				});
@@ -329,7 +333,6 @@
 
 		controller: function controller(args) {
 			var file = args.file;
-			file.checkSyntax();
 			return syntax.analize(file.syntaxValid, file.syntaxData);
 		},
 
@@ -576,20 +579,16 @@
 				isError: false
 			};
 
-			try {
-				eval(file.content().replace('define(', 'define("myTask",'));
-				window.requirejs(['myTask'], function (script) {
-					m.startComputation();
-					ctrl.validations(validate(script, file.url));
-					m.endComputation();
-				}, function () {
-					m.startComputation();
-					ctrl.isError = true;
-					m.endComputation();
-				});
-			} catch (e) {
+			m.startComputation();
+			file.define().then(function () {
+				return file.require();
+			}).then(function (script) {
+				ctrl.validations(validate(script, file.url));
+				m.endComputation();
+			}).catch(function () {
 				ctrl.isError = true;
-			}
+				m.endComputation();
+			});
 
 			return ctrl;
 		},

@@ -52,8 +52,8 @@ class File {
 		return this.sourceContent() === this.content();
 	}
 
-	define(context){
-		var requirejs = (context || window).requirejs;
+	define(context = window){
+		var requirejs = context.requirejs;
 		var name = this.url;
 		var content = this.content();
 
@@ -64,8 +64,8 @@ class File {
 		});
 	}
 
-	require(context){
-		var requirejs = (context || window).requirejs;
+	require(context = window){
+		var requirejs = context.requirejs;
 		return new Promise((resolve, reject) => {
 			requirejs([this.url], resolve,reject);
 		});

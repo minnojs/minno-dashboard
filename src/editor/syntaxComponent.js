@@ -69,7 +69,6 @@ var syntax = {
 
 	controller:  args => {
 		var file = args.file;
-		file.checkSyntax();
 		return syntax.analize(file.syntaxValid, file.syntaxData);
 	},
 
