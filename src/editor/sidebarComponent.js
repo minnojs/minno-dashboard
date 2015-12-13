@@ -1,6 +1,6 @@
 import File from './fileModel';
 import classNames from '../classNames';
-
+import contextMenu from '../contextMenuComponent';
 export default sidebarComponent;
 
 let sidebarComponent = {
@@ -28,7 +28,7 @@ let sidebarComponent = {
 };
 
 let fileNode = file => {
-	return m('a.list-group-item', {config:m.route, href:`/file/${file.url}`}, [
+	return m('a.list-group-item', {config:m.route, href:`/file/${file.url}`, oncontextmenu: contextMenu.trigger}, [
 		m('i', {
 			class: classNames('fa fa-fw', {
 				'fa-file-code-o': file.type == 'js',

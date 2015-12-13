@@ -1,10 +1,10 @@
 export default editorLayoutComponent;
 import fileEditorComponent from './fileEditorComponent';
 import sidebarComponent from './sidebarComponent';
+import contextMenu from '../contextMenuComponent';
 
 let editorLayoutComponent = {
 	view: () => {
-
 		return  m('div', [
 			m('nav.navbar.navbar-dark.navbar-fixed-top', [
 				m('a.navbar-brand', 'Dashboard')
@@ -19,7 +19,9 @@ let editorLayoutComponent = {
 						m.component(fileEditorComponent)
 					])
 				])
-			])
+			]),
+
+			m.component(contextMenu) // register context menu
 		]);
 	}
 };

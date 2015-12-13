@@ -88,7 +88,7 @@
   background-color: #aaa;
 }
 
-.context-menu-item.subcontext-menu::after {
+.context-menu-item.submenu::after {
   content: "";
   position: absolute;
   right: 6px;
@@ -99,7 +99,7 @@
   border-left-color: #808080;
 }
 
-.context-menu-item.subcontext-menu:hover::after { border-left-color: #fff; }
+.context-menu-item.submenu:hover::after { border-left-color: #fff; }
 
 .context-menu .context-menu {
   top: 4px;

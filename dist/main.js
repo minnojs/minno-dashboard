@@ -706,6 +706,66 @@
 		}
 	};
 
+	var contextMenuComponent = {
+		show: m.prop(false),
+		style: m.prop({}),
+		menu: m.prop([{ icon: 'fa-play', text: 'begone' }, { icon: 'fa-play', text: 'asdf' }, { separator: true }, { icon: 'fa-play', text: 'wertwert', menu: [{ icon: 'fa-play', text: 'asdf' }] }]),
+
+		view: function view(ctrl) {
+			return m('.context-menu', {
+				class: classNames({ 'show-context-menu': contextMenuComponent.show() }),
+				style: contextMenuComponent.style(),
+				onclick: function onclick(e) {
+					return e.stopPropagation();
+				}
+			}, contextMenuComponent.menu().map(menuNode));
+		},
+
+		trigger: function trigger(e) {
+			e.preventDefault();
+			contextMenuComponent.show(true);
+			contextMenuComponent.style({
+				left: e.pageX + 'px',
+				top: e.pageY + 'px'
+			});
+
+			document.addEventListener('click', onClick, false);
+			function onClick() {
+				contextMenuComponent.show(false);
+				document.removeEventListener('click', onClick);
+			}
+		}
+	};
+
+	var menuNode = function menuNode(node) {
+		return node.separator ? m('.context-menu-separator') : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu }) }, [m('button.context-menu-btn', { onclick: node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
+	};
+
+	// var menu = document.querySelector('.menu');
+
+	// function showMenu(x, y){
+	//     menu.style.left = x + 'px';
+	//     menu.style.top = y + 'px';
+	//     menu.classList.add('show-menu');
+	// }
+
+	// function hideMenu(){
+	//     menu.classList.remove('show-menu');
+	// }
+
+	// function onContextMenu(e){
+	//     e.preventDefault();
+	//     showMenu(e.pageX, e.pageY);
+	//     document.addEventListener('click', onClick, false);
+	// }
+
+	// function onClick(e){
+	//     hideMenu();
+	//     document.removeEventListener('click', onClick);
+	// }
+
+	// document.addEventListener('contextmenu', onContextMenu, false);
+
 	var sidebarComponent = {
 		controller: function controller() {
 			var ctrl = {
@@ -720,7 +780,7 @@
 	};
 
 	var fileNode = function fileNode(file) {
-		return m('a.list-group-item', { config: m.route, href: '/file/' + file.url }, [m('i', {
+		return m('a.list-group-item', { config: m.route, href: '/file/' + file.url, oncontextmenu: contextMenuComponent.trigger }, [m('i', {
 			class: classNames('fa fa-fw', {
 				'fa-file-code-o': file.type == 'js',
 				'fa-file-image-o': /(jpg|png|bmp)/.test(file.type)
@@ -730,8 +790,8 @@
 
 	var editorLayoutComponent = {
 		view: function view() {
-
-			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard')]), m('.container-fluid', { style: { marginTop: '70px' } }, [m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent)]), m('.main.col-md-10', [m.component(fileEditorComponent)])])])]);
+			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard')]), m('.container-fluid', { style: { marginTop: '70px' } }, [m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent)]), m('.main.col-md-10', [m.component(fileEditorComponent)])])]), m.component(contextMenuComponent) // register context menu
+			]);
 		}
 	};
 
