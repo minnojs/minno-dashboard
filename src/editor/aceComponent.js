@@ -33,6 +33,7 @@ var aceComponent = {
 					editor.setHighlightActiveLine(true);
 					editor.setShowPrintMargin(false);
 					editor.setFontSize('18px');
+					editor.$blockScrolling = Infinity; // scroll to top
 
 
 
@@ -54,7 +55,6 @@ var aceComponent = {
 
 
 					editor.setValue(content());
-					editor.moveCursorTo(1,1); // scroll up
 				});
 			}
 

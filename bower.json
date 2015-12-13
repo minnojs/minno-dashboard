@@ -10,10 +10,11 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "~3.3.6",
     "jshint": "~2.9.0",
     "mithril": "~0.2.0",
     "piquest": "https://github.com/ProjectImplicit/PIquest.git#~0.0.68",
-    "requirejs": "~2.1.22"
+    "requirejs": "~2.1.22",
+    "bootstrap": "4.0",
+    "font-awesome": "fontawesome#~4.5.0"
   }
 }

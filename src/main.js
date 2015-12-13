@@ -1,7 +1,7 @@
 import mainComponent from './mainComponent';
-import fileEditorComponent from './editor/fileEditorComponent';
+import editorLayoutComponent from './editor/editorLayoutComponent';
 
 m.route(document.body, '', {
 	'' : mainComponent,
-	'/file/:url...': fileEditorComponent
+	'/file/:url...': editorLayoutComponent
 });

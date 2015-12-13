@@ -38,6 +38,8 @@
 			babelHelpers.classCallCheck(this, File);
 
 			this.url = url;
+			this.name = url.substring(url.lastIndexOf('/') + 1);
+			this.type = url.substring(url.lastIndexOf('.') + 1);
 
 			// keep track of file content
 			this.sourceContent = m.prop('');
@@ -191,6 +193,7 @@
 						editor.setHighlightActiveLine(true);
 						editor.setShowPrintMargin(false);
 						editor.setFontSize('18px');
+						editor.$blockScrolling = Infinity; // scroll to top
 
 						editor.getSession().on('change', function () {
 							m.startComputation();
@@ -205,7 +208,6 @@
 						});
 
 						editor.setValue(content());
-						editor.moveCursorTo(1, 1); // scroll up
 					});
 				}
 
@@ -259,7 +261,7 @@
 		},
 
 		view: function view(ctrl) {
-			return m('.editor', [m('.btn-toolbar', [m('.btn-group', [m('a.btn.btn-default', { onclick: ctrl.save }, [m('strong.glyphicon.glyphicon-floppy-disk')]), m('a.btn.btn-default', { onclick: ctrl.play }, [m('strong.glyphicon.glyphicon-play')])])]), m.component(aceComponent, { content: ctrl.content })]);
+			return m('.editor', [m('.btn-toolbar', [m('.btn-group', [m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content })]);
 		}
 	};
 
@@ -653,6 +655,35 @@
 		});
 	}
 
+	// taken from here:
+	// https://github.com/JedWatson/classnames/blob/master/index.js
+	var hasOwn = ({}).hasOwnProperty;
+
+	function classNames() {
+		var classes = '';
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+
+			if (argType === 'string' || argType === 'number') {
+				classes += ' ' + arg;
+			} else if (Array.isArray(arg)) {
+				classes += ' ' + classNames.apply(null, arg);
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes += ' ' + key;
+					}
+				}
+			}
+		}
+
+		return classes.substr(1);
+	}
+
 	var fileEditorComponent = {
 		controller: function controller() {
 			var url = m.route.param('url');
@@ -671,7 +702,36 @@
 			var file = ctrl.file;
 			var activeTab = ctrl.activeTab;
 
-			return m('.container', [m('h2', 'Edit ', [m('small', file.url)]), !file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('ul.nav.nav-tabs', [m('li', { class: activeTab() == 'edit' ? 'active' : '' }, [m('a[data-tab="edit"]', { onclick: m.withAttr('data-tab', activeTab) }, 'Edit')]), m('li', { class: activeTab() == 'syntax' ? 'active' : '' }, [m('a[data-tab="syntax"]', { onclick: m.withAttr('data-tab', activeTab) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li', { class: activeTab() == 'validate' ? 'active' : '' }, [m('a[data-tab="validate"]', { onclick: m.withAttr('data-tab', activeTab) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]]);
+			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]]);
+		}
+	};
+
+	var sidebarComponent = {
+		controller: function controller() {
+			var ctrl = {
+				fileArr: [new File('/test/cbm.js'), new File('/test/bv.js'), new File('/test/iat.js'), new File('/test/images/bf14_nc.jpg')]
+			};
+
+			return ctrl;
+		},
+		view: function view(ctrl) {
+			return m('div', [m('h5', 'Files'), m('.list-group', [ctrl.fileArr.map(fileNode)])]);
+		}
+	};
+
+	var fileNode = function fileNode(file) {
+		return m('a.list-group-item', { config: m.route, href: '/file/' + file.url }, [m('i', {
+			class: classNames('fa fa-fw', {
+				'fa-file-code-o': file.type == 'js',
+				'fa-file-image-o': /(jpg|png|bmp)/.test(file.type)
+			})
+		}), ' ' + file.name]);
+	};
+
+	var editorLayoutComponent = {
+		view: function view() {
+
+			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard')]), m('.container-fluid', { style: { marginTop: '70px' } }, [m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent)]), m('.main.col-md-10', [m.component(fileEditorComponent)])])])]);
 		}
 	};
 
@@ -690,7 +750,7 @@
 
 	m.route(document.body, '', {
 		'': mainComponent,
-		'/file/:url...': fileEditorComponent
+		'/file/:url...': editorLayoutComponent
 	});
 
 })();

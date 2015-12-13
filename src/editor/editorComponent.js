@@ -38,11 +38,11 @@ var editorPage = {
 		return m('.editor', [
 			m('.btn-toolbar', [
 				m('.btn-group', [
-					m('a.btn.btn-default', {onclick: ctrl.save},[
-						m('strong.glyphicon.glyphicon-floppy-disk')
+					m('a.btn.btn-secondary', {onclick: ctrl.save},[
+						m('strong.fa.fa-play')
 					]),
-					m('a.btn.btn-default', {onclick: ctrl.play},[
-						m('strong.glyphicon.glyphicon-play')
+					m('a.btn.btn-secondary', {onclick: ctrl.play},[
+						m('strong.fa.fa-save')
 					])
 				])
 			]),

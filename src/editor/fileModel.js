@@ -1,6 +1,8 @@
 class File {
 	constructor(url){
 		this.url = url;
+		this.name = url.substring(url.lastIndexOf('/')+1);
+		this.type = url.substring(url.lastIndexOf('.')+1);
 
 		// keep track of file content
 		this.sourceContent = m.prop('');
