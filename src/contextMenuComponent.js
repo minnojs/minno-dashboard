@@ -13,7 +13,7 @@ let contextMenuComponent = {
 		]}
 	]),
 
-	view: (ctrl) => {
+	view: () => {
 		return m(
 			'.context-menu',
 			{
@@ -35,7 +35,9 @@ let contextMenuComponent = {
 
 		document.addEventListener('click', onClick, false);
 		function onClick(){
+			m.startComputation();
 			contextMenuComponent.show(false);
+			m.endComputation();
 			document.removeEventListener('click', onClick);
 		}
 	}

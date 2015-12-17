@@ -780,7 +780,7 @@
 		style: m.prop({}),
 		menu: m.prop([{ icon: 'fa-play', text: 'begone' }, { icon: 'fa-play', text: 'asdf' }, { separator: true }, { icon: 'fa-play', text: 'wertwert', menu: [{ icon: 'fa-play', text: 'asdf' }] }]),
 
-		view: function view(ctrl) {
+		view: function view() {
 			return m('.context-menu', {
 				class: classNames({ 'show-context-menu': contextMenuComponent.show() }),
 				style: contextMenuComponent.style(),
@@ -800,7 +800,9 @@
 
 			document.addEventListener('click', onClick, false);
 			function onClick() {
+				m.startComputation();
 				contextMenuComponent.show(false);
+				m.endComputation();
 				document.removeEventListener('click', onClick);
 			}
 		}
