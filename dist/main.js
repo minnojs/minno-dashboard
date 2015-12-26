@@ -31,28 +31,31 @@
 	})();
 
 	babelHelpers;
-	var imgEditor = {
+	var fullHeight = function fullHeight(element, isInitialized, ctx) {
+		if (!isInitialized) {
+			onResize();
+
+			window.addEventListener('resize', onResize, true);
+
+			ctx.onunload = function () {
+				window.removeEventListener('resize', onResize);
+			};
+		}
+
+		function onResize() {
+			element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
+		}
+	};
+
+	var imgEditor$1 = {
 		view: function view(ctrl, args) {
 			var file = args.file;
-			return m('div', {
-				style: { display: 'flex', 'justify-content': 'center', 'align-items': 'center' },
-				config: function config(element, isInitialized, ctx) {
-
-					if (!isInitialized) {
-						onResize();
-
-						window.addEventListener('resize', onResize, true);
-
-						ctx.onunload = function () {
-							window.removeEventListener('resize', onResize);
-						};
-					}
-
-					function onResize() {
-						element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-					}
-				}
-			}, [m('img', { src: file.url })]);
+			return m('div.', { config: fullHeight }, [m('object', {
+				data: file.url,
+				type: 'application/pdf',
+				width: '100%',
+				height: '100%'
+			})]);
 		}
 	};
 
@@ -67,16 +70,20 @@
 			return ctrl;
 		},
 
-		view: function editorView(ctrl) {
-			return m('.editor', { config: aceComponent.config(ctrl) });
+		view: function editorView(ctrl, args) {
+			return m('.editor', { config: aceComponent.config(ctrl, args) });
 		},
 
-		config: function config(ctrl) {
+		config: function config(ctrl, args) {
 			return function (element, isInitialized, ctx) {
 				var editor;
 				var content = ctrl.content;
+				var settings = args.settings || {};
+				var mode = settings.mode || 'javascript';
 
 				if (!isInitialized) {
+					fullHeight(element, isInitialized, ctx);
+
 					require(['ace/ace'], function (ace) {
 						ace.config.set('packaged', true);
 						ace.config.set('basePath', require.toUrl('ace'));
@@ -85,7 +92,8 @@
 						var commands = editor.commands;
 
 						editor.setTheme('ace/theme/monokai');
-						editor.getSession().setMode('ace/mode/javascript');
+						editor.getSession().setMode('ace/mode/' + mode);
+						if (mode !== 'javascript') editor.getSession().setUseWorker(false);
 						editor.setHighlightActiveLine(true);
 						editor.setShowPrintMargin(false);
 						editor.setFontSize('18px');
@@ -105,22 +113,9 @@
 
 						editor.setValue(content());
 					});
-
-					onResize();
-
-					window.addEventListener('resize', onResize, true);
-
-					ctx.onunload = function () {
-						window.removeEventListener('resize', onResize);
-						editor && editor.destroy();
-					};
 				}
 
 				editor && editor.setValue(content());
-
-				function onResize() {
-					element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-				}
 			};
 		}
 	};
@@ -157,8 +152,58 @@
 			}
 		},
 
+		view: function view(ctrl, args) {
+			return m('.editor', [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]);
+		}
+	};
+
+	// taken from here:
+	// https://github.com/JedWatson/classnames/blob/master/index.js
+	var hasOwn = ({}).hasOwnProperty;
+
+	function classNames() {
+		var classes = '';
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+
+			if (argType === 'string' || argType === 'number') {
+				classes += ' ' + arg;
+			} else if (Array.isArray(arg)) {
+				classes += ' ' + classNames.apply(null, arg);
+			} else if (argType === 'object') {
+				for (var key in arg) {
+					if (hasOwn.call(arg, key) && arg[key]) {
+						classes += ' ' + key;
+					}
+				}
+			}
+		}
+
+		return classes.substr(1);
+	}
+
+	var jsEditor$1 = {
+		controller: function controller(args) {
+			return {
+				file: args.file,
+				activeTab: m.prop('edit')
+			};
+		},
 		view: function view(ctrl) {
-			return m('.editor', [m('.btn-toolbar', [m('.btn-group', [m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content })]);
+			var file = ctrl.file;
+			var activeTab = ctrl.activeTab;
+			return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a.nav-link.disabled', 'Syntax')]), m('li.nav-item', [m('a.nav-link.disabled', 'Vaildate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file, settings: { mode: 'ejs' } }) : ''])]);
+		}
+	};
+
+	var imgEditor = {
+		view: function view(ctrl, args) {
+			var file = args.file;
+			return m('div.img-editor', { config: fullHeight }, [m('img', { src: file.url })]);
 		}
 	};
 
@@ -552,35 +597,6 @@
 		});
 	}
 
-	// taken from here:
-	// https://github.com/JedWatson/classnames/blob/master/index.js
-	var hasOwn = ({}).hasOwnProperty;
-
-	function classNames() {
-		var classes = '';
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
-
-			if (argType === 'string' || argType === 'number') {
-				classes += ' ' + arg;
-			} else if (Array.isArray(arg)) {
-				classes += ' ' + classNames.apply(null, arg);
-			} else if (argType === 'object') {
-				for (var key in arg) {
-					if (hasOwn.call(arg, key) && arg[key]) {
-						classes += ' ' + key;
-					}
-				}
-			}
-		}
-
-		return classes.substr(1);
-	}
-
 	var jsEditor = {
 		controller: function controller(args) {
 			return {
@@ -589,8 +605,9 @@
 			};
 		},
 		view: function view(ctrl) {
+			var file = ctrl.file;
 			var activeTab = ctrl.activeTab;
-			return [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])];
+			return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]);
 		}
 	};
 
@@ -727,7 +744,10 @@
 		js: jsEditor,
 		jpg: imgEditor,
 		bmp: imgEditor,
-		png: imgEditor
+		png: imgEditor,
+		html: jsEditor$1,
+		jst: jsEditor$1,
+		pdf: imgEditor$1
 	};
 
 	var fileEditorComponent = {
@@ -737,18 +757,18 @@
 			file.load();
 
 			var ctrl = {
-				file: file,
-				activeTab: m.prop('edit')
+				file: file
 			};
 
 			return ctrl;
 		},
 
 		view: function view(ctrl) {
-			var file = ctrl.file;
-			var activeTab = ctrl.activeTab;
+			var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m.component(editors[file.type], { file: file })]]);
+			var file = ctrl.file;
+
+			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : m.component(editors[file.type], { file: file, settings: args.settings })]);
 		}
 	};
 
@@ -815,7 +835,7 @@
 	var sidebarComponent = {
 		controller: function controller() {
 			var ctrl = {
-				fileArr: [new File('/test/cbm.js'), new File('/test/bv.js'), new File('/test/iat.js'), new File('/test/images/bf14_nc.jpg')]
+				fileArr: [new File('/test/aaa.pdf'), new File('/test/templates/left.jst'), new File('/test/example.js'), new File('/test/images/bf14_nc.jpg')]
 			};
 
 			return ctrl;
@@ -828,8 +848,10 @@
 	var fileNode = function fileNode(file) {
 		return m('a.list-group-item', { config: m.route, href: '/file/' + file.url, oncontextmenu: contextMenuComponent.trigger }, [m('i', {
 			class: classNames('fa fa-fw', {
-				'fa-file-code-o': file.type == 'js',
-				'fa-file-image-o': /(jpg|png|bmp)/.test(file.type)
+				'fa-file-code-o': /(js)$/.test(file.type),
+				'fa-file-text-o': /(jst|thml)$/.test(file.type),
+				'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
+				'fa-file-pdf-o': /(pdf)$/.test(file.type)
 			})
 		}), ' ' + file.name]);
 	};

@@ -5,16 +5,17 @@ import classNames from '../classNames';
 
 export default jsEditor;
 
-var jsEditor = {
+let jsEditor = {
 	controller: args => {
 		return {
 			file: args.file,
 			activeTab: m.prop('edit')
-		}
+		};
 	},
 	view: ctrl => {
-		var activeTab = ctrl.activeTab;
-		return [
+		let file = ctrl.file;
+		let activeTab = ctrl.activeTab;
+		return m('div',[
 			m('ul.nav.nav-tabs',[
 				m('li.nav-item', [
 					m('a[data-tab="edit"].nav-link', {onclick:m.withAttr('data-tab', activeTab), class: classNames({active: activeTab() == 'edit'})}, 'Edit')
@@ -34,6 +35,6 @@ var jsEditor = {
 				activeTab() == 'syntax' ? m.component(syntaxComponent, {file:file}) : '',
 				activeTab() == 'validate' ? m.component(validatorComponent, {file:file}) : ''
 			])
-		];
+		]);
 	}
-}
+};

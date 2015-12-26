@@ -1,3 +1,6 @@
+body {
+  overflow: hidden; }
+
 .stringified .pre {
   text-decoration: none;
   white-space: pre; }
@@ -28,6 +31,11 @@
 
 .editor .btn-toolbar {
   margin-bottom: 10px; }
+
+.img-editor {
+  display: flex;
+  justify-content: center;
+  align-items: center; }
 
 .tab-content {
   margin-top: 10px; }

@@ -34,19 +34,23 @@ var editorPage = {
 		}
 	},
 
-	view: function(ctrl){
+	view: function(ctrl, args){
 		return m('.editor', [
 			m('.btn-toolbar', [
 				m('.btn-group', [
-					m('a.btn.btn-secondary', {onclick: ctrl.save},[
-						m('strong.fa.fa-play')
-					]),
+					ctrl.file.type === 'js'
+						?
+						m('a.btn.btn-secondary', {onclick: ctrl.save},[
+							m('strong.fa.fa-play')
+						])
+						:
+						'',
 					m('a.btn.btn-secondary', {onclick: ctrl.play},[
 						m('strong.fa.fa-save')
 					])
 				])
 			]),
-			m.component(aceComponent, {content:ctrl.content})
+			m.component(aceComponent, {content:ctrl.content, settings: args.settings})
 		]);
 	}
 };

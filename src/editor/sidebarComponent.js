@@ -7,9 +7,9 @@ let sidebarComponent = {
 	controller: () => {
 		let ctrl = {
 			fileArr: [
-				new File('/test/cbm.js'),
-				new File('/test/bv.js'),
-				new File('/test/iat.js'),
+				new File('/test/aaa.pdf'),
+				new File('/test/templates/left.jst'),
+				new File('/test/example.js'),
 				new File('/test/images/bf14_nc.jpg')
 			]
 		};
@@ -31,8 +31,10 @@ let fileNode = file => {
 	return m('a.list-group-item', {config:m.route, href:`/file/${file.url}`, oncontextmenu: contextMenu.trigger}, [
 		m('i', {
 			class: classNames('fa fa-fw', {
-				'fa-file-code-o': file.type == 'js',
-				'fa-file-image-o': /(jpg|png|bmp)/.test(file.type)
+				'fa-file-code-o': /(js)$/.test(file.type),
+				'fa-file-text-o': /(jst|thml)$/.test(file.type),
+				'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
+				'fa-file-pdf-o': /(pdf)$/.test(file.type)
 			})
 		}),
 		` ${file.name}`

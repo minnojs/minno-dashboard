@@ -1,3 +1,4 @@
+import fullHeight from './fullHeight';
 export default aceComponent;
 
 var noop = function(){};
@@ -11,16 +12,20 @@ var aceComponent = {
 		return ctrl;
 	},
 
-	view: function editorView(ctrl){
-		return m('.editor', {config: aceComponent.config(ctrl)});
+	view: function editorView(ctrl, args){
+		return m('.editor', {config: aceComponent.config(ctrl, args)});
 	},
 
-	config: function(ctrl){
+	config: function(ctrl, args){
 		return function(element, isInitialized, ctx){
 			var editor;
 			var content = ctrl.content;
+			var settings = args.settings || {};
+			let mode = settings.mode || 'javascript';
 
 			if (!isInitialized){
+				fullHeight(element, isInitialized, ctx);
+
 				require(['ace/ace'], function(ace){
 					ace.config.set('packaged', true);
 					ace.config.set('basePath', require.toUrl('ace'));
@@ -29,7 +34,8 @@ var aceComponent = {
 					var commands = editor.commands;
 
 					editor.setTheme('ace/theme/monokai');
-					editor.getSession().setMode('ace/mode/javascript');
+					editor.getSession().setMode('ace/mode/' + mode);
+					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
 					editor.setHighlightActiveLine(true);
 					editor.setShowPrintMargin(false);
 					editor.setFontSize('18px');
@@ -41,35 +47,18 @@ var aceComponent = {
 						m.endComputation();
 					});
 
-
-
 					commands.addCommand({
 						name: 'save',
 						bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
 						exec: ctrl.onSave || noop
 					});
 
-
 					editor.setValue(content());
-
-
 				});
 
-				onResize();
-
-				window.addEventListener('resize', onResize, true);
-
-				ctx.onunload = function(){
-					window.removeEventListener('resize', onResize);
-					editor && editor.destroy();
-				};
 			}
 
 			editor && editor.setValue(content());
-
-			function onResize(){
-				element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-			}
 		};
 	}
 };
