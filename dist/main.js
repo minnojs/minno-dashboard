@@ -31,133 +31,29 @@
 	})();
 
 	babelHelpers;
-	var File = (function () {
-		function File(url) {
-			var _this = this;
+	var imgEditor = {
+		view: function view(ctrl, args) {
+			var file = args.file;
+			return m('div', {
+				style: { display: 'flex', 'justify-content': 'center', 'align-items': 'center' },
+				config: function config(element, isInitialized, ctx) {
 
-			babelHelpers.classCallCheck(this, File);
+					if (!isInitialized) {
+						onResize();
 
-			this.url = url;
-			this.name = url.substring(url.lastIndexOf('/') + 1);
-			this.type = url.substring(url.lastIndexOf('.') + 1);
+						window.addEventListener('resize', onResize, true);
 
-			// keep track of file content
-			this.sourceContent = m.prop('');
-			this.content = (function (store) {
-				var prop = function prop() {
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
+						ctx.onunload = function () {
+							window.removeEventListener('resize', onResize);
+						};
 					}
 
-					if (args.length) {
-						store = args[0];
-						_this.checkSyntax();
+					function onResize() {
+						element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
 					}
-					return store;
-				};
-
-				prop.toJSON = function () {
-					return store;
-				};
-
-				return prop;
-			})('');
-
-			// this is set within the load function
-			this.loaded = false;
-			this.error = false;
-
-			// these are defined when calling checkSyntax
-			this.syntaxValid = undefined;
-			this.syntaxData = undefined;
+				}
+			}, [m('img', { src: file.url })]);
 		}
-
-		babelHelpers.createClass(File, [{
-			key: 'load',
-			value: function load() {
-				var _this2 = this;
-
-				return new Promise(function (resolve, reject) {
-					m.request({ method: 'GET', url: _this2.url, background: true, deserialize: function deserialize(text) {
-							return text;
-						} }).then(function (script) {
-						m.startComputation();
-						_this2.sourceContent(script);
-						_this2.content(script);
-						_this2.loaded = true;
-						m.endComputation();
-					}, function () {
-						_this2.error = true;
-					}).then(resolve, reject);
-				});
-			}
-		}, {
-			key: 'save',
-			value: function save() {
-				alert('Saving content: not implemented yet');
-			}
-		}, {
-			key: 'hasChanged',
-			value: function hasChanged() {
-				return this.sourceContent() === this.content();
-			}
-		}, {
-			key: 'define',
-			value: function define() {
-				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-				var requirejs = context.requirejs;
-				var name = this.url;
-				var content = this.content();
-
-				return new Promise(function (resolve) {
-					requirejs.undef(name);
-					context.eval(content.replace('define(', 'define(\'' + name + '\','));
-					resolve();
-				});
-			}
-		}, {
-			key: 'require',
-			value: function require() {
-				var _this3 = this;
-
-				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-				var requirejs = context.requirejs;
-				return new Promise(function (resolve, reject) {
-					requirejs([_this3.url], resolve, reject);
-				});
-			}
-		}, {
-			key: 'checkSyntax',
-			value: function checkSyntax() {
-				var jshint = window.JSHINT;
-				this.syntaxValid = jshint(this.content(), jshintOptions);
-				this.syntaxData = jshint.data();
-				return this.syntaxValid;
-			}
-		}]);
-		return File;
-	})();
-
-	var jshintOptions = {
-		// JSHint Default Configuration File (as on JSHint website)
-		// See http://jshint.com/docs/ for more details
-
-		'curly': false, // true: Require {} for every new block or scope
-		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-		'unused': 'vars', // Unused variables:
-		//   true     : all variables, last function parameter
-		//   'vars'   : all variables only
-		//   'strict' : all variables, all function parameters
-		'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-		'browser': true, // Web Browser (window, document, etc)
-		'devel': true, // Development/debugging (alert, confirm, etc)
-
-		// Custom Globals
-		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
 	};
 
 	var noop = function noop() {};
@@ -209,20 +105,21 @@
 
 						editor.setValue(content());
 					});
+
+					onResize();
+
+					window.addEventListener('resize', onResize, true);
+
+					ctx.onunload = function () {
+						window.removeEventListener('resize', onResize);
+						editor && editor.destroy();
+					};
 				}
 
 				editor && editor.setValue(content());
-				onResize();
-
-				window.addEventListener('resize', onResize, true);
-
-				ctx.onunload = function () {
-					window.removeEventListener('resize', onResize);
-					editor && editor.destroy();
-				};
 
 				function onResize() {
-					element.style.height = document.documentElement.clientHeight - element.offsetTop + 'px';
+					element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
 				}
 			};
 		}
@@ -684,6 +581,155 @@
 		return classes.substr(1);
 	}
 
+	var jsEditor = {
+		controller: function controller(args) {
+			return {
+				file: args.file,
+				activeTab: m.prop('edit')
+			};
+		},
+		view: function view(ctrl) {
+			var activeTab = ctrl.activeTab;
+			return [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])];
+		}
+	};
+
+	var File = (function () {
+		function File(url) {
+			var _this = this;
+
+			babelHelpers.classCallCheck(this, File);
+
+			this.url = url;
+			this.name = url.substring(url.lastIndexOf('/') + 1);
+			this.type = url.substring(url.lastIndexOf('.') + 1);
+
+			// keep track of file content
+			this.sourceContent = m.prop('');
+			this.content = (function (store) {
+				var prop = function prop() {
+					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+						args[_key] = arguments[_key];
+					}
+
+					if (args.length) {
+						store = args[0];
+						_this.checkSyntax();
+					}
+					return store;
+				};
+
+				prop.toJSON = function () {
+					return store;
+				};
+
+				return prop;
+			})('');
+
+			// this is set within the load function
+			this.loaded = false;
+			this.error = false;
+
+			// these are defined when calling checkSyntax
+			this.syntaxValid = undefined;
+			this.syntaxData = undefined;
+		}
+
+		babelHelpers.createClass(File, [{
+			key: 'load',
+			value: function load() {
+				var _this2 = this;
+
+				return new Promise(function (resolve, reject) {
+					m.request({ method: 'GET', url: _this2.url, background: true, deserialize: function deserialize(text) {
+							return text;
+						} }).then(function (script) {
+						m.startComputation();
+						_this2.sourceContent(script);
+						_this2.content(script);
+						_this2.loaded = true;
+						m.endComputation();
+					}, function () {
+						_this2.error = true;
+					}).then(resolve, reject);
+				});
+			}
+		}, {
+			key: 'save',
+			value: function save() {
+				alert('Saving content: not implemented yet');
+			}
+		}, {
+			key: 'hasChanged',
+			value: function hasChanged() {
+				return this.sourceContent() === this.content();
+			}
+		}, {
+			key: 'define',
+			value: function define() {
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
+				var name = this.url;
+				var content = this.content();
+
+				return new Promise(function (resolve) {
+					requirejs.undef(name);
+					context.eval(content.replace('define(', 'define(\'' + name + '\','));
+					resolve();
+				});
+			}
+		}, {
+			key: 'require',
+			value: function require() {
+				var _this3 = this;
+
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
+				return new Promise(function (resolve, reject) {
+					requirejs([_this3.url], resolve, reject);
+				});
+			}
+		}, {
+			key: 'checkSyntax',
+			value: function checkSyntax() {
+				var jshint = window.JSHINT;
+				this.syntaxValid = jshint(this.content(), jshintOptions);
+				this.syntaxData = jshint.data();
+				return this.syntaxValid;
+			}
+		}]);
+		return File;
+	})();
+
+	var jshintOptions = {
+		// JSHint Default Configuration File (as on JSHint website)
+		// See http://jshint.com/docs/ for more details
+
+		'curly': false, // true: Require {} for every new block or scope
+		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
+		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
+		'unused': 'vars', // Unused variables:
+		//   true     : all variables, last function parameter
+		//   'vars'   : all variables only
+		//   'strict' : all variables, all function parameters
+		'strict': false, // true: Requires all functions run in ES5 Strict Mode
+
+		'browser': true, // Web Browser (window, document, etc)
+		'devel': true, // Development/debugging (alert, confirm, etc)
+
+		// Custom Globals
+		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
+	};
+
+	var editors = {
+		js: jsEditor,
+		jpg: imgEditor,
+		bmp: imgEditor,
+		png: imgEditor
+	};
+
 	var fileEditorComponent = {
 		controller: function controller() {
 			var url = m.route.param('url');
@@ -702,7 +748,7 @@
 			var file = ctrl.file;
 			var activeTab = ctrl.activeTab;
 
-			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]]);
+			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m.component(editors[file.type], { file: file })]]);
 		}
 	};
 

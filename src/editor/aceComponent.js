@@ -35,10 +35,6 @@ var aceComponent = {
 					editor.setFontSize('18px');
 					editor.$blockScrolling = Infinity; // scroll to top
 
-
-
-
-
 					editor.getSession().on('change', function(){
 						m.startComputation();
 						content(editor.getValue());
@@ -55,23 +51,25 @@ var aceComponent = {
 
 
 					editor.setValue(content());
+
+
 				});
+
+				onResize();
+
+				window.addEventListener('resize', onResize, true);
+
+				ctx.onunload = function(){
+					window.removeEventListener('resize', onResize);
+					editor && editor.destroy();
+				};
 			}
 
 			editor && editor.setValue(content());
-			onResize();
-
-			window.addEventListener('resize', onResize, true);
-
-			ctx.onunload = function(){
-				window.removeEventListener('resize', onResize);
-				editor && editor.destroy();
-			};
 
 			function onResize(){
-				element.style.height = document.documentElement.clientHeight - element.offsetTop + 'px';
+				element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
 			}
-
 		};
 	}
 };
