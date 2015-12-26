@@ -667,7 +667,10 @@
 						_this2.loaded = true;
 						m.endComputation();
 					}, function () {
+						m.startComputation();
+						_this2.loaded = true;
 						_this2.error = true;
+						m.endComputation();
 					}).then(resolve, reject);
 				});
 			}
@@ -835,7 +838,7 @@
 	var sidebarComponent = {
 		controller: function controller() {
 			var ctrl = {
-				fileArr: [new File('/test/aaa.pdf'), new File('/test/templates/left.jst'), new File('/test/example.js'), new File('/test/images/bf14_nc.jpg')]
+				fileArr: [new File('/test/aaa.pdfs'), new File('/test/templates/left.jst'), new File('/test/example.js'), new File('/test/images/bf14_nc.jpg')]
 			};
 
 			return ctrl;

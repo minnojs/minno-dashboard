@@ -7,7 +7,7 @@ let sidebarComponent = {
 	controller: () => {
 		let ctrl = {
 			fileArr: [
-				new File('/test/aaa.pdf'),
+				new File('/test/aaa.pdfs'),
 				new File('/test/templates/left.jst'),
 				new File('/test/example.js'),
 				new File('/test/images/bf14_nc.jpg')

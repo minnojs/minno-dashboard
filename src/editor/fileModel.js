@@ -40,7 +40,10 @@ class File {
 					this.loaded = true;
 					m.endComputation();
 				}, () => {
+					m.startComputation();
+					this.loaded = true;
 					this.error = true;
+					m.endComputation();
 				})
 				.then(resolve, reject);
 		});
