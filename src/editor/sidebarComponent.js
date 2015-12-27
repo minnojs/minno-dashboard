@@ -19,24 +19,64 @@ let sidebarComponent = {
 	view: ctrl => {
 		return m('div', [
 			m('h5', 'Files'),
-			m('.list-group', [
-				ctrl.fileArr.map(fileNode)
-			])
-
+			m.component(filesComponent, ctrl.fileArr)
 		]);
 	}
 };
 
-let fileNode = file => {
-	return m('a.list-group-item', {config:m.route, href:`/file/${file.url}`, oncontextmenu: contextMenu.trigger}, [
-		m('i', {
-			class: classNames('fa fa-fw', {
-				'fa-file-code-o': /(js)$/.test(file.type),
-				'fa-file-text-o': /(jst|thml)$/.test(file.type),
-				'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
-				'fa-file-pdf-o': /(pdf)$/.test(file.type)
-			})
-		}),
-		` ${file.name}`
-	]);
+let filesComponent = {
+	view: (ctrl, files) => {
+		return m('.files', [
+			m('ul', files.map(node => m.component(nodeComponent, node, files)))
+		]);
+	}
+};
+
+let nodeComponent = {
+	controller: (file) => {
+		return {
+			isDir: file.isDir,
+			isOpen: false,
+			isCurrent: m.route.param('url') === file.id
+		};
+	},
+	view: (ctrl, file) => {
+		return m('li.node',
+			{
+				key: file.id,
+				class: classNames({
+					open : ctrl.isOpen
+				})
+			},
+			[
+				m('a.wholerow', {
+					unselectable:'on',
+					class:classNames({
+						'current': ctrl.isCurrent
+					}),
+					href: `/file/${file.url}`,
+					config: m.route
+				}, m.trust('&nbsp;')),
+
+				m('i.fa.fa-fw', {
+					class: classNames({
+						'fa-caret-right' : ctrl.isDir && !ctrl.isOpen,
+						'fa-caret-down': ctrl.isDir && ctrl.isOpen
+					}),
+					onclick: ctrl.isDir && (() => ctrl.isOpen = !ctrl.isOpen)
+				}),
+
+				m('a', [
+					m('i.fa.fa-fw', {
+						class: classNames({
+							'fa-file-code-o': /(js)$/.test(file.type),
+							'fa-file-text-o': /(jst|thml)$/.test(file.type),
+							'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
+							'fa-file-pdf-o': /(pdf)$/.test(file.type)
+					}),
+					` ${file.name}`
+				])
+			]
+		);
+	}
 };

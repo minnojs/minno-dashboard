@@ -3,6 +3,7 @@ class File {
 		this.url = url;
 		this.name = url.substring(url.lastIndexOf('/')+1);
 		this.type = url.substring(url.lastIndexOf('.')+1);
+		this.id = url;
 
 		// keep track of file content
 		this.sourceContent = m.prop('');

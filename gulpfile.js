@@ -27,6 +27,7 @@ gulp.task('css', function(){
 	var sass = require('gulp-sass');
 
 	gulp.src('src/style/**/*.scss')
+		.pipe(plumber())
 		.pipe(sass({errLogToConsole: true}))
 		.pipe(gulp.dest('dist'));
 });
