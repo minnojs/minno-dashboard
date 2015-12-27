@@ -208,98 +208,6 @@ body {
   -webkit-transition-delay: 100ms;
   transition-delay: 300ms; }
 
-.files-ul {
-  padding-left: 0;
-  margin-left: 2.14286em;
-  list-style-type: none; }
-  .files-ul > li {
-    position: relative; }
-
-.files-ul .files-ul {
-  margin-top: 0.5em;
-  margin-left: 1.07143em; }
-
-.jstree-node, .jstree-children, .jstree-container-ul {
-  display: block;
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
-  list-style-image: none; }
-
-.jstree-node {
-  white-space: nowrap; }
-
-.jstree-anchor {
-  display: inline-block;
-  color: black;
-  white-space: nowrap;
-  padding: 0 4px 0 1px;
-  margin: 0;
-  vertical-align: top; }
-
-.jstree-anchor:focus {
-  outline: 0; }
-
-.jstree-anchor, .jstree-anchor:link, .jstree-anchor:visited, .jstree-anchor:hover, .jstree-anchor:active {
-  text-decoration: none;
-  color: inherit; }
-
-.jstree-icon {
-  display: inline-block;
-  text-decoration: none;
-  margin: 0;
-  padding: 0;
-  vertical-align: top;
-  text-align: center; }
-
-.jstree-icon:empty {
-  display: inline-block;
-  text-decoration: none;
-  margin: 0;
-  padding: 0;
-  vertical-align: top;
-  text-align: center; }
-
-.jstree-ocl {
-  cursor: pointer; }
-
-.jstree-leaf > .jstree-ocl {
-  cursor: default; }
-
-.jstree .jstree-open > .jstree-children {
-  display: block; }
-
-.jstree .jstree-closed > .jstree-children, .jstree .jstree-leaf > .jstree-children {
-  display: none; }
-
-.jstree-anchor > .jstree-themeicon {
-  margin-right: 2px; }
-
-.jstree-no-icons .jstree-themeicon,
-.jstree-anchor > .jstree-themeicon-hidden {
-  display: none; }
-
-.jstree-hidden {
-  display: none; }
-
-.jstree-wholerow-ul {
-  position: relative;
-  display: inline-block;
-  min-width: 100%; }
-  .jstree-wholerow-ul .jstree-leaf > .jstree-ocl {
-    cursor: pointer; }
-  .jstree-wholerow-ul .jstree-anchor, .jstree-wholerow-ul .jstree-icon {
-    position: relative; }
-  .jstree-wholerow-ul .jstree-wholerow {
-    width: 100%;
-    cursor: pointer;
-    position: absolute;
-    left: 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none; }
-
 .files ul {
   position: relative;
   display: inline-block;
@@ -312,10 +220,10 @@ body {
   padding: 0;
   list-style-type: none;
   list-style-image: none;
-  white-space: nowrap; }
+  white-space: nowrap;
+  cursor: pointer; }
   .files li.node .wholerow {
     width: 100%;
-    cursor: pointer;
     position: absolute;
     left: 0;
     height: 24px;

@@ -54,8 +54,7 @@ let nodeComponent = {
 					class:classNames({
 						'current': ctrl.isCurrent
 					}),
-					href: `/file/${file.url}`,
-					config: m.route
+					onclick: choose(file)
 				}, m.trust('&nbsp;')),
 
 				m('i.fa.fa-fw', {
@@ -63,20 +62,26 @@ let nodeComponent = {
 						'fa-caret-right' : ctrl.isDir && !ctrl.isOpen,
 						'fa-caret-down': ctrl.isDir && ctrl.isOpen
 					}),
-					onclick: ctrl.isDir && (() => ctrl.isOpen = !ctrl.isOpen)
+					onclick: ctrl.isDir ? (() => ctrl.isOpen = !ctrl.isOpen) : choose(file)
 				}),
 
-				m('a', [
-					m('i.fa.fa-fw', {
+				m('a', {onclick: choose(file)}, [
+					m('i.fa.fa-fw.fa-file-o', {
 						class: classNames({
 							'fa-file-code-o': /(js)$/.test(file.type),
 							'fa-file-text-o': /(jst|thml)$/.test(file.type),
 							'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
 							'fa-file-pdf-o': /(pdf)$/.test(file.type)
+						})
 					}),
 					` ${file.name}`
 				])
 			]
 		);
 	}
+};
+
+let choose = file => e => {
+	e.preventDefault();
+	m.route(`/file/${file.url}`);
 };

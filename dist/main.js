@@ -35,24 +35,7 @@
 		if (!isInitialized) {
 			onResize();
 
-<<<<<<< b174317c772bd33327ee17c635029ed31fd79d80
 			window.addEventListener('resize', onResize, true);
-=======
-			babelHelpers.classCallCheck(this, File);
-
-			this.url = url;
-			this.name = url.substring(url.lastIndexOf('/') + 1);
-			this.type = url.substring(url.lastIndexOf('.') + 1);
-			this.id = url;
-
-			// keep track of file content
-			this.sourceContent = m.prop('');
-			this.content = (function (store) {
-				var prop = function prop() {
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
-					}
->>>>>>> feat(editor): sidebar ui
 
 			ctx.onunload = function () {
 				window.removeEventListener('resize', onResize);
@@ -637,6 +620,7 @@
 			this.url = url;
 			this.name = url.substring(url.lastIndexOf('/') + 1);
 			this.type = url.substring(url.lastIndexOf('.') + 1);
+			this.id = url;
 
 			// keep track of file content
 			this.sourceContent = m.prop('');
@@ -867,17 +851,6 @@
 		}
 	};
 
-<<<<<<< b174317c772bd33327ee17c635029ed31fd79d80
-	var fileNode = function fileNode(file) {
-		return m('a.list-group-item', { config: m.route, href: '/file/' + file.url, oncontextmenu: contextMenuComponent.trigger }, [m('i', {
-			class: classNames('fa fa-fw', {
-				'fa-file-code-o': /(js)$/.test(file.type),
-				'fa-file-text-o': /(jst|thml)$/.test(file.type),
-				'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
-				'fa-file-pdf-o': /(pdf)$/.test(file.type)
-			})
-		}), ' ' + file.name]);
-=======
 	var filesComponent = {
 		view: function view(ctrl, files) {
 			return m('.files', [m('ul', files.map(function (node) {
@@ -887,16 +860,16 @@
 	};
 
 	var nodeComponent = {
-		controller: function controller(node) {
+		controller: function controller(file) {
 			return {
-				isDir: node.isDir,
+				isDir: file.isDir,
 				isOpen: false,
-				isCurrent: m.route.param('url') === node.id
+				isCurrent: m.route.param('url') === file.id
 			};
 		},
-		view: function view(ctrl, node) {
+		view: function view(ctrl, file) {
 			return m('li.node', {
-				key: node.id,
+				key: file.id,
 				class: classNames({
 					open: ctrl.isOpen
 				})
@@ -905,24 +878,31 @@
 				class: classNames({
 					'current': ctrl.isCurrent
 				}),
-				href: '/file/' + node.url,
-				config: m.route
+				onclick: choose(file)
 			}, m.trust('&nbsp;')), m('i.fa.fa-fw', {
 				class: classNames({
 					'fa-caret-right': ctrl.isDir && !ctrl.isOpen,
 					'fa-caret-down': ctrl.isDir && ctrl.isOpen
 				}),
-				onclick: ctrl.isDir && function () {
+				onclick: ctrl.isDir ? function () {
 					return ctrl.isOpen = !ctrl.isOpen;
-				}
-			}), m('a', [m('i.fa.fa-fw', {
+				} : choose(file)
+			}), m('a', { onclick: choose(file) }, [m('i.fa.fa-fw.fa-file-o', {
 				class: classNames({
-					'fa-file-code-o': node.type == 'js',
-					'fa-file-image-o': /(jpg|png|bmp)/.test(node.type)
+					'fa-file-code-o': /(js)$/.test(file.type),
+					'fa-file-text-o': /(jst|thml)$/.test(file.type),
+					'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
+					'fa-file-pdf-o': /(pdf)$/.test(file.type)
 				})
-			}), ' ' + node.name])]);
+			}), ' ' + file.name])]);
 		}
->>>>>>> feat(editor): sidebar ui
+	};
+
+	var choose = function choose(file) {
+		return function (e) {
+			e.preventDefault();
+			m.route('/file/' + file.url);
+		};
 	};
 
 	var editorLayoutComponent = {
