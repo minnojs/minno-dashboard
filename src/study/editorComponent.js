@@ -37,11 +37,11 @@ let fileEditorComponent = {
 					? m.component(editors[file.type], {file:file, settings: args.settings})
 					: m('.centrify', [
 						m('i.fa.fa-file.fa-5x'),
-						m('div', 'Unknow file type')
+						m('h5', 'Unknow file type')
 					])
 				: m('.centrify', [
 					m('i.fa.fa-smile-o.fa-5x'),
-					m('div', 'Please select a file to start working')
+					m('h5', 'Please select a file to start working')
 				])
 		]);
 	}

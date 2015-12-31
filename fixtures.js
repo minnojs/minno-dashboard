@@ -25,6 +25,14 @@ router.get('/', function(req, res) {
 	res.json({ message: 'hooray! welcome to our api!' });
 });
 
+router.get('/studies', (req,res)=>{
+	res.json([
+		{id:'asd1', name:'Study 1'},
+		{id:'asd2', name:'Study 2'},
+		{id:'asd3', name:'Study 3'}
+	]);
+});
+
 var files = [
 	{
 		'id': '1',

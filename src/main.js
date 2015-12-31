@@ -1,9 +1,9 @@
 import mainComponent from './mainComponent';
 import editorLayoutComponent from './study/studyComponent';
 
-m.route(document.body, '', {
+m.route(document.body, 'studies', {
 
-	'' : mainComponent,
+	'studies' : mainComponent,
 	'/editor/:studyID': editorLayoutComponent,
 	'/editor/:studyID/:fileID': editorLayoutComponent
 });

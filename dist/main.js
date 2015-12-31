@@ -359,8 +359,7 @@
 		controller: function controller(args) {
 			var file = args.file;
 
-			m.startComputation();
-			file.get().then(m.endComputation);
+			file.get().then(m.redraw);
 
 			var ctrl = {
 				file: file,
@@ -877,7 +876,7 @@
 
 			var file = ctrl.file;
 
-			return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-file.fa-5x'), m('div', 'Unknow file type')]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('div', 'Please select a file to start working')])]);
+			return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
 		}
 	};
 
@@ -1046,19 +1045,28 @@
 	var mainComponent = {
 		controller: function controller() {
 			var ctrl = {
-				url: m.prop('')
+				studies: m.prop([]),
+				loaded: false
 			};
+			fetch('/dashboard/studies').then(checkStatus).then(toJSON).then(ctrl.studies).then(function () {
+				return ctrl.loaded = true;
+			}).then(m.redraw);
 
 			return ctrl;
 		},
 		view: function view(ctrl) {
-			return m('.container', [m('.jumbotron', [m('h2', 'Welcome to PI Validator'), m('p', 'Please insert the url for the file you would like to edit'), m('.input-group', [m('span.input-group-btn', [m('a.btn.btn-default', { href: '/file/' + ctrl.url(), config: m.route }, m.trust('<span aria-hidden="true" class="glyphicon glyphicon-search"></span>'))]), m('input.form-control[placeholder="Please insert a URL"]', { value: ctrl.url(), onchange: m.withAttr('value', ctrl.url) })])])]);
+			return m('.container', [m('h2', 'My studies'), !ctrl.loaded ? m('.loader') : m('.list-group', ctrl.studies().map(function (study) {
+				return m('a.list-group-item', {
+					href: '/editor/' + study.id,
+					config: m.route
+				}, study.name);
+			}))]);
 		}
 	};
 
-	m.route(document.body, '', {
+	m.route(document.body, 'studies', {
 
-		'': mainComponent,
+		'studies': mainComponent,
 		'/editor/:studyID': editorLayoutComponent,
 		'/editor/:studyID/:fileID': editorLayoutComponent
 	});

@@ -1,25 +1,34 @@
+import {toJSON, checkStatus} from './study/modelHelpers';
 export default mainComponent;
 
 var mainComponent = {
 	controller: function(){
 		var ctrl = {
-			url: m.prop('')
+			studies:m.prop([]),
+			loaded:false
 		};
+		fetch('/dashboard/studies')
+			.then(checkStatus)
+			.then(toJSON)
+			.then(ctrl.studies)
+			.then(()=>ctrl.loaded = true)
+			.then(m.redraw);
+
+
 
 		return ctrl;
 	},
 	view: ctrl => {
 		return m('.container', [
-			m('.jumbotron', [
-				m('h2', 'Welcome to PI Validator'),
-				m('p','Please insert the url for the file you would like to edit'),
-				m('.input-group', [
-					m('span.input-group-btn', [
-						m('a.btn.btn-default', {href: `/file/${ctrl.url()}`, config: m.route}, m.trust('<span aria-hidden="true" class="glyphicon glyphicon-search"></span>'))
-					]),
-					m('input.form-control[placeholder="Please insert a URL"]', {value: ctrl.url(), onchange: m.withAttr('value', ctrl.url)})
-				])
-			])
+			m('h2', 'My studies'),
+			!ctrl.loaded
+				?
+				m('.loader')
+				:
+				m('.list-group',ctrl.studies().map(study => m('a.list-group-item',{
+					href: `/editor/${study.id}`,
+					config: m.route
+				}, study.name)))
 		]);
 	}
 };
