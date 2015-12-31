@@ -15,7 +15,8 @@
     },
     "globals": {
         "m" : true,
-        "require" : true
+        "require" : true,
+        "fetch" : true
     },
     "extends": "eslint:recommended"
 }

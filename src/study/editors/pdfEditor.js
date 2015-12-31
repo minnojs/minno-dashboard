@@ -1,10 +1,9 @@
-import fullHeight from './fullHeight';
-export default imgEditor;
+export default pdfEditor;
 
-let imgEditor = {
+let pdfEditor = {
 	view: (ctrl, args) => {
 		let file = args.file;
-		return m('div.', {config: fullHeight},[
+		return m('div.', [
 			m('object', {
 				data: file.url,
 				type: 'application/pdf',

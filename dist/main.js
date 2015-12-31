@@ -31,6 +31,253 @@
 	})();
 
 	babelHelpers;
+	var checkStatus = function checkStatus(response) {
+		if (response.status >= 200 && response.status < 300) {
+			return response;
+		}
+
+		var error = new Error(response.statusText);
+		error.response = response;
+		throw error;
+	};
+
+	var toJSON = function toJSON(response) {
+		return response.json();
+	};
+
+	var baseUrl$1 = '/dashboard/';
+
+	/**
+	 * file = {
+	 * 	id: #hash,
+	 * 	url: URL
+	 * }
+	 */
+
+	var File = (function () {
+		function File(file) {
+			var _this = this;
+
+			babelHelpers.classCallCheck(this, File);
+
+			var url = this.url = file.url;
+			this.id = file.id;
+			this.studyID = file.studyID;
+			this.isDir = file.isDir;
+			this.name = url.substring(url.lastIndexOf('/') + 1);
+			this.type = url.substring(url.lastIndexOf('.') + 1);
+
+			// keep track of file content
+			this.sourceContent = m.prop('');
+			this.content = (function (store) {
+				var prop = function prop() {
+					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+						args[_key] = arguments[_key];
+					}
+
+					if (args.length) {
+						store = args[0];
+						_this.checkSyntax();
+					}
+					return store;
+				};
+
+				prop.toJSON = function () {
+					return store;
+				};
+
+				return prop;
+			})('');
+
+			// this is set within the load function
+			this.loaded = false;
+			this.error = false;
+
+			// these are defined when calling checkSyntax
+			this.syntaxValid = undefined;
+			this.syntaxData = undefined;
+		}
+
+		babelHelpers.createClass(File, [{
+			key: 'apiUrl',
+			value: function apiUrl() {
+				return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
+			}
+		}, {
+			key: 'get',
+			value: function get() {
+				var _this2 = this;
+
+				return fetch(this.apiUrl()).then(checkStatus).then(toJSON).then(function (response) {
+					_this2.sourceContent(response.content);
+					_this2.content(response.content);
+					_this2.loaded = true;
+				}).catch(function (reason) {
+					_this2.loaded = true;
+					_this2.error = true;
+					return Promise.reject(reason); // do not swallow error
+				});
+			}
+		}, {
+			key: 'save',
+			value: function save() {
+				var _this3 = this;
+
+				return fetch(this.apiUrl(), {
+					method: 'put',
+					body: JSON.stringify({
+						content: this.content
+					})
+				}).then(checkStatus).then(toJSON).then(function () {
+					_this3.sourceContent(_this3.content()); // update source content
+				});
+			}
+		}, {
+			key: 'del',
+			value: function del() {
+				return fetch(this.apiUrl(), { method: 'delete' }).then(checkStatus).then(toJSON);
+			}
+		}, {
+			key: 'hasChanged',
+			value: function hasChanged() {
+				return this.sourceContent() === this.content();
+			}
+		}, {
+			key: 'define',
+			value: function define() {
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
+				var name = this.url;
+				var content = this.content();
+
+				return new Promise(function (resolve) {
+					requirejs.undef(name);
+					context.eval(content.replace('define(', 'define(\'' + name + '\','));
+					resolve();
+				});
+			}
+		}, {
+			key: 'require',
+			value: function require() {
+				var _this4 = this;
+
+				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
+
+				var requirejs = context.requirejs;
+				return new Promise(function (resolve, reject) {
+					requirejs([_this4.url], resolve, reject);
+				});
+			}
+		}, {
+			key: 'checkSyntax',
+			value: function checkSyntax() {
+				var jshint = window.JSHINT;
+				this.syntaxValid = jshint(this.content(), jshintOptions);
+				this.syntaxData = jshint.data();
+				return this.syntaxValid;
+			}
+		}]);
+		return File;
+	})();
+
+	var jshintOptions = {
+		// JSHint Default Configuration File (as on JSHint website)
+		// See http://jshint.com/docs/ for more details
+
+		'curly': false, // true: Require {} for every new block or scope
+		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
+		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
+		'unused': 'vars', // Unused variables:
+		//   true     : all variables, last function parameter
+		//   'vars'   : all variables only
+		//   'strict' : all variables, all function parameters
+		'strict': false, // true: Requires all functions run in ES5 Strict Mode
+
+		'browser': true, // Web Browser (window, document, etc)
+		'devel': true, // Development/debugging (alert, confirm, etc)
+
+		// Custom Globals
+		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
+	};
+
+	var baseUrl = '/dashboard/';
+
+	var studyModel = (function () {
+		function studyModel(id) {
+			babelHelpers.classCallCheck(this, studyModel);
+
+			this.id = id;
+			this.files = m.prop([]);
+			this.loaded = false;
+			this.error = false;
+		}
+
+		babelHelpers.createClass(studyModel, [{
+			key: 'apiURL',
+			value: function apiURL() {
+				return baseUrl + '/files/' + this.id;
+			}
+		}, {
+			key: 'get',
+			value: function get() {
+				var _this = this;
+
+				return fetch(this.apiURL()).then(checkStatus).then(toJSON).then(function (study) {
+					_this.loaded = true;
+					_this.files(study.files.map(function (file) {
+						Object.assign(file, { studyID: _this.id });
+						return new File(file);
+					}));
+				}).catch(function (reason) {
+					_this.error = true;
+					return Promise.reject(reason); // do not swallow error
+				});
+			}
+		}, {
+			key: 'getFile',
+			value: function getFile(id) {
+				return this.files().find(function (file) {
+					return file.id === id;
+				});
+			}
+		}, {
+			key: 'create',
+			value: function create(fileName) {
+				var _this2 = this;
+
+				return fetch(this.apiURL(), { method: 'post', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
+					_this2.files().push(new File(response.json()));
+				});
+			}
+		}, {
+			key: 'del',
+			value: function del(fileId) {
+				var _this3 = this;
+
+				return this.getFile(fileId).del().then(function () {
+					var cleanFiles = _this3.files().filter(function (file) {
+						return file.id !== fileId;
+					});
+					_this3.files(cleanFiles);
+				});
+			}
+		}]);
+		return studyModel;
+	})();
+
+	var pdfEditor = {
+		view: function view(ctrl, args) {
+			var file = args.file;
+			return m('div.', [m('object', {
+				data: file.url,
+				type: 'application/pdf',
+				width: '100%',
+				height: '100%'
+			})]);
+		}
+	};
+
 	var fullHeight = function fullHeight(element, isInitialized, ctx) {
 		if (!isInitialized) {
 			onResize();
@@ -44,18 +291,6 @@
 
 		function onResize() {
 			element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-		}
-	};
-
-	var imgEditor$1 = {
-		view: function view(ctrl, args) {
-			var file = args.file;
-			return m('div.', { config: fullHeight }, [m('object', {
-				data: file.url,
-				type: 'application/pdf',
-				width: '100%',
-				height: '100%'
-			})]);
 		}
 	};
 
@@ -124,6 +359,9 @@
 		controller: function controller(args) {
 			var file = args.file;
 
+			m.startComputation();
+			file.get().then(m.endComputation);
+
 			var ctrl = {
 				file: file,
 				content: file.content,
@@ -153,7 +391,8 @@
 		},
 
 		view: function view(ctrl, args) {
-			return m('.editor', [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]);
+			var file = ctrl.file;
+			return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: file.save }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
 		}
 	};
 
@@ -203,7 +442,7 @@
 	var imgEditor = {
 		view: function view(ctrl, args) {
 			var file = args.file;
-			return m('div.img-editor', { config: fullHeight }, [m('img', { src: file.url })]);
+			return m('div.img-editor.centrify', [m('img', { src: file.url })]);
 		}
 	};
 
@@ -607,141 +846,8 @@
 		view: function view(ctrl) {
 			var file = ctrl.file;
 			var activeTab = ctrl.activeTab;
-			return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]);
+			return m('div', [!file.loaded ? '' : m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]);
 		}
-	};
-
-	var File = (function () {
-		function File(url) {
-			var _this = this;
-
-			babelHelpers.classCallCheck(this, File);
-
-			this.url = url;
-			this.name = url.substring(url.lastIndexOf('/') + 1);
-			this.type = url.substring(url.lastIndexOf('.') + 1);
-			this.id = url;
-
-			// keep track of file content
-			this.sourceContent = m.prop('');
-			this.content = (function (store) {
-				var prop = function prop() {
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
-					}
-
-					if (args.length) {
-						store = args[0];
-						_this.checkSyntax();
-					}
-					return store;
-				};
-
-				prop.toJSON = function () {
-					return store;
-				};
-
-				return prop;
-			})('');
-
-			// this is set within the load function
-			this.loaded = false;
-			this.error = false;
-
-			// these are defined when calling checkSyntax
-			this.syntaxValid = undefined;
-			this.syntaxData = undefined;
-		}
-
-		babelHelpers.createClass(File, [{
-			key: 'load',
-			value: function load() {
-				var _this2 = this;
-
-				return new Promise(function (resolve, reject) {
-					m.request({ method: 'GET', url: _this2.url, background: true, deserialize: function deserialize(text) {
-							return text;
-						} }).then(function (script) {
-						m.startComputation();
-						_this2.sourceContent(script);
-						_this2.content(script);
-						_this2.loaded = true;
-						m.endComputation();
-					}, function () {
-						m.startComputation();
-						_this2.loaded = true;
-						_this2.error = true;
-						m.endComputation();
-					}).then(resolve, reject);
-				});
-			}
-		}, {
-			key: 'save',
-			value: function save() {
-				alert('Saving content: not implemented yet');
-			}
-		}, {
-			key: 'hasChanged',
-			value: function hasChanged() {
-				return this.sourceContent() === this.content();
-			}
-		}, {
-			key: 'define',
-			value: function define() {
-				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-				var requirejs = context.requirejs;
-				var name = this.url;
-				var content = this.content();
-
-				return new Promise(function (resolve) {
-					requirejs.undef(name);
-					context.eval(content.replace('define(', 'define(\'' + name + '\','));
-					resolve();
-				});
-			}
-		}, {
-			key: 'require',
-			value: function require() {
-				var _this3 = this;
-
-				var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-				var requirejs = context.requirejs;
-				return new Promise(function (resolve, reject) {
-					requirejs([_this3.url], resolve, reject);
-				});
-			}
-		}, {
-			key: 'checkSyntax',
-			value: function checkSyntax() {
-				var jshint = window.JSHINT;
-				this.syntaxValid = jshint(this.content(), jshintOptions);
-				this.syntaxData = jshint.data();
-				return this.syntaxValid;
-			}
-		}]);
-		return File;
-	})();
-
-	var jshintOptions = {
-		// JSHint Default Configuration File (as on JSHint website)
-		// See http://jshint.com/docs/ for more details
-
-		'curly': false, // true: Require {} for every new block or scope
-		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-		'unused': 'vars', // Unused variables:
-		//   true     : all variables, last function parameter
-		//   'vars'   : all variables only
-		//   'strict' : all variables, all function parameters
-		'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-		'browser': true, // Web Browser (window, document, etc)
-		'devel': true, // Development/debugging (alert, confirm, etc)
-
-		// Custom Globals
-		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
 	};
 
 	var editors = {
@@ -751,14 +857,13 @@
 		png: imgEditor,
 		html: jsEditor$1,
 		jst: jsEditor$1,
-		pdf: imgEditor$1
+		pdf: pdfEditor
 	};
 
 	var fileEditorComponent = {
-		controller: function controller() {
-			var url = m.route.param('url');
-			var file = new File(url);
-			file.load();
+		controller: function controller(study) {
+			var id = m.route.param('fileID');
+			var file = study.getFile(id);
 
 			var ctrl = {
 				file: file
@@ -772,113 +877,108 @@
 
 			var file = ctrl.file;
 
-			return m('div', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : m.component(editors[file.type], { file: file, settings: args.settings })]);
+			return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-file.fa-5x'), m('div', 'Unknow file type')]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('div', 'Please select a file to start working')])]);
 		}
 	};
 
-	var contextMenuComponent = {
-		show: m.prop(false),
-		style: m.prop({}),
-		menu: m.prop([{ icon: 'fa-play', text: 'begone' }, { icon: 'fa-play', text: 'asdf' }, { separator: true }, { icon: 'fa-play', text: 'wertwert', menu: [{ icon: 'fa-play', text: 'asdf' }] }]),
+	/**
+	 * Set this component into your layout then use any mouse event to open the context menu:
+	 * oncontextmenu: contextMenuComponent.open([...menu])
+	 *
+	 * Example menu:
+	 * [
+	 * 	{icon:'fa-play', text:'begone'},
+	 *	{icon:'fa-play', text:'asdf'},
+	 *	{separator:true},
+	 *	{icon:'fa-play', text:'wertwert', menu: [
+	 *		{icon:'fa-play', text:'asdf'}
+	 *	]}
+	 * ]
+	 */
 
+	var contextMenuComponent = {
+		vm: {
+			show: m.prop(false),
+			style: m.prop({}),
+			menu: m.prop([])
+		},
 		view: function view() {
 			return m('.context-menu', {
-				class: classNames({ 'show-context-menu': contextMenuComponent.show() }),
-				style: contextMenuComponent.style(),
+				class: classNames({ 'show-context-menu': contextMenuComponent.vm.show() }),
+				style: contextMenuComponent.vm.style(),
 				onclick: function onclick(e) {
 					return e.stopPropagation();
 				}
-			}, contextMenuComponent.menu().map(menuNode));
+			}, contextMenuComponent.vm.menu().map(menuNode));
 		},
 
-		trigger: function trigger(e) {
-			e.preventDefault();
-			contextMenuComponent.show(true);
-			contextMenuComponent.style({
-				left: e.pageX + 'px',
-				top: e.pageY + 'px'
-			});
+		open: function open(menu) {
+			return function (e) {
+				e.preventDefault();
 
-			document.addEventListener('click', onClick, false);
-			function onClick() {
-				m.startComputation();
-				contextMenuComponent.show(false);
-				m.endComputation();
-				document.removeEventListener('click', onClick);
-			}
+				contextMenuComponent.vm.menu(menu);
+				contextMenuComponent.vm.show(true);
+				contextMenuComponent.vm.style({
+					left: e.pageX + 'px',
+					top: e.pageY + 'px'
+				});
+
+				document.addEventListener('click', onClick, false);
+				function onClick() {
+					m.startComputation();
+					contextMenuComponent.vm.show(false);
+					m.endComputation();
+					document.removeEventListener('click', onClick);
+				}
+			};
 		}
 	};
 
 	var menuNode = function menuNode(node) {
-		return node.separator ? m('.context-menu-separator') : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu }) }, [m('button.context-menu-btn', { onclick: node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
+		return node.separator ? m('.context-menu-separator') : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu }) }, [m('button.context-menu-btn', { onclick: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
 	};
 
-	// var menu = document.querySelector('.menu');
-
-	// function showMenu(x, y){
-	//     menu.style.left = x + 'px';
-	//     menu.style.top = y + 'px';
-	//     menu.classList.add('show-menu');
-	// }
-
-	// function hideMenu(){
-	//     menu.classList.remove('show-menu');
-	// }
-
-	// function onContextMenu(e){
-	//     e.preventDefault();
-	//     showMenu(e.pageX, e.pageY);
-	//     document.addEventListener('click', onClick, false);
-	// }
-
-	// function onClick(e){
-	//     hideMenu();
-	//     document.removeEventListener('click', onClick);
-	// }
-
-	// document.addEventListener('contextmenu', onContextMenu, false);
-
 	var sidebarComponent = {
-		controller: function controller() {
-			var ctrl = {
-				fileArr: [new File('/test/aaa.pdfs'), new File('/test/templates/left.jst'), new File('/test/example.js'), new File('/test/images/bf14_nc.jpg')]
-			};
-
-			return ctrl;
-		},
-		view: function view(ctrl) {
-			return m('div', [m('h5', 'Files'), m.component(filesComponent, ctrl.fileArr)]);
+		view: function view(ctrl, study) {
+			return m('div', [m('h5', study.id), m.component(filesComponent, study)]);
 		}
 	};
 
 	var filesComponent = {
-		view: function view(ctrl, files) {
-			return m('.files', [m('ul', files.map(function (node) {
-				return m.component(nodeComponent, node, files);
+		view: function view(ctrl, study) {
+			var files = study.files();
+			return m('.files', [m('ul', files.map(function (file) {
+				return m.component(nodeComponent, { file: file, study: study });
 			}))]);
 		}
 	};
 
 	var nodeComponent = {
-		controller: function controller(file) {
+		controller: function controller(_ref) {
+			var file = _ref.file;
+
 			return {
 				isDir: file.isDir,
 				isOpen: false,
-				isCurrent: m.route.param('url') === file.id
+				isCurrent: m.route.param('fileID') === file.id
 			};
 		},
-		view: function view(ctrl, file) {
-			return m('li.node', {
+		view: function view(ctrl, _ref2) {
+			var file = _ref2.file;
+			var study = _ref2.study;
+
+			return m('li.file', {
 				key: file.id,
 				class: classNames({
 					open: ctrl.isOpen
-				})
+				}),
+				onclick: choose(file),
+				oncontextmenu: fileContext(file, study)
 			}, [m('a.wholerow', {
 				unselectable: 'on',
 				class: classNames({
 					'current': ctrl.isCurrent
-				}),
-				onclick: choose(file)
+				})
 			}, m.trust('&nbsp;')), m('i.fa.fa-fw', {
 				class: classNames({
 					'fa-caret-right': ctrl.isDir && !ctrl.isOpen,
@@ -886,8 +986,8 @@
 				}),
 				onclick: ctrl.isDir ? function () {
 					return ctrl.isOpen = !ctrl.isOpen;
-				} : choose(file)
-			}), m('a', { onclick: choose(file) }, [m('i.fa.fa-fw.fa-file-o', {
+				} : null
+			}), m('a', [m('i.fa.fa-fw.fa-file-o', {
 				class: classNames({
 					'fa-file-code-o': /(js)$/.test(file.type),
 					'fa-file-text-o': /(jst|thml)$/.test(file.type),
@@ -901,13 +1001,44 @@
 	var choose = function choose(file) {
 		return function (e) {
 			e.preventDefault();
-			m.route('/file/' + file.url);
+			m.route('/editor/' + file.studyID + '/' + file.id);
 		};
 	};
 
+	var fileContext = function fileContext(file, study) {
+		var menu = [{ icon: 'fa-plus', text: 'New File', action: function action() {
+				return alert('new');
+			} }, { icon: 'fa-copy', text: 'Duplicate', action: function action() {
+				return alert('Duplicate');
+			} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: function action() {
+				var link = document.createElement('a');
+				link.href = file.url;
+				link.download = file.name;
+				link.target = '_blank';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			} },
+		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
+		{ icon: 'fa-close', text: 'Delete', action: function action() {
+				return study.del(file.id);
+			} }];
+		return contextMenuComponent.open(menu);
+	};
+
 	var editorLayoutComponent = {
-		view: function view() {
-			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard')]), m('.container-fluid', { style: { marginTop: '70px' } }, [m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent)]), m('.main.col-md-10', [m.component(fileEditorComponent)])])]), m.component(contextMenuComponent) // register context menu
+		controller: function controller() {
+			var study = new studyModel(m.route.param('studyID'));
+			var ctrl = { study: study };
+
+			m.startComputation();
+			study.get().then(m.endComputation);
+
+			return ctrl;
+		},
+		view: function view(ctrl) {
+			var study = ctrl.study;
+			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard')]), m('.container-fluid', { style: { marginTop: '70px' } }, [study.loaded ? m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent, study)]), m('.main.col-md-10', [m.component(fileEditorComponent, study)])]) : '']), m.component(contextMenuComponent) // register context menu
 			]);
 		}
 	};
@@ -926,8 +1057,10 @@
 	};
 
 	m.route(document.body, '', {
+
 		'': mainComponent,
-		'/file/:url...': editorLayoutComponent
+		'/editor/:studyID': editorLayoutComponent,
+		'/editor/:studyID/:fileID': editorLayoutComponent
 	});
 
 })();

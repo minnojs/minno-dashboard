@@ -1,9 +1,22 @@
+import {toJSON, checkStatus} from './modelHelpers';
+export default File;
+let baseUrl = '/dashboard/';
+
+/**
+ * file = {
+ * 	id: #hash,
+ * 	url: URL
+ * }
+ */
+
 class File {
-	constructor(url){
-		this.url = url;
+	constructor(file){
+		let url = this.url = file.url;
+		this.id = file.id;
+		this.studyID = file.studyID;
+		this.isDir = file.isDir;
 		this.name = url.substring(url.lastIndexOf('/')+1);
 		this.type = url.substring(url.lastIndexOf('.')+1);
-		this.id = url;
 
 		// keep track of file content
 		this.sourceContent = m.prop('');
@@ -30,29 +43,46 @@ class File {
 		this.syntaxData = undefined;
 	}
 
-	load(){
-		return new Promise((resolve, reject) => {
-			m
-				.request({method:'GET', url:this.url,background:true, deserialize: text => text})
-				.then(script => {
-					m.startComputation();
-					this.sourceContent(script);
-					this.content(script);
-					this.loaded = true;
-					m.endComputation();
-				}, () => {
-					m.startComputation();
-					this.loaded = true;
-					this.error = true;
-					m.endComputation();
-				})
-				.then(resolve, reject);
-		});
+	apiUrl(){
+		return `${baseUrl}/files/${this.studyID}/file/${this.id}`;
+	}
+
+	get(){
+		return fetch(this.apiUrl())
+			.then(checkStatus)
+			.then(toJSON)
+			.then(response => {
+				this.sourceContent(response.content);
+				this.content(response.content);
+				this.loaded = true;
+			})
+			.catch(reason => {
+				this.loaded = true;
+				this.error = true;
+				return Promise.reject(reason); // do not swallow error
+			});
 	}
 
 	save(){
-		alert('Saving content: not implemented yet');
+		return fetch(this.apiUrl(), {
+			method:'put',
+			body: JSON.stringify({
+				content: this.content
+			})
+		})
+			.then(checkStatus)
+			.then(toJSON)
+			.then(()=>{
+				this.sourceContent(this.content()); // update source content
+			});
 	}
+
+	del(){
+		return fetch(this.apiUrl(), {method:'delete'})
+			.then(checkStatus)
+			.then(toJSON);
+	}
+
 
 	hasChanged() {
 		return this.sourceContent() === this.content();
@@ -105,4 +135,3 @@ var jshintOptions = {
 	predef: ['piGlobal','define','require','requirejs','angular']
 };
 
-export default File;

@@ -1,10 +1,28 @@
 ### RESTfull API
 Read about the [RESTfull API](http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api). It will be worth your time...
 
+### Studies
+A representations of the whole study list
+
+#####    GET     /studies/ - retrieve a list studies
+Returns a json with all the studies for the current logged in user.
+
+```js
+[
+    {id:'#hash',name:'study name (human readable)'},
+    {id:'#hash',name:'study name (human readable)'},
+    {id:'#hash',name:'study name (human readable)'},
+    {id:'#hash',name:'study name (human readable)'}
+]
+```
+
+#####    GET     /studies/:userId - retrieve a list studies
+Returns a json with all the studies for the user signified by :userId.
+
 ### Files (directory/study?)
 A representation of a directory/study. Manages lists of files. Currently we're not trying to manage studies using this interface so all we need it the GET method.
 
-#####    GET     /files/:directoryId - retrieve a file (plain text)
+#####    GET     /files/:directoryId - retrieve a file
 
 Returns a JSON with the following stucture:
 

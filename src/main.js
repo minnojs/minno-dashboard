@@ -1,7 +1,9 @@
 import mainComponent from './mainComponent';
-import editorLayoutComponent from './editor/editorLayoutComponent';
+import editorLayoutComponent from './study/studyComponent';
 
 m.route(document.body, '', {
+
 	'' : mainComponent,
-	'/file/:url...': editorLayoutComponent
+	'/editor/:studyID': editorLayoutComponent,
+	'/editor/:studyID/:fileID': editorLayoutComponent
 });

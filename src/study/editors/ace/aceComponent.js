@@ -1,4 +1,4 @@
-import fullHeight from './fullHeight';
+import fullHeight from '../../fullHeight';
 export default aceComponent;
 
 var noop = function(){};

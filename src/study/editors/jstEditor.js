@@ -1,5 +1,5 @@
-import editorComponent from './editorComponent';
-import classNames from '../classNames';
+import editorComponent from './ace/editorComponent';
+import classNames from '../../classNames';
 
 export default jsEditor;
 

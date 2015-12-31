@@ -32,10 +32,11 @@ body {
 .editor .btn-toolbar {
   margin-bottom: 10px; }
 
-.img-editor {
+.centrify {
   display: flex;
   justify-content: center;
-  align-items: center; }
+  align-items: center;
+  height: 100%; }
 
 .tab-content {
   margin-top: 10px; }
@@ -214,7 +215,7 @@ body {
   padding-left: 0;
   min-width: 100%; }
 
-.files li.node {
+.files li.file {
   display: block;
   margin: 0;
   padding: 0;
@@ -222,7 +223,7 @@ body {
   list-style-image: none;
   white-space: nowrap;
   cursor: pointer; }
-  .files li.node .wholerow {
+  .files li.file .wholerow {
     width: 100%;
     position: absolute;
     left: 0;
@@ -231,11 +232,11 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    .files li.node .wholerow.current {
+    .files li.file .wholerow.current {
       background: #eef2f3;
       background: -webkit-linear-gradient(top, #eef2f3 0, #8e9eab 100%);
       background: linear-gradient(to bottom, #eef2f3 0, #8e9eab 100%); }
-  .files li.node a {
+  .files li.file a {
     display: inline-block;
     color: black;
     white-space: nowrap;
@@ -243,19 +244,19 @@ body {
     margin: 0;
     vertical-align: top;
     position: relative; }
-    .files li.node a:focus {
+    .files li.file a:focus {
       outline: 0; }
-    .files li.node a:hover, .files li.node a:visited, .files li.node a:active, .files li.node a:link {
+    .files li.file a:hover, .files li.file a:visited, .files li.file a:active, .files li.file a:link {
       text-decoration: none;
       color: inherit; }
-  .files li.node i {
+  .files li.file i {
     display: inline-block;
     text-decoration: none;
     margin: 0;
     padding: 0;
     vertical-align: text-bottom;
     text-align: center; }
-    .files li.node i :empty {
+    .files li.file i :empty {
       display: inline-block;
       text-decoration: none;
       margin: 0;

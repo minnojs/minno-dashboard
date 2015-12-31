@@ -1,34 +1,46 @@
 import classNames from './classNames';
 export default contextMenuComponent;
 
-let contextMenuComponent = {
-	show: m.prop(false),
-	style: m.prop({}),
-	menu: m.prop([
-		{icon:'fa-play', text:'begone'},
-		{icon:'fa-play', text:'asdf'},
-		{separator:true},
-		{icon:'fa-play', text:'wertwert', menu: [
-			{icon:'fa-play', text:'asdf'}
-		]}
-	]),
+/**
+ * Set this component into your layout then use any mouse event to open the context menu:
+ * oncontextmenu: contextMenuComponent.open([...menu])
+ *
+ * Example menu:
+ * [
+ * 	{icon:'fa-play', text:'begone'},
+ *	{icon:'fa-play', text:'asdf'},
+ *	{separator:true},
+ *	{icon:'fa-play', text:'wertwert', menu: [
+ *		{icon:'fa-play', text:'asdf'}
+ *	]}
+ * ]
+ */
 
+let contextMenuComponent = {
+	vm: {
+		show: m.prop(false),
+		style: m.prop({}),
+		menu: m.prop([
+		])
+	},
 	view: () => {
 		return m(
 			'.context-menu',
 			{
-				class: classNames({'show-context-menu': contextMenuComponent.show()}),
-				style: contextMenuComponent.style(),
+				class: classNames({'show-context-menu': contextMenuComponent.vm.show()}),
+				style: contextMenuComponent.vm.style(),
 				onclick: e => e.stopPropagation()
 			},
-			contextMenuComponent.menu().map(menuNode)
+			contextMenuComponent.vm.menu().map(menuNode)
 		);
 	},
 
-	trigger: e => {
+	open: menu => e => {
 		e.preventDefault();
-		contextMenuComponent.show(true);
-		contextMenuComponent.style({
+
+		contextMenuComponent.vm.menu(menu);
+		contextMenuComponent.vm.show(true);
+		contextMenuComponent.vm.style({
 			left:e.pageX + 'px',
 			top:e.pageY + 'px'
 		});
@@ -36,7 +48,7 @@ let contextMenuComponent = {
 		document.addEventListener('click', onClick, false);
 		function onClick(){
 			m.startComputation();
-			contextMenuComponent.show(false);
+			contextMenuComponent.vm.show(false);
 			m.endComputation();
 			document.removeEventListener('click', onClick);
 		}
@@ -47,38 +59,10 @@ let menuNode = node => {
 	return node.separator
 		? m('.context-menu-separator')
 		: m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu})}, [
-			m('button.context-menu-btn',{onclick:node.action}, [
+			m('button.context-menu-btn',{onclick:node.disabled || node.action}, [
 				m('i.fa', {class:node.icon}),
 				m('span.context-menu-text', node.text)
 			]),
 			node.menu ? m('.context-menu', node.menu.map(menuNode)) : ''
 		]);
 };
-
-
-
-
-// var menu = document.querySelector('.menu');
-
-// function showMenu(x, y){
-//     menu.style.left = x + 'px';
-//     menu.style.top = y + 'px';
-//     menu.classList.add('show-menu');
-// }
-
-// function hideMenu(){
-//     menu.classList.remove('show-menu');
-// }
-
-// function onContextMenu(e){
-//     e.preventDefault();
-//     showMenu(e.pageX, e.pageY);
-//     document.addEventListener('click', onClick, false);
-// }
-
-// function onClick(e){
-//     hideMenu();
-//     document.removeEventListener('click', onClick);
-// }
-
-// document.addEventListener('contextmenu', onContextMenu, false);

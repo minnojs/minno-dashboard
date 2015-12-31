@@ -1,7 +1,7 @@
-import editorComponent from './editorComponent';
-import syntaxComponent from './syntaxComponent';
-import validatorComponent from './validatorComponent';
-import classNames from '../classNames';
+import editorComponent from './ace/editorComponent';
+import syntaxComponent from './ace/syntaxComponent';
+import validatorComponent from './ace/validatorComponent';
+import classNames from '../../classNames';
 
 export default jsEditor;
 
@@ -16,7 +16,7 @@ let jsEditor = {
 		let file = ctrl.file;
 		let activeTab = ctrl.activeTab;
 		return m('div',[
-			m('ul.nav.nav-tabs',[
+			!file.loaded ? '' : m('ul.nav.nav-tabs',[
 				m('li.nav-item', [
 					m('a[data-tab="edit"].nav-link', {onclick:m.withAttr('data-tab', activeTab), class: classNames({active: activeTab() == 'edit'})}, 'Edit')
 				]),
