@@ -4,10 +4,10 @@ export default mainComponent;
 var mainComponent = {
 	controller: function(){
 		var ctrl = {
-			studies:m.prop([]),
+			studies:m.prop(),
 			loaded:false
 		};
-		fetch('/dashboard/studies')
+		fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(ctrl.studies)
@@ -25,7 +25,7 @@ var mainComponent = {
 				?
 				m('.loader')
 				:
-				m('.list-group',ctrl.studies().map(study => m('a.list-group-item',{
+				m('.list-group',ctrl.studies().studies.map(study => m('a.list-group-item',{
 					href: `/editor/${study.id}`,
 					config: m.route
 				}, study.name)))

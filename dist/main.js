@@ -61,11 +61,13 @@
 			babelHelpers.classCallCheck(this, File);
 
 			var url = this.url = file.url;
-			this.id = file.id;
+
 			this.studyID = file.studyID;
 			this.isDir = file.isDir;
 			this.name = url.substring(url.lastIndexOf('/') + 1);
 			this.type = url.substring(url.lastIndexOf('.') + 1);
+			this.id = file.id;
+			this.id = this.name;
 
 			// keep track of file content
 			this.sourceContent = m.prop('');
@@ -108,7 +110,7 @@
 			value: function get() {
 				var _this2 = this;
 
-				return fetch(this.apiUrl()).then(checkStatus).then(toJSON).then(function (response) {
+				return fetch(this.apiUrl(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (response) {
 					_this2.sourceContent(response.content);
 					_this2.content(response.content);
 					_this2.loaded = true;
@@ -123,7 +125,11 @@
 			value: function save() {
 				var _this3 = this;
 
+				console.log(JSON.stringify({
+					content: this.content
+				}));
 				return fetch(this.apiUrl(), {
+					credentials: 'same-origin',
 					method: 'put',
 					body: JSON.stringify({
 						content: this.content
@@ -135,7 +141,7 @@
 		}, {
 			key: 'del',
 			value: function del() {
-				return fetch(this.apiUrl(), { method: 'delete' }).then(checkStatus).then(toJSON);
+				return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus).then(toJSON);
 			}
 		}, {
 			key: 'hasChanged',
@@ -223,7 +229,7 @@
 			value: function get() {
 				var _this = this;
 
-				return fetch(this.apiURL()).then(checkStatus).then(toJSON).then(function (study) {
+				return fetch(this.apiURL(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (study) {
 					_this.loaded = true;
 					_this.files(study.files.map(function (file) {
 						Object.assign(file, { studyID: _this.id });
@@ -246,7 +252,7 @@
 			value: function create(fileName) {
 				var _this2 = this;
 
-				return fetch(this.apiURL() + '/file', { method: 'post', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
+				return fetch(this.apiURL() + '/file', { method: 'post', credentials: 'same-origin', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
 					_this2.files().push(new File(response));
 				});
 			}
@@ -364,7 +370,6 @@
 			var ctrl = {
 				file: file,
 				content: file.content,
-				save: file.save,
 				play: play
 			};
 
@@ -391,7 +396,7 @@
 
 		view: function view(ctrl, args) {
 			var file = ctrl.file;
-			return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: file.save }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
+			return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: file.save.bind(file) }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
 		}
 	};
 
@@ -1006,9 +1011,10 @@
 			}), m('a', [m('i.fa.fa-fw.fa-file-o', {
 				class: classNames({
 					'fa-file-code-o': /(js)$/.test(file.type),
-					'fa-file-text-o': /(jst|thml)$/.test(file.type),
+					'fa-file-text-o': /(jst|html|xml)$/.test(file.type),
 					'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
-					'fa-file-pdf-o': /(pdf)$/.test(file.type)
+					'fa-file-pdf-o': /(pdf)$/.test(file.type),
+					'fa-folder-o': file.isDir
 				})
 			}), ' ' + file.name])]);
 		}
@@ -1047,17 +1053,17 @@
 	var mainComponent = {
 		controller: function controller() {
 			var ctrl = {
-				studies: m.prop([]),
+				studies: m.prop(),
 				loaded: false
 			};
-			fetch('/dashboard/studies').then(checkStatus).then(toJSON).then(ctrl.studies).then(function () {
+			fetch('/dashboard/dashboard/studies', { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(ctrl.studies).then(function () {
 				return ctrl.loaded = true;
 			}).then(m.redraw);
 
 			return ctrl;
 		},
 		view: function view(ctrl) {
-			return m('.container', [m('h2', 'My studies'), !ctrl.loaded ? m('.loader') : m('.list-group', ctrl.studies().map(function (study) {
+			return m('.container', [m('h2', 'My studies'), !ctrl.loaded ? m('.loader') : m('.list-group', ctrl.studies().studies.map(function (study) {
 				return m('a.list-group-item', {
 					href: '/editor/' + study.id,
 					config: m.route

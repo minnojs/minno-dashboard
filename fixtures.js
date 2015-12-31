@@ -26,28 +26,28 @@ router.get('/', function(req, res) {
 });
 
 router.get('/studies', (req,res)=>{
-	res.json([
+	res.json({studies: [
 		{id:'asd1', name:'Study 1'},
 		{id:'asd2', name:'Study 2'},
 		{id:'asd3', name:'Study 3'}
-	]);
+	]});
 });
 
 var files = [
 	{
-		'id': '1',
+		'id': 'imageTest.js',
 		'url': '/test/imageTest.js'
 	},
 	{
-		'id': '2',
+		'id': 'example.js',
 		'url': '/test/example.js'
 	},
 	{
-		'id': '3',
+		'id': 'left.jst',
 		'url': '/test/templates/left.jst'
 	},
 	{
-		'id': '4',
+		'id': 'wf3_nc.jpg',
 		'url': '/test/images/wf3_nc.jpg'
 	}
 ];
@@ -84,7 +84,7 @@ router.route('/files/:studyID/file/:id')
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
-app.use('/dashboard', router);
+app.use('/dashboard/dashboard', router);
 app.use(express.static('.'));
 
 // START THE SERVER

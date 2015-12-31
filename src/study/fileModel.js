@@ -12,11 +12,13 @@ let baseUrl = '/dashboard/dashboard';
 class File {
 	constructor(file){
 		let url = this.url = file.url;
-		this.id = file.id;
+
 		this.studyID = file.studyID;
 		this.isDir = file.isDir;
 		this.name = url.substring(url.lastIndexOf('/')+1);
 		this.type = url.substring(url.lastIndexOf('.')+1);
+		this.id = file.id;
+		this.id = this.name;
 
 		// keep track of file content
 		this.sourceContent = m.prop('');
@@ -48,7 +50,7 @@ class File {
 	}
 
 	get(){
-		return fetch(this.apiUrl())
+		return fetch(this.apiUrl(), {credentials: 'same-origin'})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
@@ -64,7 +66,11 @@ class File {
 	}
 
 	save(){
+		console.log(JSON.stringify({
+				content: this.content
+			}));
 		return fetch(this.apiUrl(), {
+			credentials: 'same-origin',
 			method:'put',
 			body: JSON.stringify({
 				content: this.content
@@ -78,7 +84,7 @@ class File {
 	}
 
 	del(){
-		return fetch(this.apiUrl(), {method:'delete'})
+		return fetch(this.apiUrl(), {method:'delete',credentials: 'same-origin'})
 			.then(checkStatus)
 			.then(toJSON);
 	}

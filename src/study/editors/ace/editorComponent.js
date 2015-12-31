@@ -10,7 +10,6 @@ var editorPage = {
 		var ctrl = {
 			file: file,
 			content:file.content,
-			save: file.save,
 			play: play
 		};
 
@@ -60,7 +59,7 @@ var editorPage = {
 									])
 									:
 									'',
-								m('a.btn.btn-secondary', {onclick: file.save},[
+								m('a.btn.btn-secondary', {onclick: file.save.bind(file)},[
 									m('strong.fa.fa-save')
 								])
 							])

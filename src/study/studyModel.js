@@ -17,7 +17,7 @@ class studyModel {
 	}
 
 	get(){
-		return fetch(this.apiURL())
+		return fetch(this.apiURL(),{credentials: 'same-origin'})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(study => {
@@ -38,7 +38,7 @@ class studyModel {
 	}
 
 	create(fileName){
-		return fetch(this.apiURL() + '/file', {method:'post', data: {name: fileName}})
+		return fetch(this.apiURL() + '/file', {method:'post', credentials: 'same-origin', data: {name: fileName}})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {

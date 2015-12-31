@@ -50,9 +50,10 @@ let nodeComponent = {
 					m('i.fa.fa-fw.fa-file-o', {
 						class: classNames({
 							'fa-file-code-o': /(js)$/.test(file.type),
-							'fa-file-text-o': /(jst|thml)$/.test(file.type),
+							'fa-file-text-o': /(jst|html|xml)$/.test(file.type),
 							'fa-file-image-o': /(jpg|png|bmp)$/.test(file.type),
-							'fa-file-pdf-o': /(pdf)$/.test(file.type)
+							'fa-file-pdf-o': /(pdf)$/.test(file.type),
+							'fa-folder-o': file.isDir
 						})
 					}),
 					` ${file.name}`
