@@ -201,7 +201,7 @@
 		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
 	};
 
-	var baseUrl = '/dashboard/';
+	var baseUrl = '/dashboard';
 
 	var studyModel = (function () {
 		function studyModel(id) {
@@ -246,8 +246,8 @@
 			value: function create(fileName) {
 				var _this2 = this;
 
-				return fetch(this.apiURL(), { method: 'post', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
-					_this2.files().push(new File(response.json()));
+				return fetch(this.apiURL() + '/file', { method: 'post', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
+					_this2.files().push(new File(response));
 				});
 			}
 		}, {
@@ -937,10 +937,27 @@
 		return node.separator ? m('.context-menu-separator') : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu }) }, [m('button.context-menu-btn', { onclick: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
 	};
 
-	var sidebarComponent = {
-		view: function view(ctrl, study) {
-			return m('.editor-sidebar', [m('h5', study.id), m.component(filesComponent, study)]);
-		}
+	var fileContext = function fileContext(file, study) {
+		var menu = [
+		//{icon:'fa-plus', text:'New File', action: () => study.create('new.js')},
+		{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
+				return alert('Duplicate');
+			} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: function action() {
+				alert('download');
+				return;
+				var link = document.createElement('a');
+				link.href = file.url;
+				link.download = file.name;
+				link.target = '_blank';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			} },
+		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
+		{ icon: 'fa-close', text: 'Delete', action: function action() {
+				return study.del(file.id);
+			} }];
+		return contextMenuComponent.open(menu);
 	};
 
 	var filesComponent = {
@@ -1004,25 +1021,10 @@
 		};
 	};
 
-	var fileContext = function fileContext(file, study) {
-		var menu = [{ icon: 'fa-plus', text: 'New File', action: function action() {
-				return alert('new');
-			} }, { icon: 'fa-copy', text: 'Duplicate', action: function action() {
-				return alert('Duplicate');
-			} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: function action() {
-				var link = document.createElement('a');
-				link.href = file.url;
-				link.download = file.name;
-				link.target = '_blank';
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
-			} },
-		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-		{ icon: 'fa-close', text: 'Delete', action: function action() {
-				return study.del(file.id);
-			} }];
-		return contextMenuComponent.open(menu);
+	var sidebarComponent = {
+		view: function view(ctrl, study) {
+			return m('.editor-sidebar', { config: fullHeight }, [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
+		}
 	};
 
 	var editorLayoutComponent = {

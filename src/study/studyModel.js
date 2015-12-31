@@ -2,7 +2,7 @@ import {toJSON, checkStatus} from './modelHelpers';
 import File from './fileModel';
 export default studyModel;
 
-let baseUrl = '/dashboard/';
+let baseUrl = '/dashboard';
 
 class studyModel {
 	constructor(id){
@@ -38,11 +38,11 @@ class studyModel {
 	}
 
 	create(fileName){
-		return fetch(this.apiURL(), {method:'post', data: {name: fileName}})
+		return fetch(this.apiURL() + '/file', {method:'post', data: {name: fileName}})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
-				this.files().push(new File(response.json()));
+				this.files().push(new File(response));
 			});
 	}
 

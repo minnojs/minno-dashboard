@@ -22,7 +22,7 @@ Returns a json with all the studies for the user signified by :userId.
 ### Files (directory/study?)
 A representation of a directory/study. Manages lists of files. Currently we're not trying to manage studies using this interface so all we need it the GET method.
 
-#####    GET     /files/:directoryId - retrieve a file
+#####    GET     /files/:studyId - retrieve a file
 
 Returns a JSON with the following stucture:
 
@@ -41,7 +41,7 @@ We can eventually add some meta data in here such as owner, parent project etc.
 ### File
 A representation of a single file.
 
-#####    GET     /files/:directoryId/file/:fileId - retrieve a file
+#####    GET     /files/:studyId/file/:fileId - retrieve a file
 Returns a file object:
 
 ```js
@@ -54,15 +54,22 @@ Returns a file object:
 
 It may leave content empty if the file is binary.
 
-#####    POST    /files/:directoryId/file/ - create a file
-Creates a file for this directoryId.
-Returns a full file object.
+#####    POST    /files/:studyId/file/ - create a file
+Creates a file for this studyId.
+Returns a file object.
 
-#####    PUT     /files/:directoryId/file/:fileId - update a file
+```js
+{
+    id: '#hash',
+    url:'full path to file'
+}
+```
+
+#####    PUT     /files/:studyId/file/:fileId - update a file
 Update an existing file.
-Returns a full file object.
+Returns empty body (and appropriate http status!).
 
-#####    DELETE  /files/:directoryId/file/:fileId - delete a file
+#####    DELETE  /files/:studyId/file/:fileId - delete a file
 Delete an existing file.
 Returns empty body (and appropriate http status!).
 
