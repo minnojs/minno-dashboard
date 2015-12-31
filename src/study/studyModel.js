@@ -2,7 +2,7 @@ import {toJSON, checkStatus} from './modelHelpers';
 import File from './fileModel';
 export default studyModel;
 
-let baseUrl = '/dashboard';
+let baseUrl = '/dashboard/dashboard';
 
 class studyModel {
 	constructor(id){

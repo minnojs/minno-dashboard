@@ -45,7 +45,7 @@
 		return response.json();
 	};
 
-	var baseUrl$1 = '/dashboard/';
+	var baseUrl$1 = '/dashboard/dashboard';
 
 	/**
 	 * file = {
@@ -201,7 +201,7 @@
 		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
 	};
 
-	var baseUrl = '/dashboard';
+	var baseUrl = '/dashboard/dashboard';
 
 	var studyModel = (function () {
 		function studyModel(id) {

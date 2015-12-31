@@ -1,6 +1,6 @@
 import {toJSON, checkStatus} from './modelHelpers';
 export default File;
-let baseUrl = '/dashboard/';
+let baseUrl = '/dashboard/dashboard';
 
 /**
  * file = {
