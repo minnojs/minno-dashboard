@@ -56,7 +56,28 @@ It may leave content empty if the file is binary.
 
 #####    POST    /files/:studyId/file/ - create a file
 Creates a file for this studyId.
-Returns a file object.
+
+Takes the following parameters:
+```
+// basic use
+{
+    name: 'fileName.js',
+    content: 'some text'
+}
+```
+
+```
+// allow uploading files eventually
+{
+    files: [
+        uploadedFile,
+        uploadedFile,
+        uploadedFile
+    ]
+}
+```
+
+Returns a file object:
 
 ```js
 {
@@ -67,6 +88,13 @@ Returns a file object.
 
 #####    PUT     /files/:studyId/file/:fileId - update a file
 Update an existing file.
+Takes the following parameters:
+```
+{
+    content: 'content'
+}
+```
+
 Returns empty body (and appropriate http status!).
 
 #####    DELETE  /files/:studyId/file/:fileId - delete a file
