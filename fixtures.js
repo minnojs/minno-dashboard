@@ -8,6 +8,7 @@ var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var fs = require('fs');
+var isMac = process.platform === 'darwin';
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -33,24 +34,40 @@ router.get('/studies', (req,res)=>{
 	]});
 });
 
-var files = [
-	{
-		'id': 'imageTest.js',
-		'url': '/test/imageTest.js'
-	},
-	{
-		'id': 'example.js',
-		'url': '/test/example.js'
-	},
-	{
-		'id': 'left.jst',
-		'url': '/test/templates/left.jst'
-	},
-	{
-		'id': 'wf3_nc.jpg',
-		'url': '/test/images/wf3_nc.jpg'
-	}
-];
+var files = isMac
+	? [
+		{
+			id: 'iatExtenssion.js',
+			url: '/test/iatExtenssion.js',
+			noDel: true
+		},
+		{
+			id: 'aaa.pdf',
+			url: '/test/aaa.pdf'
+		},
+		{
+			id: 'example.js',
+			url: '/test/example.js'
+		}
+	]
+	: [
+		{
+			'id': 'imageTest.js',
+			'url': '/test/imageTest.js'
+		},
+		{
+			'id': 'example.js',
+			'url': '/test/example.js'
+		},
+		{
+			'id': 'left.jst',
+			'url': '/test/templates/left.jst'
+		},
+		{
+			'id': 'wf3_nc.jpg',
+			'url': '/test/images/wf3_nc.jpg'
+		}
+	];
 
 router.route('/files/:studyID')
 	.get((req,res)=>{
@@ -67,17 +84,23 @@ router.route('/files/:studyID/file')
 router.route('/files/:studyID/file/:id')
 	.get((req,res)=>{
 		var file = files.find(f => f.id == req.params.id);
-		fs.readFile('..' + file.url, function read(err, data) {
-			if (err) {throw err;}
-			res.json(Object.assign({content: new String(data)},file));
-		});
+		if (/(jst|html|xml|js)$/.test(file.url)){
+			fs.readFile('..' + file.url, function read(err, data) {
+				if (err) {throw err;}
+				res.json(Object.assign({content: new String(data)},file));
+			});
+		} else {
+			res.json(file);
+		}
 	})
 	.put((req)=>{
 		console.log('saved ' + req.params.id);
 	})
 	.delete((req,res)=>{
-		console.log('del ' + req.params.id);
-		res.json();
+		if (files.some(f => f.id == req.params.id && f.noDel)) {
+			res.status(403).json({message:'del ' + req.params.id + ' failed'});
+		}
+		res.end();
 	});
 
 
@@ -85,7 +108,7 @@ router.route('/files/:studyID/file/:id')
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
-app.use(express.static('.'));
+app.use(express.static('..'));
 
 // START THE SERVER
 // =============================================================================

@@ -2,17 +2,17 @@
 
 	var babelHelpers = {};
 
-	babelHelpers.typeof = function (obj) {
+	function babelHelpers_typeof (obj) {
 	  return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
 	};
 
-	babelHelpers.classCallCheck = function (instance, Constructor) {
+	function babelHelpers_classCallCheck (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
 	    throw new TypeError("Cannot call a class as a function");
 	  }
 	};
 
-	babelHelpers.createClass = (function () {
+	var babelHelpers_createClass = (function () {
 	  function defineProperties(target, props) {
 	    for (var i = 0; i < props.length; i++) {
 	      var descriptor = props[i];
@@ -30,7 +30,6 @@
 	  };
 	})();
 
-	babelHelpers;
 	var checkStatus = function checkStatus(response) {
 		if (response.status >= 200 && response.status < 300) {
 			return response;
@@ -58,7 +57,7 @@
 		function File(file) {
 			var _this = this;
 
-			babelHelpers.classCallCheck(this, File);
+			babelHelpers_classCallCheck(this, File);
 
 			var url = this.url = file.url;
 
@@ -73,12 +72,8 @@
 			this.sourceContent = m.prop('');
 			this.content = (function (store) {
 				var prop = function prop() {
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
-					}
-
-					if (args.length) {
-						store = args[0];
+					if (arguments.length) {
+						store = arguments[0];
 						_this.checkSyntax();
 					}
 					return store;
@@ -100,7 +95,7 @@
 			this.syntaxData = undefined;
 		}
 
-		babelHelpers.createClass(File, [{
+		babelHelpers_createClass(File, [{
 			key: 'apiUrl',
 			value: function apiUrl() {
 				return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
@@ -125,9 +120,6 @@
 			value: function save() {
 				var _this3 = this;
 
-				console.log(JSON.stringify({
-					content: this.content
-				}));
 				return fetch(this.apiUrl(), {
 					credentials: 'same-origin',
 					method: 'put',
@@ -141,7 +133,7 @@
 		}, {
 			key: 'del',
 			value: function del() {
-				return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus).then(toJSON);
+				return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus);
 			}
 		}, {
 			key: 'hasChanged',
@@ -211,7 +203,7 @@
 
 	var studyModel = (function () {
 		function studyModel(id) {
-			babelHelpers.classCallCheck(this, studyModel);
+			babelHelpers_classCallCheck(this, studyModel);
 
 			this.id = id;
 			this.files = m.prop([]);
@@ -219,7 +211,7 @@
 			this.error = false;
 		}
 
-		babelHelpers.createClass(studyModel, [{
+		babelHelpers_createClass(studyModel, [{
 			key: 'apiURL',
 			value: function apiURL() {
 				return baseUrl + '/files/' + this.id;
@@ -275,12 +267,12 @@
 	var pdfEditor = {
 		view: function view(ctrl, args) {
 			var file = args.file;
-			return m('div.', [m('object', {
+			return m('object', {
 				data: file.url,
 				type: 'application/pdf',
 				width: '100%',
 				height: '100%'
-			})]);
+			});
 		}
 	};
 
@@ -411,7 +403,7 @@
 			var arg = arguments[i];
 			if (!arg) continue;
 
-			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
 			if (argType === 'string' || argType === 'number') {
 				classes += ' ' + arg;
@@ -655,7 +647,7 @@
 				return !s || getPath(s).indexOf(path) !== 0;
 			};
 
-			return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+			return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
 		})])];
 
 		return errors.filter(function (err) {
@@ -799,7 +791,7 @@
 			return '<i class="text-muted">an empty string</i>';
 		}
 
-		switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+		switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
 			case 'string':
 				break;
 			case 'number':
@@ -909,10 +901,7 @@
 		view: function view() {
 			return m('.context-menu', {
 				class: classNames({ 'show-context-menu': contextMenuComponent.vm.show() }),
-				style: contextMenuComponent.vm.style(),
-				onclick: function onclick(e) {
-					return e.stopPropagation();
-				}
+				style: contextMenuComponent.vm.style()
 			}, contextMenuComponent.vm.menu().map(menuNode));
 		},
 
@@ -927,29 +916,132 @@
 					top: e.pageY + 'px'
 				});
 
-				document.addEventListener('click', onClick, false);
+				document.addEventListener('mousedown', onClick, false);
 				function onClick() {
-					m.startComputation();
 					contextMenuComponent.vm.show(false);
-					m.endComputation();
-					document.removeEventListener('click', onClick);
+					document.removeEventListener('mousedown', onClick);
+					m.redraw();
 				}
 			};
 		}
 	};
 
-	var menuNode = function menuNode(node) {
-		return node.separator ? m('.context-menu-separator') : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu }) }, [m('button.context-menu-btn', { onclick: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
+	var menuNode = function menuNode(node, key) {
+		return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
 	};
+
+	var messages = {
+		vm: { isOpen: false },
+
+		open: function open(type) {
+			var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+			var promise = new Promise(function (resolve, reject) {
+				messages.vm = { resolve: resolve, reject: reject, type: type, opts: opts, isOpen: true };
+			});
+			m.redraw();
+
+			return promise;
+		},
+
+		close: function close(response) {
+			var vm = messages.vm;
+			vm.isOpen = false;
+			if (typeof vm.resolve === 'function') vm.resolve(response);
+			m.redraw();
+		},
+
+		alert: function alert(opts) {
+			return messages.open('alert', opts);
+		},
+
+		confirm: function confirm(opts) {
+			return messages.open('confirm', opts);
+		},
+
+		prompt: function prompt(opts) {
+			return messages.open('prompt', opts);
+		},
+
+		view: function view() {
+			var vm = messages.vm;
+
+			// switch (vm.type) {
+			// 	case 'alert':
+			// 		return
+			// 	default:
+			// 		throw new Error(`unnknown message type ${vm.type}`);
+			// }
+
+			return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: messages.close.bind(null, null) }, [m('.card.col-sm-5', [m('.card-block', [messages.views[vm.type](vm.opts)])])])]]);
+		},
+
+		config: function config() {
+			return function (element, isInitialized, context) {
+				if (!isInitialized) {
+					(function () {
+						var handleKey = function handleKey(e) {
+							if (e.keyCode == 27) {
+								messages.close(null);
+							}
+						};
+
+						document.body.addEventListener('keyup', handleKey);
+
+						context.onunload = function () {
+							document.body.removeEventListener('keyup', handleKey);
+						};
+					})();
+				}
+			};
+		},
+
+		views: {
+			alert: function alert() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			},
+
+			confirm: function confirm() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			},
+
+			prompt: function prompt() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('input'), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			}
+		}
+
+	};
+
+	// download support according to modernizer
+	var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
 	var fileContext = function fileContext(file, study) {
 		var menu = [
 		//{icon:'fa-plus', text:'New File', action: () => study.create('new.js')},
 		{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
-				return alert('Duplicate');
-			} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: function action() {
-				alert('download');
-				return;
+				return messages.alert({ header: 'Duplicate: ' + file.name, content: 'Duplicate has not been implemented yet' });
+			} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
+		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
+		{ icon: 'fa-close', text: 'Delete', action: deleteFile }];
+		return contextMenuComponent.open(menu);
+
+		function downloadFile() {
+			if (downloadSupport) {
 				var link = document.createElement('a');
 				link.href = file.url;
 				link.download = file.name;
@@ -957,12 +1049,29 @@
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
-			} },
-		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-		{ icon: 'fa-close', text: 'Delete', action: function action() {
-				return study.del(file.id);
-			} }];
-		return contextMenuComponent.open(menu);
+			} else {
+				var win = window.open(file.url, '_blank');
+				win.focus();
+			}
+		}
+
+		function deleteFile() {
+			messages.confirm({
+				header: ['Delete ', m('small', file.name)],
+				content: 'Are you sure you want to delete this file? This action is permanent!'
+			}).then(function (ok) {
+				if (ok) return study.del(file.id);
+			}).then(m.redraw).catch(function (err) {
+				err.response.json().then(function (response) {
+					messages.alert({
+						header: 'Delete failed:',
+						content: response.message
+					});
+				});
+
+				return err;
+			});
+		} // end delete file
 	};
 
 	var filesComponent = {
@@ -988,7 +1097,7 @@
 			var file = _ref2.file;
 			var study = _ref2.study;
 
-			return m('li.file', {
+			return m('li.file-node', {
 				key: file.id,
 				class: classNames({
 					open: ctrl.isOpen
@@ -1038,15 +1147,14 @@
 			var study = new studyModel(m.route.param('studyID'));
 			var ctrl = { study: study };
 
-			m.startComputation();
-			study.get().then(m.endComputation);
+			study.get().then(m.redraw);
 
 			return ctrl;
 		},
 		view: function view(ctrl) {
 			var study = ctrl.study;
-			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [study.loaded ? m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent, study)]), m('.main.col-md-10', [m.component(fileEditorComponent, study)])]) : '']), m.component(contextMenuComponent) // register context menu
-			]);
+			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [study.loaded ? m('.row', [m('.sidebar.col-md-2', [m.component(sidebarComponent, study)]), m('.main.col-md-10', [m.component(fileEditorComponent, study)])]) : '']), m.component(contextMenuComponent), // register context menu
+			m.component(messages)]);
 		}
 	};
 

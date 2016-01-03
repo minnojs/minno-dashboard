@@ -21,7 +21,7 @@ let nodeComponent = {
 
 	},
 	view: (ctrl, {file, study}) => {
-		return m('li.file',
+		return m('li.file-node',
 			{
 				key: file.id,
 				class: classNames({

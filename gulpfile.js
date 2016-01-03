@@ -3,7 +3,8 @@ var gulp       = require('gulp'),
 	plumber	   = require('gulp-plumber'),
 	rollup     = require('gulp-rollup'),
 	babel      = require('rollup-plugin-babel'),
-	sourcemaps = require('gulp-sourcemaps');
+	sourcemaps = require('gulp-sourcemaps'),
+	supervisor = require('gulp-supervisor');
 
 //var debug = require('gulp-debug');
 
@@ -23,6 +24,7 @@ gulp.task('bundle', function(){
 		.pipe(gulp.dest('dist'));
 });
 
+
 gulp.task('css', function(){
 	var sass = require('gulp-sass');
 
@@ -35,4 +37,8 @@ gulp.task('css', function(){
 
 gulp.task('watch', function () {
 	gulp.watch('src/**/*', ['bundle','css']);
+});
+
+gulp.task('serve', function(){
+	supervisor('fixtures.js', {watch:['fixtures.js']});
 });

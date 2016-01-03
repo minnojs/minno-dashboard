@@ -66,9 +66,6 @@ class File {
 	}
 
 	save(){
-		console.log(JSON.stringify({
-				content: this.content
-			}));
 		return fetch(this.apiUrl(), {
 			credentials: 'same-origin',
 			method:'put',
@@ -85,8 +82,7 @@ class File {
 
 	del(){
 		return fetch(this.apiUrl(), {method:'delete',credentials: 'same-origin'})
-			.then(checkStatus)
-			.then(toJSON);
+			.then(checkStatus);
 	}
 
 

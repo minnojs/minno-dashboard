@@ -219,15 +219,16 @@ body {
   padding-left: 0;
   min-width: 100%; }
 
-.files li.file {
+.files li.file-node {
   display: block;
   margin: 0;
   padding: 0;
   list-style-type: none;
   list-style-image: none;
   white-space: nowrap;
-  cursor: pointer; }
-  .files li.file .wholerow {
+  cursor: pointer;
+  height: 24px; }
+  .files li.file-node .wholerow {
     width: 100%;
     position: absolute;
     left: 0;
@@ -236,11 +237,11 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    .files li.file .wholerow.current {
+    .files li.file-node .wholerow.current {
       background: #eef2f3;
       background: -webkit-linear-gradient(top, #eef2f3 0, #8e9eab 100%);
       background: linear-gradient(to bottom, #eef2f3 0, #8e9eab 100%); }
-  .files li.file a {
+  .files li.file-node a {
     display: inline-block;
     color: black;
     white-space: nowrap;
@@ -248,22 +249,43 @@ body {
     margin: 0;
     vertical-align: top;
     position: relative; }
-    .files li.file a:focus {
+    .files li.file-node a:focus {
       outline: 0; }
-    .files li.file a:hover, .files li.file a:visited, .files li.file a:active, .files li.file a:link {
+    .files li.file-node a:hover, .files li.file-node a:visited, .files li.file-node a:active, .files li.file-node a:link {
       text-decoration: none;
       color: inherit; }
-  .files li.file i {
+  .files li.file-node i {
     display: inline-block;
     text-decoration: none;
     margin: 0;
     padding: 0;
     vertical-align: text-bottom;
     text-align: center; }
-    .files li.file i :empty {
+    .files li.file-node i :empty {
       display: inline-block;
       text-decoration: none;
       margin: 0;
       padding: 0;
       vertical-align: top;
       text-align: center; }
+
+.messages .overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1040;
+  background-color: #000;
+  opacity: .5; }
+
+.messages .messages-wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; }

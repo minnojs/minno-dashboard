@@ -12,7 +12,7 @@ $files-row-height:    24px;
     min-width:100%;
   }
 
-  li.file {
+  li.file-node {
     display:block;
     margin:0;
     padding:0;
@@ -20,6 +20,7 @@ $files-row-height:    24px;
     list-style-image:none;
     white-space:nowrap;
     cursor:pointer;
+    height: $files-row-height;
 
     .wholerow {
       width:100%;

@@ -28,8 +28,7 @@ let contextMenuComponent = {
 			'.context-menu',
 			{
 				class: classNames({'show-context-menu': contextMenuComponent.vm.show()}),
-				style: contextMenuComponent.vm.style(),
-				onclick: e => e.stopPropagation()
+				style: contextMenuComponent.vm.style()
 			},
 			contextMenuComponent.vm.menu().map(menuNode)
 		);
@@ -45,21 +44,20 @@ let contextMenuComponent = {
 			top:e.pageY + 'px'
 		});
 
-		document.addEventListener('click', onClick, false);
+		document.addEventListener('mousedown', onClick, false);
 		function onClick(){
-			m.startComputation();
 			contextMenuComponent.vm.show(false);
-			m.endComputation();
-			document.removeEventListener('click', onClick);
+			document.removeEventListener('mousedown', onClick);
+			m.redraw();
 		}
 	}
 };
 
-let menuNode = node => {
+let menuNode = (node, key) => {
 	return node.separator
-		? m('.context-menu-separator')
-		: m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu})}, [
-			m('button.context-menu-btn',{onclick:node.disabled || node.action}, [
+		? m('.context-menu-separator', {key:key})
+		: m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu, key: key})}, [
+			m('button.context-menu-btn',{onmousedown: node.disabled || node.action}, [
 				m('i.fa', {class:node.icon}),
 				m('span.context-menu-text', node.text)
 			]),

@@ -3,16 +3,16 @@ import studyModel from './studyModel';
 import editorComponent from './editorComponent';
 import sidebarComponent from './sidebarComponent';
 import contextMenu from '../contextMenuComponent';
+import messages from '../messagesComponent';
 
 let editorLayoutComponent = {
 	controller: ()=>{
 		let study = new studyModel(m.route.param('studyID'));
 		let ctrl = {study};
 
-		m.startComputation();
 		study
 			.get()
-			.then(m.endComputation);
+			.then(m.redraw);
 
 		return ctrl;
 	},
@@ -43,7 +43,8 @@ let editorLayoutComponent = {
 					''
 			]),
 
-			m.component(contextMenu) // register context menu
+			m.component(contextMenu), // register context menu
+			m.component(messages)
 		]);
 	}
 };
