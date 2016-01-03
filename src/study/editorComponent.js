@@ -1,6 +1,7 @@
 import fullHeight from './fullHeight';
 import jsEditor from './editors/jsEditor';
 import jstEditor from './editors/jstEditor';
+import xmlEditor from './editors/xmlEditor';
 import imgEditor from './editors/imgEditor';
 import pdfEditor from './editors/pdfEditor';
 
@@ -13,6 +14,7 @@ let editors = {
 	png: imgEditor,
 	html: jstEditor,
 	jst: jstEditor,
+	xml: xmlEditor,
 	pdf: pdfEditor
 };
 

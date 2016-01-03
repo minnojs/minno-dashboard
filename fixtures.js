@@ -48,6 +48,10 @@ var files = isMac
 		{
 			id: 'example.js',
 			url: '/test/example.js'
+		},
+		{
+			id: 'exp.xml',
+			url: '/test/exp.xml'
 		}
 	]
 	: [

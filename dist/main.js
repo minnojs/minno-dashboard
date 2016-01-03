@@ -421,6 +421,20 @@
 		return classes.substr(1);
 	}
 
+	var xmlEditor = {
+		controller: function controller(args) {
+			return {
+				file: args.file,
+				activeTab: m.prop('edit')
+			};
+		},
+		view: function view(ctrl) {
+			var file = ctrl.file;
+			var activeTab = ctrl.activeTab;
+			return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a.nav-link.disabled', 'Syntax')]), m('li.nav-item', [m('a.nav-link.disabled', 'Vaildate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file, settings: { mode: 'xml' } }) : ''])]);
+		}
+	};
+
 	var jsEditor$1 = {
 		controller: function controller(args) {
 			return {
@@ -853,6 +867,7 @@
 		png: imgEditor,
 		html: jsEditor$1,
 		jst: jsEditor$1,
+		xml: xmlEditor,
 		pdf: pdfEditor
 	};
 
