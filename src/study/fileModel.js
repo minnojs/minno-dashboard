@@ -1,4 +1,4 @@
-import {toJSON, checkStatus} from './modelHelpers';
+import {toJSON, catchJSON, checkStatus} from './modelHelpers';
 export default File;
 let baseUrl = '/dashboard/dashboard';
 
@@ -74,10 +74,10 @@ class File {
 			})
 		})
 			.then(checkStatus)
-			.then(toJSON)
 			.then(()=>{
 				this.sourceContent(this.content()); // update source content
-			});
+			})
+			.catch(catchJSON);
 	}
 
 	del(){

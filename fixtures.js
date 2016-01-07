@@ -97,8 +97,8 @@ router.route('/files/:studyID/file/:id')
 			res.json(file);
 		}
 	})
-	.put((req)=>{
-		console.log('saved ' + req.params.id);
+	.put((req, res)=>{
+		res.status(403);
 	})
 	.delete((req,res)=>{
 		if (files.some(f => f.id == req.params.id && f.noDel)) {

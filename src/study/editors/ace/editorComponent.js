@@ -1,3 +1,4 @@
+import messages from '../../../messagesComponent';
 import aceComponent from './aceComponent';
 export default editorPage;
 
@@ -10,7 +11,8 @@ var editorPage = {
 		var ctrl = {
 			file: file,
 			content:file.content,
-			play: play
+			play: play,
+			save: save
 		};
 
 		return ctrl;
@@ -31,7 +33,13 @@ var editorPage = {
 				playground.activate(file);
 				playground.focus();
 			};
+		}
 
+		function save(){
+			file.save().catch(err => messages.alert({
+				header: 'Error Saving:',
+				content: err.message
+			}));
 		}
 	},
 
@@ -59,7 +67,7 @@ var editorPage = {
 									])
 									:
 									'',
-								m('a.btn.btn-secondary', {onclick: file.save.bind(file)},[
+								m('a.btn.btn-secondary', {onclick: ctrl.save},[
 									m('strong.fa.fa-save')
 								])
 							])

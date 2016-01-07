@@ -45,7 +45,7 @@
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 
-		<div class="container" ng-app>
+		<div class="container" id="manager">
 			<img class="pi-spinner" ng-hide="1"/>
 			<div id="task"></div>
 			<div pi-console></div>
@@ -70,44 +70,42 @@
 		});
 
 		window.activate = function(file){
-			var contents = file.content();
 			var name = file.url;
-			var commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg;
-			var scriptTypeRegExp = /['|"](quest|pip|manager)API['|"]/;
 			var element = document.getElementById('task');
 
-			// @TODO: change method to support yoavs thingie expanssions.
-			var typeMatch = contents.replace(commentRegExp,'').match(scriptTypeRegExp);
-
-			if (!typeMatch) {
-				throw new Error('Unknow task type');
-			}
-
-			var type = typeMatch[1];
-
-			switch (type) {
-			case 'quest' :
-				element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:name}));
-				break;
-			case 'pip' :
-				element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name}));
-				break;
-			case 'manager' :
-				element.setAttribute('pi-manager', JSON.stringify(name));
-				break;
-			default:
-				throw new Error('Unknow task type: ' + type);
-			}
-
-			file.define(window).then(() => {
-				require(['pibootstrap'], function(){
-					require([name], function(script){
-						script.settings || (script.settings = {});
-						script.settings.onEnd = window.close;
-						script.settings.hooks = {endTask:window.close};
+			new Promise((resolve,reject) => require(['pibootstrap'], resolve, reject))
+				.then(() => file.require(window))
+				.then(script => {
+					var type = String(script.type).toLowerCase();
+					switch (type) {
+					case 'quest' :
+						element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:name}));
+						break;
+					case 'pip' :
+						element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name}));
+						break;
+					case 'manager' :
+						element.setAttribute('pi-manager', JSON.stringify(name));
+						break;
+					default:
+						throw new Error('Unknow task type: ' + script.type);
+					}
+					return script;
+				})
+				.then(script => {
+					script.settings || (script.settings = {});
+					script.settings.onEnd = window.close;
+					script.settings.hooks = {endTask:window.close};
+				})
+				.then(() => {
+					require(['angular','app'], function(angular, app) {
+						angular.element(document).ready(function() {
+							var el = document.getElementById('manager');
+							angular.bootstrap(el, [app.name]);
+						});
 					});
 				});
-			});
+
 		};
 	</script>
 

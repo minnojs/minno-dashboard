@@ -9,3 +9,7 @@ export let checkStatus = response => {
 };
 
 export let toJSON = response => response.json();
+
+export let catchJSON = err => err.response.json()
+	.then(json => Promise.reject(json))
+	.catch(() => Promise.reject(err));

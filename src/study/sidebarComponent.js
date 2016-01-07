@@ -1,10 +1,9 @@
-import fullHeight from './fullHeight';
 import filesComponent from './sidebar/filesComponent';
 export default sidebarComponent;
 
 let sidebarComponent = {
 	view: (ctrl , study) => {
-		return m('.editor-sidebar', {config:fullHeight}, [
+		return m('.editor-sidebar', [
 			m('h5', [
 				study.id
 			]),

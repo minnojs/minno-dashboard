@@ -2,17 +2,17 @@
 
 	var babelHelpers = {};
 
-	function babelHelpers_typeof (obj) {
+	babelHelpers.typeof = function (obj) {
 	  return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
 	};
 
-	function babelHelpers_classCallCheck (instance, Constructor) {
+	babelHelpers.classCallCheck = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
 	    throw new TypeError("Cannot call a class as a function");
 	  }
 	};
 
-	var babelHelpers_createClass = (function () {
+	babelHelpers.createClass = (function () {
 	  function defineProperties(target, props) {
 	    for (var i = 0; i < props.length; i++) {
 	      var descriptor = props[i];
@@ -30,6 +30,7 @@
 	  };
 	})();
 
+	babelHelpers;
 	var checkStatus = function checkStatus(response) {
 		if (response.status >= 200 && response.status < 300) {
 			return response;
@@ -42,6 +43,14 @@
 
 	var toJSON = function toJSON(response) {
 		return response.json();
+	};
+
+	var catchJSON = function catchJSON(err) {
+		return err.response.json().then(function (json) {
+			return Promise.reject(json);
+		}).catch(function () {
+			return Promise.reject(err);
+		});
 	};
 
 	var baseUrl$1 = '/dashboard/dashboard';
@@ -57,7 +66,7 @@
 		function File(file) {
 			var _this = this;
 
-			babelHelpers_classCallCheck(this, File);
+			babelHelpers.classCallCheck(this, File);
 
 			var url = this.url = file.url;
 
@@ -72,8 +81,12 @@
 			this.sourceContent = m.prop('');
 			this.content = (function (store) {
 				var prop = function prop() {
-					if (arguments.length) {
-						store = arguments[0];
+					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+						args[_key] = arguments[_key];
+					}
+
+					if (args.length) {
+						store = args[0];
 						_this.checkSyntax();
 					}
 					return store;
@@ -95,7 +108,7 @@
 			this.syntaxData = undefined;
 		}
 
-		babelHelpers_createClass(File, [{
+		babelHelpers.createClass(File, [{
 			key: 'apiUrl',
 			value: function apiUrl() {
 				return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
@@ -126,9 +139,9 @@
 					body: JSON.stringify({
 						content: this.content
 					})
-				}).then(checkStatus).then(toJSON).then(function () {
+				}).then(checkStatus).then(function () {
 					_this3.sourceContent(_this3.content()); // update source content
-				});
+				}).catch(catchJSON);
 			}
 		}, {
 			key: 'del',
@@ -203,7 +216,7 @@
 
 	var studyModel = (function () {
 		function studyModel(id) {
-			babelHelpers_classCallCheck(this, studyModel);
+			babelHelpers.classCallCheck(this, studyModel);
 
 			this.id = id;
 			this.files = m.prop([]);
@@ -211,7 +224,7 @@
 			this.error = false;
 		}
 
-		babelHelpers_createClass(studyModel, [{
+		babelHelpers.createClass(studyModel, [{
 			key: 'apiURL',
 			value: function apiURL() {
 				return baseUrl + '/files/' + this.id;
@@ -274,6 +287,103 @@
 				height: '100%'
 			});
 		}
+	};
+
+	var messages = {
+		vm: { isOpen: false },
+
+		open: function open(type) {
+			var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+			var promise = new Promise(function (resolve, reject) {
+				messages.vm = { resolve: resolve, reject: reject, type: type, opts: opts, isOpen: true };
+			});
+			m.redraw();
+
+			return promise;
+		},
+
+		close: function close(response) {
+			var vm = messages.vm;
+			vm.isOpen = false;
+			if (typeof vm.resolve === 'function') vm.resolve(response);
+			m.redraw();
+		},
+
+		alert: function alert(opts) {
+			return messages.open('alert', opts);
+		},
+
+		confirm: function confirm(opts) {
+			return messages.open('confirm', opts);
+		},
+
+		prompt: function prompt(opts) {
+			return messages.open('prompt', opts);
+		},
+
+		view: function view() {
+			var vm = messages.vm;
+
+			// switch (vm.type) {
+			// 	case 'alert':
+			// 		return
+			// 	default:
+			// 		throw new Error(`unnknown message type ${vm.type}`);
+			// }
+
+			return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: messages.close.bind(null, null) }, [m('.card.col-sm-5', [m('.card-block', [messages.views[vm.type](vm.opts)])])])]]);
+		},
+
+		config: function config() {
+			return function (element, isInitialized, context) {
+				if (!isInitialized) {
+					(function () {
+						var handleKey = function handleKey(e) {
+							if (e.keyCode == 27) {
+								messages.close(null);
+							}
+						};
+
+						document.body.addEventListener('keyup', handleKey);
+
+						context.onunload = function () {
+							document.body.removeEventListener('keyup', handleKey);
+						};
+					})();
+				}
+			};
+		},
+
+		views: {
+			alert: function alert() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			},
+
+			confirm: function confirm() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			},
+
+			prompt: function prompt() {
+				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+				var close = function close(response) {
+					return messages.close.bind(null, response);
+				};
+				return [m('h4', opts.header), m('p.card-text', opts.content), m('input'), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+			}
+		}
+
 	};
 
 	var fullHeight = function fullHeight(element, isInitialized, ctx) {
@@ -362,7 +472,8 @@
 			var ctrl = {
 				file: file,
 				content: file.content,
-				play: play
+				play: play,
+				save: save
 			};
 
 			return ctrl;
@@ -384,11 +495,20 @@
 					playground.focus();
 				};
 			}
+
+			function save() {
+				file.save().catch(function (err) {
+					return messages.alert({
+						header: 'Error Saving:',
+						content: err.message
+					});
+				});
+			}
 		},
 
 		view: function view(ctrl, args) {
 			var file = ctrl.file;
-			return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: file.save.bind(file) }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
+			return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
 		}
 	};
 
@@ -403,7 +523,7 @@
 			var arg = arguments[i];
 			if (!arg) continue;
 
-			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+			var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
 
 			if (argType === 'string' || argType === 'number') {
 				classes += ' ' + arg;
@@ -661,7 +781,7 @@
 				return !s || getPath(s).indexOf(path) !== 0;
 			};
 
-			return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+			return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
 		})])];
 
 		return errors.filter(function (err) {
@@ -805,7 +925,7 @@
 			return '<i class="text-muted">an empty string</i>';
 		}
 
-		switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+		switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
 			case 'string':
 				break;
 			case 'number':
@@ -945,103 +1065,6 @@
 		return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
 	};
 
-	var messages = {
-		vm: { isOpen: false },
-
-		open: function open(type) {
-			var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-			var promise = new Promise(function (resolve, reject) {
-				messages.vm = { resolve: resolve, reject: reject, type: type, opts: opts, isOpen: true };
-			});
-			m.redraw();
-
-			return promise;
-		},
-
-		close: function close(response) {
-			var vm = messages.vm;
-			vm.isOpen = false;
-			if (typeof vm.resolve === 'function') vm.resolve(response);
-			m.redraw();
-		},
-
-		alert: function alert(opts) {
-			return messages.open('alert', opts);
-		},
-
-		confirm: function confirm(opts) {
-			return messages.open('confirm', opts);
-		},
-
-		prompt: function prompt(opts) {
-			return messages.open('prompt', opts);
-		},
-
-		view: function view() {
-			var vm = messages.vm;
-
-			// switch (vm.type) {
-			// 	case 'alert':
-			// 		return
-			// 	default:
-			// 		throw new Error(`unnknown message type ${vm.type}`);
-			// }
-
-			return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: messages.close.bind(null, null) }, [m('.card.col-sm-5', [m('.card-block', [messages.views[vm.type](vm.opts)])])])]]);
-		},
-
-		config: function config() {
-			return function (element, isInitialized, context) {
-				if (!isInitialized) {
-					(function () {
-						var handleKey = function handleKey(e) {
-							if (e.keyCode == 27) {
-								messages.close(null);
-							}
-						};
-
-						document.body.addEventListener('keyup', handleKey);
-
-						context.onunload = function () {
-							document.body.removeEventListener('keyup', handleKey);
-						};
-					})();
-				}
-			};
-		},
-
-		views: {
-			alert: function alert() {
-				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-				var close = function close(response) {
-					return messages.close.bind(null, response);
-				};
-				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-			},
-
-			confirm: function confirm() {
-				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-				var close = function close(response) {
-					return messages.close.bind(null, response);
-				};
-				return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-			},
-
-			prompt: function prompt() {
-				var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-				var close = function close(response) {
-					return messages.close.bind(null, response);
-				};
-				return [m('h4', opts.header), m('p.card-text', opts.content), m('input'), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-			}
-		}
-
-	};
-
 	// download support according to modernizer
 	var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1153,7 +1176,7 @@
 
 	var sidebarComponent = {
 		view: function view(ctrl, study) {
-			return m('.editor-sidebar', { config: fullHeight }, [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
+			return m('.editor-sidebar', [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
 		}
 	};
 
