@@ -108,10 +108,26 @@ router.route('/files/:studyID/file/:id')
 	});
 
 
+var adminRouter = express.Router();
+adminRouter.route('/studyData')
+	.post((req,res)=> {
+		var data = [];
+		for (var i=0; i<10; i++){
+			data.push({
+				studyId:(0|Math.random()*9e6).toString(36),
+				studyUrl:(0|Math.random()*9e6).toString(36),
+				rulesUrl:(0|Math.random()*9e6).toString(36),
+				creationDate:new Date() * Math.random(),
+				studyStatus: Math.random()>0.5?'R':'P'
+			});
+		}
+		res.json(data);
+	});
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
+app.use('/admin', adminRouter);
 app.use(express.static('..'));
 
 // START THE SERVER
