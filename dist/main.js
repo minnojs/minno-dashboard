@@ -1180,12 +1180,17 @@
 		}
 	};
 
+	var study = undefined;
+
 	var editorLayoutComponent = {
 		controller: function controller() {
-			var study = new studyModel(m.route.param('studyID'));
-			var ctrl = { study: study };
+			var id = m.route.param('studyID');
+			if (!study || study.id !== id) {
+				study = new studyModel(id);
+				study.get().then(m.redraw);
+			}
 
-			study.get().then(m.redraw);
+			var ctrl = { study: study };
 
 			return ctrl;
 		},

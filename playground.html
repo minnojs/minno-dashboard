@@ -17,6 +17,8 @@
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 		<link rel="icon" href="/favicon.ico">
 
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.0.2/es6-promise.min.js"></script>
+
 		<style type="text/css">
 			.container {padding-top: 15px;}
 
@@ -41,7 +43,7 @@
 	</head>
 
 	<body>
-		<!--[if lt IE 7]>
+		<!--[if lt IE 10]>
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 
@@ -73,9 +75,9 @@
 			var name = file.url;
 			var element = document.getElementById('task');
 
-			new Promise((resolve,reject) => require(['pibootstrap'], resolve, reject))
-				.then(() => file.require(window))
-				.then(script => {
+			new Promise(function(resolve,reject) {require(['pibootstrap'], resolve, reject);})
+				.then(function() {file.require(window);})
+				.then(function(script){
 					var type = String(script.type).toLowerCase();
 					switch (type) {
 					case 'quest' :
@@ -92,12 +94,12 @@
 					}
 					return script;
 				})
-				.then(script => {
+				.then(function(script){
 					script.settings || (script.settings = {});
 					script.settings.onEnd = window.close;
 					script.settings.hooks = {endTask:window.close};
 				})
-				.then(() => {
+				.then(function(){
 					require(['angular','app'], function(angular, app) {
 						angular.element(document).ready(function() {
 							var el = document.getElementById('manager');

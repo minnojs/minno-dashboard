@@ -5,14 +5,19 @@ import sidebarComponent from './sidebarComponent';
 import contextMenu from '../contextMenuComponent';
 import messages from '../messagesComponent';
 
+let study;
+
 let editorLayoutComponent = {
 	controller: ()=>{
-		let study = new studyModel(m.route.param('studyID'));
-		let ctrl = {study};
+		let id = m.route.param('studyID');
+		if (!study || (study.id !== id)){
+			study = new studyModel(id);
+			study
+				.get()
+				.then(m.redraw);
+		}
 
-		study
-			.get()
-			.then(m.redraw);
+		let ctrl = {study};
 
 		return ctrl;
 	},
