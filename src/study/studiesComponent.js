@@ -1,4 +1,4 @@
-import {toJSON, checkStatus} from './study/modelHelpers';
+import {toJSON, checkStatus} from './modelHelpers';
 export default mainComponent;
 
 var mainComponent = {
@@ -20,7 +20,7 @@ var mainComponent = {
 	},
 	view: ctrl => {
 		return m('.container', [
-			m('h2', 'My studies'),
+			m('h3', 'My studies'),
 			!ctrl.loaded
 				?
 				m('.loader')

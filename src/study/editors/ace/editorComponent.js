@@ -6,7 +6,7 @@ var editorPage = {
 	controller: function(args){
 		var file = args.file;
 
-		file.get().then(m.redraw);
+		file.loaded || file.get().then(m.redraw);
 
 		var ctrl = {
 			file: file,
