@@ -1,7 +1,7 @@
 export default editorLayoutComponent;
 import studyModel from './studyModel';
 import editorComponent from './editorComponent';
-import sidebarComponent from './sidebarComponent';
+import sidebarComponent from './sidebar/sidebarComponent';
 
 let study;
 

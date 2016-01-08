@@ -82,7 +82,7 @@ router.route('/files/:studyID')
 
 router.route('/files/:studyID/file')
 	.post((req,res)=>{
-		res.json({id:Math.random(), url:'/test/new.js'});
+		res.json({id: req.body.name, url:`/test/${req.body.name}`});
 	});
 
 router.route('/files/:studyID/file/:id')

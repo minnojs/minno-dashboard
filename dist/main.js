@@ -2,35 +2,10 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers.classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  babelHelpers.createClass = (function () {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    return function (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  })();
-
-  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -42,7 +17,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -144,7 +119,7 @@
   	function File(file) {
   		var _this = this;
 
-  		babelHelpers.classCallCheck(this, File);
+  		babelHelpers_classCallCheck(this, File);
 
   		var url = this.url = file.url;
 
@@ -159,12 +134,8 @@
   		this.sourceContent = m.prop('');
   		this.content = (function (store) {
   			var prop = function prop() {
-  				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  					args[_key] = arguments[_key];
-  				}
-
-  				if (args.length) {
-  					store = args[0];
+  				if (arguments.length) {
+  					store = arguments[0];
   					_this.checkSyntax();
   				}
   				return store;
@@ -186,7 +157,7 @@
   		this.syntaxData = undefined;
   	}
 
-  	babelHelpers.createClass(File, [{
+  	babelHelpers_createClass(File, [{
   		key: 'apiUrl',
   		value: function apiUrl() {
   			return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
@@ -214,6 +185,10 @@
   			return fetch(this.apiUrl(), {
   				credentials: 'same-origin',
   				method: 'put',
+  				headers: {
+  					'Accept': 'application/json',
+  					'Content-Type': 'application/json'
+  				},
   				body: JSON.stringify({
   					content: this.content
   				})
@@ -294,7 +269,7 @@
 
   var studyModel = (function () {
   	function studyModel(id) {
-  		babelHelpers.classCallCheck(this, studyModel);
+  		babelHelpers_classCallCheck(this, studyModel);
 
   		this.id = id;
   		this.files = m.prop([]);
@@ -302,7 +277,7 @@
   		this.error = false;
   	}
 
-  	babelHelpers.createClass(studyModel, [{
+  	babelHelpers_createClass(studyModel, [{
   		key: 'apiURL',
   		value: function apiURL() {
   			return baseUrl + '/files/' + this.id;
@@ -332,12 +307,22 @@
   		}
   	}, {
   		key: 'create',
-  		value: function create(fileName) {
+  		value: function create(name) {
   			var _this2 = this;
 
-  			return fetch(this.apiURL() + '/file', { method: 'post', credentials: 'same-origin', data: { name: fileName } }).then(checkStatus).then(toJSON).then(function (response) {
+  			var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+  			return fetch(this.apiURL() + '/file', {
+  				method: 'post',
+  				credentials: 'same-origin',
+  				body: JSON.stringify({ name: name, content: content }),
+  				headers: {
+  					'Accept': 'application/json',
+  					'Content-Type': 'application/json'
+  				}
+  			}).then(checkStatus).then(toJSON).then(function (response) {
   				_this2.files().push(new File(response));
-  			});
+  			}).catch(catchJSON);
   		}
   	}, {
   		key: 'del',
@@ -366,6 +351,8 @@
   		});
   	}
   };
+
+  var noop = function noop() {};
 
   var messages = {
   	vm: { isOpen: false },
@@ -402,15 +389,11 @@
 
   	view: function view() {
   		var vm = messages.vm;
-
-  		// switch (vm.type) {
-  		// 	case 'alert':
-  		// 		return
-  		// 	default:
-  		// 		throw new Error(`unnknown message type ${vm.type}`);
-  		// }
-
-  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: messages.close.bind(null, null) }, [m('.card.col-sm-5', [m('.card-block', [messages.views[vm.type](vm.opts)])])])]]);
+  		var close = messages.close.bind(null, null);
+  		var stopPropagation = function stopPropagation(e) {
+  			return e.stopPropagation();
+  		};
+  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: close }, [m('.card.col-sm-5', [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
   	},
 
   	config: function config() {
@@ -452,16 +435,21 @@
   			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		},
 
+  		/**
+     * Promise prompt(Object opts{header: String, content: String, name: Prop})
+     *
+     * where:
+     *   any Prop(any value)
+     */
   		prompt: function prompt() {
   			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('input'), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.input-group', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })]), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		}
   	}
-
   };
 
   var fullHeight = function fullHeight(element, isInitialized, ctx) {
@@ -480,7 +468,7 @@
   	}
   };
 
-  var noop = function noop() {};
+  var noop$1 = function noop() {};
 
   var aceComponent = {
   	controller: function controller(args) {
@@ -529,7 +517,7 @@
   					commands.addCommand({
   						name: 'save',
   						bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
-  						exec: ctrl.onSave || noop
+  						exec: ctrl.onSave || noop$1
   					});
 
   					editor.setValue(content());
@@ -830,7 +818,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -974,7 +962,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -1224,8 +1212,32 @@
   };
 
   var sidebarComponent = {
+  	controller: function controller(study) {
+  		return {
+  			create: create
+  		};
+
+  		function create() {
+  			var name = m.prop();
+
+  			messages.prompt({
+  				header: 'Create file',
+  				content: 'Please insert the file name:',
+  				prop: name
+  			}).then(function (response) {
+  				if (response) {
+  					study.create(name()).then(m.redraw).catch(function (response) {
+  						return messages.alert({
+  							heaser: 'Failed to create file:',
+  							content: response.message
+  						});
+  					});
+  				}
+  			});
+  		}
+  	},
   	view: function view(ctrl, study) {
-  		return m('.editor-sidebar', [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
+  		return m('.editor-sidebar', [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', { onclick: ctrl.create }, [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
   	}
   };
 

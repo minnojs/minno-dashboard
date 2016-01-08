@@ -1,4 +1,4 @@
-import {toJSON, checkStatus} from './modelHelpers';
+import {toJSON, catchJSON, checkStatus} from './modelHelpers';
 import File from './fileModel';
 export default studyModel;
 
@@ -37,13 +37,23 @@ class studyModel {
 		return this.files().find(file => file.id === id);
 	}
 
-	create(fileName){
-		return fetch(this.apiURL() + '/file', {method:'post', credentials: 'same-origin', data: {name: fileName}})
+	create(name, content=''){
+
+		return fetch(this.apiURL() + '/file', {
+			method:'post',
+			credentials: 'same-origin',
+			body: JSON.stringify({name, content}),
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			}
+		})
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
 				this.files().push(new File(response));
-			});
+			})
+			.catch(catchJSON);
 	}
 
 	del(fileId){

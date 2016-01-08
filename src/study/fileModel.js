@@ -69,6 +69,10 @@ class File {
 		return fetch(this.apiUrl(), {
 			credentials: 'same-origin',
 			method:'put',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
 			body: JSON.stringify({
 				content: this.content
 			})

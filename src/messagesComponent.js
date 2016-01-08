@@ -1,5 +1,7 @@
 export default messages;
 
+let noop = ()=>{};
+
 let messages = {
 	vm: {isOpen: false},
 
@@ -33,22 +35,16 @@ let messages = {
 
 	view: () => {
 		let vm = messages.vm;
-
-		// switch (vm.type) {
-		// 	case 'alert':
-		// 		return
-		// 	default:
-		// 		throw new Error(`unnknown message type ${vm.type}`);
-		// }
-
+		let close = messages.close.bind(null, null);
+		let stopPropagation = e => e.stopPropagation();
 		return m('.messages', [
 			!vm || !vm.isOpen
 				? ''
 				:[
 					m('.overlay', {config:messages.config()}),
-					m('.messages-wrapper', {onclick:messages.close.bind(null, null)}, [
+					m('.messages-wrapper', {onclick:close}, [
 						m('.card.col-sm-5',[
-							m('.card-block',[
+							m('.card-block', {onclick: stopPropagation}, [
 								messages.views[vm.type](vm.opts)
 							])
 						])
@@ -100,12 +96,20 @@ let messages = {
 			];
 		},
 
+		/**
+		 * Promise prompt(Object opts{header: String, content: String, name: Prop})
+		 *
+		 * where:
+		 *   any Prop(any value)
+		 */
 		prompt: (opts={}) => {
 			let close = response => messages.close.bind(null, response);
 			return [
 				m('h4', opts.header),
 				m('p.card-text', opts.content),
-				m('input'),
+				m('.input-group', [
+					m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
+				]),
 				m('.text-xs-right',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
 					m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
@@ -113,6 +117,4 @@ let messages = {
 			];
 		}
 	}
-
-
 };
