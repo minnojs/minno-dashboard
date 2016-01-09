@@ -107,8 +107,10 @@ let messages = {
 			return [
 				m('h4', opts.header),
 				m('p.card-text', opts.content),
-				m('.input-group', [
-					m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
+				m('.card-block', [
+					m('.input-group', [
+						m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
+					])
 				]),
 				m('.text-xs-right',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),

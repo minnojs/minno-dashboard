@@ -2,35 +2,10 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers.classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  babelHelpers.createClass = (function () {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    return function (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  })();
-
-  babelHelpers;
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -109,139 +84,76 @@
    * }
    */
 
-  var File = (function () {
-  	function File(file) {
+  var filePrototype = {
+  	apiUrl: function apiUrl() {
+  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
+  	},
+  	get: function get() {
   		var _this = this;
 
-  		babelHelpers.classCallCheck(this, File);
+  		return fetch(this.apiUrl(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (response) {
+  			_this.sourceContent(response.content);
+  			_this.content(response.content);
+  			_this.loaded = true;
+  		}).catch(function (reason) {
+  			_this.loaded = true;
+  			_this.error = true;
+  			return Promise.reject(reason); // do not swallow error
+  		});
+  	},
+  	save: function save() {
+  		var _this2 = this;
 
-  		var url = this.url = file.url;
+  		return fetch(this.apiUrl(), {
+  			credentials: 'same-origin',
+  			method: 'put',
+  			headers: {
+  				'Accept': 'application/json',
+  				'Content-Type': 'application/json'
+  			},
+  			body: JSON.stringify({
+  				content: this.content
+  			})
+  		}).then(checkStatus).then(function () {
+  			_this2.sourceContent(_this2.content()); // update source content
+  		}).catch(catchJSON);
+  	},
+  	del: function del() {
+  		return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus);
+  	},
+  	hasChanged: function hasChanged() {
+  		return this.sourceContent() === this.content();
+  	},
+  	define: function define() {
+  		var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
 
-  		this.studyID = file.studyID;
-  		this.isDir = file.isDir;
-  		this.name = url.substring(url.lastIndexOf('/') + 1);
-  		this.type = url.substring(url.lastIndexOf('.') + 1);
-  		this.id = file.id;
-  		this.id = this.name;
+  		var requirejs = context.requirejs;
+  		var name = this.url;
+  		var content = this.content();
 
-  		// keep track of file content
-  		this.sourceContent = m.prop('');
-  		this.content = (function (store) {
-  			var prop = function prop() {
-  				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  					args[_key] = arguments[_key];
-  				}
+  		return new Promise(function (resolve) {
+  			requirejs.undef(name);
+  			context.eval(content.replace('define(', 'define(\'' + name + '\','));
+  			resolve();
+  		});
+  	},
+  	require: function require() {
+  		var _this3 = this;
 
-  				if (args.length) {
-  					store = args[0];
-  					_this.checkSyntax();
-  				}
-  				return store;
-  			};
+  		var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
 
-  			prop.toJSON = function () {
-  				return store;
-  			};
-
-  			return prop;
-  		})('');
-
-  		// this is set within the load function
-  		this.loaded = false;
-  		this.error = false;
-
-  		// these are defined when calling checkSyntax
-  		this.syntaxValid = undefined;
-  		this.syntaxData = undefined;
+  		var requirejs = context.requirejs;
+  		return new Promise(function (resolve, reject) {
+  			requirejs([_this3.url], resolve, reject);
+  		});
+  	},
+  	checkSyntax: function checkSyntax() {
+  		var jshint = window.JSHINT;
+  		this.syntaxValid = jshint(this.content(), jshintOptions);
+  		this.syntaxData = jshint.data();
+  		return this.syntaxValid;
   	}
-
-  	babelHelpers.createClass(File, [{
-  		key: 'apiUrl',
-  		value: function apiUrl() {
-  			return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
-  		}
-  	}, {
-  		key: 'get',
-  		value: function get() {
-  			var _this2 = this;
-
-  			return fetch(this.apiUrl(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (response) {
-  				_this2.sourceContent(response.content);
-  				_this2.content(response.content);
-  				_this2.loaded = true;
-  			}).catch(function (reason) {
-  				_this2.loaded = true;
-  				_this2.error = true;
-  				return Promise.reject(reason); // do not swallow error
-  			});
-  		}
-  	}, {
-  		key: 'save',
-  		value: function save() {
-  			var _this3 = this;
-
-  			return fetch(this.apiUrl(), {
-  				credentials: 'same-origin',
-  				method: 'put',
-  				headers: {
-  					'Accept': 'application/json',
-  					'Content-Type': 'application/json'
-  				},
-  				body: JSON.stringify({
-  					content: this.content
-  				})
-  			}).then(checkStatus).then(function () {
-  				_this3.sourceContent(_this3.content()); // update source content
-  			}).catch(catchJSON);
-  		}
-  	}, {
-  		key: 'del',
-  		value: function del() {
-  			return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus);
-  		}
-  	}, {
-  		key: 'hasChanged',
-  		value: function hasChanged() {
-  			return this.sourceContent() === this.content();
-  		}
-  	}, {
-  		key: 'define',
-  		value: function define() {
-  			var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-  			var requirejs = context.requirejs;
-  			var name = this.url;
-  			var content = this.content();
-
-  			return new Promise(function (resolve) {
-  				requirejs.undef(name);
-  				context.eval(content.replace('define(', 'define(\'' + name + '\','));
-  				resolve();
-  			});
-  		}
-  	}, {
-  		key: 'require',
-  		value: function require() {
-  			var _this4 = this;
-
-  			var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
-
-  			var requirejs = context.requirejs;
-  			return new Promise(function (resolve, reject) {
-  				requirejs([_this4.url], resolve, reject);
-  			});
-  		}
-  	}, {
-  		key: 'checkSyntax',
-  		value: function checkSyntax() {
-  			var jshint = window.JSHINT;
-  			this.syntaxValid = jshint(this.content(), jshintOptions);
-  			this.syntaxData = jshint.data();
-  			return this.syntaxValid;
-  		}
-  	}]);
-  	return File;
-  })();
+  };
 
   var jshintOptions = {
   	// JSHint Default Configuration File (as on JSHint website)
@@ -263,80 +175,118 @@
   	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   };
 
+  var fileFactory = function fileFactory(fileObj) {
+  	var file = Object.create(filePrototype);
+  	var url = file.url = fileObj.url;
+
+  	Object.assign(file, {
+  		studyID: fileObj.studyID,
+  		isDir: fileObj.isDir,
+  		name: url.substring(url.lastIndexOf('/') + 1),
+  		type: url.substring(url.lastIndexOf('.') + 1),
+  		id: fileObj.id,
+  		sourceContent: m.prop(fileObj.content || ''),
+  		content: contentProvider.call(file),
+
+  		// keep track of loaded state
+  		loaded: false,
+  		error: false,
+
+  		// these are defined when calling checkSyntax
+  		syntaxValid: undefined,
+  		syntaxData: undefined
+  	});
+
+  	file.content(fileObj.content || '');
+
+  	return file;
+
+  	function contentProvider(store) {
+  		var _this4 = this;
+
+  		var prop = function prop() {
+  			if (arguments.length) {
+  				store = arguments[0];
+  				_this4.checkSyntax();
+  			}
+  			return store;
+  		};
+
+  		prop.toJSON = function () {
+  			return store;
+  		};
+
+  		return prop;
+  	}
+  };
+
   var baseUrl = '/dashboard/dashboard';
 
-  var studyModel = (function () {
-  	function studyModel(id) {
-  		babelHelpers.classCallCheck(this, studyModel);
+  var studyPrototype = {
+  	apiURL: function apiURL() {
+  		return baseUrl + '/files/' + this.id;
+  	},
+  	get: function get() {
+  		var _this = this;
 
-  		this.id = id;
-  		this.files = m.prop([]);
-  		this.loaded = false;
-  		this.error = false;
+  		return fetch(this.apiURL(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (study) {
+  			_this.loaded = true;
+  			_this.files(study.files.map(function (file) {
+  				Object.assign(file, { studyID: _this.id });
+  				return fileFactory(file);
+  			}));
+  		}).catch(function (reason) {
+  			_this.error = true;
+  			return Promise.reject(reason); // do not swallow error
+  		});
+  	},
+  	getFile: function getFile(id) {
+  		return this.files().find(function (file) {
+  			return file.id === id;
+  		});
+  	},
+  	create: function create(name) {
+  		var _this2 = this;
+
+  		var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+  		return fetch(this.apiURL() + '/file', {
+  			method: 'post',
+  			credentials: 'same-origin',
+  			body: JSON.stringify({ name: name, content: content }),
+  			headers: {
+  				'Accept': 'application/json',
+  				'Content-Type': 'application/json'
+  			}
+  		}).then(checkStatus).then(toJSON).then(function (response) {
+  			var file = fileFactory(response);
+  			file.loaded = true;
+  			_this2.files().push(file);
+  		}).catch(catchJSON);
+  	},
+  	del: function del(fileId) {
+  		var _this3 = this;
+
+  		return this.getFile(fileId).del().then(function () {
+  			var cleanFiles = _this3.files().filter(function (file) {
+  				return file.id !== fileId;
+  			});
+  			_this3.files(cleanFiles);
+  		});
   	}
+  };
 
-  	babelHelpers.createClass(studyModel, [{
-  		key: 'apiURL',
-  		value: function apiURL() {
-  			return baseUrl + '/files/' + this.id;
-  		}
-  	}, {
-  		key: 'get',
-  		value: function get() {
-  			var _this = this;
+  var studyFactory = function studyFactory(id) {
+  	var study = Object.create(studyPrototype);
+  	Object.assign(study, {
+  		id: id,
+  		files: m.prop([]),
+  		loaded: false,
+  		error: false
+  	});
 
-  			return fetch(this.apiURL(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (study) {
-  				_this.loaded = true;
-  				_this.files(study.files.map(function (file) {
-  					Object.assign(file, { studyID: _this.id });
-  					return new File(file);
-  				}));
-  			}).catch(function (reason) {
-  				_this.error = true;
-  				return Promise.reject(reason); // do not swallow error
-  			});
-  		}
-  	}, {
-  		key: 'getFile',
-  		value: function getFile(id) {
-  			return this.files().find(function (file) {
-  				return file.id === id;
-  			});
-  		}
-  	}, {
-  		key: 'create',
-  		value: function create(name) {
-  			var _this2 = this;
-
-  			var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-  			return fetch(this.apiURL() + '/file', {
-  				method: 'post',
-  				credentials: 'same-origin',
-  				body: JSON.stringify({ name: name, content: content }),
-  				headers: {
-  					'Accept': 'application/json',
-  					'Content-Type': 'application/json'
-  				}
-  			}).then(checkStatus).then(toJSON).then(function (response) {
-  				_this2.files().push(new File(response));
-  			}).catch(catchJSON);
-  		}
-  	}, {
-  		key: 'del',
-  		value: function del(fileId) {
-  			var _this3 = this;
-
-  			return this.getFile(fileId).del().then(function () {
-  				var cleanFiles = _this3.files().filter(function (file) {
-  					return file.id !== fileId;
-  				});
-  				_this3.files(cleanFiles);
-  			});
-  		}
-  	}]);
-  	return studyModel;
-  })();
+  	return study;
+  };
 
   var pdfEditor = {
   	view: function view(ctrl, args) {
@@ -445,7 +395,7 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.input-group', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })]), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.card-block', [m('.input-group', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })])]), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		}
   	}
   };
@@ -530,7 +480,7 @@
   var editorPage = {
   	controller: function controller(args) {
   		var file = args.file;
-
+  		console.log(file);
   		file.loaded || file.get().then(m.redraw);
 
   		var ctrl = {
@@ -587,7 +537,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -845,7 +795,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -989,7 +939,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -1238,10 +1188,24 @@
   	};
   };
 
-  var sidebarComponent = {
-  	view: function view(ctrl, study) {
-  		return m('.editor-sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
-  	}
+  var pipWizard = function pipWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create file',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template());
+  		}
+  		return response;
+  	});
+  };
+
+  var template = function template() {
+  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hellow World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'randomize\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
   };
 
   var sidebarButtons = {
@@ -1253,32 +1217,53 @@
   			toggleNew: function toggleNew() {
   				return ctrl.newOpen = !ctrl.newOpen;
   			},
-  			create: create
+  			createEmpty: createEmpty,
+  			createPIP: createPIP
   		};
 
   		return ctrl;
 
-  		function create() {
-  			var name = m.prop();
-
-  			messages.prompt({
-  				header: 'Create file',
-  				content: 'Please insert the file name:',
-  				prop: name
-  			}).then(function (response) {
+  		function create(name, content) {
+  			return function (response) {
   				if (response) {
-  					study.create(name()).then(m.redraw).catch(function (response) {
+  					study.create(name(), content()).then(m.redraw).catch(function (response) {
   						return messages.alert({
   							heaser: 'Failed to create file:',
   							content: response.message
   						});
   					});
   				}
-  			});
+  			};
+  		}
+
+  		function createEmpty() {
+  			var name = m.prop();
+  			var content = function content() {
+  				return '';
+  			};
+
+  			messages.prompt({
+  				header: 'Create file',
+  				content: 'Please insert the file name:',
+  				prop: name
+  			}).then(create(name, content));
+  		}
+
+  		function createPIP() {
+  			var name = m.prop();
+  			var content = m.prop();
+  			pipWizard({ name: name, content: content }).then(create(name, content));
   		}
   	},
+
   	view: function view(ctrl) {
-  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.create }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', [m('a.dropdown-item', 'piPlayer'), m('a.dropdown-item', 'piQuest'), m('a.dropdown-item', 'piManager')])]);
+  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [m('a.dropdown-item', { onclick: ctrl.createPIP }, 'piPlayer'), m('a.dropdown-item', 'piQuest'), m('a.dropdown-item', 'piManager')])]);
+  	}
+  };
+
+  var sidebarComponent = {
+  	view: function view(ctrl, study) {
+  		return m('.editor-sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
   	}
   };
 
@@ -1288,7 +1273,7 @@
   	controller: function controller() {
   		var id = m.route.param('studyID');
   		if (!study || study.id !== id) {
-  			study = new studyModel(id);
+  			study = studyFactory(id);
   			study.get().then(m.redraw);
   		}
 

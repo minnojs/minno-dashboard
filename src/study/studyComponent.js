@@ -1,5 +1,5 @@
 export default editorLayoutComponent;
-import studyModel from './studyModel';
+import studyFactory from './studyModel';
 import editorComponent from './editorComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
 
@@ -9,7 +9,7 @@ let editorLayoutComponent = {
 	controller: ()=>{
 		let id = m.route.param('studyID');
 		if (!study || (study.id !== id)){
-			study = new studyModel(id);
+			study = studyFactory(id);
 			study
 				.get()
 				.then(m.redraw);

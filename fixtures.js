@@ -84,13 +84,18 @@ router.route('/files/:studyID')
 	});
 
 router.route('/files/:studyID/file')
+	// create file
 	.post((req,res)=>{
-		res.json({id: req.body.name, url:`/test/${req.body.name}`});
+		res.json({id: req.body.name, url:`/test/${req.body.name}`, content: req.body.content});
 	});
 
 router.route('/files/:studyID/file/:id')
+	// get file data
 	.get((req,res)=>{
 		var file = files.find(f => f.id == req.params.id);
+
+		if (!file) return res.status(404).json({message:'File not found'});
+
 		if (/(jst|html|xml|js)$/.test(file.url)){
 			fs.readFile('..' + file.url, function read(err, data) {
 				if (err) {throw err;}
@@ -100,9 +105,11 @@ router.route('/files/:studyID/file/:id')
 			res.json(file);
 		}
 	})
+	// update file
 	.put((req, res)=>{
 		res.status(403);
 	})
+	// delete file
 	.delete((req,res)=>{
 		if (files.some(f => f.id == req.params.id && f.noDel)) {
 			res.status(403).json({message:'del ' + req.params.id + ' failed'});

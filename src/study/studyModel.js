@@ -1,20 +1,13 @@
 import {toJSON, catchJSON, checkStatus} from './modelHelpers';
-import File from './fileModel';
-export default studyModel;
+import fileFactory from './fileModel';
+export default studyFactory;
 
 let baseUrl = '/dashboard/dashboard';
 
-class studyModel {
-	constructor(id){
-		this.id = id;
-		this.files = m.prop([]);
-		this.loaded = false;
-		this.error = false;
-	}
-
+let studyPrototype = {
 	apiURL(){
 		return `${baseUrl}/files/${this.id}`;
-	}
+	},
 
 	get(){
 		return fetch(this.apiURL(),{credentials: 'same-origin'})
@@ -24,18 +17,18 @@ class studyModel {
 				this.loaded = true;
 				this.files(study.files.map(file => {
 					Object.assign(file, {studyID: this.id});
-					return new File(file);
+					return fileFactory(file);
 				}));
 			})
 			.catch(reason => {
 				this.error = true;
 				return Promise.reject(reason); // do not swallow error
 			});
-	}
+	},
 
 	getFile(id){
 		return this.files().find(file => file.id === id);
-	}
+	},
 
 	create(name, content=''){
 
@@ -51,10 +44,12 @@ class studyModel {
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
-				this.files().push(new File(response));
+				let file = fileFactory(response);
+				file.loaded = true;
+				this.files().push(file);
 			})
 			.catch(catchJSON);
-	}
+	},
 
 	del(fileId){
 		return this.getFile(fileId).del()
@@ -63,4 +58,16 @@ class studyModel {
 				this.files(cleanFiles);
 			});
 	}
-}
+};
+
+let studyFactory = 	id =>{
+	let study = Object.create(studyPrototype);
+	Object.assign(study, {
+		id 		: id,
+		files 	: m.prop([]),
+		loaded 	: false,
+		error 	:false
+	});
+
+	return study;
+};

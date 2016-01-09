@@ -1,5 +1,5 @@
 import {toJSON, catchJSON, checkStatus} from './modelHelpers';
-export default File;
+export default fileFactory;
 let baseUrl = '/dashboard/dashboard';
 
 /**
@@ -9,45 +9,10 @@ let baseUrl = '/dashboard/dashboard';
  * }
  */
 
-class File {
-	constructor(file){
-		let url = this.url = file.url;
-
-		this.studyID = file.studyID;
-		this.isDir = file.isDir;
-		this.name = url.substring(url.lastIndexOf('/')+1);
-		this.type = url.substring(url.lastIndexOf('.')+1);
-		this.id = file.id;
-		this.id = this.name;
-
-		// keep track of file content
-		this.sourceContent = m.prop('');
-		this.content = (store => {
-			var prop = (...args) => {
-				if (args.length) {
-					store = args[0];
-					this.checkSyntax();
-				}
-				return store;
-			};
-
-			prop.toJSON = () => store;
-
-			return prop;
-		})('');
-
-		// this is set within the load function
-		this.loaded = false;
-		this.error = false;
-
-		// these are defined when calling checkSyntax
-		this.syntaxValid = undefined;
-		this.syntaxData = undefined;
-	}
-
+let filePrototype = {
 	apiUrl(){
 		return `${baseUrl}/files/${this.studyID}/file/${this.id}`;
-	}
+	},
 
 	get(){
 		return fetch(this.apiUrl(), {credentials: 'same-origin'})
@@ -63,7 +28,7 @@ class File {
 				this.error = true;
 				return Promise.reject(reason); // do not swallow error
 			});
-	}
+	},
 
 	save(){
 		return fetch(this.apiUrl(), {
@@ -82,17 +47,17 @@ class File {
 				this.sourceContent(this.content()); // update source content
 			})
 			.catch(catchJSON);
-	}
+	},
 
 	del(){
 		return fetch(this.apiUrl(), {method:'delete',credentials: 'same-origin'})
 			.then(checkStatus);
-	}
+	},
 
 
 	hasChanged() {
 		return this.sourceContent() === this.content();
-	}
+	},
 
 	define(context = window){
 		var requirejs = context.requirejs;
@@ -104,14 +69,14 @@ class File {
 			context.eval(content.replace(`define(`,`define('` + name + `',`));
 			resolve();
 		});
-	}
+	},
 
 	require(context = window){
 		var requirejs = context.requirejs;
 		return new Promise((resolve, reject) => {
 			requirejs([this.url], resolve,reject);
 		});
-	}
+	},
 
 	checkSyntax(){
 		var jshint = window.JSHINT;
@@ -119,7 +84,7 @@ class File {
 		this.syntaxData = jshint.data();
 		return this.syntaxValid;
 	}
-}
+};
 
 var jshintOptions = {
 	// JSHint Default Configuration File (as on JSHint website)
@@ -141,3 +106,44 @@ var jshintOptions = {
 	predef: ['piGlobal','define','require','requirejs','angular']
 };
 
+const fileFactory = fileObj => {
+	let file = Object.create(filePrototype);
+	let url = file.url = fileObj.url;
+
+	Object.assign(file, {
+		studyID			: fileObj.studyID,
+		isDir			: fileObj.isDir,
+		name			: url.substring(url.lastIndexOf('/')+1),
+		type			: url.substring(url.lastIndexOf('.')+1),
+		id				: fileObj.id,
+		sourceContent	: m.prop(fileObj.content || ''),
+		content 		: contentProvider.call(file),
+
+		// keep track of loaded state
+		loaded			: false,
+		error 			: false,
+
+		// these are defined when calling checkSyntax
+		syntaxValid 	: undefined,
+		syntaxData 		: undefined
+	});
+
+	file.content(fileObj.content || '');
+
+	return file;
+
+
+	function contentProvider (store) {
+		var prop = (...args) => {
+			if (args.length) {
+				store = args[0];
+				this.checkSyntax();
+			}
+			return store;
+		};
+
+		prop.toJSON = () => store;
+
+		return prop;
+	}
+};
