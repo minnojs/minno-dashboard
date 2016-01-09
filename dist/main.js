@@ -2,39 +2,35 @@
 
   var babelHelpers = {};
 
-  function babelHelpers_typeof (obj) {
+  babelHelpers.typeof = function (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  // taken from here:
-  // https://github.com/JedWatson/classnames/blob/master/index.js
-  var hasOwn = ({}).hasOwnProperty;
+  babelHelpers.classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
 
-  function classNames() {
-  	var classes = '';
+  babelHelpers.createClass = (function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
 
-  	for (var i = 0; i < arguments.length; i++) {
-  		var arg = arguments[i];
-  		if (!arg) continue;
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  })();
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
-
-  		if (argType === 'string' || argType === 'number') {
-  			classes += ' ' + arg;
-  		} else if (Array.isArray(arg)) {
-  			classes += ' ' + classNames.apply(null, arg);
-  		} else if (argType === 'object') {
-  			for (var key in arg) {
-  				if (hasOwn.call(arg, key) && arg[key]) {
-  					classes += ' ' + key;
-  				}
-  			}
-  		}
-  	}
-
-  	return classes.substr(1);
-  }
-
+  babelHelpers;
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -61,8 +57,6 @@
   		}).then(function (json) {
   			return ctrl.studyArr = json;
   		}).then(m.redraw);
-
-  		window.ctrl = ctrl;
 
   		return ctrl;
   	},
@@ -119,7 +113,7 @@
   	function File(file) {
   		var _this = this;
 
-  		babelHelpers_classCallCheck(this, File);
+  		babelHelpers.classCallCheck(this, File);
 
   		var url = this.url = file.url;
 
@@ -134,8 +128,12 @@
   		this.sourceContent = m.prop('');
   		this.content = (function (store) {
   			var prop = function prop() {
-  				if (arguments.length) {
-  					store = arguments[0];
+  				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+  					args[_key] = arguments[_key];
+  				}
+
+  				if (args.length) {
+  					store = args[0];
   					_this.checkSyntax();
   				}
   				return store;
@@ -157,7 +155,7 @@
   		this.syntaxData = undefined;
   	}
 
-  	babelHelpers_createClass(File, [{
+  	babelHelpers.createClass(File, [{
   		key: 'apiUrl',
   		value: function apiUrl() {
   			return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
@@ -269,7 +267,7 @@
 
   var studyModel = (function () {
   	function studyModel(id) {
-  		babelHelpers_classCallCheck(this, studyModel);
+  		babelHelpers.classCallCheck(this, studyModel);
 
   		this.id = id;
   		this.files = m.prop([]);
@@ -277,7 +275,7 @@
   		this.error = false;
   	}
 
-  	babelHelpers_createClass(studyModel, [{
+  	babelHelpers.createClass(studyModel, [{
   		key: 'apiURL',
   		value: function apiURL() {
   			return baseUrl + '/files/' + this.id;
@@ -578,6 +576,35 @@
   	}
   };
 
+  // taken from here:
+  // https://github.com/JedWatson/classnames/blob/master/index.js
+  var hasOwn = ({}).hasOwnProperty;
+
+  function classNames() {
+  	var classes = '';
+
+  	for (var i = 0; i < arguments.length; i++) {
+  		var arg = arguments[i];
+  		if (!arg) continue;
+
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+
+  		if (argType === 'string' || argType === 'number') {
+  			classes += ' ' + arg;
+  		} else if (Array.isArray(arg)) {
+  			classes += ' ' + classNames.apply(null, arg);
+  		} else if (argType === 'object') {
+  			for (var key in arg) {
+  				if (hasOwn.call(arg, key) && arg[key]) {
+  					classes += ' ' + key;
+  				}
+  			}
+  		}
+  	}
+
+  	return classes.substr(1);
+  }
+
   var xmlEditor = {
   	controller: function controller(args) {
   		return {
@@ -818,7 +845,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -962,7 +989,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -1045,7 +1072,7 @@
 
   		var file = ctrl.file;
 
-  		return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
+  		return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [!file.isDir ? [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')] : [m('i.fa.fa-folder-open-o.fa-5x'), m('h5', 'Sub directories are not supported yet.'), m('p', 'We have a team of monkeys hacking at it as we speak...')]]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
   	}
   };
 
@@ -1212,10 +1239,24 @@
   };
 
   var sidebarComponent = {
-  	controller: function controller(study) {
-  		return {
+  	view: function view(ctrl, study) {
+  		return m('.editor-sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
+  	}
+  };
+
+  var sidebarButtons = {
+  	controller: function controller(_ref) {
+  		var study = _ref.study;
+
+  		var ctrl = {
+  			newOpen: false,
+  			toggleNew: function toggleNew() {
+  				return ctrl.newOpen = !ctrl.newOpen;
+  			},
   			create: create
   		};
+
+  		return ctrl;
 
   		function create() {
   			var name = m.prop();
@@ -1236,8 +1277,8 @@
   			});
   		}
   	},
-  	view: function view(ctrl, study) {
-  		return m('.editor-sidebar', [m('h5', [study.id]), m('.btn-group', [m('.btn.btn-sm.pull.btn-secondary', { onclick: ctrl.create }, [m('i.fa.fa-plus'), ' New'])]), m.component(filesComponent, study)]);
+  	view: function view(ctrl) {
+  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.create }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', [m('a.dropdown-item', 'piPlayer'), m('a.dropdown-item', 'piQuest'), m('a.dropdown-item', 'piManager')])]);
   	}
   };
 

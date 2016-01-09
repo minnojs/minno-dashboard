@@ -3,10 +3,27 @@ import messages from '../../messagesComponent';
 export default sidebarComponent;
 
 let sidebarComponent = {
-	controller: study => {
-		return {
+	view: (ctrl , study) => {
+		return m('.editor-sidebar', [
+			m('h5', [
+				study.id
+			]),
+
+			m.component(sidebarButtons, {study}),
+			m.component(filesComponent, study)
+		]);
+	}
+};
+
+let sidebarButtons = {
+	controller: ({study}) => {
+		let ctrl = {
+			newOpen: false,
+			toggleNew: () => ctrl.newOpen = !ctrl.newOpen,
 			create: create
 		};
+
+		return ctrl;
 
 		function create(){
 			let name = m.prop();
@@ -28,19 +45,17 @@ let sidebarComponent = {
 			});
 		}
 	},
-	view: (ctrl , study) => {
-		return m('.editor-sidebar', [
-			m('h5', [
-				study.id
+	view: ctrl => {
+		return m('.btn-group', {class: ctrl.newOpen ? 'open' : ''}, [
+			m('.btn.btn-sm.btn-secondary', {onclick:ctrl.create}, [
+				m('i.fa.fa-plus'), ' New'
 			]),
-
-			m('.btn-group',[
-				m('.btn.btn-sm.pull.btn-secondary', {onclick:ctrl.create}, [
-					m('i.fa.fa-plus'), ' New'
-				])
-			]),
-
-			m.component(filesComponent, study)
+			m('.btn.btn-sm.btn-secondary.dropdown-toggle', {onclick:ctrl.toggleNew}),
+			m('.dropdown-menu',[
+				m('a.dropdown-item', 'piPlayer'),
+				m('a.dropdown-item', 'piQuest'),
+				m('a.dropdown-item', 'piManager')
+			])
 		]);
 	}
 };

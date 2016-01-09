@@ -38,8 +38,18 @@ let fileEditorComponent = {
 				? editors[file.type]
 					? m.component(editors[file.type], {file:file, settings: args.settings})
 					: m('.centrify', [
-						m('i.fa.fa-file.fa-5x'),
-						m('h5', 'Unknow file type')
+						!file.isDir
+							?
+							[
+								m('i.fa.fa-file.fa-5x'),
+								m('h5', 'Unknow file type')
+							]
+							:
+							[
+								m('i.fa.fa-folder-open-o.fa-5x'),
+								m('h5', 'Sub directories are not supported yet.'),
+								m('p', 'We have a team of monkeys hacking at it as we speak...')
+							]
 					])
 				: m('.centrify', [
 					m('i.fa.fa-smile-o.fa-5x'),

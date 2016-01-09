@@ -73,6 +73,9 @@ var files = isMac
 		}
 	];
 
+files.push({id:'images', url:'/test/images', isDir:true});
+files.push({id:'someFile.grg', url:'/test/someFile.grg'});
+
 router.route('/files/:studyID')
 	.get((req,res)=>{
 		res.json({

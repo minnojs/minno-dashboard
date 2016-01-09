@@ -1,6 +1,5 @@
-import classNames from '../classNames';
+// import classNames from '../classNames';
 export default poolComponent;
-
 
 const runningStatus = 'R';
 const pausedStatus = 'P';
@@ -19,9 +18,6 @@ let poolComponent = {
 			.then(request => request.json())
 			.then(json => ctrl.studyArr = json)
 			.then(m.redraw);
-
-			window.ctrl = ctrl;
-
 
 		return ctrl;
 	},
