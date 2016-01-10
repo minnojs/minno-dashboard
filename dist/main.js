@@ -2,10 +2,11 @@
 
   var babelHelpers = {};
 
-  function babelHelpers_typeof (obj) {
+  babelHelpers.typeof = function (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  babelHelpers;
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -86,7 +87,7 @@
 
   var filePrototype = {
   	apiUrl: function apiUrl() {
-  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
+  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.name;
   	},
   	get: function get() {
   		var _this = this;
@@ -205,8 +206,12 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			if (arguments.length) {
-  				store = arguments[0];
+  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+  				args[_key] = arguments[_key];
+  			}
+
+  			if (args.length) {
+  				store = args[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -371,7 +376,7 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		},
 
   		confirm: function confirm() {
@@ -380,7 +385,7 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		},
 
   		/**
@@ -395,7 +400,7 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.card-block', [m('.input-group', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })])]), m('.text-xs-right', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		}
   	}
   };
@@ -480,7 +485,6 @@
   var editorPage = {
   	controller: function controller(args) {
   		var file = args.file;
-  		console.log(file);
   		file.loaded || file.get().then(m.redraw);
 
   		var ctrl = {
@@ -537,7 +541,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -795,7 +799,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -939,7 +943,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
   		case 'string':
   			break;
   		case 'number':

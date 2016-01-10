@@ -5,7 +5,6 @@ export default editorPage;
 var editorPage = {
 	controller: function(args){
 		var file = args.file;
-console.log(file)
 		file.loaded || file.get().then(m.redraw);
 
 		var ctrl = {

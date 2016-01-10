@@ -78,7 +78,7 @@ let messages = {
 			return [
 				m('h4', opts.header),
 				m('p.card-text', opts.content),
-				m('.text-xs-right',[
+				m('.text-xs-right.btn-toolbar',[
 					m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
 				])
 			];
@@ -89,7 +89,7 @@ let messages = {
 			return [
 				m('h4', opts.header),
 				m('p.card-text', opts.content),
-				m('.text-xs-right',[
+				m('.text-xs-right.btn-toolbar',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
 					m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
 				])
@@ -106,13 +106,11 @@ let messages = {
 			let close = response => messages.close.bind(null, response);
 			return [
 				m('h4', opts.header),
-				m('p.card-text', opts.content),
+				m('.card-text', opts.content),
 				m('.card-block', [
-					m('.input-group', [
-						m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
-					])
+					m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
 				]),
-				m('.text-xs-right',[
+				m('.text-xs-right.btn-toolbar',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
 					m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
 				])

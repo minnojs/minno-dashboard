@@ -75,8 +75,6 @@
 			var name = file.url;
 			var element = document.getElementById('task');
 
-			var ping = a => console.log(123, a);
-
 			new Promise(function(resolve,reject) {require(['pibootstrap'], resolve, reject);})
 
 				.then(function() {return file.require(window);})
