@@ -11,7 +11,7 @@ let baseUrl = '/dashboard/dashboard';
 
 let filePrototype = {
 	apiUrl(){
-		return `${baseUrl}/files/${this.studyID}/file/${this.name}`;
+		return `${baseUrl}/files/${this.studyID}/file/${this.id}`;
 	},
 
 	get(){

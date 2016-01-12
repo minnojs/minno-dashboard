@@ -2,7 +2,7 @@ import messages from '../../../messagesComponent';
 export default pipWizard;
 let pipWizard = ({name, content}) => {
 	return messages.prompt({
-		header: 'Create file',
+		header: 'Create PIP',
 		content: 'Please insert the file name:',
 		prop: name
 	})

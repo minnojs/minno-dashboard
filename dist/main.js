@@ -87,7 +87,7 @@
 
   var filePrototype = {
   	apiUrl: function apiUrl() {
-  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.name;
+  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
   	},
   	get: function get() {
   		var _this = this;
@@ -1197,7 +1197,7 @@
   	var content = _ref.content;
 
   	return messages.prompt({
-  		header: 'Create file',
+  		header: 'Create PIP',
   		content: 'Please insert the file name:',
   		prop: name
   	}).then(function (response) {
@@ -1212,6 +1212,46 @@
   	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hellow World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'randomize\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
   };
 
+  var questWizard = function questWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create piQuest',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template$1());
+  		}
+  		return response;
+  	});
+  };
+
+  var template$1 = function template() {
+  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  };
+
+  var managerWizard = function managerWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create piManager',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template$2());
+  		}
+  		return response;
+  	});
+  };
+
+  var template$2 = function template() {
+  	return 'define([\'managerAPI\'], function(Manager){\n\n    var API = new Manager();\n\n    API.addSequence([\n        {type:\'message\', template:\'<h1>Hellow world</h1>\', keys: \' \'}\n    ]);\n\n    return API.script;\n});';
+  };
+
   var sidebarButtons = {
   	controller: function controller(_ref) {
   		var study = _ref.study;
@@ -1222,7 +1262,9 @@
   				return ctrl.newOpen = !ctrl.newOpen;
   			},
   			createEmpty: createEmpty,
-  			createPIP: createPIP
+  			createPIP: createPIP,
+  			createQuest: createQuest,
+  			createManager: createManager
   		};
 
   		return ctrl;
@@ -1258,10 +1300,22 @@
   			var content = m.prop();
   			pipWizard({ name: name, content: content }).then(create(name, content));
   		}
+
+  		function createQuest() {
+  			var name = m.prop();
+  			var content = m.prop();
+  			questWizard({ name: name, content: content }).then(create(name, content));
+  		}
+
+  		function createManager() {
+  			var name = m.prop();
+  			var content = m.prop();
+  			managerWizard({ name: name, content: content }).then(create(name, content));
+  		}
   	},
 
   	view: function view(ctrl) {
-  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [m('a.dropdown-item', { onclick: ctrl.createPIP }, 'piPlayer'), m('a.dropdown-item', 'piQuest'), m('a.dropdown-item', 'piManager')])]);
+  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [m('a.dropdown-item', { onclick: ctrl.createPIP }, 'piPlayer'), m('a.dropdown-item', { onclick: ctrl.createQuest }, 'piQuest'), m('a.dropdown-item', { onclick: ctrl.createManager }, 'piManager')])]);
   	}
   };
 

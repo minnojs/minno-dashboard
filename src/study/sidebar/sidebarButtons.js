@@ -1,5 +1,7 @@
 import messages from '../../messagesComponent';
 import pipWizard from './wizards/pipWizard';
+import questWizard from './wizards/questWizard';
+import managerWizard from './wizards/managerWizard';
 export default sidebarButtons;
 
 let sidebarButtons = {
@@ -8,7 +10,9 @@ let sidebarButtons = {
 			newOpen: false,
 			toggleNew: () => ctrl.newOpen = !ctrl.newOpen,
 			createEmpty: createEmpty,
-			createPIP: createPIP
+			createPIP: createPIP,
+			createQuest: createQuest,
+			createManager: createManager
 		};
 
 		return ctrl;
@@ -42,6 +46,20 @@ let sidebarButtons = {
 			let content = m.prop();
 			pipWizard({name, content}).then(create(name, content));
 		}
+
+		function createQuest(){
+			let name = m.prop();
+			let content = m.prop();
+			questWizard({name, content}).then(create(name, content));
+		}
+
+		function createManager(){
+			let name = m.prop();
+			let content = m.prop();
+			managerWizard({name, content}).then(create(name, content));
+		}
+
+
 	},
 
 	view: ctrl => {
@@ -52,8 +70,8 @@ let sidebarButtons = {
 			m('.btn.btn-sm.btn-secondary.dropdown-toggle', {onclick:ctrl.toggleNew}),
 			m('.dropdown-menu', {onclick: ctrl.toggleNew}, [
 				m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
-				m('a.dropdown-item', 'piQuest'),
-				m('a.dropdown-item', 'piManager')
+				m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
+				m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
 			])
 		]);
 	}
