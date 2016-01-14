@@ -87,7 +87,7 @@
 
   var filePrototype = {
   	apiUrl: function apiUrl() {
-  		return baseUrl$1 + '/files/' + this.studyID + '/file/' + this.id;
+  		return baseUrl$1 + '/files/' + encodeURIComponent(this.studyID) + '/file/' + encodeURIComponent(this.id);
   	},
   	get: function get() {
   		var _this = this;
@@ -96,6 +96,7 @@
   			_this.sourceContent(response.content);
   			_this.content(response.content);
   			_this.loaded = true;
+  			_this.error = false;
   		}).catch(function (reason) {
   			_this.loaded = true;
   			_this.error = true;
@@ -229,7 +230,7 @@
 
   var studyPrototype = {
   	apiURL: function apiURL() {
-  		return baseUrl + '/files/' + this.id;
+  		return baseUrl + '/files/' + encodeURIComponent(this.id);
   	},
   	get: function get() {
   		var _this = this;
@@ -264,6 +265,7 @@
   				'Content-Type': 'application/json'
   			}
   		}).then(checkStatus).then(toJSON).then(function (response) {
+  			Object.assign(response, { studyID: _this2.id });
   			var file = fileFactory(response);
   			file.loaded = true;
   			_this2.files().push(file);
@@ -356,6 +358,9 @@
   					var handleKey = function handleKey(e) {
   						if (e.keyCode == 27) {
   							messages.close(null);
+  						}
+  						if (e.keyCode == 13) {
+  							messages.close(true);
   						}
   					};
 
@@ -485,7 +490,12 @@
   var editorPage = {
   	controller: function controller(args) {
   		var file = args.file;
-  		file.loaded || file.get().then(m.redraw);
+  		file.loaded || file.get().then(m.redraw).catch(function (err) {
+  			return messages.alert({
+  				header: 'Loading Error',
+  				content: err.message
+  			});
+  		});
 
   		var ctrl = {
   			file: file,
@@ -1188,7 +1198,7 @@
   var choose = function choose(file) {
   	return function (e) {
   		e.preventDefault();
-  		m.route('/editor/' + file.studyID + '/' + file.id);
+  		m.route('/editor/' + file.studyID + '/' + encodeURIComponent(file.id));
   	};
   };
 
@@ -1209,7 +1219,7 @@
   };
 
   var template = function template() {
-  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hellow World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'randomize\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hellow World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
   };
 
   var questWizard = function questWizard(_ref) {
@@ -1229,7 +1239,7 @@
   };
 
   var template$1 = function template() {
-  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\tname: \'pickaname\',\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
   };
 
   var managerWizard = function managerWizard(_ref) {

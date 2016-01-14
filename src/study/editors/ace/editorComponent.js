@@ -5,7 +5,17 @@ export default editorPage;
 var editorPage = {
 	controller: function(args){
 		var file = args.file;
-		file.loaded || file.get().then(m.redraw);
+		file.loaded || file.get()
+			.then(m.redraw)
+			.catch(err => {
+				return messages.alert({
+					header: 'Loading Error',
+					content: err.message
+				});
+			});
+
+
+
 
 		var ctrl = {
 			file: file,

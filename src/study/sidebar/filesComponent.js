@@ -63,7 +63,7 @@ let nodeComponent = {
 	}
 };
 
-let choose = file => e => {
+let choose = (file) => e => {
 	e.preventDefault();
-	m.route(`/editor/${file.studyID}/${file.id}`);
+	m.route(`/editor/${file.studyID}/${encodeURIComponent(file.id)}`);
 };

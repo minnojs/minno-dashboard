@@ -61,6 +61,9 @@ let messages = {
 					if (e.keyCode == 27) {
 						messages.close(null);
 					}
+					if (e.keyCode == 13) {
+						messages.close(true);
+					}
 				};
 
 				document.body.addEventListener('keyup', handleKey);

@@ -11,7 +11,7 @@ let baseUrl = '/dashboard/dashboard';
 
 let filePrototype = {
 	apiUrl(){
-		return `${baseUrl}/files/${this.studyID}/file/${this.id}`;
+		return `${baseUrl}/files/${encodeURIComponent(this.studyID)}/file/${encodeURIComponent(this.id)}`;
 	},
 
 	get(){
@@ -22,6 +22,7 @@ let filePrototype = {
 				this.sourceContent(response.content);
 				this.content(response.content);
 				this.loaded = true;
+				this.error = false;
 			})
 			.catch(reason => {
 				this.loaded = true;

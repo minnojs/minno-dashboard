@@ -23,6 +23,7 @@ let template = () => `define(['questAPI'], function(Quest){
 			header: 'Hello World',
 			questions: [
 				{
+					name: 'pickaname',
 					type: 'selectOne',
 					stem: 'What is you favorite color?',
 					answers: ['red', 'blue', 'green']

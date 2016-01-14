@@ -6,10 +6,11 @@ let baseUrl = '/dashboard/dashboard';
 
 let studyPrototype = {
 	apiURL(){
-		return `${baseUrl}/files/${this.id}`;
+		return `${baseUrl}/files/${encodeURIComponent(this.id)}`;
 	},
 
 	get(){
+
 		return fetch(this.apiURL(),{credentials: 'same-origin'})
 			.then(checkStatus)
 			.then(toJSON)
@@ -44,6 +45,7 @@ let studyPrototype = {
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
+				Object.assign(response, {studyID: this.id});
 				let file = fileFactory(response);
 				file.loaded = true;
 				this.files().push(file);

@@ -86,7 +86,7 @@
 						element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:name}));
 						break;
 					case 'pip' :
-						element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name}));
+						element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name, version:'0.3'}));
 						break;
 					case 'manager' :
 						element.setAttribute('pi-manager', JSON.stringify(name));
@@ -99,7 +99,7 @@
 				.then(function(script){
 					script.settings || (script.settings = {});
 					script.settings.onEnd = window.close;
-					script.settings.hooks = {endTask:window.close};
+					script.settings.hooks = {endTask:window.close.bind(window)};
 				})
 				.then(function(){
 					require(['angular','app'], function(angular, app) {

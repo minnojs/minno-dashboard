@@ -60,7 +60,7 @@ let template = () => `define(['pipAPI','pipScorer'], function(APIConstructor,Sco
 
 	API.addSequence([
 		{
-			mixer: 'randomize',
+			mixer: 'random',
 			data: [
 				{
 					mixer: 'repeat',
