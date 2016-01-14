@@ -405,7 +405,12 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
-  			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', { onchange: m.withAttr('value', opts.prop || noop) })]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', {
+  				onchange: m.withAttr('value', opts.prop || noop),
+  				config: function config(element, isInitialized) {
+  					if (!isInitialized) element.focus();
+  				}
+  			})]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		}
   	}
   };

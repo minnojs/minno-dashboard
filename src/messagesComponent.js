@@ -111,7 +111,12 @@ let messages = {
 				m('h4', opts.header),
 				m('.card-text', opts.content),
 				m('.card-block', [
-					m('input.form-control', {onchange: m.withAttr('value', opts.prop || noop)})
+					m('input.form-control', {
+						onchange: m.withAttr('value', opts.prop || noop),
+						config: (element, isInitialized) => {
+							if (!isInitialized) element.focus();
+						}
+					})
 				]),
 				m('.text-xs-right.btn-toolbar',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
