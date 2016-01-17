@@ -31,7 +31,7 @@ let studyPrototype = {
 		return this.files().find(file => file.id === id);
 	},
 
-	create(name, content=''){
+	createFile(name, content=''){
 
 		return fetch(this.apiURL() + '/file', {
 			method:'post',
@@ -45,10 +45,11 @@ let studyPrototype = {
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
-				Object.assign(response, {studyID: this.id});
+				Object.assign(response, {studyID: this.id, content});
 				let file = fileFactory(response);
 				file.loaded = true;
 				this.files().push(file);
+				return response;
 			})
 			.catch(catchJSON);
 	},

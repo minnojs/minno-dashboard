@@ -7,6 +7,19 @@
   };
 
   babelHelpers;
+  function sortTable(list) {
+  	return function (e) {
+  		var prop = e.target.getAttribute('data-sort-by');
+  		if (prop) {
+  			var first = list[0];
+  			list.sort(function (a, b) {
+  				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
+  			});
+  			if (first === list[0]) list.reverse();
+  		}
+  	};
+  }
+
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -37,21 +50,35 @@
   		return ctrl;
   	},
   	view: function view(ctrl) {
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover' }, [
-  		// m('thead', [
-  		// 	m('tr', [
-  		// 		m('th')
-  		// 	])
-  		// ]),
-  		m('tbody', [ctrl.studyArr.map(function (row) {
-  			return m('tr', [m('td', row.studyId), m('td', [m('a', { href: row.studyUrl }, 'study')]), m('td', [m('a', { href: row.rulesUrl }, 'rules')]), m('td', row.creationDate), m('td', [({
+  		var list = ctrl.studyArr;
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list) }, [m('thead', [m('tr', [m('th[data-sort-by="studyId"]', 'ID'), m('th[data-sort-by="studyUrl"]', 'URL'), m('th[data-sort-by="rulesUrl"]', 'rules'), m('th[data-sort-by="completedSessions"]', 'Completed'), m('th[data-sort-by="creationDate"]', 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.map(function (row) {
+  			return m('tr', [
+  			// ### ID
+  			m('td', row.studyId),
+
+  			// ### Study url
+  			m('td', [m('a', { href: row.studyUrl }, 'study')]),
+
+  			// ### Rules url
+  			m('td', [m('a', { href: row.rulesUrl }, 'rules')]),
+
+  			// ### Completions
+  			m('td', [(100 * row.completedSessions / row.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), row.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), row.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), row.completedSessions])])])]),
+
+  			// ### Date
+  			m('td', new Date(row.creationDate).toDateString()),
+
+  			// ### Status
+  			m('td', [({
   				R: m('span.label.label-success', 'Running'),
   				P: m('span.label.label-info', 'Paused'),
   				S: m('span.label.label-danger', 'Stopped')
-  			})[row.studyStatus]]), m('td', [row.$pending ? m('.loading') : [row.studyStatus === 'P' ? m('button.btn.btn-success', { onclick: ctrl.play(row) }, [m('i.fa.fa-play')]) : '', row.studyStatus === 'R' ? m('button.btn.btn-info', { onclick: ctrl.pause(row) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-danger', { onclick: ctrl.pause(row) }, [m('i.fa.fa-close')])]])]);
+  			})[row.studyStatus]]),
+
+  			// ### Actions
+  			m('td', [row.$pending ? m('.loading') : m('.btn-group', [row.studyStatus === 'P' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play(row) }, [m('i.fa.fa-play')]) : '', row.studyStatus === 'R' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
-
   };
 
   var checkStatus = function checkStatus(response) {
@@ -251,7 +278,7 @@
   			return file.id === id;
   		});
   	},
-  	create: function create(name) {
+  	createFile: function createFile(name) {
   		var _this2 = this;
 
   		var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
@@ -265,10 +292,11 @@
   				'Content-Type': 'application/json'
   			}
   		}).then(checkStatus).then(toJSON).then(function (response) {
-  			Object.assign(response, { studyID: _this2.id });
+  			Object.assign(response, { studyID: _this2.id, content: content });
   			var file = fileFactory(response);
   			file.loaded = true;
   			_this2.files().push(file);
+  			return response;
   		}).catch(catchJSON);
   	},
   	del: function del(fileId) {
@@ -1102,9 +1130,7 @@
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
   var fileContext = function fileContext(file, study) {
-  	var menu = [
-  	//{icon:'fa-plus', text:'New File', action: () => study.create('new.js')},
-  	{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
+  	var menu = [{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
   			return messages.alert({ header: 'Duplicate: ' + file.name, content: 'Duplicate has not been implemented yet' });
   		} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
@@ -1287,10 +1313,13 @@
   		function create(name, content) {
   			return function (response) {
   				if (response) {
-  					study.create(name(), content()).then(m.redraw).catch(function (response) {
+  					study.createFile(name(), content()).then(function (response) {
+  						m.route('/editor/' + study.id + '/' + response.id);
+  						return response;
+  					}).catch(function (err) {
   						return messages.alert({
   							heaser: 'Failed to create file:',
-  							content: response.message
+  							content: err.message
   						});
   					});
   				}
@@ -1336,7 +1365,7 @@
 
   var sidebarComponent = {
   	view: function view(ctrl, study) {
-  		return m('.editor-sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
+  		return m('.sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
   	}
   };
 
@@ -1356,7 +1385,7 @@
   	},
   	view: function view(ctrl) {
   		var study = ctrl.study;
-  		return m('.row', [study.loaded ? [m('.sidebar.col-md-2', [m.component(sidebarComponent, study)]), m('.main.col-md-10', [m.component(fileEditorComponent, study)])] : '']);
+  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, study)]), m('.col-md-10', [m.component(fileEditorComponent, study)])] : '']);
   	}
   };
 
@@ -1385,9 +1414,7 @@
   var layout = function layout(route) {
   	return {
   		view: function view() {
-  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [
-  				// m('a.nav-link',{href:'/pool', config:m.route},'Pool')
-  			])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
+  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
   			m.component(messages)]);
   		}
   	};

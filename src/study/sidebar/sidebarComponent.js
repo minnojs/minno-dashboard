@@ -4,7 +4,7 @@ export default sidebarComponent;
 
 let sidebarComponent = {
 	view: (ctrl , study) => {
-		return m('.editor-sidebar', [
+		return m('.sidebar', [
 			m('h5', [
 				study.id
 			]),

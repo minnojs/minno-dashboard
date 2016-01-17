@@ -22,16 +22,21 @@ Returns a json with all the studies for the user signified by :userId.
 ### Files (directory/study?)
 A representation of a directory/study. Manages lists of files. Currently we're not trying to manage studies using this interface so all we need it the GET method.
 
-#####    GET     /files/:studyId - retrieve a file
+#####    GET     /files/:studyId - retrieve a file list
 
 Returns a JSON with the following stucture:
 
 ```js
 {
+    name: 'Study name',
     files: [
-        {id:'#hash', url:'full path to file', isDir:false},
-        {id:'#hash', url:'full path to file', isDir:false},
-        {id:'#hash', url:'full path to file', isDir:false},
+        {id:'#hash', url:'full url of file', isDir:false},
+        {id:'#hash', url:'full url of file', isDir:false},
+        {id:'#hash', url:'full url of file', isDir:false},
+        {id:'#hash', path:'relative path to dir', isDir:true, files: [
+            {id:'#hash', url:'full url of file', isDir:false},
+            {id:'#hash', url:'full url of file', isDir:false}                
+        ]}
     ]
 }
 ```
@@ -96,6 +101,17 @@ Takes the following parameters:
 ```
 
 Returns empty body (and appropriate http status!).
+
+#####    PUT     /files/:studyId/file/:fileId/move/:pathRelativeToStudy - rename a file
+Rename file.
+Returns a file Object
+
+```js
+{
+    id: '#hash',
+    url:'full path to file'
+}
+```
 
 #####    DELETE  /files/:studyId/file/:fileId - delete a file
 Delete an existing file.

@@ -86,7 +86,7 @@ router.route('/files/:studyID')
 router.route('/files/:studyID/file')
 	// create file
 	.post((req,res)=>{
-		res.json({id: req.body.name, url:`/test/${req.body.name}`, content: req.body.content});
+		res.json({id: req.body.name, url:`/test/${req.body.name}`});
 	});
 
 router.route('/files/:studyID/file/:id')
@@ -127,6 +127,10 @@ adminRouter.route('/studyData')
 				studyId:(0|Math.random()*9e6).toString(36),
 				studyUrl:(0|Math.random()*9e6).toString(36),
 				rulesUrl:(0|Math.random()*9e6).toString(36),
+				// autopauseUrl,
+				targetCompletions: Math.random() * 100,
+				startedSessions: Math.random() * 100,
+				completedSessions: Math.random() * 100,
 				creationDate:new Date() * Math.random(),
 				studyStatus: Math.random()>0.5?'R':'P'
 			});

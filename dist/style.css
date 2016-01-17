@@ -29,11 +29,21 @@ body {
   height: 300px;
   font-size: 18px; }
 
-.editor .btn-toolbar {
+.study .col-md-10, .study .col-md-2 {
+  padding-left: 0;
+  padding-right: 0; }
+
+.study .editor .btn-toolbar {
   margin-bottom: 10px; }
 
-.sidebar .btn-group {
-  margin: 10px 0; }
+.study .sidebar {
+  position: fixed;
+  width: inherit;
+  overflow-y: auto;
+  top: 58px;
+  bottom: 0; }
+  .study .sidebar h5, .study .sidebar .btn-group {
+    margin: 10px; }
 
 .centrify {
   display: flex;
@@ -41,6 +51,15 @@ body {
   align-items: center;
   flex-direction: column;
   height: 100%; }
+
+.info-box {
+  display: none;
+  border-color: #818A91; }
+
+*:hover + .info-box {
+  position: absolute;
+  display: inline-block;
+  margin-left: 10px; }
 
 .tab-content {
   margin-top: 10px; }

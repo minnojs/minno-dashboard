@@ -1,4 +1,5 @@
 // import classNames from '../classNames';
+import sortTable from './sortTable';
 export default poolComponent;
 
 const runningStatus = 'R';
@@ -22,24 +23,60 @@ let poolComponent = {
 		return ctrl;
 	},
 	view: ctrl => {
+		let list = ctrl.studyArr;
 		return m('.pool', [
 			m('h2', 'Study pool'),
-			m('table', {class:'table table-striped table-hover'}, [
-				// m('thead', [
-				// 	m('tr', [
-				// 		m('th')
-				// 	])
-				// ]),
+			m('table', {class:'table table-striped table-hover',onclick:sortTable(list)}, [
+				m('thead', [
+					m('tr', [
+						m('th[data-sort-by="studyId"]','ID'),
+						m('th[data-sort-by="studyUrl"]','URL'),
+						m('th[data-sort-by="rulesUrl"]','rules'),
+						m('th[data-sort-by="completedSessions"]','Completed'),
+						m('th[data-sort-by="creationDate"]','Date'),
+						m('th','Status'),
+						m('th','Actions')
+					])
+				]),
 				m('tbody', [
-					ctrl.studyArr.map(row => m('tr', [
+					list.map(row => m('tr', [
+						// ### ID
 						m('td', row.studyId),
+
+						// ### Study url
 						m('td', [
 							m('a', {href:row.studyUrl}, 'study')
 						]),
+
+						// ### Rules url
 						m('td', [
 							m('a', {href:row.rulesUrl}, 'rules')
 						]),
-						m('td', row.creationDate),
+
+						// ### Completions
+						m('td', [
+							(100 * row.completedSessions / row.targetCompletions).toFixed(1) + '% ',
+							m('i.fa.fa-info-circle'),
+							m('.card.info-box', [
+								m('.card-header', 'Completion Details'),
+								m('ul.list-group.list-group-flush',[
+									m('li.list-group-item', [
+										m('strong', 'Target Completions: '), row.targetCompletions
+									]),
+									m('li.list-group-item', [
+										m('strong', 'Started Sessions: '), row.startedSessions
+									]),
+									m('li.list-group-item', [
+										m('strong', 'Completed Sessions: '), row.completedSessions
+									])
+								])
+							])
+						]),
+
+						// ### Date
+						m('td', new Date(row.creationDate).toDateString()),
+
+						// ### Status
 						m('td', [
 							{
 								R: m('span.label.label-success', 'Running'),
@@ -47,29 +84,33 @@ let poolComponent = {
 								S: m('span.label.label-danger', 'Stopped')
 							}[row.studyStatus]
 						]),
+
+						// ### Actions
 						m('td', [
 							row.$pending
 								?
 								m('.loading')
 								:
-								[
-									row.studyStatus === 'P' ? m('button.btn.btn-success', {onclick: ctrl.play(row)}, [
+								m('.btn-group', [
+									row.studyStatus === 'P' ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play(row)}, [
 										m('i.fa.fa-play')
 									]) : '',
-									row.studyStatus === 'R' ? m('button.btn.btn-info', {onclick: ctrl.pause(row)}, [
+									row.studyStatus === 'R' ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
 										m('i.fa.fa-pause')
 									]) : '',
-									m('button.btn.btn-danger', {onclick: ctrl.pause(row)}, [
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
+										m('i.fa.fa-edit')
+									]),
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
 										m('i.fa.fa-close')
 									])
-								]
+								])
 						])
 					]))
 				])
 			])
 		]);
 	}
-
 };
 
 

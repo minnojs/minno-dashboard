@@ -20,11 +20,14 @@ let sidebarButtons = {
 		function create(name, content){
 			return response => {
 				if (response) {
-					study.create(name(), content())
-						.then(m.redraw)
-						.catch(response => messages.alert({
+					study.createFile(name(), content())
+						.then(response => {
+							m.route(`/editor/${study.id}/${response.id}`);
+							return response;
+						})
+						.catch(err => messages.alert({
 							heaser: 'Failed to create file:',
-							content: response.message
+							content: err.message
 						}));
 				}
 			};

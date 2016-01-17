@@ -13,7 +13,7 @@ let layout = route => {
 							m('a.nav-link',{href:'/studies', config:m.route},'Studies')
 						]),
 						m('li.nav-item',[
-							// m('a.nav-link',{href:'/pool', config:m.route},'Pool')
+							m('a.nav-link',{href:'/pool', config:m.route},'Pool')
 						])
 					])
 				]),

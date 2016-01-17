@@ -1,3 +1,5 @@
+$navbar-height:    58px;
+
 body {overflow:hidden;}
 
 .stringified {
@@ -11,15 +13,29 @@ body {overflow:hidden;}
 	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
 }
 
-.editor {
-  .btn-toolbar {
-    margin-bottom: 10px;
-  }
-}
+.study {
+	.col-md-10, .col-md-2 {
+		padding-left: 0;
+		padding-right: 0;
+	}
 
-.sidebar {
-	.btn-group {
-		margin: 10px 0;
+	.editor {
+	  .btn-toolbar {
+	    margin-bottom: 10px;
+	  }
+	}
+
+	.sidebar {
+		position: fixed;
+		width: inherit;
+		overflow-y: auto;
+		top: $navbar-height;
+		bottom: 0;
+
+
+		h5, .btn-group {
+			margin: 10px;
+		}
 	}
 }
 
@@ -29,6 +45,17 @@ body {overflow:hidden;}
 	align-items:center;
 	flex-direction:column;
 	height: 100%;
+}
+
+.info-box {
+	display: none;
+	border-color: #818A91;
+}
+
+*:hover + .info-box {
+	position: absolute;
+	display: inline-block;
+	margin-left: 10px;
 }
 
 .tab-content {

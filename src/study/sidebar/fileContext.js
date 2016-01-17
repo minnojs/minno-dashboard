@@ -7,7 +7,6 @@ let downloadSupport = !window.externalHost && 'download' in document.createEleme
 
 let fileContext = (file, study) => {
 	let menu = [
-		//{icon:'fa-plus', text:'New File', action: () => study.create('new.js')},
 		{icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 		{separator:true},
 		{icon:'fa-download', text:'Download', action: downloadFile},

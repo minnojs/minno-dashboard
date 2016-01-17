@@ -21,13 +21,13 @@ let editorLayoutComponent = {
 	},
 	view: ctrl => {
 		let study = ctrl.study;
-		return m('.row', [
+		return m('.row.study', [
 			study.loaded
 				? [
-					m('.sidebar.col-md-2', [
+					m('.col-md-2', [
 						m.component(sidebarComponent, study)
 					]),
-					m('.main.col-md-10',[
+					m('.col-md-10',[
 						m.component(editorComponent, study)
 					])
 				]
