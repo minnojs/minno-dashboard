@@ -7,10 +7,11 @@
   };
 
   babelHelpers;
-  function sortTable(list) {
+  function sortTable(list, sortByProp) {
   	return function (e) {
   		var prop = e.target.getAttribute('data-sort-by');
   		if (prop) {
+  			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
   			var first = list[0];
   			list.sort(function (a, b) {
   				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
@@ -38,7 +39,8 @@
   					return console.log(row);
   				};
   			},
-  			studyArr: []
+  			studyArr: [],
+  			sortBy: m.prop()
   		};
 
   		fetch('/admin/studyData', { method: 'post' }).then(function (request) {
@@ -51,7 +53,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.studyArr;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list) }, [m('thead', [m('tr', [m('th[data-sort-by="studyId"]', 'ID'), m('th[data-sort-by="studyUrl"]', 'URL'), m('th[data-sort-by="rulesUrl"]', 'rules'), m('th[data-sort-by="completedSessions"]', 'Completed'), m('th[data-sort-by="creationDate"]', 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.map(function (row) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.map(function (row) {
   			return m('tr', [
   			// ### ID
   			m('td', row.studyId),
@@ -79,6 +81,10 @@
   			m('td', [row.$pending ? m('.loading') : m('.btn-group', [row.studyStatus === 'P' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play(row) }, [m('i.fa.fa-play')]) : '', row.studyStatus === 'R' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
+  };
+
+  var thConfig = function thConfig(prop, current) {
+  	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
   };
 
   var checkStatus = function checkStatus(response) {

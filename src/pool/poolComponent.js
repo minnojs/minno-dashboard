@@ -12,7 +12,8 @@ let poolComponent = {
 			play: (row) => ()=> console.log(row),
 			pause: (row) => ()=> console.log(row),
 			remove: (row) => ()=> console.log(row),
-			studyArr: []
+			studyArr: [],
+			sortBy: m.prop()
 		};
 
 		fetch('/admin/studyData', {method:'post'})
@@ -26,14 +27,14 @@ let poolComponent = {
 		let list = ctrl.studyArr;
 		return m('.pool', [
 			m('h2', 'Study pool'),
-			m('table', {class:'table table-striped table-hover',onclick:sortTable(list)}, [
+			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 				m('thead', [
 					m('tr', [
-						m('th[data-sort-by="studyId"]','ID'),
-						m('th[data-sort-by="studyUrl"]','URL'),
-						m('th[data-sort-by="rulesUrl"]','rules'),
-						m('th[data-sort-by="completedSessions"]','Completed'),
-						m('th[data-sort-by="creationDate"]','Date'),
+						m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
+						m('th', thConfig('studyUrl',ctrl.sortBy), 'URL'),
+						m('th', thConfig('rulesUrl',ctrl.sortBy), 'rules'),
+						m('th', thConfig('completedSessions',ctrl.sortBy), 'Completed'),
+						m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
 						m('th','Status'),
 						m('th','Actions')
 					])
@@ -112,6 +113,9 @@ let poolComponent = {
 		]);
 	}
 };
+
+let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
+
 
 
 

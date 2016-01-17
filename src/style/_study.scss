@@ -1,0 +1,25 @@
+.study {
+	.col-md-10, .col-md-2 {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.editor {
+	  .btn-toolbar {
+	    margin-bottom: 10px;
+	  }
+	}
+
+	.sidebar {
+		position: fixed;
+		width: inherit;
+		overflow-y: auto;
+		top: $navbar-height;
+		bottom: 0;
+
+
+		h5, .btn-group {
+			margin: 10px;
+		}
+	}
+}

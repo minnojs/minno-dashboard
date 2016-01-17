@@ -1,0 +1,17 @@
+th[data-sort-by]{
+	&:before {
+		content:"\f0dc";
+		font-family: FontAwesome;
+  		font-weight: normal;
+  		font-style: normal;
+  		display: inline-block;
+  		text-decoration: inherit;
+  		margin-right: 5px;
+
+  		opacity: 0.5;
+	}
+
+	&.active:before {opacity:1}
+
+
+}

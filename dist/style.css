@@ -29,22 +29,6 @@ body {
   height: 300px;
   font-size: 18px; }
 
-.study .col-md-10, .study .col-md-2 {
-  padding-left: 0;
-  padding-right: 0; }
-
-.study .editor .btn-toolbar {
-  margin-bottom: 10px; }
-
-.study .sidebar {
-  position: fixed;
-  width: inherit;
-  overflow-y: auto;
-  top: 58px;
-  bottom: 0; }
-  .study .sidebar h5, .study .sidebar .btn-group {
-    margin: 10px; }
-
 .centrify {
   display: flex;
   justify-content: center;
@@ -308,3 +292,32 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1050; }
+
+.study .col-md-10, .study .col-md-2 {
+  padding-left: 0;
+  padding-right: 0; }
+
+.study .editor .btn-toolbar {
+  margin-bottom: 10px; }
+
+.study .sidebar {
+  position: fixed;
+  width: inherit;
+  overflow-y: auto;
+  top: 58px;
+  bottom: 0; }
+  .study .sidebar h5, .study .sidebar .btn-group {
+    margin: 10px; }
+
+th[data-sort-by]:before {
+  content: "\f0dc";
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  text-decoration: inherit;
+  margin-right: 5px;
+  opacity: 0.5; }
+
+th[data-sort-by].active:before {
+  opacity: 1; }
