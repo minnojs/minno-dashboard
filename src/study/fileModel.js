@@ -109,11 +109,9 @@ var jshintOptions = {
 
 const fileFactory = fileObj => {
 	let file = Object.create(filePrototype);
-	let url = file.url = fileObj.url;
+	let url = fileObj.url;
 
-	Object.assign(file, {
-		studyID			: fileObj.studyID,
-		isDir			: fileObj.isDir,
+	Object.assign(file, fileObj, {
 		name			: url.substring(url.lastIndexOf('/')+1),
 		type			: url.substring(url.lastIndexOf('.')+1),
 		id				: fileObj.id,
@@ -130,6 +128,8 @@ const fileFactory = fileObj => {
 	});
 
 	file.content(fileObj.content || '');
+
+	if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(file => Object.assign(file, {studyID: fileObj.studyID}));
 
 	return file;
 

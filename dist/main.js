@@ -212,11 +212,9 @@
 
   var fileFactory = function fileFactory(fileObj) {
   	var file = Object.create(filePrototype);
-  	var url = file.url = fileObj.url;
+  	var url = fileObj.url;
 
-  	Object.assign(file, {
-  		studyID: fileObj.studyID,
-  		isDir: fileObj.isDir,
+  	Object.assign(file, fileObj, {
   		name: url.substring(url.lastIndexOf('/') + 1),
   		type: url.substring(url.lastIndexOf('.') + 1),
   		id: fileObj.id,
@@ -233,6 +231,10 @@
   	});
 
   	file.content(fileObj.content || '');
+
+  	if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(function (file) {
+  		return Object.assign(file, { studyID: fileObj.studyID });
+  	});
 
   	return file;
 
@@ -280,9 +282,35 @@
   		});
   	},
   	getFile: function getFile(id) {
-  		return this.files().find(function (file) {
-  			return file.id === id;
-  		});
+  		return getById(id, this.files());
+
+  		function getById(id, files) {
+  			var _iteratorNormalCompletion = true;
+  			var _didIteratorError = false;
+  			var _iteratorError = undefined;
+
+  			try {
+  				for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+  					var file = _step.value;
+
+  					if (file.id == id) return file;
+  					if (file.files) return getById(id, file.files);
+  				}
+  			} catch (err) {
+  				_didIteratorError = true;
+  				_iteratorError = err;
+  			} finally {
+  				try {
+  					if (!_iteratorNormalCompletion && _iterator.return) {
+  						_iterator.return();
+  					}
+  				} finally {
+  					if (_didIteratorError) {
+  						throw _iteratorError;
+  					}
+  				}
+  			}
+  		}
   	},
   	createFile: function createFile(name) {
   		var _this2 = this;
@@ -309,10 +337,16 @@
   		var _this3 = this;
 
   		return this.getFile(fileId).del().then(function () {
-  			var cleanFiles = _this3.files().filter(function (file) {
-  				return file.id !== fileId;
-  			});
-  			_this3.files(cleanFiles);
+  			_this3.files(filterById(fileId, _this3.files()));
+
+  			function filterById(id, files) {
+  				return files && files.filter(function (file) {
+  					return file.id !== id;
+  				}).map(function (file) {
+  					if (Array.isArray(file.files)) file.files = filterById(id, file.files);
+  					return file;
+  				});
+  			}
   		});
   	}
   };
@@ -1059,10 +1093,11 @@
   };
 
   var fileEditorComponent = {
-  	controller: function controller(study) {
+  	controller: function controller(_ref) {
+  		var study = _ref.study;
+
   		var id = m.route.param('fileID');
   		var file = study.getFile(id);
-
   		var ctrl = {
   			file: file
   		};
@@ -1110,6 +1145,7 @@
   	open: function open(menu) {
   		return function (e) {
   			e.preventDefault();
+  			e.stopPropagation();
 
   			contextMenuComponent.vm.menu(menu);
   			contextMenuComponent.vm.show(true);
@@ -1165,6 +1201,7 @@
   		}).then(function (ok) {
   			if (ok) return study.del(file.id);
   		}).then(m.redraw).catch(function (err) {
+  			throw err;
   			err.response.json().then(function (response) {
   				messages.alert({
   					header: 'Delete failed:',
@@ -1177,35 +1214,28 @@
   	} // end delete file
   };
 
-  var filesComponent = {
-  	view: function view(ctrl, study) {
-  		var files = study.files();
-  		return m('.files', [m('ul', files.map(function (file) {
-  			return m.component(nodeComponent, { file: file, study: study });
-  		}))]);
-  	}
-  };
-
   var nodeComponent = {
   	controller: function controller(_ref) {
   		var file = _ref.file;
 
   		return {
-  			isDir: file.isDir,
-  			isOpen: false,
   			isCurrent: m.route.param('fileID') === file.id
   		};
   	},
   	view: function view(ctrl, _ref2) {
   		var file = _ref2.file;
   		var study = _ref2.study;
+  		var filesVM = _ref2.filesVM;
 
+  		var vm = filesVM(file.id); // vm is created by the study component, it exposes a "isOpen" and "isChanged" properties
   		return m('li.file-node', {
   			key: file.id,
   			class: classNames({
-  				open: ctrl.isOpen
+  				open: vm.isOpen()
   			}),
-  			onclick: choose(file),
+  			onclick: file.isDir ? function () {
+  				return vm.isOpen(!vm.isOpen());
+  			} : choose(file),
   			oncontextmenu: fileContext(file, study)
   		}, [m('a.wholerow', {
   			unselectable: 'on',
@@ -1214,12 +1244,9 @@
   			})
   		}, m.trust('&nbsp;')), m('i.fa.fa-fw', {
   			class: classNames({
-  				'fa-caret-right': ctrl.isDir && !ctrl.isOpen,
-  				'fa-caret-down': ctrl.isDir && ctrl.isOpen
-  			}),
-  			onclick: ctrl.isDir ? function () {
-  				return ctrl.isOpen = !ctrl.isOpen;
-  			} : null
+  				'fa-caret-right': file.isDir && !vm.isOpen(),
+  				'fa-caret-down': file.isDir && vm.isOpen()
+  			})
   		}), m('a', [m('i.fa.fa-fw.fa-file-o', {
   			class: classNames({
   				'fa-file-code-o': /(js)$/.test(file.type),
@@ -1228,15 +1255,28 @@
   				'fa-file-pdf-o': /(pdf)$/.test(file.type),
   				'fa-folder-o': file.isDir
   			})
-  		}), ' ' + file.name])]);
+  		}), ' ' + file.name, file.isDir ? m.component(filesComponent, { study: study, filesVM: filesVM, files: file.files }) : ''])]);
   	}
   };
 
   var choose = function choose(file) {
   	return function (e) {
+  		e.stopPropagation();
   		e.preventDefault();
   		m.route('/editor/' + file.studyID + '/' + encodeURIComponent(file.id));
   	};
+  };
+
+  var filesComponent = {
+  	view: function view(ctrl, _ref) {
+  		var study = _ref.study;
+  		var files = _ref.files;
+  		var filesVM = _ref.filesVM;
+
+  		return m('.files', [m('ul', files.map(function (file) {
+  			return m.component(nodeComponent, { file: file, study: study, key: file.id, filesVM: filesVM });
+  		}))]);
+  	}
   };
 
   var pipWizard = function pipWizard(_ref) {
@@ -1370,13 +1410,16 @@
   };
 
   var sidebarComponent = {
-  	view: function view(ctrl, study) {
-  		return m('.sidebar', [m('h5', [study.id]), m.component(sidebarButtons, { study: study }), m.component(filesComponent, study)]);
+  	view: function view(ctrl, _ref) {
+  		var study = _ref.study;
+  		var filesVM = _ref.filesVM;
+
+  		return m('.sidebar', [m('h5', study.id), m.component(sidebarButtons, { study: study }), m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() })]);
   	}
   };
 
   var study = undefined;
-
+  var filesVM = undefined;
   var editorLayoutComponent = {
   	controller: function controller() {
   		var id = m.route.param('studyID');
@@ -1385,14 +1428,34 @@
   			study.get().then(m.redraw);
   		}
 
-  		var ctrl = { study: study };
+  		if (!filesVM) filesVM = viewModelMap({
+  			isOpen: m.prop(false),
+  			isChanged: m.prop(false)
+  		});
+
+  		var ctrl = { study: study, filesVM: filesVM };
 
   		return ctrl;
   	},
   	view: function view(ctrl) {
   		var study = ctrl.study;
-  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, study)]), m('.col-md-10', [m.component(fileEditorComponent, study)])] : '']);
+  		var filesVM = ctrl.filesVM;
+  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, { study: study, filesVM: filesVM })]), m('.col-md-10', [m.component(fileEditorComponent, { study: study, filesVM: filesVM })])] : '']);
   	}
+  };
+
+  // http://lhorie.github.io/mithril-blog/mapping-view-models.html
+  var viewModelMap = function viewModelMap(signature) {
+  	var map = {};
+  	return function (key) {
+  		if (!map[key]) {
+  			map[key] = {};
+  			for (var prop in signature) {
+  				map[key][prop] = m.prop(signature[prop]());
+  			}
+  		}
+  		return map[key];
+  	};
   };
 
   var mainComponent = {

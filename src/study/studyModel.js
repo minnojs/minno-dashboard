@@ -28,11 +28,17 @@ let studyPrototype = {
 	},
 
 	getFile(id){
-		return this.files().find(file => file.id === id);
+		return getById(id, this.files());
+
+		function getById(id, files){
+			for (let file of files){
+				if (file.id == id) return file;
+				if (file.files) return getById(id, file.files);
+			}
+		}
 	},
 
 	createFile(name, content=''){
-
 		return fetch(this.apiURL() + '/file', {
 			method:'post',
 			credentials: 'same-origin',
@@ -57,9 +63,18 @@ let studyPrototype = {
 	del(fileId){
 		return this.getFile(fileId).del()
 			.then(() => {
-				let cleanFiles = this.files().filter(file => file.id !== fileId);
-				this.files(cleanFiles);
+				this.files(filterById(fileId, this.files()));
+
+				function filterById(id, files){
+					return files && files
+						.filter(file => file.id !== id)
+						.map(file => {
+							if (Array.isArray(file.files)) file.files = filterById(id, file.files);
+							return file;
+						});
+				}
 			});
+
 	}
 };
 

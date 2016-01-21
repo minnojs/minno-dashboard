@@ -231,6 +231,12 @@ body {
   white-space: nowrap;
   cursor: pointer;
   height: 24px; }
+  .files li.file-node .files {
+    display: none; }
+  .files li.file-node.open {
+    height: auto; }
+    .files li.file-node.open .files {
+      display: block; }
   .files li.file-node .wholerow {
     width: 100%;
     position: absolute;

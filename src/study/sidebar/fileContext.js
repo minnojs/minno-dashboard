@@ -40,6 +40,7 @@ let fileContext = (file, study) => {
 		})
 		.then(m.redraw)
 		.catch( err => {
+			throw err;
 			err.response.json()
 				.then(response => {
 					messages.alert({

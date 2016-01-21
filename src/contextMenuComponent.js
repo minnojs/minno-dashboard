@@ -36,6 +36,7 @@ let contextMenuComponent = {
 
 	open: menu => e => {
 		e.preventDefault();
+		e.stopPropagation();
 
 		contextMenuComponent.vm.menu(menu);
 		contextMenuComponent.vm.show(true);

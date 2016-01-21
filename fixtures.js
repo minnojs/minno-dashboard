@@ -73,7 +73,16 @@ var files = isMac
 		}
 	];
 
-files.push({id:'images', url:'/test/images', isDir:true});
+files.push({id:'images', url:'/test/images', isDir:true, files: [
+	{
+		'id': 'wm1_nc.jpg',
+		'url': '/test/images/wm1_nc.jpg'
+	},
+	{
+		'id': 'bf14_nc.jpg',
+		'url': '/test/images/bf14_nc.jpg'
+	}
+]});
 files.push({id:'someFile.grg', url:'/test/someFile.grg'});
 
 router.route('/files/:studyID')
