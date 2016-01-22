@@ -1,5 +1,5 @@
 import filesComponent from './filesComponent';
-import classNames from '../../classNames';
+import classNames from 'utils/classNames';
 import fileContext from './fileContext';
 
 export default nodeComponent;

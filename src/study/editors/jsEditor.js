@@ -1,7 +1,7 @@
 import editorComponent from './ace/editorComponent';
 import syntaxComponent from './ace/syntaxComponent';
 import validatorComponent from './ace/validatorComponent';
-import classNames from '../../classNames';
+import classNames from 'utils/classNames';
 
 export default jsEditor;
 

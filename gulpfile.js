@@ -17,6 +17,13 @@ gulp.task('bundle', function(){
 			// any option supported by rollup can be set here, including sourceMap
 			sourceMap: true,
 			plugins: [
+				{resolveId: function(id, importer){
+					var path = require('path');
+					if (!importer) return;
+					if (!/^[\.]*\//.test(id)) {
+						return path.resolve( './src', id + '.js');
+					}
+				}},
 				babel({exclude: 'node_modules/**',  'presets': [ 'es2015-rollup' ]})
 			]
 		}))

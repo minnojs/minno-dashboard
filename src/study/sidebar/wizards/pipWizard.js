@@ -1,4 +1,4 @@
-import messages from '../../../messagesComponent';
+import messages from 'utils/messagesComponent';
 export default pipWizard;
 let pipWizard = ({name, content}) => {
 	return messages.prompt({

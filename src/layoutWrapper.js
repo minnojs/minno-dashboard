@@ -1,5 +1,5 @@
-import contextMenu from './contextMenuComponent';
-import messages from './messagesComponent';
+import contextMenu from 'utils/contextMenuComponent';
+import messages from 'utils/messagesComponent';
 export default layout;
 
 let layout = route => {

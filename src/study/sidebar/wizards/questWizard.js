@@ -1,4 +1,4 @@
-import messages from '../../../messagesComponent';
+import messages from 'utils/messagesComponent';
 export default questWizard;
 let questWizard = ({name, content}) => {
 	return messages.prompt({

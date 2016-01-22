@@ -1,4 +1,4 @@
-import messages from '../../../messagesComponent';
+import messages from 'utils/messagesComponent';
 import aceComponent from './aceComponent';
 export default editorPage;
 

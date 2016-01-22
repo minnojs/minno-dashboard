@@ -2,11 +2,10 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers;
   function sortTable(list, sortByProp) {
   	return function (e) {
   		var prop = e.target.getAttribute('data-sort-by');
@@ -40,10 +39,11 @@
   				};
   			},
   			studyArr: [],
+  			globalSearch: m.prop(''),
   			sortBy: m.prop()
   		};
 
-  		fetch('/admin/studyData', { method: 'post' }).then(function (request) {
+  		fetch('/admin/studyData', { method: 'post', body: JSON.stringify({ action: 'getAllPoolStudies' }) }).then(function (request) {
   			return request.json();
   		}).then(function (json) {
   			return ctrl.studyArr = json;
@@ -53,7 +53,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.studyArr;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.map(function (row) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.filter(studyFilter(ctrl)).map(function (row) {
   			return m('tr', [
   			// ### ID
   			m('td', row.studyId),
@@ -83,9 +83,20 @@
   	}
   };
 
+  // @TODO: bad idiom! should change things within the object, not the object itself.
   var thConfig = function thConfig(prop, current) {
   	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
   };
+
+  function studyFilter(ctrl) {
+  	return function (row) {
+  		return includes(row.studyId, ctrl.globalSearch()) || includes(row.studyUrl, ctrl.globalSearch()) || includes(row.rulesUrl, ctrl.globalSearch());
+  	};
+
+  	function includes(val, search) {
+  		return typeof val === 'string' && val.includes(search);
+  	}
+  }
 
   var checkStatus = function checkStatus(response) {
   	if (response.status >= 200 && response.status < 300) {
@@ -242,12 +253,8 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  				args[_key] = arguments[_key];
-  			}
-
-  			if (args.length) {
-  				store = args[0];
+  			if (arguments.length) {
+  				store = arguments[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -624,7 +631,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -882,7 +889,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -1026,7 +1033,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':

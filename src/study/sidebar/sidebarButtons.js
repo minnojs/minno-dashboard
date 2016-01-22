@@ -1,4 +1,4 @@
-import messages from '../../messagesComponent';
+import messages from 'utils/messagesComponent';
 import pipWizard from './wizards/pipWizard';
 import questWizard from './wizards/questWizard';
 import managerWizard from './wizards/managerWizard';

@@ -1,4 +1,4 @@
-// import classNames from '../classNames';
+// import classNames from '/utils/classNames';
 import sortTable from './sortTable';
 export default poolComponent;
 
@@ -13,10 +13,11 @@ let poolComponent = {
 			pause: (row) => ()=> console.log(row),
 			remove: (row) => ()=> console.log(row),
 			studyArr: [],
+			globalSearch: m.prop(''),
 			sortBy: m.prop()
 		};
 
-		fetch('/admin/studyData', {method:'post'})
+		fetch('/admin/studyData', {method:'post', body: JSON.stringify({action: 'getAllPoolStudies'})})
 			.then(request => request.json())
 			.then(json => ctrl.studyArr = json)
 			.then(m.redraw);
@@ -30,6 +31,11 @@ let poolComponent = {
 			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 				m('thead', [
 					m('tr', [
+						m('th', {colspan:7}, [
+							m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+						])
+					]),
+					m('tr', [
 						m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
 						m('th', thConfig('studyUrl',ctrl.sortBy), 'URL'),
 						m('th', thConfig('rulesUrl',ctrl.sortBy), 'rules'),
@@ -40,7 +46,7 @@ let poolComponent = {
 					])
 				]),
 				m('tbody', [
-					list.map(row => m('tr', [
+					list.filter(studyFilter(ctrl)).map(row => m('tr', [
 						// ### ID
 						m('td', row.studyId),
 
@@ -114,7 +120,19 @@ let poolComponent = {
 	}
 };
 
+// @TODO: bad idiom! should change things within the object, not the object itself.
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
+
+function studyFilter(ctrl){
+	return row =>
+		includes(row.studyId, ctrl.globalSearch()) ||
+		includes(row.studyUrl, ctrl.globalSearch()) ||
+		includes(row.rulesUrl, ctrl.globalSearch());
+
+	function includes(val, search){
+		return typeof val === 'string' && val.includes(search);
+	}
+}
 
 
 

@@ -1,4 +1,4 @@
-import messages from '../../../messagesComponent';
+import messages from 'utils/messagesComponent';
 export default managerWizard;
 let managerWizard = ({name, content}) => {
 	return messages.prompt({

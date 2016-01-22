@@ -1,5 +1,5 @@
 import editorComponent from './ace/editorComponent';
-import classNames from '../../classNames';
+import classNames from 'utils/classNames';
 
 export default xmlEditor;
 
