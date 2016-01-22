@@ -1,4 +1,4 @@
-import {toJSON, catchJSON, checkStatus} from './modelHelpers';
+import {toJSON, catchJSON, checkStatus} from 'utils/modelHelpers';
 export default fileFactory;
 let baseUrl = '/dashboard/dashboard';
 
@@ -44,8 +44,9 @@ let filePrototype = {
 			})
 		})
 			.then(checkStatus)
-			.then(()=>{
+			.then(response => {
 				this.sourceContent(this.content()); // update source content
+				return response;
 			})
 			.catch(catchJSON);
 	},

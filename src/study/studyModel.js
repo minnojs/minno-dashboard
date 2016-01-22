@@ -1,4 +1,4 @@
-import {toJSON, catchJSON, checkStatus} from './modelHelpers';
+import {toJSON, catchJSON, checkStatus} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 

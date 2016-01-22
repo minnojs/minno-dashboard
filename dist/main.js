@@ -6,6 +6,224 @@
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  var checkStatus = function checkStatus(response) {
+  	if (response.status >= 200 && response.status < 300) {
+  		return response;
+  	}
+
+  	var error = new Error(response.statusText);
+  	error.response = response;
+  	throw error;
+  };
+
+  var toJSON = function toJSON(response) {
+  	return response.json();
+  };
+
+  // extract info from status error
+  var catchJSON = function catchJSON(err) {
+  	return (err.response ? err.response.json() : Promise.reject()).catch(function () {
+  		return Promise.reject(err);
+  	}).then(function (json) {
+  		return Promise.reject(json);
+  	});
+  };
+
+  function fetchJson(url, options) {
+  	var opts = Object.assign({
+  		credentials: 'same-origin',
+  		headers: {
+  			'Accept': 'application/json',
+  			'Content-Type': 'application/json'
+  		}
+  	}, options);
+
+  	opts.body = JSON.stringify(options.body);
+
+  	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
+  }
+
+  var url = '/dashboard/StudyData';
+
+  var STATUS_RUNNING = 'R';
+  var STATUS_PAUSED = 'P';
+  function update(study) {
+  	var body = Object.assign({
+  		action: 'updateRulesTable'
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body });
+  }
+
+  function updateStatus(study, status) {
+  	return update(Object.assign({ studyStatus: status }, study));
+  }
+
+  function getAllPoolStudies() {
+  	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } });
+  }
+
+  var noop = function noop() {};
+
+  var messages = {
+  	vm: { isOpen: false },
+
+  	open: function open(type) {
+  		var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  		var promise = new Promise(function (resolve, reject) {
+  			messages.vm = { resolve: resolve, reject: reject, type: type, opts: opts, isOpen: true };
+  		});
+  		m.redraw();
+
+  		return promise;
+  	},
+
+  	close: function close(response) {
+  		var vm = messages.vm;
+  		vm.isOpen = false;
+  		if (typeof vm.resolve === 'function') vm.resolve(response);
+  		m.redraw();
+  	},
+
+  	alert: function alert(opts) {
+  		return messages.open('alert', opts);
+  	},
+
+  	confirm: function confirm(opts) {
+  		return messages.open('confirm', opts);
+  	},
+
+  	prompt: function prompt(opts) {
+  		return messages.open('prompt', opts);
+  	},
+
+  	view: function view() {
+  		var vm = messages.vm;
+  		var close = messages.close.bind(null, null);
+  		var stopPropagation = function stopPropagation(e) {
+  			return e.stopPropagation();
+  		};
+  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: close }, [m('.card.col-sm-5', [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
+  	},
+
+  	config: function config() {
+  		return function (element, isInitialized, context) {
+  			if (!isInitialized) {
+  				(function () {
+  					var handleKey = function handleKey(e) {
+  						if (e.keyCode == 27) {
+  							messages.close(null);
+  						}
+  						if (e.keyCode == 13) {
+  							messages.close(true);
+  						}
+  					};
+
+  					document.body.addEventListener('keyup', handleKey);
+
+  					context.onunload = function () {
+  						document.body.removeEventListener('keyup', handleKey);
+  					};
+  				})();
+  			}
+  		};
+  	},
+
+  	views: {
+  		alert: function alert() {
+  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  			var close = function close(response) {
+  				return messages.close.bind(null, response);
+  			};
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  		},
+
+  		confirm: function confirm() {
+  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  			var close = function close(response) {
+  				return messages.close.bind(null, response);
+  			};
+  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  		},
+
+  		/**
+     * Promise prompt(Object opts{header: String, content: String, name: Prop})
+     *
+     * where:
+     *   any Prop(any value)
+     */
+  		prompt: function prompt() {
+  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+  			var close = function close(response) {
+  				return messages.close.bind(null, response);
+  			};
+  			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', {
+  				onchange: m.withAttr('value', opts.prop || noop),
+  				config: function config(element, isInitialized) {
+  					if (!isInitialized) element.focus();
+  				}
+  			})]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
+  		}
+  	}
+  };
+
+  var studyPending = function studyPending(study, state) {
+  	study.$pending = state;
+  	m.redraw();
+  };
+
+  function play(study) {
+  	return messages.confirm({
+  		header: 'Continue Study:',
+  		content: 'Are you sure you want to continue "' + study.studyId + '"?'
+  	}).then(function (response) {
+  		if (response) {
+  			studyPending(study, true);
+  			return updateStatus(study, STATUS_RUNNING);
+  		}
+  	}).then(studyPending.bind(null, study, false)).catch(function (error) {
+  		studyPending(study, false);
+  		return messages.alert({
+  			header: 'Continue Study:',
+  			content: error.message
+  		});
+  	});
+  }
+
+  function pause(study) {
+  	return messages.confirm({
+  		header: 'Pause Study:',
+  		content: 'Are you sure you want to pause "' + study.studyId + '"?'
+  	}).then(function (response) {
+  		if (response) {
+  			studyPending(study, true);
+  			return updateStatus(study, STATUS_PAUSED);
+  		}
+  	}).then(studyPending.bind(null, study, false)).catch(function (error) {
+  		studyPending(study, false);
+  		return messages.alert({
+  			header: 'Pause Study:',
+  			content: error.message
+  		});
+  	});
+  }
+
+  var remove = function remove(study) {
+  	console.log(study);
+  };
+
+  var edit = function edit(study) {
+  	console.log(study);
+  };
+
+  var create$1 = function create(study) {
+  	console.log(study);
+  };
+
   function sortTable(list, sortByProp) {
   	return function (e) {
   		var prop = e.target.getAttribute('data-sort-by');
@@ -23,29 +241,17 @@
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
-  			play: function play(row) {
-  				return function () {
-  					return console.log(row);
-  				};
-  			},
-  			pause: function pause(row) {
-  				return function () {
-  					return console.log(row);
-  				};
-  			},
-  			remove: function remove(row) {
-  				return function () {
-  					return console.log(row);
-  				};
-  			},
+  			play: play,
+  			pause: pause,
+  			remove: remove,
+  			edit: edit,
+  			create: create$1,
   			studyArr: [],
   			globalSearch: m.prop(''),
   			sortBy: m.prop()
   		};
 
-  		fetch('/admin/studyData', { method: 'post', body: JSON.stringify({ action: 'getAllPoolStudies' }) }).then(function (request) {
-  			return request.json();
-  		}).then(function (json) {
+  		getAllPoolStudies().then(function (json) {
   			return ctrl.studyArr = json;
   		}).then(m.redraw);
 
@@ -53,32 +259,32 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.studyArr;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.filter(studyFilter(ctrl)).map(function (row) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
-  			m('td', row.studyId),
+  			m('td', study.studyId),
 
   			// ### Study url
-  			m('td', [m('a', { href: row.studyUrl }, 'study')]),
+  			m('td', [m('a', { href: study.studyUrl }, 'study')]),
 
   			// ### Rules url
-  			m('td', [m('a', { href: row.rulesUrl }, 'rules')]),
+  			m('td', [m('a', { href: study.rulesUrl }, 'rules')]),
 
   			// ### Completions
-  			m('td', [(100 * row.completedSessions / row.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), row.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), row.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), row.completedSessions])])])]),
+  			m('td', [(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
 
   			// ### Date
-  			m('td', new Date(row.creationDate).toDateString()),
+  			m('td', new Date(study.creationDate).toDateString()),
 
   			// ### Status
   			m('td', [({
   				R: m('span.label.label-success', 'Running'),
   				P: m('span.label.label-info', 'Paused'),
   				S: m('span.label.label-danger', 'Stopped')
-  			})[row.studyStatus]]),
+  			})[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [row.$pending ? m('.loading') : m('.btn-group', [row.studyStatus === 'P' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play(row) }, [m('i.fa.fa-play')]) : '', row.studyStatus === 'R' ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause(row) }, [m('i.fa.fa-close')])])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
   };
@@ -89,36 +295,14 @@
   };
 
   function studyFilter(ctrl) {
-  	return function (row) {
-  		return includes(row.studyId, ctrl.globalSearch()) || includes(row.studyUrl, ctrl.globalSearch()) || includes(row.rulesUrl, ctrl.globalSearch());
+  	return function (study) {
+  		return includes(study.studyId, ctrl.globalSearch()) || includes(study.studyUrl, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch());
   	};
 
   	function includes(val, search) {
   		return typeof val === 'string' && val.includes(search);
   	}
   }
-
-  var checkStatus = function checkStatus(response) {
-  	if (response.status >= 200 && response.status < 300) {
-  		return response;
-  	}
-
-  	var error = new Error(response.statusText);
-  	error.response = response;
-  	throw error;
-  };
-
-  var toJSON = function toJSON(response) {
-  	return response.json();
-  };
-
-  var catchJSON = function catchJSON(err) {
-  	return err.response.json().then(function (json) {
-  		return Promise.reject(json);
-  	}).catch(function () {
-  		return Promise.reject(err);
-  	});
-  };
 
   var baseUrl$1 = '/dashboard/dashboard';
 
@@ -160,8 +344,9 @@
   			body: JSON.stringify({
   				content: this.content
   			})
-  		}).then(checkStatus).then(function () {
+  		}).then(checkStatus).then(function (response) {
   			_this2.sourceContent(_this2.content()); // update source content
+  			return response;
   		}).catch(catchJSON);
   	},
   	del: function del() {
@@ -379,114 +564,6 @@
   			width: '100%',
   			height: '100%'
   		});
-  	}
-  };
-
-  var noop = function noop() {};
-
-  var messages = {
-  	vm: { isOpen: false },
-
-  	open: function open(type) {
-  		var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-  		var promise = new Promise(function (resolve, reject) {
-  			messages.vm = { resolve: resolve, reject: reject, type: type, opts: opts, isOpen: true };
-  		});
-  		m.redraw();
-
-  		return promise;
-  	},
-
-  	close: function close(response) {
-  		var vm = messages.vm;
-  		vm.isOpen = false;
-  		if (typeof vm.resolve === 'function') vm.resolve(response);
-  		m.redraw();
-  	},
-
-  	alert: function alert(opts) {
-  		return messages.open('alert', opts);
-  	},
-
-  	confirm: function confirm(opts) {
-  		return messages.open('confirm', opts);
-  	},
-
-  	prompt: function prompt(opts) {
-  		return messages.open('prompt', opts);
-  	},
-
-  	view: function view() {
-  		var vm = messages.vm;
-  		var close = messages.close.bind(null, null);
-  		var stopPropagation = function stopPropagation(e) {
-  			return e.stopPropagation();
-  		};
-  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: close }, [m('.card.col-sm-5', [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
-  	},
-
-  	config: function config() {
-  		return function (element, isInitialized, context) {
-  			if (!isInitialized) {
-  				(function () {
-  					var handleKey = function handleKey(e) {
-  						if (e.keyCode == 27) {
-  							messages.close(null);
-  						}
-  						if (e.keyCode == 13) {
-  							messages.close(true);
-  						}
-  					};
-
-  					document.body.addEventListener('keyup', handleKey);
-
-  					context.onunload = function () {
-  						document.body.removeEventListener('keyup', handleKey);
-  					};
-  				})();
-  			}
-  		};
-  	},
-
-  	views: {
-  		alert: function alert() {
-  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-  			var close = function close(response) {
-  				return messages.close.bind(null, response);
-  			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-  		},
-
-  		confirm: function confirm() {
-  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-  			var close = function close(response) {
-  				return messages.close.bind(null, response);
-  			};
-  			return [m('h4', opts.header), m('p.card-text', opts.content), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-  		},
-
-  		/**
-     * Promise prompt(Object opts{header: String, content: String, name: Prop})
-     *
-     * where:
-     *   any Prop(any value)
-     */
-  		prompt: function prompt() {
-  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-  			var close = function close(response) {
-  				return messages.close.bind(null, response);
-  			};
-  			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', {
-  				onchange: m.withAttr('value', opts.prop || noop),
-  				config: function config(element, isInitialized) {
-  					if (!isInitialized) element.focus();
-  				}
-  			})]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
-  		}
   	}
   };
 

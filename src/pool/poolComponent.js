@@ -1,24 +1,24 @@
-// import classNames from '/utils/classNames';
+import {getAllPoolStudies, STATUS_PAUSED, STATUS_RUNNING} from './poolModel';
+import {play, pause, remove, edit, create} from './poolActions';
+// import classNames from 'utils/classNames';
 import sortTable from './sortTable';
 export default poolComponent;
 
-const runningStatus = 'R';
-const pausedStatus = 'P';
-const stoppedStatus = 'S';
 
 let poolComponent = {
 	controller: () => {
 		const ctrl = {
-			play: (row) => ()=> console.log(row),
-			pause: (row) => ()=> console.log(row),
-			remove: (row) => ()=> console.log(row),
+			play: play,
+			pause: pause,
+			remove: remove,
+			edit: edit,
+			create: create,
 			studyArr: [],
 			globalSearch: m.prop(''),
 			sortBy: m.prop()
 		};
 
-		fetch('/admin/studyData', {method:'post', body: JSON.stringify({action: 'getAllPoolStudies'})})
-			.then(request => request.json())
+		getAllPoolStudies()
 			.then(json => ctrl.studyArr = json)
 			.then(m.redraw);
 
@@ -46,42 +46,42 @@ let poolComponent = {
 					])
 				]),
 				m('tbody', [
-					list.filter(studyFilter(ctrl)).map(row => m('tr', [
+					list.filter(studyFilter(ctrl)).map(study => m('tr', [
 						// ### ID
-						m('td', row.studyId),
+						m('td', study.studyId),
 
 						// ### Study url
 						m('td', [
-							m('a', {href:row.studyUrl}, 'study')
+							m('a', {href:study.studyUrl}, 'study')
 						]),
 
 						// ### Rules url
 						m('td', [
-							m('a', {href:row.rulesUrl}, 'rules')
+							m('a', {href:study.rulesUrl}, 'rules')
 						]),
 
 						// ### Completions
 						m('td', [
-							(100 * row.completedSessions / row.targetCompletions).toFixed(1) + '% ',
+							(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ',
 							m('i.fa.fa-info-circle'),
 							m('.card.info-box', [
 								m('.card-header', 'Completion Details'),
 								m('ul.list-group.list-group-flush',[
 									m('li.list-group-item', [
-										m('strong', 'Target Completions: '), row.targetCompletions
+										m('strong', 'Target Completions: '), study.targetCompletions
 									]),
 									m('li.list-group-item', [
-										m('strong', 'Started Sessions: '), row.startedSessions
+										m('strong', 'Started Sessions: '), study.startedSessions
 									]),
 									m('li.list-group-item', [
-										m('strong', 'Completed Sessions: '), row.completedSessions
+										m('strong', 'Completed Sessions: '), study.completedSessions
 									])
 								])
 							])
 						]),
 
 						// ### Date
-						m('td', new Date(row.creationDate).toDateString()),
+						m('td', new Date(study.creationDate).toDateString()),
 
 						// ### Status
 						m('td', [
@@ -89,26 +89,26 @@ let poolComponent = {
 								R: m('span.label.label-success', 'Running'),
 								P: m('span.label.label-info', 'Paused'),
 								S: m('span.label.label-danger', 'Stopped')
-							}[row.studyStatus]
+							}[study.studyStatus]
 						]),
 
 						// ### Actions
 						m('td', [
-							row.$pending
+							study.$pending
 								?
-								m('.loading')
+								m('.l', 'Loading...')
 								:
 								m('.btn-group', [
-									row.studyStatus === 'P' ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play(row)}, [
+									study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play.bind(null, study)}, [
 										m('i.fa.fa-play')
 									]) : '',
-									row.studyStatus === 'R' ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
+									study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
 										m('i.fa.fa-pause')
 									]) : '',
-									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
 										m('i.fa.fa-edit')
 									]),
-									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause(row)}, [
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
 										m('i.fa.fa-close')
 									])
 								])
@@ -124,10 +124,10 @@ let poolComponent = {
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
 
 function studyFilter(ctrl){
-	return row =>
-		includes(row.studyId, ctrl.globalSearch()) ||
-		includes(row.studyUrl, ctrl.globalSearch()) ||
-		includes(row.rulesUrl, ctrl.globalSearch());
+	return study =>
+		includes(study.studyId, ctrl.globalSearch()) ||
+		includes(study.studyUrl, ctrl.globalSearch()) ||
+		includes(study.rulesUrl, ctrl.globalSearch());
 
 	function includes(val, search){
 		return typeof val === 'string' && val.includes(search);
@@ -174,21 +174,21 @@ function studyFilter(ctrl){
 				</thead>
 				<tbody>
 					<tr ng-repeat="row in displayedCollection">
-						<td>{{row.studyId}}</td>
-						<td><a href="{{row.studyUrl}}">{{row.studyUrl}}</a></td>
-						<td>{{row.rulesUrl}}</td>
-						<td>{{row.creationDate | date:'short'}}</td>
-						<td ng-switch="row.studyStatus">
+						<td>{{study.studyId}}</td>
+						<td><a href="{{study.studyUrl}}">{{study.studyUrl}}</a></td>
+						<td>{{study.rulesUrl}}</td>
+						<td>{{study.creationDate | date:'short'}}</td>
+						<td ng-switch="study.studyStatus">
 							<span ng-switch-when="R" class="label label-success">Running</span>
 							<span ng-switch-when="P" class="label label-warning">Paused</span>
 							<span ng-switch-when="S" class="label label-danger">Stopped</span>
 						</td>
 
 						<td>
-							<div ng-if="row.$pending" class="loader">Loading...</div>
+							<div ng-if="study.$pending" class="loader">Loading...</div>
 
-							<div ng-if="!row.$pending">
-								<span ng-switch="row.studyStatus">
+							<div ng-if="!study.$pending">
+								<span ng-switch="study.studyStatus">
 									<button ng-switch-when="P" class="btn btn-success" type="button" ng-click="play(row)">
 										<span class="glyphicon glyphicon-play"></span>
 									</button>

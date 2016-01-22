@@ -1,4 +1,4 @@
-import {toJSON, checkStatus} from './modelHelpers';
+import {toJSON, checkStatus} from 'utils/modelHelpers';
 export default mainComponent;
 
 var mainComponent = {
