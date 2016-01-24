@@ -2,10 +2,11 @@
 
   var babelHelpers = {};
 
-  function babelHelpers_typeof (obj) {
+  babelHelpers.typeof = function (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  babelHelpers;
   var checkStatus = function checkStatus(response) {
   	if (response.status >= 200 && response.status < 300) {
   		return response;
@@ -190,7 +191,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -214,7 +215,7 @@
   		var newStudy = _ref.newStudy;
   		var close = _ref.close;
 
-  		var study = ['studyUrl', 'rulesUrl', 'targetCompletions', 'pauseUrl'].reduce(function (study, prop) {
+  		var study = ['rulesUrl', 'targetCompletions', 'pauseUrl'].reduce(function (study, prop) {
   			study[prop] = m.prop(oldStudy[prop] || '');
   			return study;
   		}, {});
@@ -231,7 +232,6 @@
   					);
   				};
   				var response = {
-  					studyUrl: study.studyUrl(),
   					rulesUrl: study.rulesUrl(),
   					targetCompletions: isNormalInteger(study.targetCompletions()),
   					pauseUrl: study.pauseUrl()
@@ -278,7 +278,8 @@
   			});
   		};
 
-  		return m('div', [m('h4', 'Study Editor'), m('.card-block', [m('.form-group', [m('label', 'Study ID'), m('p', [m('strong.form-control-static', oldStudy.studyId)])]),
+  		return m('div', [m('h4', 'Study Editor'), m('.card-block', [m('.form-group', [m('label', 'Study ID'), m('p', [m('strong.form-control-static', oldStudy.studyId)])]), m('.form-group', [m('label', 'Study URL'), m('p', [m('strong.form-control-static', oldStudy.studyUrl)])]),
+
   		// let isEmail = str  => /\S+@\S+\.\S+/.test(str);
   		// m('.form-group', {class:groupClasses(validity.userEmail)}, [
   		// 	m('label','User Email'),
@@ -291,28 +292,33 @@
   		// 	}),
   		// 	validationView(validity.userEmail, 'This row is required and must be a valid Email')
   		// ]),
-  		m('.form-group', { class: groupClasses(validity.studyUrl) }, [m('label', 'Study URL'), m('input.form-control', {
-  			placeholder: 'URL',
-  			value: study.studyUrl(),
-  			onkeyup: m.withAttr('value', study.studyUrl),
-  			class: inputClasses(validity.studyUrl)
-  		}), validationView(validity.studyUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.rulesUrl) }, [m('label', 'Rules File'), m('input.form-control', {
+  		// m('.form-group', {class:groupClasses(validity.studyUrl)}, [
+  		// 	m('label', 'Study URL'),
+  		// 	m('input.form-control', {
+  		// 		placeholder:'URL',
+  		// 		value: study.studyUrl(),
+  		// 		onkeyup: m.withAttr('value', study.studyUrl),
+  		// 		class:inputClasses(validity.studyUrl)
+  		// 	}),
+  		// 	validationView(validity.studyUrl, 'This row is required')
+  		// ]),
+  		m('.form-group', { class: groupClasses(validity.rulesUrl) }, [m('label', 'Rules File URL'), m('input.form-control', {
   			placeholder: 'Rules file URL',
   			value: study.rulesUrl(),
   			onkeyup: m.withAttr('value', study.rulesUrl),
   			class: inputClasses(validity.rulesUrl)
-  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')]), validationView(validity.rulesUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.targetCompletions) }, [m('label', 'Target number of sessions'), m('input.form-control', {
+  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')]), validationView(validity.rulesUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.pauseUrl) }, [m('label', 'Auto-pause file URL'), m('input.form-control', {
+  			placeholder: 'Auto pause file URL',
+  			value: study.pauseUrl(),
+  			onkeyup: m.withAttr('value', study.pauseUrl),
+  			class: inputClasses(validity.pauseUrl)
+  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.pauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'), miniButtonView(study.pauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'), miniButtonView(study.pauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')]), validationView(validity.pauseUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.targetCompletions) }, [m('label', 'Target number of sessions'), m('input.form-control', {
   			type: 'number',
   			placeholder: 'Target Sessions',
   			value: study.targetCompletions(),
   			onkeyup: m.withAttr('value', study.targetCompletions),
   			class: inputClasses(validity.targetCompletions)
-  		}), validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')]), m('.form-group', { class: groupClasses(validity.pauseUrl) }, [m('label', 'Auto-pause file URL'), m('input.form-control', {
-  			placeholder: 'Auto pause file URL',
-  			value: study.pauseUrl(),
-  			onkeyup: m.withAttr('value', study.pauseUrl),
-  			class: inputClasses(validity.pauseUrl)
-  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.pauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'), miniButtonView(study.pauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'), miniButtonView(study.pauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')]), validationView(validity.pauseUrl, 'This row is required')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  		}), validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
   	}
   };
 
@@ -404,7 +410,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
   		}
   	}).catch(function (error) {
   		studyPending(oldStudy, false);
@@ -461,22 +467,25 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('pauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
 
   			// ### Study url
-  			m('td', [m('a', { href: study.studyUrl }, 'study')]),
+  			m('td', [m('a', { href: study.studyUrl }, 'Study')]),
 
   			// ### Rules url
-  			m('td', [m('a', { href: study.rulesUrl }, 'rules')]),
+  			m('td', [m('a', { href: study.rulesUrl }, 'Rules')]),
+
+  			// ### Autopause url
+  			m('td', [m('a', { href: study.rulesUrl }, 'Autopause')]),
 
   			// ### Completions
   			m('td', [(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
 
   			// ### Date
-  			m('td', new Date(study.creationDate).toDateString()),
+  			m('td', formatDate(new Date(study.creationDate))),
 
   			// ### Status
   			m('td', [({
@@ -495,6 +504,13 @@
   var thConfig = function thConfig(prop, current) {
   	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
   };
+
+  function formatDate(date) {
+  	var pad = function pad(num) {
+  		return num < 10 ? '0' + num : num;
+  	};
+  	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
+  }
 
   function studyFilter(ctrl) {
   	return function (study) {
@@ -640,8 +656,12 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			if (arguments.length) {
-  				store = arguments[0];
+  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+  				args[_key] = arguments[_key];
+  			}
+
+  			if (args.length) {
+  				store = args[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1139,7 +1159,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -1283,7 +1303,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
   		case 'string':
   			break;
   		case 'number':

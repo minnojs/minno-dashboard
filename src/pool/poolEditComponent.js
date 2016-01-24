@@ -3,7 +3,7 @@ export default editComponent;
 
 let editComponent = {
 	controller({oldStudy, newStudy, close}){
-		let study = ['studyUrl', 'rulesUrl', 'targetCompletions', 'pauseUrl'].reduce((study, prop)=>{
+		let study = ['rulesUrl', 'targetCompletions', 'pauseUrl'].reduce((study, prop)=>{
 			study[prop] = m.prop(oldStudy[prop] || '');
 			return study;
 		}, {});
@@ -18,7 +18,6 @@ let editComponent = {
 			validity(){
 				let isNormalInteger = str => /^\+?(0|[1-9]\d*)$/.test(str);
 				let response = {
-					studyUrl: study.studyUrl(),
 					rulesUrl: study.rulesUrl(),
 					targetCompletions: isNormalInteger(study.targetCompletions()),
 					pauseUrl: study.pauseUrl()
@@ -63,6 +62,13 @@ let editComponent = {
 					])
 
 				]),
+				m('.form-group', [
+					m('label', 'Study URL'),
+					m('p',[
+						m('strong.form-control-static', oldStudy.studyUrl)
+					])
+				]),
+
 				// let isEmail = str  => /\S+@\S+\.\S+/.test(str);
 				// m('.form-group', {class:groupClasses(validity.userEmail)}, [
 				// 	m('label','User Email'),
@@ -75,18 +81,18 @@ let editComponent = {
 				// 	}),
 				// 	validationView(validity.userEmail, 'This row is required and must be a valid Email')
 				// ]),
-				m('.form-group', {class:groupClasses(validity.studyUrl)}, [
-					m('label', 'Study URL'),
-					m('input.form-control', {
-						placeholder:'URL',
-						value: study.studyUrl(),
-						onkeyup: m.withAttr('value', study.studyUrl),
-						class:inputClasses(validity.studyUrl)
-					}),
-					validationView(validity.studyUrl, 'This row is required')
-				]),
+				// m('.form-group', {class:groupClasses(validity.studyUrl)}, [
+				// 	m('label', 'Study URL'),
+				// 	m('input.form-control', {
+				// 		placeholder:'URL',
+				// 		value: study.studyUrl(),
+				// 		onkeyup: m.withAttr('value', study.studyUrl),
+				// 		class:inputClasses(validity.studyUrl)
+				// 	}),
+				// 	validationView(validity.studyUrl, 'This row is required')
+				// ]),
 				m('.form-group', {class:groupClasses(validity.rulesUrl)}, [
-					m('label', 'Rules File'),
+					m('label', 'Rules File URL'),
 					m('input.form-control', {
 						placeholder:'Rules file URL',
 						value: study.rulesUrl(),
@@ -97,17 +103,6 @@ let editComponent = {
 						miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')
 					]),
 					validationView(validity.rulesUrl, 'This row is required')
-				]),
-				m('.form-group', {class:groupClasses(validity.targetCompletions)}, [
-					m('label','Target number of sessions'),
-					m('input.form-control', {
-						type:'number',
-						placeholder:'Target Sessions',
-						value: study.targetCompletions(),
-						onkeyup: m.withAttr('value', study.targetCompletions),
-						class:inputClasses(validity.targetCompletions)
-					}),
-					validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')
 				]),
 				m('.form-group', {class:groupClasses(validity.pauseUrl)}, [
 					m('label', 'Auto-pause file URL'),
@@ -123,6 +118,17 @@ let editComponent = {
 						miniButtonView(study.pauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')
 					]),
 					validationView(validity.pauseUrl, 'This row is required')
+				]),
+				m('.form-group', {class:groupClasses(validity.targetCompletions)}, [
+					m('label','Target number of sessions'),
+					m('input.form-control', {
+						type:'number',
+						placeholder:'Target Sessions',
+						value: study.targetCompletions(),
+						onkeyup: m.withAttr('value', study.targetCompletions),
+						class:inputClasses(validity.targetCompletions)
+					}),
+					validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')
 				])
 			]),
 			m('.text-xs-right.btn-toolbar',[
