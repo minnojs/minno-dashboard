@@ -40,6 +40,10 @@ body {overflow:hidden;}
   background: #2882b5
 }
 
+.form-group{
+	input + .btn-toolbar {margin-top: 5px; margin-bottom:0;}
+}
+
 @import "./loader";
 @import "./context";
 @import "./files";

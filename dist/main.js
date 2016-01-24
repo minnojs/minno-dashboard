@@ -47,7 +47,9 @@
 
   var STATUS_RUNNING = 'R';
   var STATUS_PAUSED = 'P';
-  function update(study) {
+  var STATUS_STOP = 'S';
+
+  function updateStudy(study) {
   	var body = Object.assign({
   		action: 'updateRulesTable'
   	}, study);
@@ -56,7 +58,7 @@
   }
 
   function updateStatus(study, status) {
-  	return update(Object.assign({ studyStatus: status }, study));
+  	return updateStudy(Object.assign({ studyStatus: status }, study));
   }
 
   function getAllPoolStudies() {
@@ -86,14 +88,15 @@
   		m.redraw();
   	},
 
+  	custom: function custom(opts) {
+  		return messages.open('custom', opts);
+  	},
   	alert: function alert(opts) {
   		return messages.open('alert', opts);
   	},
-
   	confirm: function confirm(opts) {
   		return messages.open('confirm', opts);
   	},
-
   	prompt: function prompt(opts) {
   		return messages.open('prompt', opts);
   	},
@@ -104,7 +107,7 @@
   		var stopPropagation = function stopPropagation(e) {
   			return e.stopPropagation();
   		};
-  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: close }, [m('.card.col-sm-5', [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
+  		return m('.messages', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.messages-wrapper', { onclick: close }, [m('.card', { class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5' }, [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
   	},
 
   	config: function config() {
@@ -131,6 +134,11 @@
   	},
 
   	views: {
+  		custom: function custom() {
+  			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  			return opts.content;
+  		},
+
   		alert: function alert() {
   			var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
@@ -171,6 +179,143 @@
   	}
   };
 
+  // taken from here:
+  // https://github.com/JedWatson/classnames/blob/master/index.js
+  var hasOwn = ({}).hasOwnProperty;
+
+  function classNames() {
+  	var classes = '';
+
+  	for (var i = 0; i < arguments.length; i++) {
+  		var arg = arguments[i];
+  		if (!arg) continue;
+
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+
+  		if (argType === 'string' || argType === 'number') {
+  			classes += ' ' + arg;
+  		} else if (Array.isArray(arg)) {
+  			classes += ' ' + classNames.apply(null, arg);
+  		} else if (argType === 'object') {
+  			for (var key in arg) {
+  				if (hasOwn.call(arg, key) && arg[key]) {
+  					classes += ' ' + key;
+  				}
+  			}
+  		}
+  	}
+
+  	return classes.substr(1);
+  }
+
+  var editComponent = {
+  	controller: function controller(_ref) {
+  		var oldStudy = _ref.oldStudy;
+  		var newStudy = _ref.newStudy;
+  		var close = _ref.close;
+
+  		var study = ['studyUrl', 'rulesUrl', 'targetCompletions', 'pauseUrl'].reduce(function (study, prop) {
+  			study[prop] = m.prop(oldStudy[prop] || '');
+  			return study;
+  		}, {});
+
+  		// export study to calling component
+  		newStudy(study);
+
+  		var ctrl = {
+  			study: study,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var isNormalInteger = function isNormalInteger(str) {
+  					return (/^\+?(0|[1-9]\d*)$/.test(str)
+  					);
+  				};
+  				var response = {
+  					studyUrl: study.studyUrl(),
+  					rulesUrl: study.rulesUrl(),
+  					targetCompletions: isNormalInteger(study.targetCompletions()),
+  					pauseUrl: study.pauseUrl()
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl, _ref2) {
+  		var oldStudy = _ref2.oldStudy;
+
+  		var study = ctrl.study;
+  		var validity = ctrl.validity();
+  		var miniButtonView = function miniButtonView(prop, name, url) {
+  			return m('button.btn.btn-secondary.btn-sm', { onclick: prop.bind(null, url) }, name);
+  		};
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Study Editor'), m('.card-block', [m('.form-group', [m('label', 'Study ID'), m('p', [m('strong.form-control-static', oldStudy.studyId)])]),
+  		// let isEmail = str  => /\S+@\S+\.\S+/.test(str);
+  		// m('.form-group', {class:groupClasses(validity.userEmail)}, [
+  		// 	m('label','User Email'),
+  		// 	m('input.form-control', {
+  		// 		type:'email',
+  		// 		placeholder:'Email',
+  		// 		value: study.userEmail(),
+  		// 		onkeyup: m.withAttr('value', study.userEmail),
+  		// 		class:inputClasses(validity.userEmail)
+  		// 	}),
+  		// 	validationView(validity.userEmail, 'This row is required and must be a valid Email')
+  		// ]),
+  		m('.form-group', { class: groupClasses(validity.studyUrl) }, [m('label', 'Study URL'), m('input.form-control', {
+  			placeholder: 'URL',
+  			value: study.studyUrl(),
+  			onkeyup: m.withAttr('value', study.studyUrl),
+  			class: inputClasses(validity.studyUrl)
+  		}), validationView(validity.studyUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.rulesUrl) }, [m('label', 'Rules File'), m('input.form-control', {
+  			placeholder: 'Rules file URL',
+  			value: study.rulesUrl(),
+  			onkeyup: m.withAttr('value', study.rulesUrl),
+  			class: inputClasses(validity.rulesUrl)
+  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')]), validationView(validity.rulesUrl, 'This row is required')]), m('.form-group', { class: groupClasses(validity.targetCompletions) }, [m('label', 'Target number of sessions'), m('input.form-control', {
+  			type: 'number',
+  			placeholder: 'Target Sessions',
+  			value: study.targetCompletions(),
+  			onkeyup: m.withAttr('value', study.targetCompletions),
+  			class: inputClasses(validity.targetCompletions)
+  		}), validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')]), m('.form-group', { class: groupClasses(validity.pauseUrl) }, [m('label', 'Auto-pause file URL'), m('input.form-control', {
+  			placeholder: 'Auto pause file URL',
+  			value: study.pauseUrl(),
+  			onkeyup: m.withAttr('value', study.pauseUrl),
+  			class: inputClasses(validity.pauseUrl)
+  		}), m('p.text-muted.btn-toolbar', [miniButtonView(study.pauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'), miniButtonView(study.pauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'), miniButtonView(study.pauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')]), validationView(validity.pauseUrl, 'This row is required')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  	}
+  };
+
   var studyPending = function studyPending(study, state) {
   	study.$pending = state;
   	m.redraw();
@@ -183,7 +328,9 @@
   	}).then(function (response) {
   		if (response) {
   			studyPending(study, true);
-  			return updateStatus(study, STATUS_RUNNING);
+  			return updateStatus(study, STATUS_RUNNING).then(function () {
+  				return study.studyStatus = STATUS_RUNNING;
+  			});
   		}
   	}).then(studyPending.bind(null, study, false)).catch(function (error) {
   		studyPending(study, false);
@@ -201,7 +348,9 @@
   	}).then(function (response) {
   		if (response) {
   			studyPending(study, true);
-  			return updateStatus(study, STATUS_PAUSED);
+  			return updateStatus(study, STATUS_PAUSED).then(function () {
+  				return study.studyStatus = STATUS_PAUSED;
+  			});
   		}
   	}).then(studyPending.bind(null, study, false)).catch(function (error) {
   		studyPending(study, false);
@@ -212,21 +361,76 @@
   	});
   }
 
-  var remove = function remove(study) {
-  	console.log(study);
+  var remove = function remove(study, list) {
+  	return messages.confirm({
+  		header: 'Remove Study:',
+  		content: 'Are you sure you want to remove "' + study.studyId + '" from the pool?'
+  	}).then(function (response) {
+  		if (response) {
+  			studyPending(study, true);
+  			return updateStatus(study, STATUS_STOP)
+  			// we can't flatten the promise chain here, because we don't want this to happen on a cancel...
+  			.then(function () {
+  				list(list().filter(function (el) {
+  					return el !== study;
+  				}));
+  				m.redraw();
+  			});
+  		}
+  	}).catch(function (error) {
+  		studyPending(study, false);
+  		return messages.alert({
+  			header: 'Remove Study:',
+  			content: error.message
+  		});
+  	});
   };
 
-  var edit = function edit(study) {
-  	console.log(study);
+  var edit = function edit(oldStudy) {
+  	var newStudy = m.prop();
+  	return messages.custom({
+  		content: m.component(editComponent, { oldStudy: oldStudy, newStudy: newStudy, close: messages.close }),
+  		wide: true
+  	}).then(function (response) {
+  		if (response) {
+  			var _ret = (function () {
+  				studyPending(oldStudy, true);
+  				var study = Object.assign({}, oldStudy, unPropify(newStudy()));
+  				return {
+  					v: updateStudy(study).then(function () {
+  						Object.assign(oldStudy, study);
+  						studyPending(oldStudy, false);
+  					})
+  				};
+  			})();
+
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
+  		}
+  	}).catch(function (error) {
+  		studyPending(oldStudy, false);
+  		return messages.alert({
+  			header: 'Study Editor:',
+  			content: error.message
+  		});
+  	});
   };
 
   var create$1 = function create(study) {
   	console.log(study);
   };
 
-  function sortTable(list, sortByProp) {
+  var unPropify = function unPropify(obj) {
+  	return Object.keys(obj).reduce(function (result, key) {
+  		console.log(key);
+  		result[key] = obj[key]();
+  		return result;
+  	}, {});
+  };
+
+  function sortTable(listProp, sortByProp) {
   	return function (e) {
   		var prop = e.target.getAttribute('data-sort-by');
+  		var list = listProp();
   		if (prop) {
   			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
   			var first = list[0];
@@ -246,20 +450,18 @@
   			remove: remove,
   			edit: edit,
   			create: create$1,
-  			studyArr: [],
+  			list: m.prop([]),
   			globalSearch: m.prop(''),
   			sortBy: m.prop()
   		};
 
-  		getAllPoolStudies().then(function (json) {
-  			return ctrl.studyArr = json;
-  		}).then(m.redraw);
+  		getAllPoolStudies().then(ctrl.list).then(m.redraw);
 
   		return ctrl;
   	},
   	view: function view(ctrl) {
-  		var list = ctrl.studyArr;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list.filter(studyFilter(ctrl)).map(function (study) {
+  		var list = ctrl.list;
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'URL'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'rules'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
@@ -284,7 +486,7 @@
   			})[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-close')])])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
   };
@@ -696,35 +898,6 @@
   		return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
   	}
   };
-
-  // taken from here:
-  // https://github.com/JedWatson/classnames/blob/master/index.js
-  var hasOwn = ({}).hasOwnProperty;
-
-  function classNames() {
-  	var classes = '';
-
-  	for (var i = 0; i < arguments.length; i++) {
-  		var arg = arguments[i];
-  		if (!arg) continue;
-
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
-
-  		if (argType === 'string' || argType === 'number') {
-  			classes += ' ' + arg;
-  		} else if (Array.isArray(arg)) {
-  			classes += ' ' + classNames.apply(null, arg);
-  		} else if (argType === 'object') {
-  			for (var key in arg) {
-  				if (hasOwn.call(arg, key) && arg[key]) {
-  					classes += ' ' + key;
-  				}
-  			}
-  		}
-  	}
-
-  	return classes.substr(1);
-  }
 
   var xmlEditor = {
   	controller: function controller(args) {

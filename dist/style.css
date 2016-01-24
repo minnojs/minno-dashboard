@@ -51,6 +51,10 @@ body {
 .navbar {
   background: #2882b5; }
 
+.form-group input + .btn-toolbar {
+  margin-top: 5px;
+  margin-bottom: 0; }
+
 .loader,
 .loader:before,
 .loader:after {

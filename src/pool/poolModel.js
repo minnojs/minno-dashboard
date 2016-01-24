@@ -15,7 +15,7 @@ export function create(study){
 	return  fetchJson(url, {method: 'post', body: body});
 }
 
-export function update(study){
+export function updateStudy(study){
 	let body = Object.assign({
 		action:'updateRulesTable'
 	}, study);
@@ -24,7 +24,7 @@ export function update(study){
 }
 
 export function updateStatus(study, status){
-	return update(Object.assign({studyStatus:status}, study));
+	return updateStudy(Object.assign({studyStatus:status}, study));
 }
 
 export function getAllPoolStudies(){

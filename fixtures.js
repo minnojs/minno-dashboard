@@ -151,7 +151,7 @@ adminRouter.route('/studyData')
 		case 'updateRulesTable':
 			setTimeout(function(){
 				res.json({message:'cool'});
-			}, 2000);
+			}, 1000);
 		}
 	});
 

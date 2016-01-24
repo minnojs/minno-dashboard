@@ -21,17 +21,10 @@ let messages = {
 		m.redraw();
 	},
 
-	alert: opts => {
-		return messages.open('alert', opts);
-	},
-
-	confirm: opts => {
-		return messages.open('confirm', opts);
-	},
-
-	prompt: opts => {
-		return messages.open('prompt', opts);
-	},
+	custom: opts=>messages.open('custom', opts),
+	alert: opts => messages.open('alert', opts),
+	confirm: opts => messages.open('confirm', opts),
+	prompt: opts => messages.open('prompt', opts),
 
 	view: () => {
 		let vm = messages.vm;
@@ -43,7 +36,7 @@ let messages = {
 				:[
 					m('.overlay', {config:messages.config()}),
 					m('.messages-wrapper', {onclick:close}, [
-						m('.card.col-sm-5',[
+						m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5'}, [
 							m('.card-block', {onclick: stopPropagation}, [
 								messages.views[vm.type](vm.opts)
 							])
@@ -76,6 +69,8 @@ let messages = {
 	},
 
 	views: {
+		custom: (opts={}) => opts.content,
+
 		alert: (opts={}) => {
 			let close = response => messages.close.bind(null, response);
 			return [

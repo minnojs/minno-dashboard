@@ -1,6 +1,7 @@
-export default function sortTable(list, sortByProp) {
+export default function sortTable(listProp, sortByProp) {
 	return function(e) {
-		var prop = e.target.getAttribute('data-sort-by');
+		let prop = e.target.getAttribute('data-sort-by');
+		let list = listProp();
 		if (prop) {
 			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
 			var first = list[0];

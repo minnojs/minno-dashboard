@@ -13,19 +13,19 @@ let poolComponent = {
 			remove: remove,
 			edit: edit,
 			create: create,
-			studyArr: [],
+			list: m.prop([]),
 			globalSearch: m.prop(''),
 			sortBy: m.prop()
 		};
 
 		getAllPoolStudies()
-			.then(json => ctrl.studyArr = json)
+			.then(ctrl.list)
 			.then(m.redraw);
 
 		return ctrl;
 	},
 	view: ctrl => {
-		let list = ctrl.studyArr;
+		let list = ctrl.list;
 		return m('.pool', [
 			m('h2', 'Study pool'),
 			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
@@ -46,7 +46,7 @@ let poolComponent = {
 					])
 				]),
 				m('tbody', [
-					list.filter(studyFilter(ctrl)).map(study => m('tr', [
+					list().filter(studyFilter(ctrl)).map(study => m('tr', [
 						// ### ID
 						m('td', study.studyId),
 
@@ -108,7 +108,7 @@ let poolComponent = {
 									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
 										m('i.fa.fa-edit')
 									]),
-									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
 										m('i.fa.fa-close')
 									])
 								])
