@@ -150,7 +150,7 @@ adminRouter.route('/studyData')
 			break;
 		case 'updateRulesTable':
 			setTimeout(function(){
-				res.json({message:'cool'});
+				res.json({error:2});
 			}, 1000);
 			break;
 
