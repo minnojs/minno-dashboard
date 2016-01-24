@@ -2,11 +2,10 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers;
   var checkStatus = function checkStatus(response) {
   	if (response.status >= 200 && response.status < 300) {
   		return response;
@@ -64,6 +63,14 @@
 
   function getAllPoolStudies() {
   	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } });
+  }
+
+  function getStudyId(study) {
+  	var body = Object.assign({
+  		action: 'getStudyId'
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body });
   }
 
   var noop = function noop() {};
@@ -191,7 +198,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -208,6 +215,17 @@
 
   	return classes.substr(1);
   }
+
+  /**
+   * Create edit component
+   * Promise editMessage({oldStudy:Object, newStudy:Prop})
+   */
+  var editMessage = function editMessage(args) {
+  	return messages.custom({
+  		content: m.component(editComponent, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  };
 
   var editComponent = {
   	controller: function controller(_ref) {
@@ -322,9 +340,88 @@
   	}
   };
 
-  var studyPending = function studyPending(study, state) {
-  	study.$pending = state;
-  	m.redraw();
+  /**
+   * Create edit component
+   * Promise editMessage({newStudy:Prop})
+   */
+  var createMessage = function createMessage(args) {
+  	return messages.custom({
+  		content: m.component(createComponent, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  };
+
+  var createComponent = {
+  	controller: function controller(_ref) {
+  		var newStudy = _ref.newStudy;
+  		var close = _ref.close;
+
+  		var study = newStudy({
+  			userEmail: m.prop(''),
+  			studyUrl: m.prop('')
+  		});
+
+  		var ctrl = {
+  			study: study,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var isEmail = function isEmail(str) {
+  					return (/\S+@\S+\.\S+/.test(str)
+  					);
+  				};
+  				var response = {
+  					studyUrl: study.studyUrl(),
+  					userEmail: isEmail(study.userEmail())
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var study = ctrl.study;
+  		var validity = ctrl.validity();
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Create Study'), m('.card-block', [m('.form-group', { class: groupClasses(validity.userEmail) }, [m('label', 'User Email'), m('input.form-control', {
+  			type: 'email',
+  			placeholder: 'Email',
+  			value: study.userEmail(),
+  			onkeyup: m.withAttr('value', study.userEmail),
+  			class: inputClasses(validity.userEmail)
+  		}), validationView(validity.userEmail, 'This row is required and must be a valid Email')]), m('.form-group', { class: groupClasses(validity.studyUrl) }, [m('label', 'Study URL'), m('input.form-control', {
+  			placeholder: 'Study URL',
+  			value: study.studyUrl(),
+  			onkeyup: m.withAttr('value', study.studyUrl),
+  			class: inputClasses(validity.studyUrl)
+  		}), validationView(validity.studyUrl, 'This row is required')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'Proceed')])]);
+  	}
   };
 
   function play(study) {
@@ -333,17 +430,11 @@
   		content: 'Are you sure you want to continue "' + study.studyId + '"?'
   	}).then(function (response) {
   		if (response) {
-  			studyPending(study, true);
+  			studyPending(study, true)();
   			return updateStatus(study, STATUS_RUNNING).then(function () {
   				return study.studyStatus = STATUS_RUNNING;
-  			});
+  			}).catch(reportError('Continue Study')).then(studyPending(study, false));
   		}
-  	}).then(studyPending.bind(null, study, false)).catch(function (error) {
-  		studyPending(study, false);
-  		return messages.alert({
-  			header: 'Continue Study:',
-  			content: error.message
-  		});
   	});
   }
 
@@ -353,17 +444,11 @@
   		content: 'Are you sure you want to pause "' + study.studyId + '"?'
   	}).then(function (response) {
   		if (response) {
-  			studyPending(study, true);
+  			studyPending(study, true)();
   			return updateStatus(study, STATUS_PAUSED).then(function () {
   				return study.studyStatus = STATUS_PAUSED;
-  			});
+  			}).catch(reportError('Pause Study')).then(studyPending(study, false));
   		}
-  	}).then(studyPending.bind(null, study, false)).catch(function (error) {
-  		studyPending(study, false);
-  		return messages.alert({
-  			header: 'Pause Study:',
-  			content: error.message
-  		});
   	});
   }
 
@@ -373,61 +458,84 @@
   		content: 'Are you sure you want to remove "' + study.studyId + '" from the pool?'
   	}).then(function (response) {
   		if (response) {
-  			studyPending(study, true);
-  			return updateStatus(study, STATUS_STOP)
-  			// we can't flatten the promise chain here, because we don't want this to happen on a cancel...
-  			.then(function () {
-  				list(list().filter(function (el) {
+  			studyPending(study, true)();
+  			return updateStatus(study, STATUS_STOP).then(function () {
+  				return list(list().filter(function (el) {
   					return el !== study;
   				}));
-  				m.redraw();
-  			});
+  			}).catch(reportError('Remove Study')).then(studyPending(study, false));
   		}
-  	}).catch(function (error) {
-  		studyPending(study, false);
-  		return messages.alert({
-  			header: 'Remove Study:',
-  			content: error.message
-  		});
   	});
   };
 
   var edit = function edit(oldStudy) {
   	var newStudy = m.prop();
-  	return messages.custom({
-  		content: m.component(editComponent, { oldStudy: oldStudy, newStudy: newStudy, close: messages.close }),
-  		wide: true
-  	}).then(function (response) {
+  	return editMessage({ oldStudy: oldStudy, newStudy: newStudy }).then(function (response) {
   		if (response) {
   			var _ret = (function () {
-  				studyPending(oldStudy, true);
+  				studyPending(oldStudy, true)();
   				var study = Object.assign({}, oldStudy, unPropify(newStudy()));
   				return {
   					v: updateStudy(study).then(function () {
-  						Object.assign(oldStudy, study);
-  						studyPending(oldStudy, false);
-  					})
+  						return Object.assign(oldStudy, study);
+  					}) // update study in view
+  					.catch(reportError('Study Editor')).then(studyPending(oldStudy, false))
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
   		}
-  	}).catch(function (error) {
-  		studyPending(oldStudy, false);
-  		return messages.alert({
-  			header: 'Study Editor:',
-  			content: error.message
-  		});
   	});
   };
 
-  var create$1 = function create(study) {
-  	console.log(study);
+  var create$1 = function create(list) {
+  	var newStudy = m.prop();
+  	return createMessage({ newStudy: newStudy }).then(function (response) {
+  		if (response) getStudyId(newStudy()).then(function (response) {
+  			return Object.assign(unPropify(newStudy()), response);
+  		}) // add response data to "newStudy"
+  		.then(editNewStudy);
+  	});
+
+  	function editNewStudy(oldStudy) {
+  		var newStudy = m.prop();
+  		return editMessage({ oldStudy: oldStudy, newStudy: newStudy }).then(function (response) {
+  			if (response) {
+  				var _ret2 = (function () {
+  					var study = Object.assign({
+  						startedSessions: 0,
+  						completedSessions: 0,
+  						creationDate: new Date(),
+  						studyStatus: STATUS_RUNNING
+  					}, oldStudy, unPropify(newStudy()));
+  					return {
+  						v: updateStudy(study).then(function () {
+  							return list().push(study);
+  						}).then(m.redraw).catch(reportError('Create Study'))
+  					};
+  				})();
+
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
+  			}
+  		});
+  	}
+  };
+
+  var reportError = function reportError(header) {
+  	return function (err) {
+  		return messages.alert({ header: header, content: err.message });
+  	};
+  };
+
+  var studyPending = function studyPending(study, state) {
+  	return function () {
+  		study.$pending = state;
+  		m.redraw();
+  	};
   };
 
   var unPropify = function unPropify(obj) {
   	return Object.keys(obj).reduce(function (result, key) {
-  		console.log(key);
   		result[key] = obj[key]();
   		return result;
   	}, {});
@@ -467,19 +575,19 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('pauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('pauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
 
   			// ### Study url
-  			m('td', [m('a', { href: study.studyUrl }, 'Study')]),
+  			m('td', [m('a', { href: study.studyUrl, target: '_blank' }, 'Study')]),
 
   			// ### Rules url
-  			m('td', [m('a', { href: study.rulesUrl }, 'Rules')]),
+  			m('td', [m('a', { href: study.rulesUrl, target: '_blank' }, 'Rules')]),
 
   			// ### Autopause url
-  			m('td', [m('a', { href: study.rulesUrl }, 'Autopause')]),
+  			m('td', [m('a', { href: study.pauseUrl, target: '_blank' }, 'Autopause')]),
 
   			// ### Completions
   			m('td', [(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
@@ -656,12 +764,8 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  				args[_key] = arguments[_key];
-  			}
-
-  			if (args.length) {
-  				store = args[0];
+  			if (arguments.length) {
+  				store = arguments[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1159,7 +1263,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -1303,7 +1407,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':

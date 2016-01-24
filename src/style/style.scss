@@ -1,7 +1,5 @@
 $navbar-height:    58px;
 
-body {overflow:hidden;}
-
 .stringified {
 	.pre {text-decoration: none;white-space: pre;}
 	.string { color: green; }
@@ -30,6 +28,7 @@ body {overflow:hidden;}
 	position: absolute;
 	display: inline-block;
 	margin-left: 10px;
+	z-index: 5;
 }
 
 .tab-content {

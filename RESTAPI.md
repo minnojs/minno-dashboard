@@ -26,16 +26,19 @@ A representation of a directory/study. Manages lists of files. Currently we're n
 
 Returns a JSON with the following stucture:
 
+ids MUST be unique within a study.
+paths are relative to the study.
+
 ```js
 {
     name: 'Study name',
     files: [
-        {id:'#hash', url:'full url of file', isDir:false},
-        {id:'#hash', url:'full url of file', isDir:false},
-        {id:'#hash', url:'full url of file', isDir:false},
+        {id:'#hash', path: 'path to the file within the study', url:'full url of file', isDir:false},
+        {id:'#hash', path: 'path to the file within the study', url:'full url of file', isDir:false},
+        {id:'#hash', path: 'path to the file within the study', url:'full url of file', isDir:false},
         {id:'#hash', path:'relative path to dir', isDir:true, files: [
-            {id:'#hash', url:'full url of file', isDir:false},
-            {id:'#hash', url:'full url of file', isDir:false}                
+            {id:'#hash', path: 'path to the file within the study', url:'full url of file', isDir:false},
+            {id:'#hash', path: 'path to the file within the study', url:'full url of file', isDir:false}                
         ]}
     ]
 }
@@ -61,6 +64,8 @@ It may leave content empty if the file is binary.
 
 #####    POST    /files/:studyId/file/ - create a file
 Creates a file for this studyId.
+If a file exists fail with appropriate status.
+A file is defined as a directory by adding the property `isDir:true`.
 
 Takes the following parameters:
 ```

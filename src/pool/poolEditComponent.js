@@ -1,5 +1,15 @@
 import classNames from 'utils/classNames';
-export default editComponent;
+import messages from 'utils/messagesComponent';
+export default editMessage;
+
+/**
+ * Create edit component
+ * Promise editMessage({oldStudy:Object, newStudy:Prop})
+ */
+let editMessage = args => messages.custom({
+	content: m.component(editComponent, Object.assign({close:messages.close}, args)),
+	wide: true
+});
 
 let editComponent = {
 	controller({oldStudy, newStudy, close}){

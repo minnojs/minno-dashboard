@@ -1,11 +1,7 @@
-import {updateStudy, updateStatus, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
+import {updateStudy, updateStatus, getStudyId, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
 import messages from 'utils/messagesComponent';
-import editComponent from './poolEditComponent';
-
-let studyPending = (study, state) => {
-	study.$pending = state;
-	m.redraw();
-};
+import editMessage from './poolEditComponent';
+import createMessage from './poolCreateComponent';
 
 export function play(study){
 	return messages.confirm({
@@ -14,18 +10,12 @@ export function play(study){
 	})
 	.then(response => {
 		if(response) {
-			studyPending(study, true);
+			studyPending(study, true)();
 			return updateStatus(study, STATUS_RUNNING)
-				.then(()=>study.studyStatus = STATUS_RUNNING);
+				.then(()=>study.studyStatus = STATUS_RUNNING)
+				.catch(reportError('Continue Study'))
+				.then(studyPending(study, false));
 		}
-	})
-	.then(studyPending.bind(null, study, false))
-	.catch(error => {
-		studyPending(study, false);
-		return messages.alert({
-			header: 'Continue Study:',
-			content: error.message
-		});
 	});
 }
 
@@ -36,18 +26,12 @@ export function pause(study){
 	})
 	.then(response => {
 		if(response) {
-			studyPending(study, true);
+			studyPending(study, true)();
 			return updateStatus(study, STATUS_PAUSED)
-				.then(()=>study.studyStatus = STATUS_PAUSED);
+				.then(()=>study.studyStatus = STATUS_PAUSED)
+				.catch(reportError('Pause Study'))
+				.then(studyPending(study, false));
 		}
-	})
-	.then(studyPending.bind(null, study, false))
-	.catch(error => {
-		studyPending(study, false);
-		return messages.alert({
-			header: 'Pause Study:',
-			content: error.message
-		});
 	});
 }
 
@@ -58,56 +42,67 @@ export let remove  = (study, list) => {
 	})
 	.then(response => {
 		if(response) {
-			studyPending(study, true);
+			studyPending(study, true)();
 			return updateStatus(study, STATUS_STOP)
-				// we can't flatten the promise chain here, because we don't want this to happen on a cancel...
-				.then(() => {
-					list(list().filter(el => el !== study));
-					m.redraw();
-				});
+				.then(() => list(list().filter(el => el !== study)))
+				.catch(reportError('Remove Study'))
+				.then(studyPending(study, false));
 		}
-	})
-	.catch(error => {
-		studyPending(study, false);
-		return messages.alert({
-			header: 'Remove Study:',
-			content: error.message
-		});
 	});
 };
 
 export let edit  = (oldStudy) => {
 	let newStudy = m.prop();
-	return messages.custom({
-		content: m.component(editComponent, {oldStudy, newStudy, close:messages.close}),
-		wide: true
-	})
-	.then(response => {
-		if (response) {
-			studyPending(oldStudy, true);
-			let study = Object.assign({}, oldStudy, unPropify(newStudy()));
-			return updateStudy(study)
-				.then(() => {
-					Object.assign(oldStudy, study);
-					studyPending(oldStudy, false);
-				});
-		}
-	})
-	.catch(error => {
-		studyPending(oldStudy, false);
-		return messages.alert({
-			header: 'Study Editor:',
-			content: error.message
+	return editMessage({oldStudy, newStudy})
+		.then(response => {
+			if (response) {
+				studyPending(oldStudy, true)();
+				let study = Object.assign({}, oldStudy, unPropify(newStudy()));
+				return updateStudy(study)
+					.then(() => Object.assign(oldStudy, study)) // update study in view
+					.catch(reportError('Study Editor'))
+					.then(studyPending(oldStudy, false));
+			}
 		});
-	});
 };
 
-export let create = (study) => {
-	console.log(study);
+export let create = (list) => {
+	let newStudy = m.prop();
+	return createMessage({newStudy})
+		.then(response => {
+			if (response) getStudyId(newStudy())
+				.then(response => Object.assign(unPropify(newStudy()), response)) // add response data to "newStudy"
+				.then(editNewStudy);
+		});
+
+	function editNewStudy(oldStudy){
+		let newStudy = m.prop();
+		return editMessage({oldStudy, newStudy})
+			.then(response => {
+				if (response) {
+					let study = Object.assign({
+						startedSessions: 0,
+						completedSessions: 0,
+						creationDate:new Date(),
+						studyStatus: STATUS_RUNNING
+					}, oldStudy, unPropify(newStudy()));
+					return updateStudy(study)
+						.then(() => list().push(study))
+						.then(m.redraw)
+						.catch(reportError('Create Study'));
+				}
+			});
+	}
+};
+
+let reportError = header => err => messages.alert({header, content: err.message});
+
+let studyPending = (study, state) => () => {
+	study.$pending = state;
+	m.redraw();
 };
 
 let unPropify = obj => Object.keys(obj).reduce((result, key) => {
-	console.log(key)
 	result[key] = obj[key]();
 	return result;
 }, {});

@@ -152,7 +152,15 @@ adminRouter.route('/studyData')
 			setTimeout(function(){
 				res.json({message:'cool'});
 			}, 1000);
+			break;
+
+		case 'getStudyId':
+			setTimeout(function(){
+				res.json({studyId: 'cool studyID adn stuff'});
+			}, 1000);
+			break;
 		}
+
 	});
 
 // REGISTER OUR ROUTES -------------------------------

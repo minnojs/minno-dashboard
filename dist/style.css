@@ -1,6 +1,3 @@
-body {
-  overflow: hidden; }
-
 .stringified .pre {
   text-decoration: none;
   white-space: pre; }
@@ -43,7 +40,8 @@ body {
 *:hover + .info-box {
   position: absolute;
   display: inline-block;
-  margin-left: 10px; }
+  margin-left: 10px;
+  z-index: 5; }
 
 .tab-content {
   margin-top: 10px; }

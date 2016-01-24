@@ -31,8 +31,15 @@ let poolComponent = {
 			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 				m('thead', [
 					m('tr', [
-						m('th', {colspan:7}, [
+						m('th', {colspan:8}, [
 							m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+						])
+					]),
+					m('tr', [
+						m('th.text-xs-center', {colspan:8}, [
+							m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
+								m('i.fa.fa-plus'), '  Add new study'
+							])
 						])
 					]),
 					m('tr', [
@@ -53,17 +60,17 @@ let poolComponent = {
 
 						// ### Study url
 						m('td', [
-							m('a', {href:study.studyUrl}, 'Study')
+							m('a', {href:study.studyUrl, target: '_blank'}, 'Study')
 						]),
 
 						// ### Rules url
 						m('td', [
-							m('a', {href:study.rulesUrl}, 'Rules')
+							m('a', {href:study.rulesUrl, target: '_blank'}, 'Rules')
 						]),
 
 						// ### Autopause url
 						m('td', [
-							m('a', {href:study.rulesUrl}, 'Autopause')
+							m('a', {href:study.pauseUrl, target: '_blank'}, 'Autopause')
 						]),
 
 						// ### Completions
