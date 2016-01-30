@@ -1,7 +1,8 @@
 import {getAllPoolStudies, STATUS_PAUSED, STATUS_RUNNING} from './poolModel';
 import {play, pause, remove, edit, create} from './poolActions';
 // import classNames from 'utils/classNames';
-import sortTable from './sortTable';
+import sortTable from 'utils/sortTable';
+import formatDate from 'utils/formatDate';
 export default poolComponent;
 
 
@@ -135,11 +136,6 @@ let poolComponent = {
 
 // @TODO: bad idiom! should change things within the object, not the object itself.
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
-
-function formatDate(date){
-	let pad = num => num < 10 ? '0' + num : num;
-	return `${pad(date.getMonth() + 1)}\\${pad(date.getDate())}\\${date.getFullYear()}`;
-}
 
 function studyFilter(ctrl){
 	return study =>

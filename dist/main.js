@@ -6,87 +6,88 @@
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  var checkStatus = function checkStatus(response) {
-  	if (response.status >= 200 && response.status < 300) {
-  		return response;
-  	}
+  // taken from here:
+  // https://github.com/JedWatson/classnames/blob/master/index.js
+  var hasOwn = ({}).hasOwnProperty;
 
-  	var error = new Error(response.statusText);
-  	error.response = response;
-  	throw error;
-  };
+  function classNames() {
+  	var classes = '';
 
-  var toJSON = function toJSON(response) {
-  	return response.json();
-  };
+  	for (var i = 0; i < arguments.length; i++) {
+  		var arg = arguments[i];
+  		if (!arg) continue;
 
-  // extract info from status error
-  var catchJSON = function catchJSON(err) {
-  	return (err.response ? err.response.json() : Promise.reject()).catch(function () {
-  		return Promise.reject(err);
-  	}).then(function (json) {
-  		return Promise.reject(json);
-  	});
-  };
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
-  function fetchJson(url, options) {
-  	var opts = Object.assign({
-  		credentials: 'same-origin',
-  		headers: {
-  			'Accept': 'application/json',
-  			'Content-Type': 'application/json'
+  		if (argType === 'string' || argType === 'number') {
+  			classes += ' ' + arg;
+  		} else if (Array.isArray(arg)) {
+  			classes += ' ' + classNames.apply(null, arg);
+  		} else if (argType === 'object') {
+  			for (var key in arg) {
+  				if (hasOwn.call(arg, key) && arg[key]) {
+  					classes += ' ' + key;
+  				}
+  			}
   		}
-  	}, options);
-
-  	opts.body = JSON.stringify(options.body);
-
-  	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
-  }
-
-  var url = '/dashboard/StudyData';
-
-  var STATUS_RUNNING = 'R';
-  var STATUS_PAUSED = 'P';
-  var STATUS_STOP = 'S';
-
-  function updateStudy(study) {
-  	var body = Object.assign({
-  		action: 'updateRulesTable'
-  	}, study);
-
-  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
-  }
-
-  function updateStatus(study, status) {
-  	return updateStudy(Object.assign({ studyStatus: status }, study)).then(interceptErrors);
-  }
-
-  function getAllPoolStudies() {
-  	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
-  }
-
-  function getStudyId(study) {
-  	var body = Object.assign({
-  		action: 'getStudyId'
-  	}, study);
-
-  	return fetchJson(url, { method: 'post', body: body });
-  }
-
-  function interceptErrors(response) {
-  	if (!response.error) {
-  		return response;
   	}
 
-  	var errors = {
-  		1: 'This ID already exists.',
-  		2: 'The study could not be found.',
-  		3: 'The rule file could not be found.',
-  		4: 'The rules file does not fit the "research" schema.'
-  	};
-
-  	return Promise.reject({ message: errors[response.error] });
+  	return classes.substr(1);
   }
+
+  /**
+   * Set this component into your layout then use any mouse event to open the context menu:
+   * oncontextmenu: contextMenuComponent.open([...menu])
+   *
+   * Example menu:
+   * [
+   * 	{icon:'fa-play', text:'begone'},
+   *	{icon:'fa-play', text:'asdf'},
+   *	{separator:true},
+   *	{icon:'fa-play', text:'wertwert', menu: [
+   *		{icon:'fa-play', text:'asdf'}
+   *	]}
+   * ]
+   */
+
+  var contextMenuComponent = {
+  	vm: {
+  		show: m.prop(false),
+  		style: m.prop({}),
+  		menu: m.prop([])
+  	},
+  	view: function view() {
+  		return m('.context-menu', {
+  			class: classNames({ 'show-context-menu': contextMenuComponent.vm.show() }),
+  			style: contextMenuComponent.vm.style()
+  		}, contextMenuComponent.vm.menu().map(menuNode));
+  	},
+
+  	open: function open(menu) {
+  		return function (e) {
+  			e.preventDefault();
+  			e.stopPropagation();
+
+  			contextMenuComponent.vm.menu(menu);
+  			contextMenuComponent.vm.show(true);
+  			contextMenuComponent.vm.style({
+  				left: e.pageX + 'px',
+  				top: e.pageY + 'px'
+  			});
+
+  			document.addEventListener('mousedown', onClick, false);
+  			function onClick() {
+  				contextMenuComponent.vm.show(false);
+  				document.removeEventListener('mousedown', onClick);
+  				m.redraw();
+  			}
+  		};
+  	}
+  };
+
+  var menuNode = function menuNode(node, key) {
+  	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
+  };
 
   var noop = function noop() {};
 
@@ -202,33 +203,184 @@
   	}
   };
 
-  // taken from here:
-  // https://github.com/JedWatson/classnames/blob/master/index.js
-  var hasOwn = ({}).hasOwnProperty;
-
-  function classNames() {
-  	var classes = '';
-
-  	for (var i = 0; i < arguments.length; i++) {
-  		var arg = arguments[i];
-  		if (!arg) continue;
-
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
-
-  		if (argType === 'string' || argType === 'number') {
-  			classes += ' ' + arg;
-  		} else if (Array.isArray(arg)) {
-  			classes += ' ' + classNames.apply(null, arg);
-  		} else if (argType === 'object') {
-  			for (var key in arg) {
-  				if (hasOwn.call(arg, key) && arg[key]) {
-  					classes += ' ' + key;
-  				}
-  			}
+  var layout = function layout(route) {
+  	return {
+  		view: function view() {
+  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
+  			m.component(messages)]);
   		}
+  	};
+  };
+
+  function sortTable(listProp, sortByProp) {
+  	return function (e) {
+  		var prop = e.target.getAttribute('data-sort-by');
+  		var list = listProp();
+  		if (prop) {
+  			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
+  			var first = list[0];
+  			list.sort(function (a, b) {
+  				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
+  			});
+  			if (first === list[0]) list.reverse();
+  		}
+  	};
+  }
+
+  function formatDate(date) {
+  	var pad = function pad(num) {
+  		return num < 10 ? '0' + num : num;
+  	};
+  	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
+  }
+
+  var checkStatus = function checkStatus(response) {
+  	if (response.status >= 200 && response.status < 300) {
+  		return response;
   	}
 
-  	return classes.substr(1);
+  	var error = new Error(response.statusText);
+  	error.response = response;
+  	throw error;
+  };
+
+  var toJSON = function toJSON(response) {
+  	return response.json();
+  };
+
+  // extract info from status error
+  var catchJSON = function catchJSON(err) {
+  	return (err.response ? err.response.json() : Promise.reject()).catch(function () {
+  		return Promise.reject(err);
+  	}).then(function (json) {
+  		return Promise.reject(json);
+  	});
+  };
+
+  function fetchJson(url, options) {
+  	var opts = Object.assign({
+  		credentials: 'same-origin',
+  		headers: {
+  			'Accept': 'application/json',
+  			'Content-Type': 'application/json'
+  		}
+  	}, options);
+
+  	opts.body = JSON.stringify(options.body);
+
+  	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
+  }
+
+  var dud = function dud(a) {
+  	return function () {
+  		return console.log(a);
+  	};
+  };
+
+  var downloadsComponent = {
+  	controller: function controller() {
+  		var ctrl = {
+  			list: m.prop([]),
+  			create: dud('create'),
+  			remove: dud('remove'),
+  			globalSearch: m.prop(''),
+  			sortBy: m.prop('studyId')
+  		};
+
+  		fetchJson('/dashboard/DashboardData', { method: 'post', body: { action: 'getAllDownloads' } }).then(ctrl.list).then(m.redraw);
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var list = ctrl.list;
+  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  			return m('tr', [
+  			// ### ID
+  			m('td', study.studyId),
+
+  			// ### Study url
+  			m('td', study.fileSize ? m('a', { href: study.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
+
+  			// ### Database
+  			m('td', study.db),
+
+  			// ### Filesize
+  			m('td', study.fileSize),
+
+  			// ### Date Added
+  			m('td', [formatDate(new Date(study.creationDate)), '  ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Creation Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Creation Date: '), formatDate(new Date(study.creationDate))]), m('li.list-group-item', [m('strong', 'Start Date: '), formatDate(new Date(study.startDate))]), m('li.list-group-item', [m('strong', 'End Date: '), formatDate(new Date(study.endDate))])])])]),
+
+  			// ### Status
+  			m('td', [({
+  				C: m('span.label.label-success', 'Complete'),
+  				R: m('span.label.label-info', 'Running'),
+  				X: m('span.label.label-danger', 'Error')
+  			})[study.studyStatus]]),
+
+  			// ### Actions
+  			m('td', [m('.btn-group', [m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
+  		})])])]);
+  	}
+  };
+
+  // @TODO: bad idiom! should change things within the object, not the object itself.
+  var thConfig$1 = function thConfig(prop, current) {
+  	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
+  };
+
+  function studyFilter$1(ctrl) {
+  	return function (study) {
+  		return includes(study.studyId, ctrl.globalSearch()) || includes(study.studyUrl, ctrl.globalSearch());
+  	};
+
+  	function includes(val, search) {
+  		return typeof val === 'string' && val.includes(search);
+  	}
+  }
+
+  var url = '/dashboard/StudyData';
+
+  var STATUS_RUNNING = 'R';
+  var STATUS_PAUSED = 'P';
+  var STATUS_STOP = 'S';
+
+  function updateStudy(study) {
+  	var body = Object.assign({
+  		action: 'updateRulesTable'
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
+  }
+
+  function updateStatus(study, status) {
+  	return updateStudy(Object.assign({ studyStatus: status }, study)).then(interceptErrors);
+  }
+
+  function getAllPoolStudies() {
+  	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
+  }
+
+  function getStudyId(study) {
+  	var body = Object.assign({
+  		action: 'getStudyId'
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body });
+  }
+
+  function interceptErrors(response) {
+  	if (!response.error) {
+  		return response;
+  	}
+
+  	var errors = {
+  		1: 'This ID already exists.',
+  		2: 'The study could not be found.',
+  		3: 'The rule file could not be found.',
+  		4: 'The rules file does not fit the "research" schema.'
+  	};
+
+  	return Promise.reject({ message: errors[response.error] });
   }
 
   /**
@@ -556,21 +708,6 @@
   	}, {});
   };
 
-  function sortTable(listProp, sortByProp) {
-  	return function (e) {
-  		var prop = e.target.getAttribute('data-sort-by');
-  		var list = listProp();
-  		if (prop) {
-  			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
-  			var first = list[0];
-  			list.sort(function (a, b) {
-  				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
-  			});
-  			if (first === list[0]) list.reverse();
-  		}
-  	};
-  }
-
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -627,13 +764,6 @@
   var thConfig = function thConfig(prop, current) {
   	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
   };
-
-  function formatDate(date) {
-  	var pad = function pad(num) {
-  		return num < 10 ? '0' + num : num;
-  	};
-  	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
-  }
 
   function studyFilter(ctrl) {
   	return function (study) {
@@ -1510,60 +1640,6 @@
   	}
   };
 
-  /**
-   * Set this component into your layout then use any mouse event to open the context menu:
-   * oncontextmenu: contextMenuComponent.open([...menu])
-   *
-   * Example menu:
-   * [
-   * 	{icon:'fa-play', text:'begone'},
-   *	{icon:'fa-play', text:'asdf'},
-   *	{separator:true},
-   *	{icon:'fa-play', text:'wertwert', menu: [
-   *		{icon:'fa-play', text:'asdf'}
-   *	]}
-   * ]
-   */
-
-  var contextMenuComponent = {
-  	vm: {
-  		show: m.prop(false),
-  		style: m.prop({}),
-  		menu: m.prop([])
-  	},
-  	view: function view() {
-  		return m('.context-menu', {
-  			class: classNames({ 'show-context-menu': contextMenuComponent.vm.show() }),
-  			style: contextMenuComponent.vm.style()
-  		}, contextMenuComponent.vm.menu().map(menuNode));
-  	},
-
-  	open: function open(menu) {
-  		return function (e) {
-  			e.preventDefault();
-  			e.stopPropagation();
-
-  			contextMenuComponent.vm.menu(menu);
-  			contextMenuComponent.vm.show(true);
-  			contextMenuComponent.vm.style({
-  				left: e.pageX + 'px',
-  				top: e.pageY + 'px'
-  			});
-
-  			document.addEventListener('mousedown', onClick, false);
-  			function onClick() {
-  				contextMenuComponent.vm.show(false);
-  				document.removeEventListener('mousedown', onClick);
-  				m.redraw();
-  			}
-  		};
-  	}
-  };
-
-  var menuNode = function menuNode(node, key) {
-  	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
-  };
-
   // download support according to modernizer
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1876,14 +1952,16 @@
   	}
   };
 
-  var layout = function layout(route) {
-  	return {
-  		view: function view() {
-  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
-  			m.component(messages)]);
-  		}
-  	};
+  var routes = {
+  	'studies': mainComponent,
+  	'/editor/:studyID': editorLayoutComponent,
+  	'/editor/:studyID/:fileID': editorLayoutComponent,
+  	'/pool': poolComponent,
+  	'/downloads': downloadsComponent
   };
+
+  var wrappedRoutes = mapObject(routes, layout);
+  m.route(document.body, 'studies', wrappedRoutes);
 
   /**
    * Map Object
@@ -1899,22 +1977,12 @@
    * where:
    * 	callbackFunction :: any Function(any value, String key, Object object)
    */
-  var mapObject = function mapObject(obj, cb) {
+  function mapObject(obj, cb) {
     return Object.keys(obj).reduce(function (result, key) {
       result[key] = cb(obj[key], key, obj);
       return result;
     }, {});
-  };
-
-  var routes = {
-    'studies': mainComponent,
-    '/editor/:studyID': editorLayoutComponent,
-    '/editor/:studyID/:fileID': editorLayoutComponent,
-    '/pool': poolComponent
-  };
-
-  var wrappedRoutes = mapObject(routes, layout);
-  m.route(document.body, 'studies', wrappedRoutes);
+  }
 
 })();
 //# sourceMappingURL=main.js.map

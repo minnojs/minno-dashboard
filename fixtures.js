@@ -163,8 +163,8 @@ adminRouter.route('/studyData')
 
 	});
 
-adminRouter.route('DashboardData')
-	.post('/',function(req,res){
+adminRouter.route('/DashboardData')
+	.post(function(req,res){
 		switch (req.body.action) {
 		case 'getAllDownloads':
 			var data = [];
@@ -193,11 +193,6 @@ adminRouter.route('DashboardData')
 			break;
 		}
 	});
-
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /dashboard
-app.use('/dashboard/DashboardData', router);
-
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
