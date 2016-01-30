@@ -163,6 +163,42 @@ adminRouter.route('/studyData')
 
 	});
 
+adminRouter.route('DashboardData')
+	.post('/',function(req,res){
+		switch (req.body.action) {
+		case 'getAllDownloads':
+			var data = [];
+			for (var i=0; i<10; i++){
+				data.push({
+					id: Math.random(),
+					studyId:(0|Math.random()*9e6).toString(36),
+					studyUrl:(0|Math.random()*9e6).toString(36),
+					db: Math.random() > 0.5 ? 'production' : 'development',
+					fileSize: Math.random() < 0.5 ? '' : '12Kb',
+					creationDate:new Date(new Date() * Math.random()),
+					startDate:new Date(new Date() * Math.random()),
+					endDate:new Date(new Date() * Math.random()),
+					studyStatus: ['R','C','X'][Math.floor(Math.random()*3)]
+				});
+			}
+			res.json(data);
+			break;
+		case 'download':
+			setTimeout(function(){
+				res.json({error:false, msg:'download error'});
+			},4000);
+			break;
+		case 'removeDownload':
+			res.json({error:'true', msg:'remove error'});
+			break;
+		}
+	});
+
+// REGISTER OUR ROUTES -------------------------------
+// all of our routes will be prefixed with /dashboard
+app.use('/dashboard/DashboardData', router);
+
+
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
