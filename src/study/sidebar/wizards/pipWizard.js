@@ -35,7 +35,7 @@ let template = () => `define(['pipAPI','pipScorer'], function(APIConstructor,Sco
 		],
 
 		stimuli: [
-			{media: 'Hellow World!!'}
+			{media: 'Hello World!!'}
 		],
 
 		interactions: [

@@ -315,12 +315,198 @@
   	return Promise.reject({ message: response.msg });
   }
 
+  // import $ from 'jquery';
+  var Pikaday = window.Pikaday;
+
+  var dateRangePicker = function dateRangePicker(args) {
+  	return m.component(pikadayRange, args);
+  };
+
+  var pikaday = {
+  	view: function view(ctrl, _ref) {
+  		var prop = _ref.prop;
+  		var options = _ref.options;
+
+  		return m('div', { config: pikaday.config(prop, options) });
+  	},
+  	config: function config(prop, options) {
+  		return function (element, isInitialized, ctx) {
+  			if (!isInitialized) {
+  				ctx.picker = new Pikaday(Object.assign({
+  					onSelect: prop,
+  					container: element
+  				}, options));
+
+  				element.appendChild(ctx.picker.el);
+  			}
+
+  			ctx.picker.setDate(prop());
+  		};
+  	}
+  };
+
+  /**
+   * args = {
+   * 	startValue: m.prop,
+   *  endValue: m.prop,
+   *  options: Object // specific daterange plugin options
+   * }
+   */
+
+  var pikadayRange = {
+  	view: function view(ctrl, args) {
+  		return m('div', [m('.figure', [m('strong', 'Start Date'), m('br'), m('.figure', { config: pikadayRange.configStart(args) })]), m.trust('&nbsp;'), m('.figure', [m('strong', 'End Date'), m('br'), m('.figure', { config: pikadayRange.configEnd(args) })])]);
+  	},
+  	configStart: function configStart(_ref2) {
+  		var startDate = _ref2.startDate;
+  		var endDate = _ref2.endDate;
+
+  		return function (element, isInitialized, ctx) {
+  			var picker = ctx.picker;
+
+  			if (!isInitialized) {
+  				picker = ctx.picker = new Pikaday({
+  					maxDate: new Date(),
+  					onSelect: function onSelect(date) {
+  						return startDate(date) && m.redraw();
+  					}
+  				});
+  				element.appendChild(picker.el);
+
+  				ctx.onunload = picker.destroy.bind(picker);
+  			}
+  			console.log(234234234234);
+
+  			picker.setDate(startDate(), true);
+
+  			picker.setEndRange(endDate());
+  			picker.setMaxDate(endDate());
+  			picker.setStartRange(startDate());
+  		};
+  	},
+  	configEnd: function configEnd(_ref3) {
+  		var startDate = _ref3.startDate;
+  		var endDate = _ref3.endDate;
+
+  		return function (element, isInitialized, ctx) {
+  			var picker = ctx.picker;
+
+  			if (!isInitialized) {
+  				picker = ctx.picker = new Pikaday({
+  					maxDate: new Date(),
+  					onSelect: function onSelect(date) {
+  						return endDate(date) && m.redraw();
+  					}
+  				});
+  				element.appendChild(picker.el);
+
+  				ctx.onunload = picker.destroy.bind(picker);
+  			}
+
+  			picker.setDate(endDate(), true);
+
+  			picker.setStartRange(startDate());
+  			picker.setMinDate(startDate());
+  			picker.setEndRange(endDate());
+  		};
+  	}
+  };
+
+  var createMessage$1 = (function (args) {
+  	return messages.custom({
+  		content: m.component(createComponent$1, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  })
+
+  var createComponent$1 = {
+  	controller: function controller(_ref) {
+  		var output = _ref.output;
+  		var close = _ref.close;
+
+  		var download = {
+  			studyId: m.prop(''),
+  			db: m.prop('test'),
+  			startDate: m.prop(new Date(0)),
+  			endDate: m.prop(new Date())
+  		};
+
+  		// export study to calling component
+  		output(download);
+
+  		var ctrl = {
+  			download: download,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var response = {
+  					studyId: download.studyId()
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var download = ctrl.download;
+  		var validity = ctrl.validity();
+  		var dayButtonView = function dayButtonView(name, days) {
+  			return m('button.btn.btn-secondary.btn-sm', { onclick: function onclick() {
+  					var d = new Date();
+  					d.setDate(d.getDate() - days);
+  					console.log(d);
+  					download.startDate(d);
+  					download.endDate(new Date());
+  				} }, name);
+  		};
+
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Request Download'), m('.card-block', [m('.form-group', { class: groupClasses(validity.studyId) }, [m('label', 'Study Id'), m('input.form-control', {
+  			config: focusConfig$2,
+  			placeholder: 'Study Id',
+  			value: download.studyId(),
+  			onkeyup: m.withAttr('value', download.studyId),
+  			class: inputClasses(validity.rulesUrl)
+  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')]), m('.form-group', [m('label', 'Database'), m('select.form-control', { onchange: m.withAttr('value', download.db) }, [m('option', { value: 'test', selected: download.db() === 'test' }, 'Development'), m('option', { value: 'warehouse', selected: download.db() === 'warehouse' }, 'Production')])]), m('.form-group', [m('label', 'Date Range'), dateRangePicker(download), m('p.text-muted.btn-toolbar', [dayButtonView('Last 7 Days', 7), dayButtonView('Last 30 Days', 30), dayButtonView('Last 90 Days', 90), dayButtonView('All times', 3650)])])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  	}
+  };
+
+  var focusConfig$2 = function focusConfig(element, isInitialized) {
+  	if (!isInitialized) element.focus();
+  };
+
   /**
    * Get all downloads
    */
 
-  var recursiveGetAll = debounce(getAll, 15000);
-
+  var recursiveGetAll = debounce(getAll, 5000);
   function getAll(_ref) {
   	var list = _ref.list;
   	var cancel = _ref.cancel;
@@ -386,20 +572,29 @@
    */
 
   function create$2() {
-  	console.log('Create');
+  	var output = m.prop();
+  	return createMessage$1({ output: output }).then(function (response) {
+  		console.log(output());
+  	});
   }
 
   var downloadsComponent = {
   	controller: function controller() {
+  		var list = m.prop([]);
+  		var cancelDownload = m.prop(false);
+
   		var ctrl = {
-  			list: m.prop([]),
+  			list: list,
   			create: create$2,
   			remove: remove$1,
   			globalSearch: m.prop(''),
   			sortBy: m.prop('studyId'),
-  			isDownloading: m.prop(false)
+  			onunload: function onunload() {
+  				cancelDownload(true);
+  			}
   		};
-  		recursiveGetAll({ list: ctrl.list, cancel: ctrl.isDownloading });
+
+  		getAll({ list: ctrl.list, cancel: cancelDownload });
 
   		return ctrl;
   	},
@@ -1897,7 +2092,7 @@
   };
 
   var template = function template() {
-  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hellow World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hello World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
   };
 
   var questWizard = function questWizard(_ref) {

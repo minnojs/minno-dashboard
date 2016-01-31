@@ -1,13 +1,13 @@
 import {getAllDownloads, removeDownload, createDownload, STATUS_RUNNING} from './downloadsModel';
+import createMessage from './downloadsCreate';
 import messages from 'utils/messagesComponent';
 
 /**
  * Get all downloads
  */
 
-export let recursiveGetAll = debounce(getAll, 15000);
-
-function getAll({list, cancel}){
+export let recursiveGetAll = debounce(getAll, 5000);
+export function getAll({list, cancel}){
 	return getAllDownloads()
 		.then(list)
 		.then(response => {
@@ -76,5 +76,9 @@ function doRemove(download, list){
  */
 
 export function create(){
-	console.log('Create');
+	let output = m.prop();
+	return createMessage({output})
+		.then(response => {
+			console.log(output());
+		});
 }

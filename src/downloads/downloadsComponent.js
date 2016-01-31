@@ -1,19 +1,25 @@
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
-import {recursiveGetAll, remove, create} from './downloadsActions';
+import {getAll, remove, create} from './downloadsActions';
 export default downloadsComponent;
 
 const downloadsComponent = {
 	controller(){
+		let list = m.prop([]);
+		let cancelDownload = m.prop(false);
+
 		const ctrl = {
-			list: m.prop([]),
+			list,
 			create: create,
 			remove: remove,
 			globalSearch: m.prop(''),
 			sortBy: m.prop('studyId'),
-			isDownloading: m.prop(false)
+			onunload(){
+				cancelDownload(true);
+			}
 		};
-		recursiveGetAll({list:ctrl.list, cancel: ctrl.isDownloading});
+
+		getAll({list:ctrl.list, cancel: cancelDownload});
 
 		return ctrl;
 	},

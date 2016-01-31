@@ -16,6 +16,7 @@
     "requirejs": "~2.1.22",
     "bootstrap": "4.0",
     "font-awesome": "fontawesome#~4.5.0",
-    "fetch": "~0.10.1"
+    "fetch": "~0.10.1",
+    "pikaday": "~1.4.0"
   }
 }
