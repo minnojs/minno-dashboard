@@ -43,9 +43,14 @@ $navbar-height:    58px;
 	input + .btn-toolbar {margin-top: 5px; margin-bottom:0;}
 }
 
+.backdrop .spinner {
+	font-size: 6em;
+	color: #5BC0DE;
+}
+
 @import "./loader";
 @import "./context";
 @import "./files";
-@import "./messages";
+@import "./backdrop";
 @import "./study";
 @import "./pool";

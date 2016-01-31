@@ -53,6 +53,10 @@
   margin-top: 5px;
   margin-bottom: 0; }
 
+.backdrop .spinner {
+  font-size: 6em;
+  color: #5BC0DE; }
+
 .loader,
 .loader:before,
 .loader:after {
@@ -280,7 +284,7 @@
       vertical-align: top;
       text-align: center; }
 
-.messages .overlay {
+.backdrop .overlay {
   position: fixed;
   top: 0;
   right: 0;
@@ -290,7 +294,7 @@
   background-color: #000;
   opacity: .5; }
 
-.messages .messages-wrapper {
+.backdrop .backdrop-content {
   position: fixed;
   top: 0;
   right: 0;

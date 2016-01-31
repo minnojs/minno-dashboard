@@ -1,4 +1,4 @@
-.messages {
+.backdrop {
 	.overlay {
 		position: fixed;
 		top: 0;
@@ -10,7 +10,7 @@
 		opacity: .5;
 	}
 
-	.messages-wrapper {
+	.backdrop-content {
 		position: fixed;
 		top: 0;
 		right: 0;

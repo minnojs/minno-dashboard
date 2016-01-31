@@ -46,7 +46,7 @@ let nodeComponent = {
 						})
 					}),
 					` ${file.name}`,
-					file.isDir ? m.component(filesComponent, {study, filesVM, files: file.files}) : ''
+					file.isDir ? m.component(filesComponent, {study, filesVM, files: file.files || []}) : ''
 				])
 			]
 		);

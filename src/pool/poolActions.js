@@ -1,7 +1,9 @@
 import {updateStudy, updateStatus, getStudyId, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
 import messages from 'utils/messagesComponent';
+import spinner from 'utils/spinnerComponent';
 import editMessage from './poolEditComponent';
 import createMessage from './poolCreateComponent';
+
 
 export function play(study){
 	return messages.confirm({
@@ -51,33 +53,37 @@ export let remove  = (study, list) => {
 	});
 };
 
-export let edit  = (oldStudy) => {
-	let newStudy = m.prop();
-	return editMessage({oldStudy, newStudy})
+export let edit  = (input) => {
+	let output = m.prop();
+	return editMessage({input, output})
 		.then(response => {
 			if (response) {
-				studyPending(oldStudy, true)();
-				let study = Object.assign({}, oldStudy, unPropify(newStudy()));
+				studyPending(input, true)();
+				let study = Object.assign({}, input, unPropify(output()));
 				return updateStudy(study)
-					.then(() => Object.assign(oldStudy, study)) // update study in view
+					.then(() => Object.assign(input, study)) // update study in view
 					.catch(reportError('Study Editor'))
-					.then(studyPending(oldStudy, false));
+					.then(studyPending(input, false));
 			}
 		});
 };
 
 export let create = (list) => {
-	let newStudy = m.prop();
-	return createMessage({newStudy})
+	let output = m.prop();
+	return createMessage({output})
 		.then(response => {
-			if (response) getStudyId(newStudy())
-				.then(response => Object.assign(unPropify(newStudy()), response)) // add response data to "newStudy"
-				.then(editNewStudy);
+			if (response) {
+				spinner.show();
+				getStudyId(output())
+					.then(response => Object.assign(unPropify(output()), response)) // add response data to "newStudy"
+					.then(spinner.hide)
+					.then(editNewStudy);
+			}
 		});
 
-	function editNewStudy(oldStudy){
-		let newStudy = m.prop();
-		return editMessage({oldStudy, newStudy})
+	function editNewStudy(input){
+		let output = m.prop();
+		return editMessage({input, output})
 			.then(response => {
 				if (response) {
 					let study = Object.assign({
@@ -85,7 +91,7 @@ export let create = (list) => {
 						completedSessions: 0,
 						creationDate:new Date(),
 						studyStatus: STATUS_RUNNING
-					}, oldStudy, unPropify(newStudy()));
+					}, input, unPropify(output()));
 					return updateStudy(study)
 						.then(() => list().push(study))
 						.then(m.redraw)

@@ -47,7 +47,7 @@ let poolComponent = {
 						m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
 						m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
 						m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
-						m('th', thConfig('pauseUrl',ctrl.sortBy), 'Autopause'),
+						m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
 						m('th', thConfig('completedSessions',ctrl.sortBy), 'Completed'),
 						m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
 						m('th','Status'),
@@ -71,7 +71,7 @@ let poolComponent = {
 
 						// ### Autopause url
 						m('td', [
-							m('a', {href:study.pauseUrl, target: '_blank'}, 'Autopause')
+							m('a', {href:study.autopauseUrl, target: '_blank'}, 'Autopause')
 						]),
 
 						// ### Completions

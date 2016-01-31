@@ -4,7 +4,7 @@ export default createMessage;
 
 /**
  * Create edit component
- * Promise editMessage({newStudy:Prop})
+ * Promise editMessage({output:Prop})
  */
 let createMessage = args => messages.custom({
 	content: m.component(createComponent, Object.assign({close:messages.close}, args)),
@@ -12,8 +12,8 @@ let createMessage = args => messages.custom({
 });
 
 let createComponent = {
-	controller({newStudy, close}){
-		let study = newStudy({
+	controller({output, close}){
+		let study = output({
 			userEmail: m.prop(''),
 			studyUrl: m.prop('')
 		});
@@ -61,6 +61,7 @@ let createComponent = {
 				m('.form-group', {class:groupClasses(validity.userEmail)}, [
 					m('label','User Email'),
 					m('input.form-control', {
+						config: focusConfig,
 						type:'email',
 						placeholder:'Email',
 						value: study.userEmail(),
@@ -86,4 +87,8 @@ let createComponent = {
 			])
 		]);
 	}
+};
+
+let focusConfig = (element, isInitialized) => {
+	if (!isInitialized) element.focus();
 };

@@ -4,7 +4,7 @@ export default editMessage;
 
 /**
  * Create edit component
- * Promise editMessage({oldStudy:Object, newStudy:Prop})
+ * Promise editMessage({input:Object, output:Prop})
  */
 let editMessage = args => messages.custom({
 	content: m.component(editComponent, Object.assign({close:messages.close}, args)),
@@ -12,14 +12,14 @@ let editMessage = args => messages.custom({
 });
 
 let editComponent = {
-	controller({oldStudy, newStudy, close}){
-		let study = ['rulesUrl', 'targetCompletions', 'pauseUrl'].reduce((study, prop)=>{
-			study[prop] = m.prop(oldStudy[prop] || '');
+	controller({input, output, close}){
+		let study = ['rulesUrl', 'targetCompletions', 'autopauseUrl'].reduce((study, prop)=>{
+			study[prop] = m.prop(input[prop] || '');
 			return study;
 		}, {});
 
 		// export study to calling component
-		newStudy(study);
+		output(study);
 
 
 		let ctrl = {
@@ -30,7 +30,7 @@ let editComponent = {
 				let response = {
 					rulesUrl: study.rulesUrl(),
 					targetCompletions: isNormalInteger(study.targetCompletions()),
-					pauseUrl: study.pauseUrl()
+					autopauseUrl: study.autopauseUrl()
 				};
 				return response;
 			},
@@ -48,7 +48,7 @@ let editComponent = {
 
 		return ctrl;
 	},
-	view(ctrl, {oldStudy}){
+	view(ctrl, {input}){
 		let study = ctrl.study;
 		let validity = ctrl.validity();
 		let miniButtonView = (prop, name, url) => m('button.btn.btn-secondary.btn-sm', {onclick: prop.bind(null,url)}, name);
@@ -68,14 +68,14 @@ let editComponent = {
 				m('.form-group', [
 					m('label', 'Study ID'),
 					m('p',[
-						m('strong.form-control-static', oldStudy.studyId)
+						m('strong.form-control-static', input.studyId)
 					])
 
 				]),
 				m('.form-group', [
 					m('label', 'Study URL'),
 					m('p',[
-						m('strong.form-control-static', oldStudy.studyUrl)
+						m('strong.form-control-static', input.studyUrl)
 					])
 				]),
 
@@ -104,6 +104,7 @@ let editComponent = {
 				m('.form-group', {class:groupClasses(validity.rulesUrl)}, [
 					m('label', 'Rules File URL'),
 					m('input.form-control', {
+						config: focusConfig,
 						placeholder:'Rules file URL',
 						value: study.rulesUrl(),
 						onkeyup: m.withAttr('value', study.rulesUrl),
@@ -114,20 +115,20 @@ let editComponent = {
 					]),
 					validationView(validity.rulesUrl, 'This row is required')
 				]),
-				m('.form-group', {class:groupClasses(validity.pauseUrl)}, [
+				m('.form-group', {class:groupClasses(validity.autopauseUrl)}, [
 					m('label', 'Auto-pause file URL'),
 					m('input.form-control', {
 						placeholder:'Auto pause file URL',
-						value: study.pauseUrl(),
-						onkeyup: m.withAttr('value', study.pauseUrl),
-						class:inputClasses(validity.pauseUrl)
+						value: study.autopauseUrl(),
+						onkeyup: m.withAttr('value', study.autopauseUrl),
+						class:inputClasses(validity.autopauseUrl)
 					}),
 					m('p.text-muted.btn-toolbar', [
-						miniButtonView(study.pauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'),
-						miniButtonView(study.pauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'),
-						miniButtonView(study.pauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')
+						miniButtonView(study.autopauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'),
+						miniButtonView(study.autopauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'),
+						miniButtonView(study.autopauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')
 					]),
-					validationView(validity.pauseUrl, 'This row is required')
+					validationView(validity.autopauseUrl, 'This row is required')
 				]),
 				m('.form-group', {class:groupClasses(validity.targetCompletions)}, [
 					m('label','Target number of sessions'),
@@ -149,3 +150,6 @@ let editComponent = {
 	}
 };
 
+let focusConfig = (element, isInitialized) => {
+	if (!isInitialized) element.focus();
+};

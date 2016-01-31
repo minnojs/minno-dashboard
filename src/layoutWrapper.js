@@ -1,5 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
+import spinner from 'utils/spinnerComponent';
 export default layout;
 
 let layout = route => {
@@ -26,7 +27,8 @@ let layout = route => {
 				]),
 
 				m.component(contextMenu), // register context menu
-				m.component(messages)
+				m.component(messages),
+				m.component(spinner)
 			]);
 		}
 	};

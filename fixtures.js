@@ -87,9 +87,11 @@ files.push({id:'someFile.grg', url:'/test/someFile.grg'});
 
 router.route('/files/:studyID')
 	.get((req,res)=>{
-		res.json({
-			files: files
-		});
+		setTimeout(function(){
+			res.json({
+				files: files
+			});
+		}, 1000)
 	});
 
 router.route('/files/:studyID/file')
@@ -138,7 +140,7 @@ adminRouter.route('/studyData')
 					studyId:(0|Math.random()*9e6).toString(36),
 					studyUrl:(0|Math.random()*9e6).toString(36),
 					rulesUrl:(0|Math.random()*9e6).toString(36),
-					// autopauseUrl,
+					autopauseUrl: (0|Math.random()*9e6).toString(36),
 					targetCompletions: Math.random() * 100,
 					startedSessions: Math.random() * 100,
 					completedSessions: Math.random() * 100,

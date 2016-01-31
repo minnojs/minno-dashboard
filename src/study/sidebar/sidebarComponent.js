@@ -7,7 +7,7 @@ let sidebarComponent = {
 		return m('.sidebar', [
 			m('h5', study.id),
 			m.component(sidebarButtons, {study}),
-			m.component(filesComponent, {study,filesVM, files:study.files()})
+			m.component(filesComponent, {study,filesVM, files: study.files() || []})
 		]);
 	}
 };

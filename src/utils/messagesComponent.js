@@ -30,12 +30,12 @@ let messages = {
 		let vm = messages.vm;
 		let close = messages.close.bind(null, null);
 		let stopPropagation = e => e.stopPropagation();
-		return m('.messages', [
+		return m('#messages.backdrop', [
 			!vm || !vm.isOpen
 				? ''
 				:[
 					m('.overlay', {config:messages.config()}),
-					m('.messages-wrapper', {onclick:close}, [
+					m('.backdrop-content', {onclick:close}, [
 						m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5'}, [
 							m('.card-block', {onclick: stopPropagation}, [
 								messages.views[vm.type](vm.opts)
