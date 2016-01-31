@@ -40,8 +40,7 @@ export function getStudyId(study){
 		action:'getStudyId'
 	}, study);
 
-	return  fetchJson(url, {method: 'post',body:body})
-		;
+	return  fetchJson(url, {method: 'post',body:body});
 }
 
 function interceptErrors(response){

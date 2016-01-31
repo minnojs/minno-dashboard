@@ -1,0 +1,31 @@
+import {fetchJson} from 'utils/modelHelpers';
+const url = '/dashboard/DashboardData';
+
+export const STATUS_RUNNING = 'R';
+export const STATUS_COMPLETE = 'C';
+export const STATUS_ERROR = 'X';
+
+export let getAllDownloads = () => fetchJson(url, {
+	method:'post',
+	body: {action:'getAllDownloads'}
+}).then(interceptErrors);
+
+export let removeDownload = download => fetchJson(url, {
+	method:'post',
+	body: Object.assign({action:'removeDownload'}, download)
+}).then(interceptErrors);
+
+export let createDownload = download => fetchJson(url, {
+	method: 'post',
+	body: Object.assign({action:'download'}, download)
+}).then(interceptErrors);
+
+
+
+function interceptErrors(response){
+	if (!response || !response.error){
+		return response;
+	}
+
+	return Promise.reject({message: response.msg});
+}

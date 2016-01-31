@@ -290,54 +290,147 @@
   	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
   }
 
-  var dud = function dud(a) {
-  	return function () {
-  		return console.log(a);
-  	};
+  var url$1 = '/dashboard/DashboardData';
+
+  var STATUS_RUNNING$1 = 'R';
+  var getAllDownloads = function getAllDownloads() {
+  	return fetchJson(url$1, {
+  		method: 'post',
+  		body: { action: 'getAllDownloads' }
+  	}).then(interceptErrors$1);
   };
+
+  var removeDownload = function removeDownload(download) {
+  	return fetchJson(url$1, {
+  		method: 'post',
+  		body: Object.assign({ action: 'removeDownload' }, download)
+  	}).then(interceptErrors$1);
+  };
+
+  function interceptErrors$1(response) {
+  	if (!response || !response.error) {
+  		return response;
+  	}
+
+  	return Promise.reject({ message: response.msg });
+  }
+
+  /**
+   * Get all downloads
+   */
+
+  var recursiveGetAll = debounce(getAll, 15000);
+
+  function getAll(_ref) {
+  	var list = _ref.list;
+  	var cancel = _ref.cancel;
+
+  	return getAllDownloads().then(list).then(function (response) {
+  		if (!cancel() && response.some(function (download) {
+  			return download.studyStatus === STATUS_RUNNING$1;
+  		})) {
+  			recursiveGetAll({ list: list, cancel: cancel });
+  		}
+  	}).then(m.redraw);
+  }
+
+  // debounce but call at first iteration
+  function debounce(func, wait) {
+  	var first = true;
+  	var timeout = undefined;
+  	return function () {
+  		var context = this,
+  		    args = arguments;
+  		var later = function later() {
+  			timeout = null;
+  			func.apply(context, args);
+  		};
+  		clearTimeout(timeout);
+  		timeout = setTimeout(later, wait);
+  		if (first) {
+  			func.apply(context, args);
+  			first = false;
+  		}
+  	};
+  }
+
+  /**
+   * Remove download
+   */
+
+  function remove$1(download, list) {
+  	return messages.confirm({
+  		header: 'Delete Request:',
+  		content: ['Are you sure you want to delete this request from your queue?', m('.text-xs-center', m('small.muted-text', '(Don\'t worry, the data will stay on our servers and you can request it again in the future)'))]
+  	}).then(function (response) {
+  		if (response) return doRemove(download, list);
+  	});
+  }
+
+  function doRemove(download, list) {
+  	list(list().filter(function (el) {
+  		return el !== download;
+  	}));
+  	m.redraw();
+  	removeDownload(download).catch(function (err) {
+  		list().push(download);
+  		return messages.alert({
+  			header: 'Delete Request',
+  			content: err.message
+  		});
+  	});
+  }
+
+  /**
+   * Create download
+   */
+
+  function create$2() {
+  	console.log('Create');
+  }
 
   var downloadsComponent = {
   	controller: function controller() {
   		var ctrl = {
   			list: m.prop([]),
-  			create: dud('create'),
-  			remove: dud('remove'),
+  			create: create$2,
+  			remove: remove$1,
   			globalSearch: m.prop(''),
-  			sortBy: m.prop('studyId')
+  			sortBy: m.prop('studyId'),
+  			isDownloading: m.prop(false)
   		};
-
-  		fetchJson('/dashboard/DashboardData', { method: 'post', body: { action: 'getAllDownloads' } }).then(ctrl.list).then(m.redraw);
+  		recursiveGetAll({ list: ctrl.list, cancel: ctrl.isDownloading });
 
   		return ctrl;
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (download) {
   			return m('tr', [
   			// ### ID
-  			m('td', study.studyId),
+  			m('td', download.studyId),
 
   			// ### Study url
-  			m('td', study.fileSize ? m('a', { href: study.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
+  			m('td', download.fileSize ? m('a', { href: download.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
 
   			// ### Database
-  			m('td', study.db),
+  			m('td', download.db),
 
   			// ### Filesize
-  			m('td', study.fileSize),
+  			m('td', download.fileSize),
 
   			// ### Date Added
-  			m('td', [formatDate(new Date(study.creationDate)), '  ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Creation Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Creation Date: '), formatDate(new Date(study.creationDate))]), m('li.list-group-item', [m('strong', 'Start Date: '), formatDate(new Date(study.startDate))]), m('li.list-group-item', [m('strong', 'End Date: '), formatDate(new Date(study.endDate))])])])]),
+  			m('td', [formatDate(new Date(download.creationDate)), '  ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Creation Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))]), m('li.list-group-item', [m('strong', 'Start Date: '), formatDate(new Date(download.startDate))]), m('li.list-group-item', [m('strong', 'End Date: '), formatDate(new Date(download.endDate))])])])]),
 
   			// ### Status
   			m('td', [({
   				C: m('span.label.label-success', 'Complete'),
   				R: m('span.label.label-info', 'Running'),
   				X: m('span.label.label-danger', 'Error')
-  			})[study.studyStatus]]),
+  			})[download.studyStatus]]),
 
   			// ### Actions
-  			m('td', [m('.btn-group', [m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
+  			m('td', [m('.btn-group', [m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, download, list) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
   };

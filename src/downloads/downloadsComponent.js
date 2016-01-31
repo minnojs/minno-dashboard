@@ -1,22 +1,19 @@
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
-import {fetchJson} from 'utils/modelHelpers';
+import {recursiveGetAll, remove, create} from './downloadsActions';
 export default downloadsComponent;
-let dud = a=> () => console.log(a);
 
 const downloadsComponent = {
 	controller(){
 		const ctrl = {
 			list: m.prop([]),
-			create: dud('create'),
-			remove: dud('remove'),
+			create: create,
+			remove: remove,
 			globalSearch: m.prop(''),
-			sortBy: m.prop('studyId')
+			sortBy: m.prop('studyId'),
+			isDownloading: m.prop(false)
 		};
-
-		fetchJson('/dashboard/DashboardData', {method:'post', body: {action:'getAllDownloads'}})
-			.then(ctrl.list)
-			.then(m.redraw);
+		recursiveGetAll({list:ctrl.list, cancel: ctrl.isDownloading});
 
 		return ctrl;
 	},
@@ -50,39 +47,39 @@ const downloadsComponent = {
 					])
 				]),
 				m('tbody', [
-					list().filter(studyFilter(ctrl)).map(study => m('tr', [
+					list().filter(studyFilter(ctrl)).map(download => m('tr', [
 						// ### ID
-						m('td', study.studyId),
+						m('td', download.studyId),
 
 						// ### Study url
 						m('td',
-							study.fileSize
-								? m('a', {href:study.studyUrl, download:true, target: '_blank'}, 'Download')
+							download.fileSize
+								? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
 								: m('i.text-muted', 'No Data')
 						),
 
 						// ### Database
-						m('td', study.db),
+						m('td', download.db),
 
 						// ### Filesize
-						m('td', study.fileSize),
+						m('td', download.fileSize),
 
 						// ### Date Added
 						m('td', [
-							formatDate(new Date(study.creationDate)),
+							formatDate(new Date(download.creationDate)),
 							'  ',
 							m('i.fa.fa-info-circle'),
 							m('.card.info-box', [
 								m('.card-header', 'Creation Details'),
 								m('ul.list-group.list-group-flush',[
 									m('li.list-group-item', [
-										m('strong', 'Creation Date: '), formatDate(new Date(study.creationDate))
+										m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
 									]),
 									m('li.list-group-item', [
-										m('strong', 'Start Date: '), formatDate(new Date(study.startDate))
+										m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
 									]),
 									m('li.list-group-item', [
-										m('strong', 'End Date: '), formatDate(new Date(study.endDate))
+										m('strong', 'End Date: '), formatDate(new Date(download.endDate))
 									])
 								])
 							])
@@ -94,13 +91,13 @@ const downloadsComponent = {
 								C: m('span.label.label-success', 'Complete'),
 								R: m('span.label.label-info', 'Running'),
 								X: m('span.label.label-danger', 'Error')
-							}[study.studyStatus]
+							}[download.studyStatus]
 						]),
 
 						// ### Actions
 						m('td', [
 							m('.btn-group', [
-								m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
+								m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, download, list)}, [
 									m('i.fa.fa-close')
 								])
 							])
