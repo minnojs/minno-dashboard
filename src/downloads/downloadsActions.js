@@ -75,10 +75,31 @@ function doRemove(download, list){
  * Create download
  */
 
-export function create(){
+export function create(list, cancel){
 	let output = m.prop();
 	return createMessage({output})
 		.then(response => {
-			console.log(output());
+			if (response){
+				let download = unPropify(output());
+				list().unshift(Object.assign({
+					studyStatus: STATUS_RUNNING,
+					creationDate: new Date()
+				},download));
+				cancel(true);
+				return createDownload(download)
+					.then(() => {
+						cancel(false);
+						getAll({list, cancel});
+					})
+					.catch(reportError)
+					.then(cancel.bind(null, false));
+			}
 		});
 }
+
+let unPropify = obj => Object.keys(obj).reduce((result, key) => {
+	result[key] = obj[key]();
+	return result;
+}, {});
+
+let reportError = header => err => messages.alert({header, content: err.message});

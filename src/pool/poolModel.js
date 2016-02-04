@@ -5,7 +5,7 @@ export const STATUS_RUNNING = 'R';
 export const STATUS_PAUSED = 'P';
 export const STATUS_STOP = 'S';
 
-export function create(study){
+export function createStudy(study){
 	let body = Object.assign({
 		action:'insertRulesTable',
 		creationDate: new Date(),

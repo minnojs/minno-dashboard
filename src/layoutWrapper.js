@@ -1,11 +1,15 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
+import {isLoggedIn} from 'login/authModel';
 export default layout;
 
 let layout = route => {
 	return {
-		view: () => {
+		controller(){
+			if (!isLoggedIn() && m.route() !== '/login') m.route('login');
+		},
+		view(){
 			return  m('div', [
 				m('nav.navbar.navbar-dark.navbar-fixed-top', [
 					m('a.navbar-brand', 'Dashboard'),

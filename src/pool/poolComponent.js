@@ -5,6 +5,7 @@ import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default poolComponent;
 
+const PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
 
 let poolComponent = {
 	controller: () => {
@@ -48,7 +49,7 @@ let poolComponent = {
 						m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
 						m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
 						m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
-						m('th', thConfig('completedSessions',ctrl.sortBy), 'Completed'),
+						m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
 						m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
 						m('th','Status'),
 						m('th','Actions')
@@ -61,17 +62,17 @@ let poolComponent = {
 
 						// ### Study url
 						m('td', [
-							m('a', {href:study.studyUrl, target: '_blank'}, 'Study')
+							m('a', {href:PRODUCTION_URL + study.studyUrl, target: '_blank'}, 'Study')
 						]),
 
 						// ### Rules url
 						m('td', [
-							m('a', {href:study.rulesUrl, target: '_blank'}, 'Rules')
+							m('a', {href:PRODUCTION_URL + study.rulesUrl, target: '_blank'}, 'Rules')
 						]),
 
 						// ### Autopause url
 						m('td', [
-							m('a', {href:study.autopauseUrl, target: '_blank'}, 'Autopause')
+							m('a', {href:PRODUCTION_URL + study.autopauseUrl, target: '_blank'}, 'Autopause')
 						]),
 
 						// ### Completions

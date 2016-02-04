@@ -222,8 +222,19 @@
   	}
   };
 
+  function isLoggedIn() {
+  	return true;
+  }
+
+  function login(args) {
+  	console.log(JSON.stringify(args));
+  }
+
   var layout = function layout(route) {
   	return {
+  		controller: function controller() {
+  			if (!isLoggedIn() && m.route() !== '/login') m.route('login');
+  		},
   		view: function view() {
   			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
   			m.component(messages), m.component(spinner)]);
@@ -307,6 +318,13 @@
   	}).then(interceptErrors$1);
   };
 
+  var createDownload = function createDownload(download) {
+  	return fetchJson(url$1, {
+  		method: 'post',
+  		body: Object.assign({ action: 'download' }, download)
+  	}).then(interceptErrors$1);
+  };
+
   function interceptErrors$1(response) {
   	if (!response || !response.error) {
   		return response;
@@ -374,14 +392,17 @@
   				element.appendChild(picker.el);
 
   				ctx.onunload = picker.destroy.bind(picker);
+  				picker.setDate(startDate());
   			}
-  			console.log(234234234234);
 
-  			picker.setDate(startDate(), true);
+  			// resset picker date only if the date has changed externaly
+  			if (startDate() !== picker.getDate()) {
+  				picker.setDate(startDate(), true);
+  			}
 
+  			picker.setStartRange(startDate());
   			picker.setEndRange(endDate());
   			picker.setMaxDate(endDate());
-  			picker.setStartRange(startDate());
   		};
   	},
   	configEnd: function configEnd(_ref3) {
@@ -401,13 +422,17 @@
   				element.appendChild(picker.el);
 
   				ctx.onunload = picker.destroy.bind(picker);
+  				picker.setDate(endDate());
   			}
 
-  			picker.setDate(endDate(), true);
+  			// resset picker date only if the date has changed externaly
+  			if (endDate() !== picker.getDate()) {
+  				picker.setDate(endDate(), true);
+  			}
 
   			picker.setStartRange(startDate());
-  			picker.setMinDate(startDate());
   			picker.setEndRange(endDate());
+  			picker.setMinDate(startDate());
   		};
   	}
   };
@@ -462,16 +487,6 @@
   	view: function view(ctrl) {
   		var download = ctrl.download;
   		var validity = ctrl.validity();
-  		var dayButtonView = function dayButtonView(name, days) {
-  			return m('button.btn.btn-secondary.btn-sm', { onclick: function onclick() {
-  					var d = new Date();
-  					d.setDate(d.getDate() - days);
-  					console.log(d);
-  					download.startDate(d);
-  					download.endDate(new Date());
-  				} }, name);
-  		};
-
   		var validationView = function validationView(isValid, message) {
   			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
   		};
@@ -493,13 +508,22 @@
   			placeholder: 'Study Id',
   			value: download.studyId(),
   			onkeyup: m.withAttr('value', download.studyId),
-  			class: inputClasses(validity.rulesUrl)
-  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')]), m('.form-group', [m('label', 'Database'), m('select.form-control', { onchange: m.withAttr('value', download.db) }, [m('option', { value: 'test', selected: download.db() === 'test' }, 'Development'), m('option', { value: 'warehouse', selected: download.db() === 'warehouse' }, 'Production')])]), m('.form-group', [m('label', 'Date Range'), dateRangePicker(download), m('p.text-muted.btn-toolbar', [dayButtonView('Last 7 Days', 7), dayButtonView('Last 30 Days', 30), dayButtonView('Last 90 Days', 90), dayButtonView('All times', 3650)])])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  			class: inputClasses(validity.studyId)
+  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')]), m('.form-group', [m('label', 'Database'), m('select.form-control', { onchange: m.withAttr('value', download.db) }, [m('option', { value: 'test', selected: download.db() === 'test' }, 'Development'), m('option', { value: 'warehouse', selected: download.db() === 'warehouse' }, 'Production')])]), m('.form-group', [m('label', 'Date Range'), dateRangePicker(download), m('p.text-muted.btn-toolbar', [dayButtonView(download, 'Last 7 Days', 7), dayButtonView(download, 'Last 30 Days', 30), dayButtonView(download, 'Last 90 Days', 90), dayButtonView(download, 'All times', 3650)])])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
   	}
   };
 
   var focusConfig$2 = function focusConfig(element, isInitialized) {
   	if (!isInitialized) element.focus();
+  };
+
+  var dayButtonView = function dayButtonView(download, name, days) {
+  	return m('button.btn.btn-secondary.btn-sm', { onclick: function onclick() {
+  			var d = new Date();
+  			d.setDate(d.getDate() - days);
+  			download.startDate(d);
+  			download.endDate(new Date());
+  		} }, name);
   };
 
   /**
@@ -571,12 +595,36 @@
    * Create download
    */
 
-  function create$2() {
+  function create$1(list, cancel) {
   	var output = m.prop();
   	return createMessage$1({ output: output }).then(function (response) {
-  		console.log(output());
+  		if (response) {
+  			var download = unPropify$1(output());
+  			list().unshift(Object.assign({
+  				studyStatus: STATUS_RUNNING$1,
+  				creationDate: new Date()
+  			}, download));
+  			cancel(true);
+  			return createDownload(download).then(function () {
+  				cancel(false);
+  				getAll({ list: list, cancel: cancel });
+  			}).catch(reportError$1).then(cancel.bind(null, false));
+  		}
   	});
   }
+
+  var unPropify$1 = function unPropify(obj) {
+  	return Object.keys(obj).reduce(function (result, key) {
+  		result[key] = obj[key]();
+  		return result;
+  	}, {});
+  };
+
+  var reportError$1 = function reportError(header) {
+  	return function (err) {
+  		return messages.alert({ header: header, content: err.message });
+  	};
+  };
 
   var downloadsComponent = {
   	controller: function controller() {
@@ -585,7 +633,8 @@
 
   		var ctrl = {
   			list: list,
-  			create: create$2,
+  			cancelDownload: cancelDownload,
+  			create: create$1,
   			remove: remove$1,
   			globalSearch: m.prop(''),
   			sortBy: m.prop('studyId'),
@@ -600,19 +649,19 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (download) {
+  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (download) {
   			return m('tr', [
   			// ### ID
   			m('td', download.studyId),
 
   			// ### Study url
-  			m('td', download.fileSize ? m('a', { href: download.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
+  			m('td', download.fileSize && download.studyUrl ? m('a', { href: download.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
 
   			// ### Database
   			m('td', download.db),
 
   			// ### Filesize
-  			m('td', download.fileSize),
+  			m('td', download.fileSize !== 'unknown' ? download.fileSize : m('i.text-muted', 'Unknown')),
 
   			// ### Date Added
   			m('td', [formatDate(new Date(download.creationDate)), '  ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Creation Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))]), m('li.list-group-item', [m('strong', 'Start Date: '), formatDate(new Date(download.startDate))]), m('li.list-group-item', [m('strong', 'End Date: '), formatDate(new Date(download.endDate))])])])]),
@@ -636,8 +685,9 @@
   };
 
   function studyFilter$1(ctrl) {
+  	var search = ctrl.globalSearch();
   	return function (study) {
-  		return includes(study.studyId, ctrl.globalSearch()) || includes(study.studyUrl, ctrl.globalSearch());
+  		return includes(study.studyId, search) || includes(study.studyUrl, search);
   	};
 
   	function includes(val, search) {
@@ -650,6 +700,16 @@
   var STATUS_RUNNING = 'R';
   var STATUS_PAUSED = 'P';
   var STATUS_STOP = 'S';
+
+  function createStudy(study) {
+  	var body = Object.assign({
+  		action: 'insertRulesTable',
+  		creationDate: new Date(),
+  		studyStatus: STATUS_RUNNING
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
+  }
 
   function updateStudy(study) {
   	var body = Object.assign({
@@ -707,7 +767,7 @@
   		var output = _ref.output;
   		var close = _ref.close;
 
-  		var study = ['rulesUrl', 'targetCompletions', 'autopauseUrl'].reduce(function (study, prop) {
+  		var study = ['rulesUrl', 'targetCompletions', 'autopauseUrl', 'userEmail'].reduce(function (study, prop) {
   			study[prop] = m.prop(input[prop] || '');
   			return study;
   		}, {});
@@ -719,14 +779,21 @@
   			study: study,
   			submitAttempt: false,
   			validity: function validity() {
+  				var isEmail = function isEmail(str) {
+  					return (/\S+@\S+\.\S+/.test(str)
+  					);
+  				};
   				var isNormalInteger = function isNormalInteger(str) {
   					return (/^\+?(0|[1-9]\d*)$/.test(str)
   					);
   				};
+
   				var response = {
   					rulesUrl: study.rulesUrl(),
   					targetCompletions: isNormalInteger(study.targetCompletions()),
-  					autopauseUrl: study.autopauseUrl()
+  					autopauseUrl: study.autopauseUrl(),
+  					userEmail: isEmail(study.userEmail())
+
   				};
   				return response;
   			},
@@ -770,31 +837,7 @@
   			});
   		};
 
-  		return m('div', [m('h4', 'Study Editor'), m('.card-block', [m('.form-group', [m('label', 'Study ID'), m('p', [m('strong.form-control-static', input.studyId)])]), m('.form-group', [m('label', 'Study URL'), m('p', [m('strong.form-control-static', input.studyUrl)])]),
-
-  		// let isEmail = str  => /\S+@\S+\.\S+/.test(str);
-  		// m('.form-group', {class:groupClasses(validity.userEmail)}, [
-  		// 	m('label','User Email'),
-  		// 	m('input.form-control', {
-  		// 		type:'email',
-  		// 		placeholder:'Email',
-  		// 		value: study.userEmail(),
-  		// 		onkeyup: m.withAttr('value', study.userEmail),
-  		// 		class:inputClasses(validity.userEmail)
-  		// 	}),
-  		// 	validationView(validity.userEmail, 'This row is required and must be a valid Email')
-  		// ]),
-  		// m('.form-group', {class:groupClasses(validity.studyUrl)}, [
-  		// 	m('label', 'Study URL'),
-  		// 	m('input.form-control', {
-  		// 		placeholder:'URL',
-  		// 		value: study.studyUrl(),
-  		// 		onkeyup: m.withAttr('value', study.studyUrl),
-  		// 		class:inputClasses(validity.studyUrl)
-  		// 	}),
-  		// 	validationView(validity.studyUrl, 'This row is required')
-  		// ]),
-  		m('.form-group', { class: groupClasses(validity.rulesUrl) }, [m('label', 'Rules File URL'), m('input.form-control', {
+  		return m('div', [m('h4', 'Study Editor'), m('.card-block', [m('.form-group', [m('label', 'Study ID'), m('p', [m('strong.form-control-static', input.studyId)])]), m('.form-group', [m('label', 'Study URL'), m('p', [m('strong.form-control-static', input.studyUrl)])]), m('.form-group', { class: groupClasses(validity.rulesUrl) }, [m('label', 'Rules File URL'), m('input.form-control', {
   			config: focusConfig,
   			placeholder: 'Rules file URL',
   			value: study.rulesUrl(),
@@ -810,8 +853,15 @@
   			placeholder: 'Target Sessions',
   			value: study.targetCompletions(),
   			onkeyup: m.withAttr('value', study.targetCompletions),
+  			onclick: m.withAttr('value', study.targetCompletions),
   			class: inputClasses(validity.targetCompletions)
-  		}), validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  		}), validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')]), m('.form-group', { class: groupClasses(validity.userEmail) }, [m('label', 'User Email'), m('input.form-control', {
+  			type: 'email',
+  			placeholder: 'Email',
+  			value: study.userEmail(),
+  			onkeyup: m.withAttr('value', study.userEmail),
+  			class: inputClasses(validity.userEmail)
+  		}), validationView(validity.userEmail, 'This row is required and must be a valid Email')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
   	}
   };
 
@@ -836,7 +886,6 @@
   		var close = _ref.close;
 
   		var study = output({
-  			userEmail: m.prop(''),
   			studyUrl: m.prop('')
   		});
 
@@ -844,13 +893,8 @@
   			study: study,
   			submitAttempt: false,
   			validity: function validity() {
-  				var isEmail = function isEmail(str) {
-  					return (/\S+@\S+\.\S+/.test(str)
-  					);
-  				};
   				var response = {
-  					studyUrl: study.studyUrl(),
-  					userEmail: isEmail(study.userEmail())
+  					studyUrl: study.studyUrl()
   				};
   				return response;
   			},
@@ -888,14 +932,8 @@
   			});
   		};
 
-  		return m('div', [m('h4', 'Create Study'), m('.card-block', [m('.form-group', { class: groupClasses(validity.userEmail) }, [m('label', 'User Email'), m('input.form-control', {
+  		return m('div', [m('h4', 'Create Study'), m('.card-block', [m('.form-group', { class: groupClasses(validity.studyUrl) }, [m('label', 'Study URL'), m('input.form-control', {
   			config: focusConfig$1,
-  			type: 'email',
-  			placeholder: 'Email',
-  			value: study.userEmail(),
-  			onkeyup: m.withAttr('value', study.userEmail),
-  			class: inputClasses(validity.userEmail)
-  		}), validationView(validity.userEmail, 'This row is required and must be a valid Email')]), m('.form-group', { class: groupClasses(validity.studyUrl) }, [m('label', 'Study URL'), m('input.form-control', {
   			placeholder: 'Study URL',
   			value: study.studyUrl(),
   			onkeyup: m.withAttr('value', study.studyUrl),
@@ -972,7 +1010,7 @@
   	});
   };
 
-  var create$1 = function create(list) {
+  var create = function create(list) {
   	var output = m.prop();
   	return createMessage({ output: output }).then(function (response) {
   		if (response) {
@@ -996,7 +1034,7 @@
   						studyStatus: STATUS_RUNNING
   					}, input, unPropify(output()));
   					return {
-  						v: updateStudy(study).then(function () {
+  						v: createStudy(study).then(function () {
   							return list().push(study);
   						}).then(m.redraw).catch(reportError('Create Study'))
   					};
@@ -1028,6 +1066,8 @@
   	}, {});
   };
 
+  var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
+
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
@@ -1035,7 +1075,7 @@
   			pause: pause,
   			remove: remove,
   			edit: edit,
-  			create: create$1,
+  			create: create,
   			list: m.prop([]),
   			globalSearch: m.prop(''),
   			sortBy: m.prop()
@@ -1047,19 +1087,19 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completed'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
 
   			// ### Study url
-  			m('td', [m('a', { href: study.studyUrl, target: '_blank' }, 'Study')]),
+  			m('td', [m('a', { href: PRODUCTION_URL + study.studyUrl, target: '_blank' }, 'Study')]),
 
   			// ### Rules url
-  			m('td', [m('a', { href: study.rulesUrl, target: '_blank' }, 'Rules')]),
+  			m('td', [m('a', { href: PRODUCTION_URL + study.rulesUrl, target: '_blank' }, 'Rules')]),
 
   			// ### Autopause url
-  			m('td', [m('a', { href: study.autopauseUrl, target: '_blank' }, 'Autopause')]),
+  			m('td', [m('a', { href: PRODUCTION_URL + study.autopauseUrl, target: '_blank' }, 'Autopause')]),
 
   			// ### Completions
   			m('td', [(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
@@ -2276,8 +2316,36 @@
   	}
   };
 
+  var loginComponent = {
+  	controller: function controller() {
+  		var email = m.prop('');
+  		var password = m.prop('');
+  		var ctrl = {
+  			email: email,
+  			password: password,
+  			login: login.bind(null, { email: email, password: password })
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		return m('.login.centrify', [m('.card.card-inverse.col-md-4', [m('.card-block', [m('h4', 'Please sign in'), m('input.form-control', {
+  			type: 'email',
+  			placeholder: 'Email',
+  			value: ctrl.email(),
+  			onkeyup: m.withAttr('value', ctrl.email)
+  		}), m('input.form-control', {
+  			type: 'password',
+  			placeholder: 'Password',
+  			value: ctrl.password(),
+  			onkeyup: m.withAttr('value', ctrl.password)
+  		}), m('button.btn.btn-primary.btn-block', { onclick: ctrl.login }, 'Sign in'), m('p.text-center', m('a', m('small.text-muted', 'Lost your password?')))])])]);
+  	}
+  };
+
   var routes = {
-  	'studies': mainComponent,
+  	'/login': loginComponent,
+  	'/studies': mainComponent,
   	'/editor/:studyID': editorLayoutComponent,
   	'/editor/:studyID/:fileID': editorLayoutComponent,
   	'/pool': poolComponent,

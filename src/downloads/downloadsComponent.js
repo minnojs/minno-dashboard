@@ -10,8 +10,9 @@ const downloadsComponent = {
 
 		const ctrl = {
 			list,
-			create: create,
-			remove: remove,
+			cancelDownload,
+			create,
+			remove,
 			globalSearch: m.prop(''),
 			sortBy: m.prop('studyId'),
 			onunload(){
@@ -37,7 +38,7 @@ const downloadsComponent = {
 					]),
 					m('tr', [
 						m('th.text-xs-center', {colspan:7}, [
-							m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
+							m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
 								m('i.fa.fa-plus'), '  Download request'
 							])
 						])
@@ -59,7 +60,7 @@ const downloadsComponent = {
 
 						// ### Study url
 						m('td',
-							download.fileSize
+							download.fileSize && download.studyUrl
 								? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
 								: m('i.text-muted', 'No Data')
 						),
@@ -68,7 +69,10 @@ const downloadsComponent = {
 						m('td', download.db),
 
 						// ### Filesize
-						m('td', download.fileSize),
+						m('td', download.fileSize !== 'unknown'
+							? download.fileSize
+							: m('i.text-muted', 'Unknown')
+						),
 
 						// ### Date Added
 						m('td', [
@@ -119,9 +123,10 @@ const downloadsComponent = {
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
 
 function studyFilter(ctrl){
+	let search = ctrl.globalSearch();
 	return study =>
-		includes(study.studyId, ctrl.globalSearch()) ||
-		includes(study.studyUrl, ctrl.globalSearch());
+		includes(study.studyId, search) ||
+		includes(study.studyUrl, search);
 
 	function includes(val, search){
 		return typeof val === 'string' && val.includes(search);

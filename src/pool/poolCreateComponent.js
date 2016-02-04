@@ -14,7 +14,6 @@ let createMessage = args => messages.custom({
 let createComponent = {
 	controller({output, close}){
 		let study = output({
-			userEmail: m.prop(''),
 			studyUrl: m.prop('')
 		});
 
@@ -22,10 +21,8 @@ let createComponent = {
 			study,
 			submitAttempt: false,
 			validity(){
-				let isEmail = str  => /\S+@\S+\.\S+/.test(str);
 				let response = {
-					studyUrl: study.studyUrl(),
-					userEmail: isEmail(study.userEmail())
+					studyUrl: study.studyUrl()
 				};
 				return response;
 			},
@@ -58,21 +55,10 @@ let createComponent = {
 		return m('div',[
 			m('h4', 'Create Study'),
 			m('.card-block', [
-				m('.form-group', {class:groupClasses(validity.userEmail)}, [
-					m('label','User Email'),
-					m('input.form-control', {
-						config: focusConfig,
-						type:'email',
-						placeholder:'Email',
-						value: study.userEmail(),
-						onkeyup: m.withAttr('value', study.userEmail),
-						class:inputClasses(validity.userEmail)
-					}),
-					validationView(validity.userEmail, 'This row is required and must be a valid Email')
-				]),
 				m('.form-group', {class:groupClasses(validity.studyUrl)}, [
 					m('label', 'Study URL'),
 					m('input.form-control', {
+						config: focusConfig,
 						placeholder:'Study URL',
 						value: study.studyUrl(),
 						onkeyup: m.withAttr('value', study.studyUrl),

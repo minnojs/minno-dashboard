@@ -335,6 +335,30 @@ th[data-sort-by]:before {
 th[data-sort-by].active:before {
   opacity: 1; }
 
+.login h4, .login .btn {
+  margin-bottom: 10px; }
+
+.login .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px; }
+
+.login .form-control:focus {
+  z-index: 2; }
+
+.login input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0; }
+
+.login input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0; }
+
 /*!
  * Pikaday
  * Copyright © 2014 David Bushell | BSD & MIT license | http://dbushell.com/

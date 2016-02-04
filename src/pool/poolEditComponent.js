@@ -13,7 +13,7 @@ let editMessage = args => messages.custom({
 
 let editComponent = {
 	controller({input, output, close}){
-		let study = ['rulesUrl', 'targetCompletions', 'autopauseUrl'].reduce((study, prop)=>{
+		let study = ['rulesUrl', 'targetCompletions', 'autopauseUrl', 'userEmail'].reduce((study, prop)=>{
 			study[prop] = m.prop(input[prop] || '');
 			return study;
 		}, {});
@@ -26,11 +26,15 @@ let editComponent = {
 			study,
 			submitAttempt: false,
 			validity(){
+				let isEmail = str  => /\S+@\S+\.\S+/.test(str);
 				let isNormalInteger = str => /^\+?(0|[1-9]\d*)$/.test(str);
+
 				let response = {
 					rulesUrl: study.rulesUrl(),
 					targetCompletions: isNormalInteger(study.targetCompletions()),
-					autopauseUrl: study.autopauseUrl()
+					autopauseUrl: study.autopauseUrl(),
+					userEmail: isEmail(study.userEmail())
+
 				};
 				return response;
 			},
@@ -79,28 +83,6 @@ let editComponent = {
 					])
 				]),
 
-				// let isEmail = str  => /\S+@\S+\.\S+/.test(str);
-				// m('.form-group', {class:groupClasses(validity.userEmail)}, [
-				// 	m('label','User Email'),
-				// 	m('input.form-control', {
-				// 		type:'email',
-				// 		placeholder:'Email',
-				// 		value: study.userEmail(),
-				// 		onkeyup: m.withAttr('value', study.userEmail),
-				// 		class:inputClasses(validity.userEmail)
-				// 	}),
-				// 	validationView(validity.userEmail, 'This row is required and must be a valid Email')
-				// ]),
-				// m('.form-group', {class:groupClasses(validity.studyUrl)}, [
-				// 	m('label', 'Study URL'),
-				// 	m('input.form-control', {
-				// 		placeholder:'URL',
-				// 		value: study.studyUrl(),
-				// 		onkeyup: m.withAttr('value', study.studyUrl),
-				// 		class:inputClasses(validity.studyUrl)
-				// 	}),
-				// 	validationView(validity.studyUrl, 'This row is required')
-				// ]),
 				m('.form-group', {class:groupClasses(validity.rulesUrl)}, [
 					m('label', 'Rules File URL'),
 					m('input.form-control', {
@@ -137,9 +119,21 @@ let editComponent = {
 						placeholder:'Target Sessions',
 						value: study.targetCompletions(),
 						onkeyup: m.withAttr('value', study.targetCompletions),
+						onclick: m.withAttr('value', study.targetCompletions),
 						class:inputClasses(validity.targetCompletions)
 					}),
 					validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')
+				]),
+				m('.form-group', {class:groupClasses(validity.userEmail)}, [
+					m('label','User Email'),
+					m('input.form-control', {
+						type:'email',
+						placeholder:'Email',
+						value: study.userEmail(),
+						onkeyup: m.withAttr('value', study.userEmail),
+						class:inputClasses(validity.userEmail)
+					}),
+					validationView(validity.userEmail, 'This row is required and must be a valid Email')
 				])
 			]),
 			m('.text-xs-right.btn-toolbar',[

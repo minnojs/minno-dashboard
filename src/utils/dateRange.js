@@ -60,14 +60,17 @@ let pikadayRange = {
 				element.appendChild(picker.el);
 
 				ctx.onunload = picker.destroy.bind(picker);
+				picker.setDate(startDate());
 			}
-			console.log(234234234234)
 
-			picker.setDate(startDate(), true);
+			// resset picker date only if the date has changed externaly
+			if (startDate() !== picker.getDate()){
+				picker.setDate(startDate(),true);
+			}
 
+			picker.setStartRange(startDate());
 			picker.setEndRange(endDate());
 			picker.setMaxDate(endDate());
-			picker.setStartRange(startDate());
 		};
 	},
 	configEnd({startDate, endDate}){
@@ -82,13 +85,17 @@ let pikadayRange = {
 				element.appendChild(picker.el);
 
 				ctx.onunload = picker.destroy.bind(picker);
+				picker.setDate(endDate());
 			}
 
-			picker.setDate(endDate(), true);
+			// resset picker date only if the date has changed externaly
+			if (endDate() !== picker.getDate()){
+				picker.setDate(endDate(),true);
+			}
 
 			picker.setStartRange(startDate());
-			picker.setMinDate(startDate());
 			picker.setEndRange(endDate());
+			picker.setMinDate(startDate());
 		};
 	}
 };

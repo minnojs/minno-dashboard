@@ -1,4 +1,4 @@
-import {updateStudy, updateStatus, getStudyId, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
+import {updateStudy, createStudy, updateStatus, getStudyId, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
 import editMessage from './poolEditComponent';
@@ -92,7 +92,7 @@ export let create = (list) => {
 						creationDate:new Date(),
 						studyStatus: STATUS_RUNNING
 					}, input, unPropify(output()));
-					return updateStudy(study)
+					return createStudy(study)
 						.then(() => list().push(study))
 						.then(m.redraw)
 						.catch(reportError('Create Study'));

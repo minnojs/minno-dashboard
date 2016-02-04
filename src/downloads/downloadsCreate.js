@@ -50,14 +50,6 @@ let createComponent = {
 	view(ctrl){
 		let download = ctrl.download;
 		let validity = ctrl.validity();
-		let dayButtonView = (name, days) => m('button.btn.btn-secondary.btn-sm', {onclick: () => {
-			let d = new Date();
-			d.setDate(d.getDate() - days);
-			console.log(d)
-			download.startDate(d);
-			download.endDate(new Date());
-		}}, name);
-
 		let validationView = (isValid, message) => isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
 		let groupClasses = valid => !ctrl.submitAttempt ? '' : classNames({
 			'has-danger': !valid,
@@ -78,7 +70,7 @@ let createComponent = {
 						placeholder:'Study Id',
 						value: download.studyId(),
 						onkeyup: m.withAttr('value', download.studyId),
-						class:inputClasses(validity.rulesUrl)
+						class:inputClasses(validity.studyId)
 					}),
 					validationView(validity.studyId, 'The study ID is required in order to request a download.')
 				]),
@@ -93,10 +85,10 @@ let createComponent = {
 					m('label', 'Date Range'),
 					dateRangePicker(download),
 					m('p.text-muted.btn-toolbar', [
-						dayButtonView('Last 7 Days', 7),
-						dayButtonView('Last 30 Days', 30),
-						dayButtonView('Last 90 Days', 90),
-						dayButtonView('All times', 3650),
+						dayButtonView(download, 'Last 7 Days', 7),
+						dayButtonView(download, 'Last 30 Days', 30),
+						dayButtonView(download, 'Last 90 Days', 90),
+						dayButtonView(download, 'All times', 3650)
 					])
 				])
 			]),
@@ -111,3 +103,10 @@ let createComponent = {
 let focusConfig = (element, isInitialized) => {
 	if (!isInitialized) element.focus();
 };
+
+let dayButtonView = (download, name, days) => m('button.btn.btn-secondary.btn-sm', {onclick: () => {
+	let d = new Date();
+	d.setDate(d.getDate() - days);
+	download.startDate(d);
+	download.endDate(new Date());
+}}, name);
