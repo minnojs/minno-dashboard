@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "eslint src",
-    "start": "gulp watch & npm run serve &",
+    "start": "gulp watch & npm run serve",
     "serve": "node fixtures.js",
     "init": "bower install"
   },

@@ -734,6 +734,10 @@
   	return fetchJson(url, { method: 'post', body: body });
   }
 
+  function resetStudy(study) {
+  	return fetchJson(url, { method: 'post', body: Object.assign({ action: 'resetStudy' }, study) }).then(interceptErrors);
+  }
+
   function interceptErrors(response) {
   	if (!response.error) {
   		return response;
@@ -1045,6 +1049,32 @@
   	}
   };
 
+  var reset = function reset(study) {
+  	messages.confirm({
+  		header: 'Restart study',
+  		content: 'Are you sure you want to restart this study? This action will reset all started and completed sessions.'
+  	}).then(function (response) {
+  		if (response) {
+  			var _ret3 = (function () {
+  				var old = {
+  					startedSessions: study.startedSessions,
+  					completedSessions: study.completedSessions
+  				};
+  				study.startedSessions = study.completedSessions = 0;
+  				m.redraw();
+  				return {
+  					v: resetStudy(study).catch(function (response) {
+  						Object.assign(study, old);
+  						return Promise.reject(response);
+  					}).catch(reportError('Restart study'))
+  				};
+  			})();
+
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
+  		}
+  	});
+  };
+
   var reportError = function reportError(header) {
   	return function (err) {
   		return messages.alert({ header: header, content: err.message });
@@ -1074,6 +1104,7 @@
   			pause: pause,
   			remove: remove,
   			edit: edit,
+  			reset: reset,
   			create: create,
   			list: m.prop([]),
   			globalSearch: m.prop(''),
@@ -1114,7 +1145,7 @@
   			})[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
   		})])])]);
   	}
   };

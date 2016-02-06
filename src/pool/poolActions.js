@@ -1,4 +1,4 @@
-import {updateStudy, createStudy, updateStatus, getStudyId, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
+import {updateStudy, createStudy, updateStatus, getStudyId, resetStudy, STATUS_RUNNING, STATUS_PAUSED, STATUS_STOP} from './poolModel';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
 import editMessage from './poolEditComponent';
@@ -99,6 +99,28 @@ export let create = (list) => {
 				}
 			});
 	}
+};
+
+export let reset = study => {
+	messages.confirm({
+		header: 'Restart study',
+		content: 'Are you sure you want to restart this study? This action will reset all started and completed sessions.'
+	}).then(response => {
+		if (response) {
+			let old = {
+				startedSessions: study.startedSessions,
+				completedSessions: study.completedSessions
+			};
+			study.startedSessions = study.completedSessions = 0;
+			m.redraw();
+			return resetStudy(study)
+				.catch(response => {
+					Object.assign(study, old);
+					return Promise.reject(response);
+				})
+				.catch(reportError('Restart study'));
+		}
+	});
 };
 
 let reportError = header => err => messages.alert({header, content: err.message});

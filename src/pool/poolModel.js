@@ -43,6 +43,11 @@ export function getStudyId(study){
 	return  fetchJson(url, {method: 'post',body:body});
 }
 
+export function resetStudy(study){
+	return fetchJson(url, {method:'post', body: Object.assign({action:'resetStudy'}, study)})
+		.then(interceptErrors);
+}
+
 function interceptErrors(response){
 	if (!response.error){
 		return response;

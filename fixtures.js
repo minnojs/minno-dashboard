@@ -161,6 +161,17 @@ adminRouter.route('/studyData')
 				res.json({studyId: 'cool studyID adn stuff'});
 			}, 1000);
 			break;
+
+		case 'resetStudy':
+			setTimeout(function(){
+				res.json({error:true, msg: 'Oy gevalt'});
+			}, 1000);
+
+			break;
+
+		default:
+			res.status(500).json({message:'oops something went awfully wrong'});
+
 		}
 
 	});
@@ -193,6 +204,8 @@ adminRouter.route('/DashboardData')
 		case 'removeDownload':
 			res.json({error:'true', msg:'remove error'});
 			break;
+		default:
+			res.status(500).res.json({message:'oops something went awfully wrong'});
 		}
 	});
 

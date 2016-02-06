@@ -1,5 +1,5 @@
 import {getAllPoolStudies, STATUS_PAUSED, STATUS_RUNNING} from './poolModel';
-import {play, pause, remove, edit, create} from './poolActions';
+import {play, pause, remove, edit, create, reset} from './poolActions';
 // import classNames from 'utils/classNames';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
@@ -14,6 +14,7 @@ let poolComponent = {
 			pause: pause,
 			remove: remove,
 			edit: edit,
+			reset: reset,
 			create: create,
 			list: m.prop([]),
 			globalSearch: m.prop(''),
@@ -122,6 +123,9 @@ let poolComponent = {
 									]) : '',
 									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
 										m('i.fa.fa-edit')
+									]),
+									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
+										m('i.fa.fa-refresh')
 									]),
 									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
 										m('i.fa.fa-close')
