@@ -40,7 +40,6 @@ let fileContext = (file, study) => {
 		})
 		.then(m.redraw)
 		.catch( err => {
-			throw err;
 			err.response.json()
 				.then(response => {
 					messages.alert({
@@ -48,7 +47,6 @@ let fileContext = (file, study) => {
 						content: response.message
 					});
 				});
-
 			return err;
 		});
 	} // end delete file
