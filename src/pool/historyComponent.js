@@ -74,8 +74,8 @@ let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === pr
 function studyFilter(ctrl){
 	return study =>
 		(includes(study.studyId, ctrl.globalSearch()) ||	includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()))
-		&& study.creationDate >= ctrl.startDate().getTime()
-		&& study.creationDate <= ctrl.endDate().getTime();
+		&& (new Date(study.creationDate)).getTime() >= ctrl.startDate().getTime()
+		&& (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime();
 
 	function includes(val, search){
 		return typeof val === 'string' && val.includes(search);
