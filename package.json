@@ -5,10 +5,12 @@
   "repository": "https://github.com/ProjectImplicit/pi-validator.git",
   "main": "index.js",
   "scripts": {
+    "install": "bower install",
     "test": "eslint src",
-    "start": "gulp watch & npm run serve",
+    "watch": "gulp watch",
+    "bundle": "gulp bundle",
     "serve": "node fixtures.js",
-    "install": "bower install"
+    "start": "npm run bundle & npm run serve"
   },
   "author": "",
   "license": "Apache-2.0",
