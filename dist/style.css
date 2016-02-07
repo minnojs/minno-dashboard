@@ -58,6 +58,9 @@
   font-size: 6em;
   color: #5BC0DE; }
 
+#messages .card {
+  overflow-y: scroll; }
+
 .loader,
 .loader:before,
 .loader:after {

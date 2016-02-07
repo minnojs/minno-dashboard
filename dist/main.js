@@ -131,7 +131,7 @@
   		var stopPropagation = function stopPropagation(e) {
   			return e.stopPropagation();
   		};
-  		return m('#messages.backdrop', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.backdrop-content', { onclick: close }, [m('.card', { class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5' }, [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
+  		return m('#messages.backdrop', [!vm || !vm.isOpen ? '' : [m('.overlay', { config: messages.config() }), m('.backdrop-content', { onclick: close }, [m('.card', { class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config: maxHeight }, [m('.card-block', { onclick: stopPropagation }, [messages.views[vm.type](vm.opts)])])])]]);
   	},
 
   	config: function config() {
@@ -200,6 +200,23 @@
   				}
   			})]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(null) }, opts.okText || 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, opts.okText || 'OK')])];
   		}
+  	}
+  };
+
+  // set message max height, so that content can scroll within it.
+  var maxHeight = function maxHeight(element, isInitialized, ctx) {
+  	if (!isInitialized) {
+  		onResize();
+
+  		window.addEventListener('resize', onResize, true);
+
+  		ctx.onunload = function () {
+  			window.removeEventListener('resize', onResize);
+  		};
+  	}
+
+  	function onResize() {
+  		element.style.maxHeight = document.documentElement.clientHeight * 0.9 + 'px';
   	}
   };
 
@@ -399,7 +416,7 @@
   				picker = ctx.picker = new Pikaday({
   					maxDate: new Date(),
   					onSelect: function onSelect(date) {
-  						return startDate(date) && m.redraw();
+  						return startDate(date) && update() || m.redraw();
   					}
   				});
   				element.appendChild(picker.el);
@@ -409,13 +426,16 @@
   			}
 
   			// resset picker date only if the date has changed externaly
-  			if (startDate() !== picker.getDate()) {
+  			if (!datesEqual(startDate(), picker.getDate())) {
   				picker.setDate(startDate(), true);
+  				update();
   			}
 
-  			picker.setStartRange(startDate());
-  			picker.setEndRange(endDate());
-  			picker.setMaxDate(endDate());
+  			function update() {
+  				picker.setStartRange(startDate());
+  				picker.setEndRange(endDate());
+  				picker.setMaxDate(endDate());
+  			}
   		};
   	},
   	configEnd: function configEnd(_ref3) {
@@ -429,7 +449,7 @@
   				picker = ctx.picker = new Pikaday({
   					maxDate: new Date(),
   					onSelect: function onSelect(date) {
-  						return endDate(date) && m.redraw();
+  						return endDate(date) && update() || m.redraw();
   					}
   				});
   				element.appendChild(picker.el);
@@ -439,15 +459,22 @@
   			}
 
   			// resset picker date only if the date has changed externaly
-  			if (endDate() !== picker.getDate()) {
+  			if (!datesEqual(endDate(), picker.getDate())) {
   				picker.setDate(endDate(), true);
+  				update();
   			}
 
-  			picker.setStartRange(startDate());
-  			picker.setEndRange(endDate());
-  			picker.setMinDate(startDate());
+  			function update() {
+  				picker.setStartRange(startDate());
+  				picker.setEndRange(endDate());
+  				picker.setMinDate(startDate());
+  			}
   		};
   	}
+  };
+
+  var datesEqual = function datesEqual(date1, date2) {
+  	return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();
   };
 
   var createMessage$1 = (function (args) {
@@ -776,6 +803,8 @@
   		var ctrl = {
   			list: m.prop([]),
   			globalSearch: m.prop(''),
+  			startDate: m.prop(new Date(0)),
+  			endDate: m.prop(new Date()),
   			sortBy: m.prop()
   		};
 
@@ -785,7 +814,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId), m('td', study.updaterId),
@@ -810,7 +839,7 @@
 
   function studyFilter$1(ctrl) {
   	return function (study) {
-  		return includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch());
+  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())) && study.creationDate >= ctrl.startDate().getTime() && study.creationDate <= ctrl.endDate().getTime();
   	};
 
   	function includes(val, search) {

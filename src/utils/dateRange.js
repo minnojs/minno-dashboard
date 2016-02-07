@@ -55,7 +55,7 @@ let pikadayRange = {
 			if (!isInitialized){
 				picker = ctx.picker = new Pikaday({
 					maxDate: new Date(),
-					onSelect: date => startDate(date) && m.redraw()
+					onSelect: date => startDate(date) && update() || m.redraw()
 				});
 				element.appendChild(picker.el);
 
@@ -64,13 +64,16 @@ let pikadayRange = {
 			}
 
 			// resset picker date only if the date has changed externaly
-			if (startDate() !== picker.getDate()){
+			if (!datesEqual(startDate() ,picker.getDate())){
 				picker.setDate(startDate(),true);
+				update();
 			}
 
-			picker.setStartRange(startDate());
-			picker.setEndRange(endDate());
-			picker.setMaxDate(endDate());
+			function update(){
+				picker.setStartRange(startDate());
+				picker.setEndRange(endDate());
+				picker.setMaxDate(endDate());
+			}
 		};
 	},
 	configEnd({startDate, endDate}){
@@ -80,7 +83,7 @@ let pikadayRange = {
 			if (!isInitialized){
 				picker = ctx.picker = new Pikaday({
 					maxDate: new Date(),
-					onSelect: date => endDate(date) && m.redraw()
+					onSelect: date => endDate(date) && update() || m.redraw()
 				});
 				element.appendChild(picker.el);
 
@@ -89,13 +92,18 @@ let pikadayRange = {
 			}
 
 			// resset picker date only if the date has changed externaly
-			if (endDate() !== picker.getDate()){
+			if (!datesEqual(endDate() ,picker.getDate())){
 				picker.setDate(endDate(),true);
+				update();
 			}
 
-			picker.setStartRange(startDate());
-			picker.setEndRange(endDate());
-			picker.setMinDate(startDate());
+			function update(){
+				picker.setStartRange(startDate());
+				picker.setEndRange(endDate());
+				picker.setMinDate(startDate());
+			}
 		};
 	}
 };
+
+let datesEqual = (date1, date2) => date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();

@@ -48,6 +48,10 @@ $navbar-height:    58px;
 	color: #5BC0DE;
 }
 
+#messages .card {
+	overflow-y: scroll;
+}
+
 @import "./loader";
 @import "./context";
 @import "./files";

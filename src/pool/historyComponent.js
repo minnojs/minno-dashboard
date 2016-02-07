@@ -1,4 +1,5 @@
 import {getLast100PoolUpdates} from './poolModel';
+import {dateRangePicker} from 'utils/dateRange';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default poolComponent;
@@ -8,6 +9,8 @@ let poolComponent = {
 		const ctrl = {
 			list: m.prop([]),
 			globalSearch: m.prop(''),
+			startDate: m.prop(new Date(0)),
+			endDate: m.prop(new Date()),
 			sortBy: m.prop()
 		};
 
@@ -24,8 +27,13 @@ let poolComponent = {
 			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 				m('thead', [
 					m('tr', [
-						m('th', {colspan:8}, [
-							m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+						m('th.row', {colspan:8}, [
+							m('.col-sm-4',
+								m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+							),
+							m('.col-sm-8',
+								dateRangePicker(ctrl)
+							)
 						])
 					]),
 					m('tr', [
@@ -65,9 +73,9 @@ let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === pr
 
 function studyFilter(ctrl){
 	return study =>
-		includes(study.studyId, ctrl.globalSearch()) ||
-		includes(study.updaterId, ctrl.globalSearch()) ||
-		includes(study.rulesUrl, ctrl.globalSearch());
+		(includes(study.studyId, ctrl.globalSearch()) ||	includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()))
+		&& study.creationDate >= ctrl.startDate().getTime()
+		&& study.creationDate <= ctrl.endDate().getTime();
 
 	function includes(val, search){
 		return typeof val === 'string' && val.includes(search);

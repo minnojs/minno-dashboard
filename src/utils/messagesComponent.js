@@ -36,7 +36,7 @@ let messages = {
 				:[
 					m('.overlay', {config:messages.config()}),
 					m('.backdrop-content', {onclick:close}, [
-						m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5'}, [
+						m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config:maxHeight}, [
 							m('.card-block', {onclick: stopPropagation}, [
 								messages.views[vm.type](vm.opts)
 							])
@@ -120,4 +120,24 @@ let messages = {
 			];
 		}
 	}
+};
+
+
+// set message max height, so that content can scroll within it.
+let maxHeight = (element, isInitialized, ctx) => {
+	if (!isInitialized){
+		onResize();
+
+		window.addEventListener('resize', onResize, true);
+
+		ctx.onunload = function(){
+			window.removeEventListener('resize', onResize);
+		};
+
+	}
+
+	function onResize(){
+		element.style.maxHeight = document.documentElement.clientHeight * 0.9 + 'px';
+	}
+
 };

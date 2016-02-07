@@ -2,9 +2,6 @@ import messages from 'utils/messagesComponent';
 import {dateRangePicker} from 'utils/dateRange';
 import classNames from 'utils/classNames';
 
-const DAY_MS = 1000 * 60 ^ 60 * 24;
-
-
 export default args => messages.custom({
 	content: m.component(createComponent, Object.assign({close:messages.close}, args)),
 	wide: true
