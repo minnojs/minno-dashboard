@@ -2,10 +2,11 @@
 
   var babelHelpers = {};
 
-  function babelHelpers_typeof (obj) {
+  babelHelpers.typeof = function (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -17,7 +18,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -221,22 +222,36 @@
   	}
   };
 
-  function isLoggedIn() {
-  	return true;
-  }
+  var authorizeState = {
+  	isLoggedIn: true,
+  	role: 'SU '
+  };
 
-  function login(args) {
-  	console.log(JSON.stringify(args));
+  var isLoggedIn = function isLoggedIn() {
+  	return !!authorizeState.isLoggedIn;
+  };
+  var getRole = function getRole() {
+  	return authorizeState.role;
+  };
+
+  function login() {
+  	console.log('login not implemented yet');
   }
 
   var layout = function layout(route) {
   	return {
   		controller: function controller() {
-  			if (!isLoggedIn() && m.route() !== '/login') m.route('login');
+  			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
   		},
   		view: function view() {
-  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
-  			m.component(messages), m.component(spinner)]);
+  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [
+  			// m('li.nav-item',[
+  			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+  			// ]),
+  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
+  			m.component(messages), // register modal
+  			m.component(spinner) // register spinner
+  			]);
   		}
   	};
   };
@@ -735,7 +750,7 @@
   }
 
   function resetStudy(study) {
-  	return fetchJson(url, { method: 'post', body: Object.assign({ action: 'resetStudy' }, study) }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: Object.assign({ action: 'resetCompletions' }, study) }).then(interceptErrors);
   }
 
   function interceptErrors(response) {
@@ -1008,7 +1023,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
   		}
   	});
   };
@@ -1043,7 +1058,7 @@
   					};
   				})();
 
-  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
   			}
   		});
   	}
@@ -1070,7 +1085,7 @@
   				};
   			})();
 
-  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret3)) === "object") return _ret3.v;
   		}
   	});
   };
@@ -1106,6 +1121,9 @@
   			edit: edit,
   			reset: reset,
   			create: create,
+  			canCreate: function canCreate() {
+  				return getRole() === 'SU';
+  			},
   			list: m.prop([]),
   			globalSearch: m.prop(''),
   			sortBy: m.prop()
@@ -1117,7 +1135,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]), m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), ctrl.canCreate() ? m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]) : '', m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
@@ -1145,7 +1163,7 @@
   			})[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]), m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')])])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
   		})])])]);
   	}
   };
@@ -1299,8 +1317,12 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			if (arguments.length) {
-  				store = arguments[0];
+  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+  				args[_key] = arguments[_key];
+  			}
+
+  			if (args.length) {
+  				store = args[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1798,7 +1820,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -1942,7 +1964,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
   		case 'string':
   			break;
   		case 'number':

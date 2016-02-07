@@ -145,7 +145,11 @@ adminRouter.route('/studyData')
 					startedSessions: Math.random() * 100,
 					completedSessions: Math.random() * 100,
 					creationDate:new Date() * Math.random(),
-					studyStatus: Math.random()>0.5?'R':'P'
+					studyStatus: Math.random()>0.5?'R':'P',
+					canStop:Math.random()>0.5,
+					canReset:Math.random()>0.5,
+					canPause:Math.random()>0.5,
+					canUnpause:Math.random()>0.5
 				});
 			}
 			res.json(data);

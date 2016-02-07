@@ -1,6 +1,6 @@
 import {getAllPoolStudies, STATUS_PAUSED, STATUS_RUNNING} from './poolModel';
 import {play, pause, remove, edit, create, reset} from './poolActions';
-// import classNames from 'utils/classNames';
+import {getRole} from 'login/authModel';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default poolComponent;
@@ -16,6 +16,7 @@ let poolComponent = {
 			edit: edit,
 			reset: reset,
 			create: create,
+			canCreate: () => getRole() === 'SU',
 			list: m.prop([]),
 			globalSearch: m.prop(''),
 			sortBy: m.prop()
@@ -38,13 +39,13 @@ let poolComponent = {
 							m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
 						])
 					]),
-					m('tr', [
+					ctrl.canCreate() ? m('tr', [
 						m('th.text-xs-center', {colspan:8}, [
 							m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
 								m('i.fa.fa-plus'), '  Add new study'
 							])
 						])
-					]),
+					]) : '',
 					m('tr', [
 						m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
 						m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
@@ -115,21 +116,21 @@ let poolComponent = {
 								m('.l', 'Loading...')
 								:
 								m('.btn-group', [
-									study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play.bind(null, study)}, [
+									study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play.bind(null, study)}, [
 										m('i.fa.fa-play')
 									]) : '',
-									study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
+									study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
 										m('i.fa.fa-pause')
 									]) : '',
 									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
 										m('i.fa.fa-edit')
 									]),
-									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
+									study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
 										m('i.fa.fa-refresh')
-									]),
-									m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
+									]) : '',
+									study.canStop ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
 										m('i.fa.fa-close')
-									])
+									]) : ''
 								])
 						])
 					]))
