@@ -35,8 +35,13 @@ let poolComponent = {
 			m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 				m('thead', [
 					m('tr', [
-						m('th', {colspan:8}, [
+						m('th', {colspan:7}, [
 							m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+						]),
+						m('th', [
+							m('a.btn.btn-secondary', {href:'/pool/history', config:m.route}, [
+								m('i.fa.fa-history'), '  History'
+							])
 						])
 					]),
 					ctrl.canCreate() ? m('tr', [

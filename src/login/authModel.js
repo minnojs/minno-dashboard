@@ -1,6 +1,6 @@
 let authorizeState = {
 	isLoggedIn: true,
-	role: 'SU '
+	role: 'SU'
 };
 
 export let isLoggedIn = () => !!authorizeState.isLoggedIn;

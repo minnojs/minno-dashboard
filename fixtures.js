@@ -154,6 +154,19 @@ adminRouter.route('/studyData')
 			}
 			res.json(data);
 			break;
+		case 'getLast100PoolUpdates':
+			var data = [];
+			for (var i=0; i<100; i++){
+				data.push({
+					studyId:(0|Math.random()*9e6).toString(36),
+					newStatus: ['R','P','S'][Math.floor(Math.random()*3)],
+					updaterId:(0|Math.random()*9e6).toString(36),
+					creationDate:new Date() * Math.random()
+				});
+			}
+			res.json(data);
+
+			break;
 		case 'updateRulesTable':
 			setTimeout(function(){
 				res.json({error:2});
@@ -174,7 +187,7 @@ adminRouter.route('/studyData')
 			break;
 
 		default:
-			res.status(500).json({message:'oops something went awfully wrong'});
+			res.status(500).json({message:'oops something went awfully wrong - action not found'});
 
 		}
 

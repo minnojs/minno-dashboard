@@ -35,6 +35,11 @@ export function getAllPoolStudies(){
 		.then(interceptErrors);
 }
 
+export function getLast100PoolUpdates(){
+	return fetchJson(url, {method:'post', body: {action:'getLast100PoolUpdates'}})
+		.then(interceptErrors);
+}
+
 export function getStudyId(study){
 	let body = Object.assign({
 		action:'getStudyId'

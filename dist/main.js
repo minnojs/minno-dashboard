@@ -2,11 +2,10 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -18,7 +17,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -224,7 +223,7 @@
 
   var authorizeState = {
   	isLoggedIn: true,
-  	role: 'SU '
+  	role: 'SU'
   };
 
   var isLoggedIn = function isLoggedIn() {
@@ -663,7 +662,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$1('db', ctrl.sortBy), 'Database'), m('th', thConfig$1('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (download) {
+  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$2('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$2('db', ctrl.sortBy), 'Database'), m('th', thConfig$2('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$2('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$2(ctrl)).map(function (download) {
   			return m('tr', [
   			// ### ID
   			m('td', download.studyId),
@@ -694,11 +693,11 @@
   };
 
   // @TODO: bad idiom! should change things within the object, not the object itself.
-  var thConfig$1 = function thConfig(prop, current) {
+  var thConfig$2 = function thConfig(prop, current) {
   	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
   };
 
-  function studyFilter$1(ctrl) {
+  function studyFilter$2(ctrl) {
   	var search = ctrl.globalSearch();
   	return function (study) {
   		return includes(study.studyId, search) || includes(study.studyUrl, search);
@@ -741,6 +740,10 @@
   	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
   }
 
+  function getLast100PoolUpdates() {
+  	return fetchJson(url, { method: 'post', body: { action: 'getLast100PoolUpdates' } }).then(interceptErrors);
+  }
+
   function getStudyId(study) {
   	var body = Object.assign({
   		action: 'getStudyId'
@@ -766,6 +769,53 @@
   	};
 
   	return Promise.reject({ message: errors[response.error] });
+  }
+
+  var poolComponent$1 = {
+  	controller: function controller() {
+  		var ctrl = {
+  			list: m.prop([]),
+  			globalSearch: m.prop(''),
+  			sortBy: m.prop()
+  		};
+
+  		getLast100PoolUpdates().then(ctrl.list).then(m.redraw);
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var list = ctrl.list;
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  			return m('tr', [
+  			// ### ID
+  			m('td', study.studyId), m('td', study.updaterId),
+
+  			// ### Date
+  			m('td', formatDate(new Date(study.creationDate))),
+
+  			// ### Status
+  			m('td', [({
+  				R: m('span.label.label-success', 'Running'),
+  				P: m('span.label.label-info', 'Paused'),
+  				S: m('span.label.label-danger', 'Stopped')
+  			})[study.newStatus]])]);
+  		})])])]);
+  	}
+  };
+
+  // @TODO: bad idiom! should change things within the object, not the object itself.
+  var thConfig$1 = function thConfig(prop, current) {
+  	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
+  };
+
+  function studyFilter$1(ctrl) {
+  	return function (study) {
+  		return includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch());
+  	};
+
+  	function includes(val, search) {
+  		return typeof val === 'string' && val.includes(search);
+  	}
   }
 
   /**
@@ -1023,7 +1073,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
   		}
   	});
   };
@@ -1058,7 +1108,7 @@
   					};
   				})();
 
-  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
   			}
   		});
   	}
@@ -1085,7 +1135,7 @@
   				};
   			})();
 
-  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret3)) === "object") return _ret3.v;
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
   		}
   	});
   };
@@ -1135,7 +1185,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 8 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), ctrl.canCreate() ? m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]) : '', m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })]), m('th', [m('a.btn.btn-secondary', { href: '/pool/history', config: m.route }, [m('i.fa.fa-history'), '  History'])])]), ctrl.canCreate() ? m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]) : '', m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),
@@ -1317,12 +1367,8 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  				args[_key] = arguments[_key];
-  			}
-
-  			if (args.length) {
-  				store = args[0];
+  			if (arguments.length) {
+  				store = arguments[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1820,7 +1866,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -1964,7 +2010,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -2395,6 +2441,7 @@
   	'/editor/:studyID': editorLayoutComponent,
   	'/editor/:studyID/:fileID': editorLayoutComponent,
   	'/pool': poolComponent,
+  	'/pool/history': poolComponent$1,
   	'/downloads': downloadsComponent
   };
 
