@@ -2,7 +2,7 @@ import routes from './routes';
 import layoutWrapper from './layoutWrapper';
 
 let wrappedRoutes = mapObject(routes, layoutWrapper);
-m.route(document.body, 'studies', wrappedRoutes);
+m.route(document.body, '/studies', wrappedRoutes);
 
 /**
  * Map Object

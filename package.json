@@ -10,7 +10,7 @@
     "watch": "gulp watch",
     "bundle": "gulp bundle",
     "serve": "node fixtures.js",
-    "start": "npm run bundle & npm run serve"
+    "start": "npm run watch & npm run serve"
   },
   "author": "",
   "license": "Apache-2.0",

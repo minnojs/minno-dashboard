@@ -1,12 +1,13 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
-import {isLoggedIn} from 'login/authModel';
+import {authorize, isLoggedIn} from 'login/authModel';
 export default layout;
 
 let layout = route => {
 	return {
 		controller(){
+			authorize();
 			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
 		},
 		view(){

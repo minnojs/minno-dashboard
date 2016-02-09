@@ -239,10 +239,7 @@
   	}
   };
 
-  var authorizeState = {
-  	isLoggedIn: true,
-  	role: 'SU'
-  };
+  var authorizeState = {};
 
   var isLoggedIn = function isLoggedIn() {
   	return !!authorizeState.isLoggedIn;
@@ -251,13 +248,27 @@
   	return authorizeState.role;
   };
 
+  function authorize() {
+  	authorizeState = getAuth();
+  }
+
   function login() {
   	console.log('login not implemented yet');
+  }
+
+  function getAuth() {
+  	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
+  	try {
+  		return JSON.parse(cookieValue);
+  	} catch (e) {
+  		return {};
+  	}
   }
 
   var layout = function layout(route) {
   	return {
   		controller: function controller() {
+  			authorize();
   			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
   		},
   		view: function view() {
@@ -2480,7 +2491,7 @@
   };
 
   var wrappedRoutes = mapObject(routes, layout);
-  m.route(document.body, 'studies', wrappedRoutes);
+  m.route(document.body, '/studies', wrappedRoutes);
 
   /**
    * Map Object

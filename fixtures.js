@@ -230,6 +230,10 @@ adminRouter.route('/DashboardData')
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
+app.use((req, res, done)=>{
+	res.cookie('PiLogin', JSON.stringify({isLoggedIn: true,role: 'SU'}))
+	done();
+})
 app.use(express.static('..'));
 
 // START THE SERVER
