@@ -61,6 +61,13 @@
 #messages .card {
   overflow-y: scroll; }
 
+.history-button-group {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  left: 15px;
+  top: 24px; }
+
 .loader,
 .loader:before,
 .loader:after {
@@ -537,5 +544,8 @@ th[data-sort-by].active:before {
   box-shadow: none;
   border-radius: 3px; }
 
+.date-range {
+  display: inline-block; }
+
 .pika-single {
-  height: 230px; }
+  height: 237px; }

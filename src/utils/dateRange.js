@@ -34,7 +34,7 @@ let pikaday = {
 
 let pikadayRange = {
 	view: function(ctrl, args){
-		return m('div',[
+		return m('.date-range',[
 			m('.figure', [
 				m('strong','Start Date'),
 				m('br'),

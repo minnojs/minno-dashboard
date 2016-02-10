@@ -14,6 +14,7 @@ function getAuth(){
 	try {
 		return JSON.parse(cookieValue);
 	} catch (e) {
+		setTimeout(()=>{throw e;});
 		return {};
 	}
 }

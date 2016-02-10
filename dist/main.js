@@ -261,6 +261,9 @@
   	try {
   		return JSON.parse(cookieValue);
   	} catch (e) {
+  		setTimeout(function () {
+  			throw e;
+  		});
   		return {};
   	}
   }
@@ -415,7 +418,7 @@
 
   var pikadayRange = {
   	view: function view(ctrl, args) {
-  		return m('div', [m('.figure', [m('strong', 'Start Date'), m('br'), m('.figure', { config: pikadayRange.configStart(args) })]), m.trust('&nbsp;'), m('.figure', [m('strong', 'End Date'), m('br'), m('.figure', { config: pikadayRange.configEnd(args) })])]);
+  		return m('.date-range', [m('.figure', [m('strong', 'Start Date'), m('br'), m('.figure', { config: pikadayRange.configStart(args) })]), m.trust('&nbsp;'), m('.figure', [m('strong', 'End Date'), m('br'), m('.figure', { config: pikadayRange.configEnd(args) })])]);
   	},
   	configStart: function configStart(_ref2) {
   		var startDate = _ref2.startDate;
@@ -561,7 +564,7 @@
   			value: download.studyId(),
   			onkeyup: m.withAttr('value', download.studyId),
   			class: inputClasses(validity.studyId)
-  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')]), m('.form-group', [m('label', 'Database'), m('select.form-control', { onchange: m.withAttr('value', download.db) }, [m('option', { value: 'test', selected: download.db() === 'test' }, 'Development'), m('option', { value: 'warehouse', selected: download.db() === 'warehouse' }, 'Production')])]), m('.form-group', [m('label', 'Date Range'), dateRangePicker(download), m('p.text-muted.btn-toolbar', [dayButtonView(download, 'Last 7 Days', 7), dayButtonView(download, 'Last 30 Days', 30), dayButtonView(download, 'Last 90 Days', 90), dayButtonView(download, 'All times', 3650)])])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')]), m('.form-group', [m('label', 'Database'), m('select.form-control', { onchange: m.withAttr('value', download.db) }, [m('option', { value: 'test', selected: download.db() === 'test' }, 'Development'), m('option', { value: 'warehouse', selected: download.db() === 'warehouse' }, 'Production')])]), m('.form-group', [m('label', 'Date Range'), dateRangePicker(download), m('p.text-muted.btn-toolbar', [dayButtonView$1(download, 'Last 7 Days', 7), dayButtonView$1(download, 'Last 30 Days', 30), dayButtonView$1(download, 'Last 90 Days', 90), dayButtonView$1(download, 'All times', 3650)])])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
   	}
   };
 
@@ -569,7 +572,7 @@
   	if (!isInitialized) element.focus();
   };
 
-  var dayButtonView = function dayButtonView(download, name, days) {
+  var dayButtonView$1 = function dayButtonView(download, name, days) {
   	return m('button.btn.btn-secondary.btn-sm', { onclick: function onclick() {
   			var d = new Date();
   			d.setDate(d.getDate() - days);
@@ -826,7 +829,7 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId), m('td', study.updaterId),
@@ -858,6 +861,15 @@
   		return typeof val === 'string' && val.includes(search);
   	}
   }
+
+  var dayButtonView = function dayButtonView(ctrl, name, days) {
+  	return m('button.btn.btn-secondary.btn-sm', { onclick: function onclick() {
+  			var d = new Date();
+  			d.setDate(d.getDate() - days);
+  			ctrl.startDate(d);
+  			ctrl.endDate(new Date());
+  		} }, name);
+  };
 
   /**
    * Create edit component
@@ -2466,17 +2478,7 @@
   		return ctrl;
   	},
   	view: function view(ctrl) {
-  		return m('.login.centrify', [m('.card.card-inverse.col-md-4', [m('.card-block', [m('h4', 'Please sign in'), m('input.form-control', {
-  			type: 'email',
-  			placeholder: 'Email',
-  			value: ctrl.email(),
-  			onkeyup: m.withAttr('value', ctrl.email)
-  		}), m('input.form-control', {
-  			type: 'password',
-  			placeholder: 'Password',
-  			value: ctrl.password(),
-  			onkeyup: m.withAttr('value', ctrl.password)
-  		}), m('button.btn.btn-primary.btn-block', { onclick: ctrl.login }, 'Sign in'), m('p.text-center', m('a', m('small.text-muted', 'Lost your password?')))])])]);
+  		return m('.login.centrify', [m('h2', 'Page not found'), m('p', 'Login page not activated yet. ', m('a', { href: '/dashboard/dashboard' }, 'click here to login'))]);
   	}
   };
 

@@ -32,7 +32,15 @@ let poolComponent = {
 								m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
 							),
 							m('.col-sm-8',
-								dateRangePicker(ctrl)
+								dateRangePicker(ctrl),
+								m('.btn-group-vertical.history-button-group',[
+									dayButtonView(ctrl, 'Last 7 Days', 7),
+									dayButtonView(ctrl, 'Last 30 Days', 30),
+									dayButtonView(ctrl, 'Last 90 Days', 90),
+									dayButtonView(ctrl, 'All times', 3650)
+								])
+
+
 							)
 						])
 					]),
@@ -81,3 +89,10 @@ function studyFilter(ctrl){
 		return typeof val === 'string' && val.includes(search);
 	}
 }
+
+let dayButtonView = (ctrl, name, days) => m('button.btn.btn-secondary.btn-sm', {onclick: () => {
+	let d = new Date();
+	d.setDate(d.getDate() - days);
+	ctrl.startDate(d);
+	ctrl.endDate(new Date());
+}}, name);

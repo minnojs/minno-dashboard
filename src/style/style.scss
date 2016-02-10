@@ -52,6 +52,14 @@ $navbar-height:    58px;
 	overflow-y: scroll;
 }
 
+.history-button-group {
+	position: relative;
+	display: inline-block;
+    vertical-align: top;
+    left: 15px;
+    top: 24px;
+}
+
 @import "./loader";
 @import "./context";
 @import "./files";
