@@ -115,6 +115,7 @@ const fileFactory = fileObj => {
 
 	Object.assign(file, fileObj, {
 		name			: path.substring(path.lastIndexOf('/')+1),
+		basePath 		: (fileObj.isDir ? path : path.substring(0, path.lastIndexOf('/'))) + '/',
 		type			: type,
 		id				: fileObj.id,
 		sourceContent	: m.prop(fileObj.content || ''),

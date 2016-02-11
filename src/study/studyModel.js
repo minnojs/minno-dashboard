@@ -1,4 +1,4 @@
-import {toJSON, catchJSON, checkStatus} from 'utils/modelHelpers';
+import {toJSON, catchJSON, checkStatus, fetchJson} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 
@@ -10,32 +10,39 @@ let studyPrototype = {
 	},
 
 	get(){
-
-		return fetch(this.apiURL(),{credentials: 'same-origin'})
-			.then(checkStatus)
-			.then(toJSON)
+		return fetchJson(this.apiURL(),{credentials: 'same-origin'})
 			.then(study => {
 				this.loaded = true;
-				this.files(study.files.map(file => {
-					Object.assign(file, {studyID: this.id});
-					return fileFactory(file);
-				}));
+				let files = flattenFiles(study.files)
+					.map(f => Object.assign(f, {studyId: this.id}))
+					.map(fileFactory)
+					.sort(sort);
+
+				this.files(files);
 			})
 			.catch(reason => {
 				this.error = true;
 				return Promise.reject(reason); // do not swallow error
 			});
+
+		function flattenFiles(files){
+			return files ? [].concat(...files.map(spreadFile)) : [];
+		}
+
+		function spreadFile(file){
+			return [file, ...flattenFiles(file.files)];
+		}
+
+		function sort(a,b){
+			let nameA=a.name.toLowerCase(), nameB=b.name.toLowerCase();
+			if (nameA < nameB) return -1;//sort string ascending
+			if (nameA > nameB) return 1;
+			return 0; //default return value (no sorting)
+		}
 	},
 
 	getFile(id){
-		return getById(id, this.files());
-
-		function getById(id, files){
-			for (let file of files){
-				if (file.id == id) return file;
-				if (file.files) return getById(id, file.files);
-			}
-		}
+		return this.files().find(f => f.id === id);
 	},
 
 	createFile(name, content=''){
@@ -61,18 +68,11 @@ let studyPrototype = {
 	},
 
 	del(fileId){
-		return this.getFile(fileId).del()
+		let file = this.getFile(fileId);
+		return file.del()
 			.then(() => {
-				this.files(filterById(fileId, this.files()));
-
-				function filterById(id, files){
-					return files && files
-						.filter(file => file.id !== id)
-						.map(file => {
-							if (Array.isArray(file.files)) file.files = filterById(id, file.files);
-							return file;
-						});
-				}
+				let files = this.files().filter(f => f.path.indexOf(file.path) === 0);
+				this.files(files);
 			});
 
 	}

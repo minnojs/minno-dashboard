@@ -6,6 +6,16 @@
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  babelHelpers.toConsumableArray = function (arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    } else {
+      return Array.from(arr);
+    }
+  };
+
   babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
@@ -275,11 +285,11 @@
   			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
   		},
   		view: function view() {
-  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
+  			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
   			// m('li.nav-item',[
   			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
   			// ]),
-  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', { style: { marginTop: '70px' } }, [route]), m.component(contextMenuComponent), // register context menu
+  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
   			m.component(messages), // register modal
   			m.component(spinner) // register spinner
   			]);
@@ -1408,6 +1418,7 @@
 
   	Object.assign(file, fileObj, {
   		name: path.substring(path.lastIndexOf('/') + 1),
+  		basePath: (fileObj.isDir ? path : path.substring(0, path.lastIndexOf('/'))) + '/',
   		type: type,
   		id: fileObj.id,
   		sourceContent: m.prop(fileObj.content || ''),
@@ -1462,47 +1473,40 @@
   	get: function get() {
   		var _this = this;
 
-  		return fetch(this.apiURL(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (study) {
+  		return fetchJson(this.apiURL(), { credentials: 'same-origin' }).then(function (study) {
   			_this.loaded = true;
-  			_this.files(study.files.map(function (file) {
-  				Object.assign(file, { studyID: _this.id });
-  				return fileFactory(file);
-  			}));
+  			var files = flattenFiles(study.files).map(function (f) {
+  				return Object.assign(f, { studyId: _this.id });
+  			}).map(fileFactory).sort(sort);
+
+  			_this.files(files);
   		}).catch(function (reason) {
   			_this.error = true;
   			return Promise.reject(reason); // do not swallow error
   		});
+
+  		function flattenFiles(files) {
+  			var _ref;
+
+  			return files ? (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(files.map(spreadFile))) : [];
+  		}
+
+  		function spreadFile(file) {
+  			return [file].concat(babelHelpers.toConsumableArray(flattenFiles(file.files)));
+  		}
+
+  		function sort(a, b) {
+  			var nameA = a.name.toLowerCase(),
+  			    nameB = b.name.toLowerCase();
+  			if (nameA < nameB) return -1; //sort string ascending
+  			if (nameA > nameB) return 1;
+  			return 0; //default return value (no sorting)
+  		}
   	},
   	getFile: function getFile(id) {
-  		return getById(id, this.files());
-
-  		function getById(id, files) {
-  			var _iteratorNormalCompletion = true;
-  			var _didIteratorError = false;
-  			var _iteratorError = undefined;
-
-  			try {
-  				for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-  					var file = _step.value;
-
-  					if (file.id == id) return file;
-  					if (file.files) return getById(id, file.files);
-  				}
-  			} catch (err) {
-  				_didIteratorError = true;
-  				_iteratorError = err;
-  			} finally {
-  				try {
-  					if (!_iteratorNormalCompletion && _iterator.return) {
-  						_iterator.return();
-  					}
-  				} finally {
-  					if (_didIteratorError) {
-  						throw _iteratorError;
-  					}
-  				}
-  			}
-  		}
+  		return this.files().find(function (f) {
+  			return f.id === id;
+  		});
   	},
   	createFile: function createFile(name) {
   		var _this2 = this;
@@ -1528,17 +1532,12 @@
   	del: function del(fileId) {
   		var _this3 = this;
 
-  		return this.getFile(fileId).del().then(function () {
-  			_this3.files(filterById(fileId, _this3.files()));
-
-  			function filterById(id, files) {
-  				return files && files.filter(function (file) {
-  					return file.id !== id;
-  				}).map(function (file) {
-  					if (Array.isArray(file.files)) file.files = filterById(id, file.files);
-  					return file;
-  				});
-  			}
+  		var file = this.getFile(fileId);
+  		return file.del().then(function () {
+  			var files = _this3.files().filter(function (f) {
+  				return f.path.indexOf(file.path) === 0;
+  			});
+  			_this3.files(files);
   		});
   	}
   };

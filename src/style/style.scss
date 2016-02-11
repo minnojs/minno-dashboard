@@ -1,5 +1,15 @@
 $navbar-height:    58px;
 
+.dashboard-root {
+	> .container-fluid {margin-top:70px}
+
+	// in iframe don't show navbar
+	&.is-iframe {
+		nav.navbar {display:none}
+		> .container-fluid {margin-top:0}
+	}
+}
+
 .stringified {
 	.pre {text-decoration: none;white-space: pre;}
 	.string { color: green; }

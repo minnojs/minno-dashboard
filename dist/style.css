@@ -1,4 +1,13 @@
 @charset "UTF-8";
+.dashboard-root > .container-fluid {
+  margin-top: 70px; }
+
+.dashboard-root.is-iframe nav.navbar {
+  display: none; }
+
+.dashboard-root.is-iframe > .container-fluid {
+  margin-top: 0; }
+
 .stringified .pre {
   text-decoration: none;
   white-space: pre; }

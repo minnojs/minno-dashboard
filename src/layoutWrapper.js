@@ -11,7 +11,7 @@ let layout = route => {
 			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
 		},
 		view(){
-			return  m('div', [
+			return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
 				m('nav.navbar.navbar-dark.navbar-fixed-top', [
 					m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
 					m('ul.nav.navbar-nav',[
@@ -27,7 +27,7 @@ let layout = route => {
 					])
 				]),
 
-				m('.container-fluid', {style:{marginTop:'70px'}},[
+				m('.container-fluid', [
 					route
 				]),
 
