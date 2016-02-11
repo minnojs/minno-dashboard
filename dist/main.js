@@ -259,7 +259,7 @@
   function getAuth() {
   	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
   	try {
-  		return JSON.parse(cookieValue);
+  		return cookieValue ? JSON.parse(cookieValue) : {};
   	} catch (e) {
   		setTimeout(function () {
   			throw e;
@@ -275,7 +275,7 @@
   			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
   		},
   		view: function view() {
-  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', 'Dashboard'), m('ul.nav.navbar-nav', [
+  			return m('div', [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
   			// m('li.nav-item',[
   			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
   			// ]),
@@ -1403,14 +1403,15 @@
 
   var fileFactory = function fileFactory(fileObj) {
   	var file = Object.create(filePrototype);
-  	var url = fileObj.url;
+  	var path = decodeURIComponent(fileObj.path);
+  	var type = path.substring(path.lastIndexOf('.') + 1);
 
   	Object.assign(file, fileObj, {
-  		name: url.substring(url.lastIndexOf('/') + 1),
-  		type: url.substring(url.lastIndexOf('.') + 1),
+  		name: path.substring(path.lastIndexOf('/') + 1),
+  		type: type,
   		id: fileObj.id,
   		sourceContent: m.prop(fileObj.content || ''),
-  		content: contentProvider.call(file),
+  		content: type == 'js' ? contentProvider.call(file) : m.prop(fileObj.content || ''),
 
   		// keep track of loaded state
   		loaded: false,

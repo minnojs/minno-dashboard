@@ -38,52 +38,62 @@ var files = isMac
 	? [
 		{
 			id: 'iatExtenssion.js',
+			path: 'iatExtenssion.js',
 			url: '/test/iatExtenssion.js',
 			noDel: true
 		},
 		{
 			id: 'aaa.pdf',
+			path: 'aaa.pdf',
 			url: '/test/aaa.pdf'
 		},
 		{
 			id: 'example.js',
+			path: 'example.js',
 			url: '/test/example.js'
 		},
 		{
 			id: 'exp.xml',
+			path: 'exp.xml',
 			url: '/test/exp.xml'
 		}
 	]
 	: [
 		{
 			'id': 'imageTest.js',
+			'path': 'imageTest.js',
 			'url': '/test/imageTest.js'
 		},
 		{
 			'id': 'example.js',
+			'path': 'example.js',
 			'url': '/test/example.js'
 		},
 		{
 			'id': 'left.jst',
+			'path': 'left.jst',
 			'url': '/test/templates/left.jst'
 		},
 		{
 			'id': 'wf3_nc.jpg',
+			'path': 'wf3_nc.jpg',
 			'url': '/test/images/wf3_nc.jpg'
 		}
 	];
 
-files.push({id:'images', url:'/test/images', isDir:true, files: [
+files.push({id:'images', path:'images', url:'/test/images', isDir:true, files: [
 	{
 		'id': 'wm1_nc.jpg',
+		'path': 'images/wm1_nc.jpg',
 		'url': '/test/images/wm1_nc.jpg'
 	},
 	{
 		'id': 'bf14_nc.jpg',
+		'path': 'images/bf14_nc.jpg',
 		'url': '/test/images/bf14_nc.jpg'
 	}
 ]});
-files.push({id:'someFile.grg', url:'/test/someFile.grg'});
+files.push({id:'someFile.grg', path:'someFile.grg', url:'/test/someFile.grg'});
 
 router.route('/files/:studyID')
 	.get((req,res)=>{
@@ -91,7 +101,7 @@ router.route('/files/:studyID')
 			res.json({
 				files: files
 			});
-		}, 1000)
+		}, 0);
 	});
 
 router.route('/files/:studyID/file')

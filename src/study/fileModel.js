@@ -110,14 +110,15 @@ var jshintOptions = {
 
 const fileFactory = fileObj => {
 	let file = Object.create(filePrototype);
-	let url = fileObj.url;
+	let path = decodeURIComponent(fileObj.path);
+	let type = path.substring(path.lastIndexOf('.')+1);
 
 	Object.assign(file, fileObj, {
-		name			: url.substring(url.lastIndexOf('/')+1),
-		type			: url.substring(url.lastIndexOf('.')+1),
+		name			: path.substring(path.lastIndexOf('/')+1),
+		type			: type,
 		id				: fileObj.id,
 		sourceContent	: m.prop(fileObj.content || ''),
-		content 		: contentProvider.call(file),
+		content 		: type == 'js' ? contentProvider.call(file) : m.prop(fileObj.content || ''),
 
 		// keep track of loaded state
 		loaded			: false,

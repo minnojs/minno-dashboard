@@ -13,7 +13,7 @@ let layout = route => {
 		view(){
 			return  m('div', [
 				m('nav.navbar.navbar-dark.navbar-fixed-top', [
-					m('a.navbar-brand', 'Dashboard'),
+					m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
 					m('ul.nav.navbar-nav',[
 						// m('li.nav-item',[
 						// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')

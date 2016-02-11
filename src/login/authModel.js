@@ -12,7 +12,7 @@ export function login(){console.log('login not implemented yet')}
 function getAuth(){
 	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
 	try {
-		return JSON.parse(cookieValue);
+		return cookieValue ? JSON.parse(cookieValue) : {};
 	} catch (e) {
 		setTimeout(()=>{throw e;});
 		return {};
