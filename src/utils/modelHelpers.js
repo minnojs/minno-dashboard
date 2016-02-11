@@ -1,10 +1,13 @@
 export let checkStatus = response => {
+
 	if (response.status >= 200 && response.status < 300) {
 		return response;
 	}
 
 	let error = new Error(response.statusText);
+
 	error.response = response;
+
 	throw error;
 };
 
@@ -26,9 +29,8 @@ export function fetchJson(url, options){
 	}, options);
 
 	opts.body = JSON.stringify(options.body);
-
 	return fetch(url, opts)
 		.then(checkStatus)
-		.then(toJSON)
-		.catch(catchJSON);
+		.catch(catchJSON)
+		.then(toJSON);
 }

@@ -7,14 +7,15 @@ import messages from 'utils/messagesComponent';
  */
 
 export let recursiveGetAll = debounce(getAll, 5000);
-export function getAll({list, cancel}){
+export function getAll({list, cancel, error}){
 	return getAllDownloads()
 		.then(list)
 		.then(response => {
 			if (!cancel() && response.some(download => download.studyStatus === STATUS_RUNNING)) {
-				recursiveGetAll({list, cancel});
+				recursiveGetAll({list, cancel, error});
 			}
 		})
+		.catch(error)
 		.then(m.redraw);
 }
 

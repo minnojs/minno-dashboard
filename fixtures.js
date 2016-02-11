@@ -152,6 +152,7 @@ adminRouter.route('/studyData')
 					canUnpause:Math.random()>0.5
 				});
 			}
+			//res.status(403).json({message:'Oh crud'})
 			res.json(data);
 			break;
 		case 'getLast100PoolUpdates':
@@ -211,7 +212,8 @@ adminRouter.route('/DashboardData')
 					studyStatus: ['R','C','X'][Math.floor(Math.random()*3)]
 				});
 			}
-			res.json(data);
+			//res.json(data);
+			res.status(500).send('asdsdf')
 			break;
 		case 'download':
 			setTimeout(function(){
@@ -231,9 +233,9 @@ adminRouter.route('/DashboardData')
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
 app.use((req, res, done)=>{
-	res.cookie('PiLogin', JSON.stringify({isLoggedIn: true,role: 'SU'}))
+	res.cookie('PiLogin', JSON.stringify({isLoggedin: true,role: 'SU'}));
 	done();
-})
+});
 app.use(express.static('..'));
 
 // START THE SERVER

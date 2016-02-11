@@ -242,7 +242,7 @@
   var authorizeState = {};
 
   var isLoggedIn = function isLoggedIn() {
-  	return !!authorizeState.isLoggedIn;
+  	return !!authorizeState.isLoggedin;
   };
   var getRole = function getRole() {
   	return authorizeState.role;
@@ -310,12 +310,15 @@
   }
 
   var checkStatus = function checkStatus(response) {
+
   	if (response.status >= 200 && response.status < 300) {
   		return response;
   	}
 
   	var error = new Error(response.statusText);
+
   	error.response = response;
+
   	throw error;
   };
 
@@ -342,8 +345,7 @@
   	}, options);
 
   	opts.body = JSON.stringify(options.body);
-
-  	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
+  	return fetch(url, opts).then(checkStatus).catch(catchJSON).then(toJSON);
   }
 
   var url$1 = '/dashboard/DashboardData';
@@ -589,14 +591,15 @@
   function getAll(_ref) {
   	var list = _ref.list;
   	var cancel = _ref.cancel;
+  	var error = _ref.error;
 
   	return getAllDownloads().then(list).then(function (response) {
   		if (!cancel() && response.some(function (download) {
   			return download.studyStatus === STATUS_RUNNING$1;
   		})) {
-  			recursiveGetAll({ list: list, cancel: cancel });
+  			recursiveGetAll({ list: list, cancel: cancel, error: error });
   		}
-  	}).then(m.redraw);
+  	}).catch(error).then(m.redraw);
   }
 
   // debounce but call at first iteration
@@ -681,6 +684,8 @@
   	};
   };
 
+  var TABLE_WIDTH$1 = 7;
+
   var downloadsComponent = {
   	controller: function controller() {
   		var list = m.prop([]);
@@ -695,16 +700,18 @@
   			sortBy: m.prop('studyId'),
   			onunload: function onunload() {
   				cancelDownload(true);
-  			}
+  			},
+
+  			error: m.prop('')
   		};
 
-  		getAll({ list: ctrl.list, cancel: cancelDownload });
+  		getAll({ list: ctrl.list, cancel: cancelDownload, error: ctrl.error });
 
   		return ctrl;
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.downloads', [m('h2', 'Downloads'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: 7 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$2('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$2('db', ctrl.sortBy), 'Database'), m('th', thConfig$2('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$2('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter$2(ctrl)).map(function (download) {
+  		return m('.downloads', [m('h2', 'Downloads'), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error().message) : m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: TABLE_WIDTH$1 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: TABLE_WIDTH$1 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$2('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$2('db', ctrl.sortBy), 'Database'), m('th', thConfig$2('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$2('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().length === 0 ? m('tr.table-info', m('td.text-xs-center', { colspan: TABLE_WIDTH$1 }, m('strong', 'Heads up! '), 'There are no downloads running yet')) : list().filter(studyFilter$2(ctrl)).map(function (download) {
   			return m('tr', [
   			// ### ID
   			m('td', download.studyId),
@@ -1214,6 +1221,7 @@
   };
 
   var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
+  var TABLE_WIDTH = 8;
 
   var poolComponent = {
   	controller: function controller() {
@@ -1229,16 +1237,17 @@
   			},
   			list: m.prop([]),
   			globalSearch: m.prop(''),
-  			sortBy: m.prop()
+  			sortBy: m.prop(),
+  			error: m.prop('')
   		};
 
-  		getAllPoolStudies().then(ctrl.list).then(m.redraw);
+  		getAllPoolStudies().then(ctrl.list).catch(ctrl.error).then(m.redraw);
 
   		return ctrl;
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Study pool'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: 7 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })]), m('th', [m('a.btn.btn-secondary', { href: '/pool/history', config: m.route }, [m('i.fa.fa-history'), '  History'])])]), ctrl.canCreate() ? m('tr', [m('th.text-xs-center', { colspan: 8 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]) : '', m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().filter(studyFilter(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Study pool'), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error().message) : m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: TABLE_WIDTH - 1 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })]), m('th', [m('a.btn.btn-secondary', { href: '/pool/history', config: m.route }, [m('i.fa.fa-history'), '  History'])])]), ctrl.canCreate() ? m('tr', [m('th.text-xs-center', { colspan: TABLE_WIDTH }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Add new study'])])]) : '', m('tr', [m('th', thConfig('studyId', ctrl.sortBy), 'ID'), m('th', thConfig('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig('completedSessions', ctrl.sortBy), 'Completion'), m('th', thConfig('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().length === 0 ? m('tr.table-info', m('td.text-xs-center', { colspan: TABLE_WIDTH }, m('strong', 'Heads up! '), 'There are no pool studies yet')) : list().filter(studyFilter(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
   			m('td', study.studyId),

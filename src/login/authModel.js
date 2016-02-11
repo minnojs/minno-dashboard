@@ -1,6 +1,6 @@
 let authorizeState = {};
 
-export let isLoggedIn = () => !!authorizeState.isLoggedIn;
+export let isLoggedIn = () => !!authorizeState.isLoggedin;
 export let getRole = () => authorizeState.role;
 
 export function authorize(){
