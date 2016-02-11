@@ -11,7 +11,9 @@ export let checkStatus = response => {
 	throw error;
 };
 
-export let toJSON = response => response.json();
+export let toJSON = response => response
+	.json()
+	.catch(	);
 
 // extract info from status error
 export let catchJSON = err => (err.response ? err.response.json() : Promise.reject())
@@ -19,7 +21,7 @@ export let catchJSON = err => (err.response ? err.response.json() : Promise.reje
 	.then(json => Promise.reject(json));
 
 
-export function fetchJson(url, options){
+export function fetchVoid(url, options){
 	let opts = Object.assign({
 		credentials: 'same-origin',
 		headers: {
@@ -31,6 +33,10 @@ export function fetchJson(url, options){
 	opts.body = JSON.stringify(options.body);
 	return fetch(url, opts)
 		.then(checkStatus)
-		.catch(catchJSON)
+		.catch(catchJSON);
+}
+
+export function fetchJson(url, options){
+	return fetchVoid(url, options)
 		.then(toJSON);
 }

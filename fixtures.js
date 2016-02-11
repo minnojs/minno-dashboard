@@ -221,7 +221,8 @@ adminRouter.route('/DashboardData')
 			},4000);
 			break;
 		case 'removeDownload':
-			res.json({error:'true', msg:'remove error'});
+			res.send('')
+			//res.json({eror:'true', mssg:'remove error'});
 			break;
 		default:
 			res.status(500).res.json({message:'oops something went awfully wrong'});

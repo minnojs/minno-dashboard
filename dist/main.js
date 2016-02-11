@@ -323,7 +323,7 @@
   };
 
   var toJSON = function toJSON(response) {
-  	return response.json();
+  	return response.json().catch();
   };
 
   // extract info from status error
@@ -335,7 +335,7 @@
   	});
   };
 
-  function fetchJson(url, options) {
+  function fetchVoid(url, options) {
   	var opts = Object.assign({
   		credentials: 'same-origin',
   		headers: {
@@ -345,7 +345,11 @@
   	}, options);
 
   	opts.body = JSON.stringify(options.body);
-  	return fetch(url, opts).then(checkStatus).catch(catchJSON).then(toJSON);
+  	return fetch(url, opts).then(checkStatus).catch(catchJSON);
+  }
+
+  function fetchJson(url, options) {
+  	return fetchVoid(url, options).then(toJSON);
   }
 
   var url$1 = '/dashboard/DashboardData';
@@ -359,7 +363,7 @@
   };
 
   var removeDownload = function removeDownload(download) {
-  	return fetchJson(url$1, {
+  	return fetchVoid(url$1, {
   		method: 'post',
   		body: Object.assign({ action: 'removeDownload' }, download)
   	}).then(interceptErrors$1);

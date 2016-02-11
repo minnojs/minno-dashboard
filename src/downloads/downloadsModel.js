@@ -1,4 +1,4 @@
-import {fetchJson} from 'utils/modelHelpers';
+import {fetchJson, fetchVoid} from 'utils/modelHelpers';
 const url = '/dashboard/DashboardData';
 
 export const STATUS_RUNNING = 'R';
@@ -10,7 +10,7 @@ export let getAllDownloads = () => fetchJson(url, {
 	body: {action:'getAllDownloads'}
 }).then(interceptErrors);
 
-export let removeDownload = download => fetchJson(url, {
+export let removeDownload = download => fetchVoid(url, {
 	method:'post',
 	body: Object.assign({action:'removeDownload'}, download)
 }).then(interceptErrors);
