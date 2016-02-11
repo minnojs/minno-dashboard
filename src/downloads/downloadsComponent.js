@@ -78,9 +78,11 @@ const downloadsComponent = {
 
 								// ### Study url
 								m('td',
-									download.fileSize && download.studyUrl
-										? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
-										: m('i.text-muted', 'No Data')
+									download.studyUrl
+										? download.fileSize
+											? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
+											: m('i.text-muted', 'No Data')
+										: m('i.text-muted', 'Loading...')
 								),
 
 								// ### Database

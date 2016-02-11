@@ -203,7 +203,7 @@ adminRouter.route('/DashboardData')
 				data.push({
 					id: Math.random(),
 					studyId:(0|Math.random()*9e6).toString(36),
-					studyUrl:(0|Math.random()*9e6).toString(36),
+					studyUrl: Math.random() < 0.7 ? (0|Math.random()*9e6).toString(36) : '',
 					db: Math.random() > 0.5 ? 'production' : 'development',
 					fileSize: Math.random() < 0.5 ? '' : '12Kb',
 					creationDate:new Date(new Date() * Math.random()),
@@ -212,8 +212,8 @@ adminRouter.route('/DashboardData')
 					studyStatus: ['R','C','X'][Math.floor(Math.random()*3)]
 				});
 			}
-			//res.json(data);
-			res.status(500).send('asdsdf')
+			res.json(data);
+			//res.status(500).send('asdsdf')
 			break;
 		case 'download':
 			setTimeout(function(){
