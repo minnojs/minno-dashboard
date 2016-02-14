@@ -1,3 +1,6 @@
+import {fetchJson} from 'utils/modelHelpers';
+
+const url = '/dashboard/connect';
 let authorizeState = {};
 
 export let isLoggedIn = () => !!authorizeState.isLoggedin;
@@ -7,7 +10,11 @@ export function authorize(){
 	authorizeState = getAuth();
 }
 
-export function login(){console.log('login not implemented yet')}
+export let login = (username, password) => fetchJson(url, {
+	method: 'post',
+	body: {username, password}
+});
+
 
 function getAuth(){
 	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));

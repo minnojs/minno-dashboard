@@ -2,11 +2,11 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers.toConsumableArray = function (arr) {
+  function babelHelpers_toConsumableArray (arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
 
@@ -16,7 +16,6 @@
     }
   };
 
-  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -28,7 +27,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -249,76 +248,6 @@
   	}
   };
 
-  var authorizeState = {};
-
-  var isLoggedIn = function isLoggedIn() {
-  	return !!authorizeState.isLoggedin;
-  };
-  var getRole = function getRole() {
-  	return authorizeState.role;
-  };
-
-  function authorize() {
-  	authorizeState = getAuth();
-  }
-
-  function login() {
-  	console.log('login not implemented yet');
-  }
-
-  function getAuth() {
-  	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
-  	try {
-  		return cookieValue ? JSON.parse(cookieValue) : {};
-  	} catch (e) {
-  		setTimeout(function () {
-  			throw e;
-  		});
-  		return {};
-  	}
-  }
-
-  var layout = function layout(route) {
-  	return {
-  		controller: function controller() {
-  			authorize();
-  			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
-  		},
-  		view: function view() {
-  			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
-  			// m('li.nav-item',[
-  			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
-  			// ]),
-  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
-  			m.component(messages), // register modal
-  			m.component(spinner) // register spinner
-  			]);
-  		}
-  	};
-  };
-
-  function sortTable(listProp, sortByProp) {
-  	return function (e) {
-  		var prop = e.target.getAttribute('data-sort-by');
-  		var list = listProp();
-  		if (prop) {
-  			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
-  			var first = list[0];
-  			list.sort(function (a, b) {
-  				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
-  			});
-  			if (first === list[0]) list.reverse();
-  		}
-  	};
-  }
-
-  function formatDate(date) {
-  	var pad = function pad(num) {
-  		return num < 10 ? '0' + num : num;
-  	};
-  	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
-  }
-
   var checkStatus = function checkStatus(response) {
 
   	if (response.status >= 200 && response.status < 300) {
@@ -362,25 +291,100 @@
   	return fetchVoid(url, options).then(toJSON);
   }
 
-  var url$1 = '/dashboard/DashboardData';
+  var url = '/dashboard/connect';
+  var authorizeState = {};
+
+  var isLoggedIn = function isLoggedIn() {
+  	return !!authorizeState.isLoggedin;
+  };
+  var getRole = function getRole() {
+  	return authorizeState.role;
+  };
+
+  function authorize() {
+  	authorizeState = getAuth();
+  }
+
+  var login = function login(username, password) {
+  	return fetchJson(url, {
+  		method: 'post',
+  		body: { username: username, password: password }
+  	});
+  };
+
+  function getAuth() {
+  	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
+  	try {
+  		return cookieValue ? JSON.parse(cookieValue) : {};
+  	} catch (e) {
+  		setTimeout(function () {
+  			throw e;
+  		});
+  		return {};
+  	}
+  }
+
+  var layout = function layout(route) {
+  	return {
+  		controller: function controller() {
+  			authorize();
+  			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
+  			if (isLoggedIn() && m.route() === '/login') m.route('/');
+  		},
+  		view: function view() {
+  			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
+  			// m('li.nav-item',[
+  			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+  			// ]),
+  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
+  			m.component(messages), // register modal
+  			m.component(spinner) // register spinner
+  			]);
+  		}
+  	};
+  };
+
+  function sortTable(listProp, sortByProp) {
+  	return function (e) {
+  		var prop = e.target.getAttribute('data-sort-by');
+  		var list = listProp();
+  		if (prop) {
+  			if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
+  			var first = list[0];
+  			list.sort(function (a, b) {
+  				return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
+  			});
+  			if (first === list[0]) list.reverse();
+  		}
+  	};
+  }
+
+  function formatDate(date) {
+  	var pad = function pad(num) {
+  		return num < 10 ? '0' + num : num;
+  	};
+  	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
+  }
+
+  var url$2 = '/dashboard/DashboardData';
 
   var STATUS_RUNNING$1 = 'R';
   var getAllDownloads = function getAllDownloads() {
-  	return fetchJson(url$1, {
+  	return fetchJson(url$2, {
   		method: 'post',
   		body: { action: 'getAllDownloads' }
   	}).then(interceptErrors$1);
   };
 
   var removeDownload = function removeDownload(download) {
-  	return fetchVoid(url$1, {
+  	return fetchVoid(url$2, {
   		method: 'post',
   		body: Object.assign({ action: 'removeDownload' }, download)
   	}).then(interceptErrors$1);
   };
 
   var createDownload = function createDownload(download) {
-  	return fetchJson(url$1, {
+  	return fetchJson(url$2, {
   		method: 'post',
   		body: Object.assign({ action: 'download' }, download)
   	}).then(interceptErrors$1);
@@ -771,7 +775,7 @@
   	}
   }
 
-  var url = '/dashboard/StudyData';
+  var url$1 = '/dashboard/StudyData';
 
   var STATUS_RUNNING = 'R';
   var STATUS_PAUSED = 'P';
@@ -784,7 +788,7 @@
   		studyStatus: STATUS_RUNNING
   	}, study);
 
-  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
+  	return fetchJson(url$1, { method: 'post', body: body }).then(interceptErrors);
   }
 
   function updateStudy(study) {
@@ -792,7 +796,7 @@
   		action: 'updateRulesTable'
   	}, study);
 
-  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
+  	return fetchJson(url$1, { method: 'post', body: body }).then(interceptErrors);
   }
 
   function updateStatus(study, status) {
@@ -800,11 +804,11 @@
   }
 
   function getAllPoolStudies() {
-  	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
+  	return fetchJson(url$1, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
   }
 
   function getLast100PoolUpdates() {
-  	return fetchJson(url, { method: 'post', body: { action: 'getLast100PoolUpdates' } }).then(interceptErrors);
+  	return fetchJson(url$1, { method: 'post', body: { action: 'getLast100PoolUpdates' } }).then(interceptErrors);
   }
 
   function getStudyId(study) {
@@ -812,11 +816,11 @@
   		action: 'getStudyId'
   	}, study);
 
-  	return fetchJson(url, { method: 'post', body: body });
+  	return fetchJson(url$1, { method: 'post', body: body });
   }
 
   function resetStudy(study) {
-  	return fetchJson(url, { method: 'post', body: Object.assign({ action: 'resetCompletions' }, study) }).then(interceptErrors);
+  	return fetchJson(url$1, { method: 'post', body: Object.assign({ action: 'resetCompletions' }, study) }).then(interceptErrors);
   }
 
   function interceptErrors(response) {
@@ -1147,7 +1151,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
   		}
   	});
   };
@@ -1182,7 +1186,7 @@
   					};
   				})();
 
-  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
   			}
   		});
   	}
@@ -1209,7 +1213,7 @@
   				};
   			})();
 
-  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret3)) === "object") return _ret3.v;
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
   		}
   	});
   };
@@ -1445,12 +1449,8 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  				args[_key] = arguments[_key];
-  			}
-
-  			if (args.length) {
-  				store = args[0];
+  			if (arguments.length) {
+  				store = arguments[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1487,7 +1487,7 @@
   		function flattenFiles(files) {
   			var _ref;
 
-  			return files ? (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(files.map(spreadFile))) : [];
+  			return files ? (_ref = []).concat.apply(_ref, babelHelpers_toConsumableArray(files.map(spreadFile))) : [];
   		}
 
   		function assignStudyId(id) {
@@ -1497,7 +1497,7 @@
   		}
 
   		function spreadFile(file) {
-  			return [file].concat(babelHelpers.toConsumableArray(flattenFiles(file.files)));
+  			return [file].concat(babelHelpers_toConsumableArray(flattenFiles(file.files)));
   		}
 
   		function sort(a, b) {
@@ -1948,7 +1948,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -2092,7 +2092,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -2548,18 +2548,38 @@
 
   var loginComponent = {
   	controller: function controller() {
-  		var email = m.prop('');
+  		var username = m.prop('');
   		var password = m.prop('');
   		var ctrl = {
-  			email: email,
+  			username: username,
   			password: password,
-  			login: login.bind(null, { email: email, password: password })
+  			error: m.prop(''),
+  			login: loginAction.bind(null, username, password)
   		};
 
   		return ctrl;
+
+  		function loginAction(username, password) {
+  			login(username, password).then(function () {
+  				m.route('/');
+  			}).catch(function (response) {
+  				ctrl.error(response.message);
+  				m.redraw();
+  			});
+  		}
   	},
   	view: function view(ctrl) {
-  		return m('.login.centrify', [m('h2', 'Page not found'), m('p', 'Login page not activated yet. ', m('a', { href: '/dashboard/dashboard' }, 'click here to login'))]);
+  		return m('.login.centrify', [m('.card.card-inverse.col-md-4', [m('.card-block', [m('h4', 'Please sign in'), m('input.form-control', {
+  			type: 'username',
+  			placeholder: 'Username / Email',
+  			value: ctrl.username(),
+  			onkeyup: m.withAttr('value', ctrl.username)
+  		}), m('input.form-control', {
+  			type: 'password',
+  			placeholder: 'Password',
+  			value: ctrl.password(),
+  			onkeyup: m.withAttr('value', ctrl.password)
+  		}), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error()) : '', m('button.btn.btn-primary.btn-block', { onclick: ctrl.login }, 'Sign in')])])]);
   	}
   };
 

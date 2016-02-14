@@ -231,13 +231,19 @@ adminRouter.route('/DashboardData')
 			},4000);
 			break;
 		case 'removeDownload':
-			res.send('')
+			res.send('');
 			//res.json({eror:'true', mssg:'remove error'});
 			break;
 		default:
 			res.status(500).res.json({message:'oops something went awfully wrong'});
 		}
 	});
+
+adminRouter.route('/connect')
+	.post(function(req,res){
+		res.status(403).json({message:'tom'});
+	});
+
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard

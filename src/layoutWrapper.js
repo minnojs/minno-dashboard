@@ -9,6 +9,7 @@ let layout = route => {
 		controller(){
 			authorize();
 			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
+			if (isLoggedIn() && m.route() === '/login') m.route('/');
 		},
 		view(){
 			return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [

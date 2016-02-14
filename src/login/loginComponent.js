@@ -3,46 +3,57 @@ export default loginComponent;
 
 let loginComponent = {
 	controller(){
-		const email = m.prop('');
+		const username = m.prop('');
 		const password = m.prop('');
 		const ctrl = {
-			email,
+			username,
 			password,
-			login: login.bind(null, {email, password})
+			error: m.prop(''),
+			login: loginAction.bind(null, username, password)
 		};
 
 		return ctrl;
+
+		function loginAction(username, password){
+			login(username, password)
+				.then(() => {
+					m.route('/');
+				})
+				.catch(response => {
+					ctrl.error(response.message);
+					m.redraw();
+				});
+		}
 	},
 	view(ctrl){
 		return m('.login.centrify', [
-			m('h2', 'Page not found'),
-			m('p','Login page not activated yet. ', m('a',{href:'/dashboard/dashboard'},'click here to login')),
-			// m('.card.card-inverse.col-md-4', [
-			// 	m('.card-block',[
-			// 		m('h4', 'Please sign in'),
+			m('.card.card-inverse.col-md-4', [
+				m('.card-block',[
+					m('h4', 'Please sign in'),
 
-			// 		m('input.form-control', {
-			// 			type:'email',
-			// 			placeholder: 'Email',
-			// 			value: ctrl.email(),
-			// 			onkeyup: m.withAttr('value', ctrl.email)
-			// 		}),
+					m('input.form-control', {
+						type:'username',
+						placeholder: 'Username / Email',
+						value: ctrl.username(),
+						onkeyup: m.withAttr('value', ctrl.username)
+					}),
 
-			// 		m('input.form-control', {
-			// 			type:'password',
-			// 			placeholder: 'Password',
-			// 			value: ctrl.password(),
-			// 			onkeyup: m.withAttr('value', ctrl.password)
-			// 		}),
+					m('input.form-control', {
+						type:'password',
+						placeholder: 'Password',
+						value: ctrl.password(),
+						onkeyup: m.withAttr('value', ctrl.password)
+					}),
 
-			// 		m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
+					ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error()) : '',
 
-			// 		// m('p.text-center',
-			// 		// 	m('a', m('small.text-muted','Lost your password?'))
-			// 		// )
-			// 	])
-			// ])
+					m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
+
+					// m('p.text-center',
+					// 	m('a', m('small.text-muted','Lost your password?'))
+					// )
+				])
+			])
 		]);
 	}
 };
-
