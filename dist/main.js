@@ -1320,7 +1320,7 @@
 
   var filePrototype = {
   	apiUrl: function apiUrl() {
-  		return baseUrl$1 + '/files/' + encodeURIComponent(this.studyID) + '/file/' + encodeURIComponent(this.id);
+  		return baseUrl$1 + '/files/' + encodeURIComponent(this.studyId) + '/file/' + encodeURIComponent(this.id);
   	},
   	get: function get() {
   		var _this = this;
@@ -1418,7 +1418,7 @@
 
   	Object.assign(file, fileObj, {
   		name: path.substring(path.lastIndexOf('/') + 1),
-  		basePath: (fileObj.isDir ? path : path.substring(0, path.lastIndexOf('/'))) + '/',
+  		basePath: path.substring(0, path.lastIndexOf('/')) + '/',
   		type: type,
   		id: fileObj.id,
   		sourceContent: m.prop(fileObj.content || ''),
@@ -1436,7 +1436,7 @@
   	file.content(fileObj.content || '');
 
   	if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(function (file) {
-  		return Object.assign(file, { studyID: fileObj.studyID });
+  		return Object.assign(file, { studyId: fileObj.studyId });
   	});
 
   	return file;
@@ -1475,11 +1475,10 @@
 
   		return fetchJson(this.apiURL(), { credentials: 'same-origin' }).then(function (study) {
   			_this.loaded = true;
-  			var files = flattenFiles(study.files).map(function (f) {
-  				return Object.assign(f, { studyId: _this.id });
-  			}).map(fileFactory).sort(sort);
+  			var files = flattenFiles(study.files).map(assignStudyId(_this.id)).map(fileFactory).sort(sort);
 
   			_this.files(files);
+  			window.f = _this.files;
   		}).catch(function (reason) {
   			_this.error = true;
   			return Promise.reject(reason); // do not swallow error
@@ -1489,6 +1488,12 @@
   			var _ref;
 
   			return files ? (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(files.map(spreadFile))) : [];
+  		}
+
+  		function assignStudyId(id) {
+  			return function (f) {
+  				return Object.assign(f, { studyId: id });
+  			};
   		}
 
   		function spreadFile(file) {
@@ -1522,7 +1527,7 @@
   				'Content-Type': 'application/json'
   			}
   		}).then(checkStatus).then(toJSON).then(function (response) {
-  			Object.assign(response, { studyID: _this2.id, content: content });
+  			Object.assign(response, { studyId: _this2.id, content: content });
   			var file = fileFactory(response);
   			file.loaded = true;
   			_this2.files().push(file);
@@ -1535,10 +1540,17 @@
   		var file = this.getFile(fileId);
   		return file.del().then(function () {
   			var files = _this3.files().filter(function (f) {
-  				return f.path.indexOf(file.path) === 0;
-  			});
+  				return f.path.indexOf(file.path) !== 0;
+  			}); // all paths that start with the same path are deleted
   			_this3.files(files);
   		});
+
+  		function filterFile(f) {
+  			return f.id = fileId;
+  		}
+  		function filterDir(f) {
+  			return f.id = fileId || f.basePath.indexOf(file.path + '/');
+  		}
   	}
   };
 
@@ -2212,18 +2224,20 @@
   	} // end delete file
   };
 
-  var nodeComponent = {
-  	controller: function controller(_ref) {
-  		var file = _ref.file;
+  var node = function node(file, args) {
+  	return m.component(nodeComponent, file, args);
+  };
 
+  var nodeComponent = {
+  	controller: function controller(file) {
   		return {
   			isCurrent: m.route.param('fileID') === file.id
   		};
   	},
-  	view: function view(ctrl, _ref2) {
-  		var file = _ref2.file;
-  		var study = _ref2.study;
-  		var filesVM = _ref2.filesVM;
+  	view: function view(ctrl, file, _ref) {
+  		var folderHash = _ref.folderHash;
+  		var study = _ref.study;
+  		var filesVM = _ref.filesVM;
 
   		var vm = filesVM(file.id); // vm is created by the study component, it exposes a "isOpen" and "isChanged" properties
   		return m('li.file-node', {
@@ -2253,7 +2267,7 @@
   				'fa-file-pdf-o': /(pdf)$/.test(file.type),
   				'fa-folder-o': file.isDir
   			})
-  		}), ' ' + file.name, file.isDir ? m.component(filesComponent, { study: study, filesVM: filesVM, files: file.files || [] }) : ''])]);
+  		}), ' ' + file.name, file.isDir ? folder(file.path + '/', { folderHash: folderHash, study: study, filesVM: filesVM }) : ''])]);
   	}
   };
 
@@ -2261,20 +2275,73 @@
   	return function (e) {
   		e.stopPropagation();
   		e.preventDefault();
-  		m.route('/editor/' + file.studyID + '/' + encodeURIComponent(file.id));
+  		m.route('/editor/' + file.studyId + '/' + encodeURIComponent(file.id));
   	};
   };
 
-  var filesComponent = {
-  	view: function view(ctrl, _ref) {
+  var folder = function folder(path, args) {
+  	return m.component(folderComponent, path, args);
+  };
+
+  var folderComponent = {
+  	view: function view(ctrl, path, _ref) {
+  		var folderHash = _ref.folderHash;
   		var study = _ref.study;
   		var filesVM = _ref.filesVM;
-  		var files = _ref.files;
 
+  		var files = folderHash[path] || [];
   		return m('.files', [m('ul', files.map(function (file) {
-  			return m.component(nodeComponent, { file: file, study: study, key: file.id, filesVM: filesVM });
+  			return node(file, { folderHash: folderHash, study: study, filesVM: filesVM });
   		}))]);
   	}
+  };
+
+  var currentStudy = undefined;
+  var filesVM$1 = undefined;
+  var filesComponent = {
+  	controller: function controller() {
+  		var studyId = m.route.param('studyId');
+  		if (!filesVM$1 || currentStudy !== studyId) {
+  			currentStudy = studyId;
+  			filesVM$1 = viewModelMap$1({
+  				isOpen: m.prop(false),
+  				isChanged: m.prop(false)
+  			});
+  		}
+
+  		return { filesVM: filesVM$1, parseFiles: parseFiles };
+  	},
+  	view: function view(_ref, _ref2) {
+  		var parseFiles = _ref.parseFiles;
+  		var filesVM = _ref.filesVM;
+  		var study = _ref2.study;
+
+  		var folderHash = parseFiles(study.files());
+  		return folder('/', { folderHash: folderHash, study: study, filesVM: filesVM });
+  	}
+  };
+
+  // http://lhorie.github.io/mithril-blog/mapping-view-models.html
+  var viewModelMap$1 = function viewModelMap(signature) {
+  	var map = {};
+  	return function (key) {
+  		if (!map[key]) {
+  			map[key] = {};
+  			for (var prop in signature) {
+  				map[key][prop] = m.prop(signature[prop]());
+  			}
+  		}
+  		return map[key];
+  	};
+  };
+
+  var parseFiles = function parseFiles(files) {
+  	return files.reduce(function (hash, file) {
+  		var path = file.basePath;
+  		if (!hash[path]) hash[path] = [];
+  		hash[path].push(file);
+  		return hash;
+  	}, {});
   };
 
   var pipWizard = function pipWizard(_ref) {
@@ -2420,7 +2487,8 @@
   var filesVM = undefined;
   var editorLayoutComponent = {
   	controller: function controller() {
-  		var id = m.route.param('studyID');
+  		var id = m.route.param('studyId');
+
   		if (!study || study.id !== id) {
   			study = studyFactory(id);
   			study.get().then(m.redraw);
@@ -2498,8 +2566,8 @@
   var routes = {
   	'/login': loginComponent,
   	'/studies': mainComponent,
-  	'/editor/:studyID': editorLayoutComponent,
-  	'/editor/:studyID/:fileID': editorLayoutComponent,
+  	'/editor/:studyId': editorLayoutComponent,
+  	'/editor/:studyId/:fileID': editorLayoutComponent,
   	'/pool': poolComponent,
   	'/pool/history': poolComponent$1,
   	'/downloads': downloadsComponent

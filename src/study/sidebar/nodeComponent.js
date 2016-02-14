@@ -1,16 +1,18 @@
-import filesComponent from './filesComponent';
+import folder from './folderComponent';
 import classNames from 'utils/classNames';
 import fileContext from './fileContext';
 
-export default nodeComponent;
+export default node;
+
+let node = (file, args) => m.component(nodeComponent, file, args);
 
 let nodeComponent = {
-	controller: ({file}) => {
+	controller: (file) => {
 		return {
 			isCurrent: m.route.param('fileID') === file.id
 		};
 	},
-	view: (ctrl, {file, study, filesVM}) => {
+	view: (ctrl, file, {folderHash, study, filesVM}) => {
 		let vm = filesVM(file.id); // vm is created by the study component, it exposes a "isOpen" and "isChanged" properties
 		return m('li.file-node',
 			{
@@ -46,7 +48,7 @@ let nodeComponent = {
 						})
 					}),
 					` ${file.name}`,
-					file.isDir ? m.component(filesComponent, {study, filesVM, files: file.files || []}) : ''
+					file.isDir ? folder(file.path + '/', {folderHash, study, filesVM}) : ''
 				])
 			]
 		);
@@ -56,5 +58,5 @@ let nodeComponent = {
 let choose = (file) => e => {
 	e.stopPropagation();
 	e.preventDefault();
-	m.route(`/editor/${file.studyID}/${encodeURIComponent(file.id)}`);
+	m.route(`/editor/${file.studyId}/${encodeURIComponent(file.id)}`);
 };

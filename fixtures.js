@@ -95,7 +95,7 @@ files.push({id:'images', path:'images', url:'/test/images', isDir:true, files: [
 ]});
 files.push({id:'someFile.grg', path:'someFile.grg', url:'/test/someFile.grg'});
 
-router.route('/files/:studyID')
+router.route('/files/:studyId')
 	.get((req,res)=>{
 		setTimeout(function(){
 			res.json({
@@ -104,13 +104,13 @@ router.route('/files/:studyID')
 		}, 0);
 	});
 
-router.route('/files/:studyID/file')
+router.route('/files/:studyId/file')
 	// create file
 	.post((req,res)=>{
 		res.json({id: req.body.name, url:`/test/${req.body.name}`});
 	});
 
-router.route('/files/:studyID/file/:id')
+router.route('/files/:studyId/file/:id')
 	// get file data
 	.get((req,res)=>{
 		var file = files.find(f => f.id == req.params.id);
@@ -186,7 +186,7 @@ adminRouter.route('/studyData')
 
 		case 'getStudyId':
 			setTimeout(function(){
-				res.json({studyId: 'cool studyID adn stuff'});
+				res.json({studyId: 'cool studyId adn stuff'});
 			}, 1000);
 			break;
 

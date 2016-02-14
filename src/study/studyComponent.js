@@ -7,7 +7,8 @@ let study, filesVM;
 
 let editorLayoutComponent = {
 	controller: ()=>{
-		let id = m.route.param('studyID');
+		let id = m.route.param('studyId');
+
 		if (!study || (study.id !== id)){
 			study = studyFactory(id);
 			study

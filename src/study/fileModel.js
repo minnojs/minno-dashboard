@@ -11,7 +11,7 @@ let baseUrl = '/dashboard/dashboard';
 
 let filePrototype = {
 	apiUrl(){
-		return `${baseUrl}/files/${encodeURIComponent(this.studyID)}/file/${encodeURIComponent(this.id)}`;
+		return `${baseUrl}/files/${encodeURIComponent(this.studyId)}/file/${encodeURIComponent(this.id)}`;
 	},
 
 	get(){
@@ -115,7 +115,7 @@ const fileFactory = fileObj => {
 
 	Object.assign(file, fileObj, {
 		name			: path.substring(path.lastIndexOf('/')+1),
-		basePath 		: (fileObj.isDir ? path : path.substring(0, path.lastIndexOf('/'))) + '/',
+		basePath 		: (path.substring(0, path.lastIndexOf('/'))) + '/',
 		type			: type,
 		id				: fileObj.id,
 		sourceContent	: m.prop(fileObj.content || ''),
@@ -132,7 +132,7 @@ const fileFactory = fileObj => {
 
 	file.content(fileObj.content || '');
 
-	if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(file => Object.assign(file, {studyID: fileObj.studyID}));
+	if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(file => Object.assign(file, {studyId: fileObj.studyId}));
 
 	return file;
 

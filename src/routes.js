@@ -9,8 +9,8 @@ export default routes;
 let routes = {
 	'/login': loginComponent,
 	'/studies' : studiesComponent,
-	'/editor/:studyID': studyComponent,
-	'/editor/:studyID/:fileID': studyComponent,
+	'/editor/:studyId': studyComponent,
+	'/editor/:studyId/:fileID': studyComponent,
 	'/pool': poolComponent,
 	'/pool/history': historyComponent,
 	'/downloads': downloadsComponent

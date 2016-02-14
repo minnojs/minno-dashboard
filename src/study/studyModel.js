@@ -14,11 +14,14 @@ let studyPrototype = {
 			.then(study => {
 				this.loaded = true;
 				let files = flattenFiles(study.files)
-					.map(f => Object.assign(f, {studyId: this.id}))
+					.map(assignStudyId(this.id))
 					.map(fileFactory)
 					.sort(sort);
 
+
+
 				this.files(files);
+				window.f = this.files
 			})
 			.catch(reason => {
 				this.error = true;
@@ -27,6 +30,10 @@ let studyPrototype = {
 
 		function flattenFiles(files){
 			return files ? [].concat(...files.map(spreadFile)) : [];
+		}
+
+		function assignStudyId(id){
+			return f => Object.assign(f, {studyId: id});
 		}
 
 		function spreadFile(file){
@@ -58,7 +65,7 @@ let studyPrototype = {
 			.then(checkStatus)
 			.then(toJSON)
 			.then(response => {
-				Object.assign(response, {studyID: this.id, content});
+				Object.assign(response, {studyId: this.id, content});
 				let file = fileFactory(response);
 				file.loaded = true;
 				this.files().push(file);
@@ -71,9 +78,13 @@ let studyPrototype = {
 		let file = this.getFile(fileId);
 		return file.del()
 			.then(() => {
-				let files = this.files().filter(f => f.path.indexOf(file.path) === 0);
+				let files = this.files()
+					.filter(f => f.path.indexOf(file.path) !== 0); // all paths that start with the same path are deleted
 				this.files(files);
 			});
+
+		function filterFile(f){return f.id = fileId;}
+		function filterDir(f){return f.id = fileId || f.basePath.indexOf(file.path + '/');}
 
 	}
 };
