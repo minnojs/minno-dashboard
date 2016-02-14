@@ -1,4 +1,4 @@
-import fullHeight from './fullHeight';
+import fullHeight from 'utils/fullHeight';
 import jsEditor from './editors/jsEditor';
 import jstEditor from './editors/jstEditor';
 import xmlEditor from './editors/xmlEditor';

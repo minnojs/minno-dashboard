@@ -6,6 +6,7 @@ let currentStudy, filesVM;
 
 let filesComponent = {
 	controller(){
+		// Create new VM only if we change study name
 		let studyId = m.route.param('studyId');
 		if (!filesVM || (currentStudy !== studyId)){
 			currentStudy = studyId;

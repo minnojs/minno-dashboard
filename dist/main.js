@@ -2,11 +2,11 @@
 
   var babelHelpers = {};
 
-  function babelHelpers_typeof (obj) {
+  babelHelpers.typeof = function (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  function babelHelpers_toConsumableArray (arr) {
+  babelHelpers.toConsumableArray = function (arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
 
@@ -16,6 +16,7 @@
     }
   };
 
+  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -27,7 +28,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -291,7 +292,9 @@
   	return fetchVoid(url, options).then(toJSON);
   }
 
-  var url = '/dashboard/connect';
+  var loginUrl = '/dashboard/connect';
+  var logoutUrl = '/dashboard/logout';
+
   var authorizeState = {};
 
   var isLoggedIn = function isLoggedIn() {
@@ -306,10 +309,14 @@
   }
 
   var login = function login(username, password) {
-  	return fetchJson(url, {
+  	return fetchJson(loginUrl, {
   		method: 'post',
   		body: { username: username, password: password }
   	});
+  };
+
+  var logout = function logout() {
+  	return fetchVoid(logoutUrl, { method: 'post' });
   };
 
   function getAuth() {
@@ -329,14 +336,20 @@
   		controller: function controller() {
   			authorize();
   			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
-  			if (isLoggedIn() && m.route() === '/login') m.route('/');
+
+  			return { doLogout: doLogout };
+
+  			function doLogout() {
+  				logout();
+  				m.route('/login');
+  			}
   		},
-  		view: function view() {
+  		view: function view(ctrl) {
   			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
   			// m('li.nav-item',[
   			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
   			// ]),
-  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')])])]), m('.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
+  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')]), m('li.nav-item.pull-xs-right', [m('button.btn.btn-info', { onclick: ctrl.doLogout }, [m('i.fa.fa-sign-out'), '  Logout'])])])]), m('.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
   			m.component(messages), // register modal
   			m.component(spinner) // register spinner
   			]);
@@ -366,25 +379,25 @@
   	return pad(date.getMonth() + 1) + '\\' + pad(date.getDate()) + '\\' + date.getFullYear();
   }
 
-  var url$2 = '/dashboard/DashboardData';
+  var url$1 = '/dashboard/DashboardData';
 
   var STATUS_RUNNING$1 = 'R';
   var getAllDownloads = function getAllDownloads() {
-  	return fetchJson(url$2, {
+  	return fetchJson(url$1, {
   		method: 'post',
   		body: { action: 'getAllDownloads' }
   	}).then(interceptErrors$1);
   };
 
   var removeDownload = function removeDownload(download) {
-  	return fetchVoid(url$2, {
+  	return fetchVoid(url$1, {
   		method: 'post',
   		body: Object.assign({ action: 'removeDownload' }, download)
   	}).then(interceptErrors$1);
   };
 
   var createDownload = function createDownload(download) {
-  	return fetchJson(url$2, {
+  	return fetchJson(url$1, {
   		method: 'post',
   		body: Object.assign({ action: 'download' }, download)
   	}).then(interceptErrors$1);
@@ -775,7 +788,7 @@
   	}
   }
 
-  var url$1 = '/dashboard/StudyData';
+  var url = '/dashboard/StudyData';
 
   var STATUS_RUNNING = 'R';
   var STATUS_PAUSED = 'P';
@@ -788,7 +801,7 @@
   		studyStatus: STATUS_RUNNING
   	}, study);
 
-  	return fetchJson(url$1, { method: 'post', body: body }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
   }
 
   function updateStudy(study) {
@@ -796,7 +809,7 @@
   		action: 'updateRulesTable'
   	}, study);
 
-  	return fetchJson(url$1, { method: 'post', body: body }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
   }
 
   function updateStatus(study, status) {
@@ -804,11 +817,11 @@
   }
 
   function getAllPoolStudies() {
-  	return fetchJson(url$1, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: { action: 'getAllPoolStudies' } }).then(interceptErrors);
   }
 
   function getLast100PoolUpdates() {
-  	return fetchJson(url$1, { method: 'post', body: { action: 'getLast100PoolUpdates' } }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: { action: 'getLast100PoolUpdates' } }).then(interceptErrors);
   }
 
   function getStudyId(study) {
@@ -816,11 +829,11 @@
   		action: 'getStudyId'
   	}, study);
 
-  	return fetchJson(url$1, { method: 'post', body: body });
+  	return fetchJson(url, { method: 'post', body: body });
   }
 
   function resetStudy(study) {
-  	return fetchJson(url$1, { method: 'post', body: Object.assign({ action: 'resetCompletions' }, study) }).then(interceptErrors);
+  	return fetchJson(url, { method: 'post', body: Object.assign({ action: 'resetCompletions' }, study) }).then(interceptErrors);
   }
 
   function interceptErrors(response) {
@@ -1151,7 +1164,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
   		}
   	});
   };
@@ -1186,7 +1199,7 @@
   					};
   				})();
 
-  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
   			}
   		});
   	}
@@ -1213,7 +1226,7 @@
   				};
   			})();
 
-  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret3)) === "object") return _ret3.v;
   		}
   	});
   };
@@ -1449,8 +1462,12 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			if (arguments.length) {
-  				store = arguments[0];
+  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+  				args[_key] = arguments[_key];
+  			}
+
+  			if (args.length) {
+  				store = args[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1487,7 +1504,7 @@
   		function flattenFiles(files) {
   			var _ref;
 
-  			return files ? (_ref = []).concat.apply(_ref, babelHelpers_toConsumableArray(files.map(spreadFile))) : [];
+  			return files ? (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(files.map(spreadFile))) : [];
   		}
 
   		function assignStudyId(id) {
@@ -1497,7 +1514,7 @@
   		}
 
   		function spreadFile(file) {
-  			return [file].concat(babelHelpers_toConsumableArray(flattenFiles(file.files)));
+  			return [file].concat(babelHelpers.toConsumableArray(flattenFiles(file.files)));
   		}
 
   		function sort(a, b) {
@@ -1948,7 +1965,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -2092,7 +2109,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
@@ -2300,6 +2317,7 @@
   var filesVM$1 = undefined;
   var filesComponent = {
   	controller: function controller() {
+  		// Create new VM only if we change study name
   		var studyId = m.route.param('studyId');
   		if (!filesVM$1 || currentStudy !== studyId) {
   			currentStudy = studyId;
@@ -2553,13 +2571,15 @@
   		var ctrl = {
   			username: username,
   			password: password,
+  			isLoggedIn: isLoggedIn,
   			error: m.prop(''),
-  			login: loginAction.bind(null, username, password)
+  			login: loginAction
   		};
 
   		return ctrl;
 
-  		function loginAction(username, password) {
+  		function loginAction() {
+  			console.log('va', username(), password());
   			login(username, password).then(function () {
   				m.route('/');
   			}).catch(function (response) {
@@ -2569,19 +2589,34 @@
   		}
   	},
   	view: function view(ctrl) {
-  		return m('.login.centrify', [m('.card.card-inverse.col-md-4', [m('.card-block', [m('h4', 'Please sign in'), m('input.form-control', {
+  		return m('.login.centrify', { config: fullHeight }, [isLoggedIn() ? [m('i.fa.fa-thumbs-up.fa-5x.m-b-1'), m('h5', 'You are already logged in!')] : m('.card.card-inverse.col-md-4', [m('.card-block', [m('h4', 'Please sign in'), m('form', { onsubmit: ctrl.login }, [m('input.form-control', {
   			type: 'username',
   			placeholder: 'Username / Email',
   			value: ctrl.username(),
-  			onkeyup: m.withAttr('value', ctrl.username)
+  			onkeyup: m.withAttr('value', ctrl.username),
+  			config: getStartValue(ctrl.username)
   		}), m('input.form-control', {
   			type: 'password',
   			placeholder: 'Password',
   			value: ctrl.password(),
-  			onkeyup: m.withAttr('value', ctrl.password)
-  		}), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error()) : '', m('button.btn.btn-primary.btn-block', { onclick: ctrl.login }, 'Sign in')])])]);
+  			onkeyup: m.withAttr('value', ctrl.password),
+  			config: getStartValue(ctrl.password)
+  		})]), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error()) : '', m('button.btn.btn-primary.btn-block', { onclick: ctrl.login }, 'Sign in')])])]);
   	}
   };
+
+  // m('p.text-center',
+  // 	m('a', m('small.text-muted','Lost your password?'))
+  // )
+  function getStartValue(prop) {
+  	console.log('horrible hack to manage chrome pw autocomplete');
+  	return function (element, isInit) {
+  		// !isInit && prop(element.value);
+  		if (!isInit) setTimeout(function () {
+  			return prop(element.value);
+  		}, 30);
+  	};
+  }
 
   var routes = {
   	'/login': loginComponent,

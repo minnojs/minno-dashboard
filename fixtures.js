@@ -241,7 +241,15 @@ adminRouter.route('/DashboardData')
 
 adminRouter.route('/connect')
 	.post(function(req,res){
-		res.status(403).json({message:'tom'});
+		if (req.body.username === 'elad' && req.body.password === 'zlot') res.cookie('PiLogin', JSON.stringify({isLoggedin: true,role: 'SU'}));
+		console.log(req.body)
+		res.json(null);
+	});
+
+adminRouter.route('/logout')
+	.post(function(req,res){
+		res.cookie('PiLogin', JSON.stringify({}));
+		res.json(null);
 	});
 
 
@@ -249,10 +257,6 @@ adminRouter.route('/connect')
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
-app.use((req, res, done)=>{
-	res.cookie('PiLogin', JSON.stringify({isLoggedin: true,role: 'SU'}));
-	done();
-});
 app.use(express.static('..'));
 
 // START THE SERVER

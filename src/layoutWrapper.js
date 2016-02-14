@@ -1,7 +1,7 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
-import {authorize, isLoggedIn} from 'login/authModel';
+import {authorize, isLoggedIn, logout} from 'login/authModel';
 export default layout;
 
 let layout = route => {
@@ -9,9 +9,15 @@ let layout = route => {
 		controller(){
 			authorize();
 			if (!isLoggedIn() && m.route() !== '/login') m.route('/login');
-			if (isLoggedIn() && m.route() === '/login') m.route('/');
+
+			return {doLogout};
+
+			function doLogout(){
+				logout();
+				m.route('/login');
+			}
 		},
-		view(){
+		view(ctrl){
 			return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
 				m('nav.navbar.navbar-dark.navbar-fixed-top', [
 					m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
@@ -24,6 +30,11 @@ let layout = route => {
 						]),
 						m('li.nav-item',[
 							m('a.nav-link',{href:'/downloads', config:m.route},'Downloads')
+						]),
+						m('li.nav-item.pull-xs-right',[
+							m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+								m('i.fa.fa-sign-out'), '  Logout'
+							])
 						])
 					])
 				]),

@@ -14,5 +14,4 @@ let fullHeight = (element, isInitialized, ctx) => {
 	function onResize(){
 		element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
 	}
-
 };
