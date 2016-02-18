@@ -26,7 +26,12 @@ export function updateStudy(study){
 }
 
 export function updateStatus(study, status){
-	return updateStudy(Object.assign({studyStatus:status}, study))
+	let body = Object.assign({
+		action:'updateStudyStatus',
+		studyStatus: status
+	}, study);
+
+	return  fetchJson(url, {method: 'post',body:body})
 		.then(interceptErrors);
 }
 

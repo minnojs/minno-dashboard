@@ -2,11 +2,11 @@
 
   var babelHelpers = {};
 
-  babelHelpers.typeof = function (obj) {
+  function babelHelpers_typeof (obj) {
     return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
-  babelHelpers.toConsumableArray = function (arr) {
+  function babelHelpers_toConsumableArray (arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
 
@@ -16,7 +16,6 @@
     }
   };
 
-  babelHelpers;
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = ({}).hasOwnProperty;
@@ -28,7 +27,7 @@
   		var arg = arguments[i];
   		if (!arg) continue;
 
-  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers.typeof(arg);
+  		var argType = typeof arg === 'undefined' ? 'undefined' : babelHelpers_typeof(arg);
 
   		if (argType === 'string' || argType === 'number') {
   			classes += ' ' + arg;
@@ -813,7 +812,12 @@
   }
 
   function updateStatus(study, status) {
-  	return updateStudy(Object.assign({ studyStatus: status }, study)).then(interceptErrors);
+  	var body = Object.assign({
+  		action: 'updateStudyStatus',
+  		studyStatus: status
+  	}, study);
+
+  	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
   }
 
   function getAllPoolStudies() {
@@ -1164,7 +1168,7 @@
   				};
   			})();
 
-  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret)) === "object") return _ret.v;
   		}
   	});
   };
@@ -1199,7 +1203,7 @@
   					};
   				})();
 
-  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret2)) === "object") return _ret2.v;
   			}
   		});
   	}
@@ -1226,7 +1230,7 @@
   				};
   			})();
 
-  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret3)) === "object") return _ret3.v;
+  			if ((typeof _ret3 === 'undefined' ? 'undefined' : babelHelpers_typeof(_ret3)) === "object") return _ret3.v;
   		}
   	});
   };
@@ -1462,12 +1466,8 @@
   		var _this4 = this;
 
   		var prop = function prop() {
-  			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-  				args[_key] = arguments[_key];
-  			}
-
-  			if (args.length) {
-  				store = args[0];
+  			if (arguments.length) {
+  				store = arguments[0];
   				_this4.checkSyntax();
   			}
   			return store;
@@ -1504,7 +1504,7 @@
   		function flattenFiles(files) {
   			var _ref;
 
-  			return files ? (_ref = []).concat.apply(_ref, babelHelpers.toConsumableArray(files.map(spreadFile))) : [];
+  			return files ? (_ref = []).concat.apply(_ref, babelHelpers_toConsumableArray(files.map(spreadFile))) : [];
   		}
 
   		function assignStudyId(id) {
@@ -1514,7 +1514,7 @@
   		}
 
   		function spreadFile(file) {
-  			return [file].concat(babelHelpers.toConsumableArray(flattenFiles(file.files)));
+  			return [file].concat(babelHelpers_toConsumableArray(flattenFiles(file.files)));
   		}
 
   		function sort(a, b) {
@@ -1965,7 +1965,7 @@
   			return !s || getPath(s).indexOf(path) !== 0;
   		};
 
-  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers.typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
+  		return (typeof e === 'undefined' ? 'undefined' : babelHelpers_typeof(e)) == 'object' ? t(e.image) && t(e.template) : t(e);
   	})])];
 
   	return errors.filter(function (err) {
@@ -2109,7 +2109,7 @@
   		return '<i class="text-muted">an empty string</i>';
   	}
 
-  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers.typeof(value)) {
+  	switch (typeof value === 'undefined' ? 'undefined' : babelHelpers_typeof(value)) {
   		case 'string':
   			break;
   		case 'number':
