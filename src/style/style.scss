@@ -1,13 +1,13 @@
 $navbar-height:    58px;
 
-.dashboard-root {
-	> .container-fluid {margin-top:70px}
+.navbar {
+  background: #2882b5;
+  .is-iframe & {display:none}
+}
 
-	// in iframe don't show navbar
-	&.is-iframe {
-		nav.navbar {display:none}
-		> .container-fluid {margin-top:0}
-	}
+.main-content {
+	margin-top:70px;
+	.is-iframe & {margin-top:0}
 }
 
 .stringified {
@@ -43,10 +43,6 @@ $navbar-height:    58px;
 
 .tab-content {
   margin-top: 10px;
-}
-
-.navbar {
-  background: #2882b5
 }
 
 .form-group{

@@ -22,4 +22,7 @@
 			margin: 10px;
 		}
 	}
+
+	.is-iframe & > .col-md-2 {display:none}
+	.is-iframe & > .col-md-10 {width:100%}
 }

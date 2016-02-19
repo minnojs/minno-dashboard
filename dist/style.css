@@ -1,12 +1,13 @@
 @charset "UTF-8";
-.dashboard-root > .container-fluid {
+.navbar {
+  background: #2882b5; }
+  .is-iframe .navbar {
+    display: none; }
+
+.main-content {
   margin-top: 70px; }
-
-.dashboard-root.is-iframe nav.navbar {
-  display: none; }
-
-.dashboard-root.is-iframe > .container-fluid {
-  margin-top: 0; }
+  .is-iframe .main-content {
+    margin-top: 0; }
 
 .stringified .pre {
   text-decoration: none;
@@ -55,9 +56,6 @@
 
 .tab-content {
   margin-top: 10px; }
-
-.navbar {
-  background: #2882b5; }
 
 .form-group input + .btn-toolbar {
   margin-top: 5px;
@@ -340,6 +338,12 @@
   bottom: 0; }
   .study .sidebar h5, .study .sidebar .btn-group {
     margin: 10px; }
+
+.is-iframe .study > .col-md-2 {
+  display: none; }
+
+.is-iframe .study > .col-md-10 {
+  width: 100%; }
 
 th[data-sort-by]:before {
   content: "\f0dc";

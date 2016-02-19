@@ -39,7 +39,7 @@ let layout = route => {
 					])
 				]),
 
-				m('.container-fluid', [
+				m('.main-content.container-fluid', [
 					route
 				]),
 
