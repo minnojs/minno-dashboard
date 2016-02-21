@@ -11,7 +11,6 @@ gulp.task('bundle', function(){
 	gulp.src('src/main.js', {read: false})
 		.pipe(plumber())
 		.pipe(rollup({
-
 			format: 'iife',
 			// any option supported by rollup can be set here, including sourceMap
 			sourceMap: true,

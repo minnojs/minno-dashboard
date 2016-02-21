@@ -1,0 +1,73 @@
+.is-dragover {
+  outline: 2px dashed #92b0b3;
+  outline-offset: -1px;
+  background-color: #c8dadf;
+}
+
+.upload {
+	font-size: 1rem; /* 20 */
+
+	position: relative;
+	padding: 15px;
+	outline: 2px dashed #c8dadf;
+	outline-offset: -20px;
+	background-color: #fff;
+
+	display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 12em;
+    width: 100%;
+
+
+	-webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
+	transition: outline-offset .15s ease-in-out, background-color .15s linear;
+
+	&.is-dragover {
+		outline-offset: -10px;
+		outline-color: #92b0b3;
+		background-color: #c8dadf;
+
+	}
+
+	input
+	{
+		width: 0.1px;
+		height: 0.1px;
+		opacity: 0;
+		overflow: hidden;
+		position: absolute;
+		z-index: -1;
+
+		+ label {
+			max-width: 80%;
+			text-overflow: ellipsis;
+			cursor: pointer;
+			display: inline-block;
+			overflow: hidden;
+
+			strong, span {display:block}
+
+		}
+
+		&:hover + label strong,
+		&:focus + label strong,
+		&.has-focus + label strong
+		{
+			color: #39bfd3;
+		}
+
+		&:focus + label,
+		&.has-focus + label
+		{
+			outline: 1px dotted #000;
+			outline: -webkit-focus-ring-color auto 5px;
+		}
+
+		+ label * {
+			/* pointer-events: none; */ /* in case of FastClick lib use */
+		}
+
+	}
+}

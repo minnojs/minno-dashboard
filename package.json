@@ -8,7 +8,10 @@
     "install": "bower install",
     "test": "eslint src",
     "watch": "gulp watch",
-    "bundle": "gulp bundle",
+    "watch:js": "watch \"npm run bundle\" src/",
+    "css": "node-sass src/style/style.scss --output dist --source-map=true",
+    "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
+    "bundle": "rollup --config --sourcemap",
     "serve": "node fixtures.js",
     "start": "npm run watch & npm run serve"
   },
@@ -23,10 +26,12 @@
     "gulp": "^3.9.0",
     "gulp-debug": "^2.1.2",
     "gulp-plumber": "^1.0.1",
-    "gulp-rollup": "^1.4.0",
+    "gulp-rollup": "^1.7.0",
     "gulp-sass": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",
-    "rollup": "^0.21.1",
-    "rollup-plugin-babel": "^2.2.0"
+    "node-sass": "^3.4.2",
+    "rollup": "^0.25.4",
+    "rollup-plugin-babel": "^2.3.9",
+    "watch": "latest"
   }
 }

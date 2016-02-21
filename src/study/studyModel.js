@@ -10,7 +10,7 @@ let studyPrototype = {
 	},
 
 	get(){
-		return fetchJson(this.apiURL(),{credentials: 'same-origin'})
+		return fetchJson(this.apiURL())
 			.then(study => {
 				this.loaded = true;
 				let files = flattenFiles(study.files)
@@ -18,10 +18,7 @@ let studyPrototype = {
 					.map(fileFactory)
 					.sort(sort);
 
-
-
 				this.files(files);
-				window.f = this.files
 			})
 			.catch(reason => {
 				this.error = true;
@@ -82,10 +79,6 @@ let studyPrototype = {
 					.filter(f => f.path.indexOf(file.path) !== 0); // all paths that start with the same path are deleted
 				this.files(files);
 			});
-
-		function filterFile(f){return f.id = fileId;}
-		function filterDir(f){return f.id = fileId || f.basePath.indexOf(file.path + '/');}
-
 	}
 };
 
