@@ -21,7 +21,7 @@ export let catchJSON = err => (err.response ? err.response.json() : Promise.reje
 	.then(json => Promise.reject(json));
 
 
-export function fetchVoid(url, options){
+export function fetchVoid(url, options = {}){
 	let opts = Object.assign({
 		credentials: 'same-origin',
 		headers: {
@@ -39,4 +39,18 @@ export function fetchVoid(url, options){
 export function fetchJson(url, options){
 	return fetchVoid(url, options)
 		.then(toJSON);
+}
+
+export function fetchUpload(url, options){
+	let opts = Object.assign({
+		credentials: 'same-origin',
+		headers: {
+			'Accept': 'multipart/form-data',
+			'Content-Type': 'multipart/form-data'
+		}
+	}, options);
+
+	return fetch(url, opts)
+		.then(checkStatus)
+		.catch(catchJSON);
 }

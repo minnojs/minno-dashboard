@@ -10,6 +10,7 @@ function dragdrop(element, options) {
 
 	function activate(e) {
 		e.preventDefault();
+		e.currentTarget === element && console.log(element)
 		element.classList.add(DRAGOVER_CLASS);
 	}
 	function deactivate() {
@@ -17,9 +18,7 @@ function dragdrop(element, options) {
 	}
 	function update(e) {
 		e.preventDefault();
-		if (typeof options.onchange == 'function') {
-			options.onchange((e.dataTransfer || e.target).files);
-		}
+		onchange(options)(e);
 	}
 }
 
@@ -29,11 +28,18 @@ export let uploadConfig = ctrl => (element, isInitialized) => {
 	}
 };
 
-export let uploadBox = ctrl => m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(ctrl)},[
+export let uploadBox = args => m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(args)},[
 	m('i.fa.fa-download	.fa-3x.m-b-1'),
-	m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange:ctrl.onchange}),
+	m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange:onchange(args)}),
 	m('label', {for:'upload'},
 		m('strong', 'Choose a file'),
 		m('span', ' or drag it here')
 	)
 ]);
+
+// call onchange with files
+let onchange = args => e => {
+	if (typeof args.onchange == 'function') {
+		args.onchange((e.dataTransfer || e.target).files);
+	}
+};

@@ -1,4 +1,6 @@
 import folderComponent from './folderComponent';
+import {uploadConfig} from 'utils/uploader';
+import {uploadFiles} from './filesActions';
 export default filesComponent;
 
 let currentStudy, filesVM;
@@ -20,7 +22,8 @@ let filesComponent = {
 	},
 	view({parseFiles, filesVM}, {study}){
 		let folderHash = parseFiles(study.files());
-		return folderComponent('/', {folderHash, study, filesVM});
+		let config = uploadConfig({onchange:uploadFiles('/', study)});
+		return m('div', {config}, folderComponent('/', {folderHash, study, filesVM}));
 	}
 };
 

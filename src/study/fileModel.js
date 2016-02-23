@@ -1,4 +1,4 @@
-import {toJSON, catchJSON, checkStatus} from 'utils/modelHelpers';
+import {fetchVoid, fetchJson} from 'utils/modelHelpers';
 export default fileFactory;
 let baseUrl = '/dashboard/dashboard';
 
@@ -15,9 +15,7 @@ let filePrototype = {
 	},
 
 	get(){
-		return fetch(this.apiUrl(), {credentials: 'same-origin'})
-			.then(checkStatus)
-			.then(toJSON)
+		return fetchJson(this.apiUrl())
 			.then(response => {
 				this.sourceContent(response.content);
 				this.content(response.content);
@@ -32,28 +30,40 @@ let filePrototype = {
 	},
 
 	save(){
-		return fetch(this.apiUrl(), {
-			credentials: 'same-origin',
+		return fetchJson(this.apiUrl(), {
 			method:'put',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				content: this.content
-			})
+			body: {content: this.content}
 		})
-			.then(checkStatus)
 			.then(response => {
 				this.sourceContent(this.content()); // update source content
 				return response;
+			});
+	},
+
+	move(path, study){
+		let basePath = (path.substring(0, path.lastIndexOf('/'))) + '/';
+		let folderExists = basePath === '/' || study.files().some(f => f.isDir && f.path === basePath);
+
+		if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});
+		if (study.files().some(f=>f.path === path)) return Promise.reject({message: `File ${path} already exists.`});
+
+		let oldPath = this.path;
+		this.setPath(path);
+		return fetchJson(this.apiUrl() + `/move/${encodeURIComponent(path)}`, {
+			method:'post'
+		})
+			.then(response => {
+				this.id = response.id;
+				this.url = response.url;
 			})
-			.catch(catchJSON);
+			.catch(response => {
+				this.setPath(oldPath);
+				return Promise.reject(response);
+			});
 	},
 
 	del(){
-		return fetch(this.apiUrl(), {method:'delete',credentials: 'same-origin'})
-			.then(checkStatus);
+		return fetchVoid(this.apiUrl(), {method:'delete'});
 	},
 
 
@@ -85,6 +95,13 @@ let filePrototype = {
 		this.syntaxValid = jshint(this.content(), jshintOptions);
 		this.syntaxData = jshint.data();
 		return this.syntaxValid;
+	},
+
+	setPath(path){
+		this.path = path;
+		this.name = path.substring(path.lastIndexOf('/')+1);
+		this.basePath = (path.substring(0, path.lastIndexOf('/'))) + '/';
+		this.type = path.substring(path.lastIndexOf('.')+1);
 	}
 };
 
@@ -111,15 +128,14 @@ var jshintOptions = {
 const fileFactory = fileObj => {
 	let file = Object.create(filePrototype);
 	let path = decodeURIComponent(fileObj.path);
-	let type = path.substring(path.lastIndexOf('.')+1);
+
+
+	file.setPath(path);
 
 	Object.assign(file, fileObj, {
-		name			: path.substring(path.lastIndexOf('/')+1),
-		basePath 		: (path.substring(0, path.lastIndexOf('/'))) + '/',
-		type			: type,
 		id				: fileObj.id,
 		sourceContent	: m.prop(fileObj.content || ''),
-		content 		: type == 'js' ? contentProvider.call(file) : m.prop(fileObj.content || ''),
+		content 		: contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 
 		// keep track of loaded state
 		loaded			: false,
@@ -141,7 +157,7 @@ const fileFactory = fileObj => {
 		var prop = (...args) => {
 			if (args.length) {
 				store = args[0];
-				this.checkSyntax();
+				this.type === 'js' && this.checkSyntax();
 			}
 			return store;
 		};

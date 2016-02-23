@@ -1,4 +1,4 @@
-import {toJSON, catchJSON, checkStatus, fetchJson} from 'utils/modelHelpers';
+import {fetchJson, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 
@@ -38,7 +38,8 @@ let studyPrototype = {
 		}
 
 		function sort(a,b){
-			let nameA=a.name.toLowerCase(), nameB=b.name.toLowerCase();
+			// sort by isDir then name
+			let nameA= +a.isDir + a.name.toLowerCase(), nameB=+b.isDir + b.name.toLowerCase();
 			if (nameA < nameB) return -1;//sort string ascending
 			if (nameA > nameB) return 1;
 			return 0; //default return value (no sorting)
@@ -50,25 +51,32 @@ let studyPrototype = {
 	},
 
 	createFile(name, content=''){
-		return fetch(this.apiURL() + '/file', {
-			method:'post',
-			credentials: 'same-origin',
-			body: JSON.stringify({name, content}),
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			}
-		})
-			.then(checkStatus)
-			.then(toJSON)
+		return fetchJson(this.apiURL() + '/file', {method:'post', body: {name, content}})
 			.then(response => {
 				Object.assign(response, {studyId: this.id, content});
 				let file = fileFactory(response);
 				file.loaded = true;
 				this.files().push(file);
 				return response;
-			})
-			.catch(catchJSON);
+			});
+	},
+
+	uploadFiles(path, files){
+		var formData = new FormData;
+		formData.append('path', path);
+		addFiles(formData, files);
+
+		return fetchUpload(this.apiURL(), {method:'post'})
+			.then();
+
+		function addFiles(formData, files) {
+
+			for (let file in files) {
+				formData.append(file, files[file]);
+			}
+
+			return formData;
+		}
 	},
 
 	del(fileId){

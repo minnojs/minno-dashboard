@@ -1,5 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
+import {moveFile} from './filesActions';
 export default fileContext;
 
 // download support according to modernizer
@@ -10,9 +11,12 @@ let fileContext = (file, study) => {
 		{icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 		{separator:true},
 		{icon:'fa-download', text:'Download', action: downloadFile},
+
 		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-		{icon:'fa-close', text:'Delete', action: deleteFile}
+		{icon:'fa-close', text:'Delete', action: deleteFile},
+		{text:'Move/Rename...', action: moveFile(file,study)}
 	];
+
 	return contextMenu.open(menu);
 
 	function downloadFile(){

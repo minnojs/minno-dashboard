@@ -2,6 +2,7 @@ import folder from './folderComponent';
 import classNames from 'utils/classNames';
 import fileContext from './fileContext';
 import {uploadConfig} from 'utils/uploader';
+import {uploadFiles} from './filesActions';
 
 export default node;
 
@@ -23,7 +24,7 @@ let nodeComponent = {
 				}),
 				onclick: file.isDir ? () => vm.isOpen(!vm.isOpen()) : choose(file),
 				oncontextmenu: fileContext(file, study),
-				config: file.isDir ? uploadConfig(ctrl) : null
+				config: file.isDir ? uploadConfig({onchange:uploadFiles(file.path, study)}) : null
 			},
 			[
 				m('a.wholerow', {

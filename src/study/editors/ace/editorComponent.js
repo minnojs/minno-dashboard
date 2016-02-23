@@ -14,9 +14,6 @@ var editorPage = {
 				});
 			});
 
-
-
-
 		var ctrl = {
 			file: file,
 			content:file.content,

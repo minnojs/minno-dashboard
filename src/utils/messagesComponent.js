@@ -102,12 +102,14 @@ let messages = {
 		 */
 		prompt: (opts={}) => {
 			let close = response => messages.close.bind(null, response);
+			let prop = opts.prop || noop;
 			return [
 				m('h4', opts.header),
 				m('.card-text', opts.content),
 				m('.card-block', [
 					m('input.form-control', {
-						onchange: m.withAttr('value', opts.prop || noop),
+						value: prop(),
+						onchange: m.withAttr('value', prop),
 						config: (element, isInitialized) => {
 							if (!isInitialized) element.focus();
 						}

@@ -46,7 +46,9 @@
   	});
   };
 
-  function fetchVoid(url, options) {
+  function fetchVoid(url) {
+  	var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
   	var opts = Object.assign({
   		credentials: 'same-origin',
   		headers: {
@@ -61,6 +63,18 @@
 
   function fetchJson(url, options) {
   	return fetchVoid(url, options).then(toJSON);
+  }
+
+  function fetchUpload(url, options) {
+  	var opts = Object.assign({
+  		credentials: 'same-origin',
+  		headers: {
+  			'Accept': 'multipart/form-data',
+  			'Content-Type': 'multipart/form-data'
+  		}
+  	}, options);
+
+  	return fetch(url, opts).then(checkStatus).catch(catchJSON);
   }
 
   var mainComponent = {
@@ -101,7 +115,7 @@
   	get: function get() {
   		var _this = this;
 
-  		return fetch(this.apiUrl(), { credentials: 'same-origin' }).then(checkStatus).then(toJSON).then(function (response) {
+  		return fetchJson(this.apiUrl()).then(function (response) {
   			_this.sourceContent(response.content);
   			_this.content(response.content);
   			_this.loaded = true;
@@ -115,23 +129,41 @@
   	save: function save() {
   		var _this2 = this;
 
-  		return fetch(this.apiUrl(), {
-  			credentials: 'same-origin',
+  		return fetchJson(this.apiUrl(), {
   			method: 'put',
-  			headers: {
-  				'Accept': 'application/json',
-  				'Content-Type': 'application/json'
-  			},
-  			body: JSON.stringify({
-  				content: this.content
-  			})
-  		}).then(checkStatus).then(function (response) {
+  			body: { content: this.content }
+  		}).then(function (response) {
   			_this2.sourceContent(_this2.content()); // update source content
   			return response;
-  		}).catch(catchJSON);
+  		});
+  	},
+  	move: function move(path, study) {
+  		var _this3 = this;
+
+  		var basePath = path.substring(0, path.lastIndexOf('/')) + '/';
+  		var folderExists = basePath === '/' || study.files().some(function (f) {
+  			return f.isDir && f.path === basePath;
+  		});
+
+  		if (!folderExists) return Promise.reject({ message: 'Folder ' + basePath + ' does not exist.' });
+  		if (study.files().some(function (f) {
+  			return f.path === path;
+  		})) return Promise.reject({ message: 'File ' + path + ' already exists.' });
+
+  		var oldPath = this.path;
+  		this.setPath(path);
+  		return fetchJson(this.apiUrl() + ('/move/' + encodeURIComponent(path)), {
+  			method: 'post'
+  		}).then(function (response) {
+  			_this3.id = response.id;
+  			_this3.url = response.url;
+  		}).catch(function (response) {
+  			_this3.setPath(oldPath);
+  			return Promise.reject(response);
+  		});
   	},
   	del: function del() {
-  		return fetch(this.apiUrl(), { method: 'delete', credentials: 'same-origin' }).then(checkStatus);
+  		return fetchVoid(this.apiUrl(), { method: 'delete' });
   	},
   	hasChanged: function hasChanged() {
   		return this.sourceContent() === this.content();
@@ -150,13 +182,13 @@
   		});
   	},
   	require: function require() {
-  		var _this3 = this;
+  		var _this4 = this;
 
   		var context = arguments.length <= 0 || arguments[0] === undefined ? window : arguments[0];
 
   		var requirejs = context.requirejs;
   		return new Promise(function (resolve, reject) {
-  			requirejs([_this3.url], resolve, reject);
+  			requirejs([_this4.url], resolve, reject);
   		});
   	},
   	checkSyntax: function checkSyntax() {
@@ -164,6 +196,12 @@
   		this.syntaxValid = jshint(this.content(), jshintOptions);
   		this.syntaxData = jshint.data();
   		return this.syntaxValid;
+  	},
+  	setPath: function setPath(path) {
+  		this.path = path;
+  		this.name = path.substring(path.lastIndexOf('/') + 1);
+  		this.basePath = path.substring(0, path.lastIndexOf('/')) + '/';
+  		this.type = path.substring(path.lastIndexOf('.') + 1);
   	}
   };
 
@@ -190,15 +228,13 @@
   var fileFactory = function fileFactory(fileObj) {
   	var file = Object.create(filePrototype);
   	var path = decodeURIComponent(fileObj.path);
-  	var type = path.substring(path.lastIndexOf('.') + 1);
+
+  	file.setPath(path);
 
   	Object.assign(file, fileObj, {
-  		name: path.substring(path.lastIndexOf('/') + 1),
-  		basePath: path.substring(0, path.lastIndexOf('/')) + '/',
-  		type: type,
   		id: fileObj.id,
   		sourceContent: m.prop(fileObj.content || ''),
-  		content: type == 'js' ? contentProvider.call(file) : m.prop(fileObj.content || ''),
+  		content: contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 
   		// keep track of loaded state
   		loaded: false,
@@ -218,12 +254,12 @@
   	return file;
 
   	function contentProvider(store) {
-  		var _this4 = this;
+  		var _this5 = this;
 
   		var prop = function prop() {
   			if (arguments.length) {
   				store = arguments.length <= 0 ? undefined : arguments[0];
-  				_this4.checkSyntax();
+  				_this5.type === 'js' && _this5.checkSyntax();
   			}
   			return store;
   		};
@@ -245,12 +281,11 @@
   	get: function get() {
   		var _this = this;
 
-  		return fetchJson(this.apiURL(), { credentials: 'same-origin' }).then(function (study) {
+  		return fetchJson(this.apiURL()).then(function (study) {
   			_this.loaded = true;
   			var files = flattenFiles(study.files).map(assignStudyId(_this.id)).map(fileFactory).sort(sort);
 
   			_this.files(files);
-  			window.f = _this.files;
   		}).catch(function (reason) {
   			_this.error = true;
   			return Promise.reject(reason); // do not swallow error
@@ -273,8 +308,9 @@
   		}
 
   		function sort(a, b) {
-  			var nameA = a.name.toLowerCase(),
-  			    nameB = b.name.toLowerCase();
+  			// sort by isDir then name
+  			var nameA = +a.isDir + a.name.toLowerCase(),
+  			    nameB = +b.isDir + b.name.toLowerCase();
   			if (nameA < nameB) return -1; //sort string ascending
   			if (nameA > nameB) return 1;
   			return 0; //default return value (no sorting)
@@ -290,21 +326,29 @@
 
   		var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 
-  		return fetch(this.apiURL() + '/file', {
-  			method: 'post',
-  			credentials: 'same-origin',
-  			body: JSON.stringify({ name: name, content: content }),
-  			headers: {
-  				'Accept': 'application/json',
-  				'Content-Type': 'application/json'
-  			}
-  		}).then(checkStatus).then(toJSON).then(function (response) {
+  		return fetchJson(this.apiURL() + '/file', { method: 'post', body: { name: name, content: content } }).then(function (response) {
   			Object.assign(response, { studyId: _this2.id, content: content });
   			var file = fileFactory(response);
   			file.loaded = true;
   			_this2.files().push(file);
   			return response;
-  		}).catch(catchJSON);
+  		});
+  	},
+  	uploadFiles: function uploadFiles(path, files) {
+  		var formData = new FormData();
+  		formData.append('path', path);
+  		addFiles(formData, files);
+
+  		return fetchUpload(this.apiURL(), { method: 'post' }).then();
+
+  		function addFiles(formData, files) {
+
+  			for (var file in files) {
+  				formData.append(file, files[file]);
+  			}
+
+  			return formData;
+  		}
   	},
   	del: function del(fileId) {
   		var _this3 = this;
@@ -316,13 +360,6 @@
   			}); // all paths that start with the same path are deleted
   			_this3.files(files);
   		});
-
-  		function filterFile(f) {
-  			return f.id = fileId;
-  		}
-  		function filterDir(f) {
-  			return f.id = fileId || f.basePath.indexOf(file.path + '/');
-  		}
   	}
   };
 
@@ -458,8 +495,10 @@
   			var close = function close(response) {
   				return messages.close.bind(null, response);
   			};
+  			var prop = opts.prop || noop;
   			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', {
-  				onchange: m.withAttr('value', opts.prop || noop),
+  				value: prop(),
+  				onchange: m.withAttr('value', prop),
   				config: function config(element, isInitialized) {
   					if (!isInitialized) element.focus();
   				}
@@ -1166,6 +1205,42 @@
   	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
   };
 
+  var uploadFiles = function uploadFiles(path, study) {
+  	return function (files) {
+  		study.uploadFiles(path, files).catch(function (response) {
+  			return messages.alert({
+  				header: 'Upload File',
+  				content: response.message
+  			});
+  		}).then(m.redraw);
+  	};
+  };
+
+  var moveFile = function moveFile(file, study) {
+  	return function () {
+  		var newPath = m.prop(file.path);
+  		return messages.prompt({
+  			header: 'Move/Rename File',
+  			prop: newPath
+  		}).then(function (response) {
+  			if (response) return moveAction(file, study);
+  		});
+
+  		function moveAction(file, study) {
+  			var def = file.move(newPath(), study) // the actual movement
+  			.catch(function (response) {
+  				return messages.alert({
+  					header: 'Move/Rename File',
+  					content: response.message
+  				});
+  			}).then(m.redraw); // redraw after server response
+
+  			m.redraw();
+  			return def;
+  		}
+  	};
+  };
+
   // download support according to modernizer
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1173,8 +1248,10 @@
   	var menu = [{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
   			return messages.alert({ header: 'Duplicate: ' + file.name, content: 'Duplicate has not been implemented yet' });
   		} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
+
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-  	{ icon: 'fa-close', text: 'Delete', action: deleteFile }];
+  	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { text: 'Move/Rename...', action: moveFile(file, study) }];
+
   	return contextMenuComponent.open(menu);
 
   	function downloadFile() {
@@ -1222,6 +1299,7 @@
 
   	function activate(e) {
   		e.preventDefault();
+  		e.currentTarget === element && console.log(element);
   		element.classList.add(DRAGOVER_CLASS);
   	}
   	function deactivate() {
@@ -1229,9 +1307,7 @@
   	}
   	function update(e) {
   		e.preventDefault();
-  		if (typeof options.onchange == 'function') {
-  			options.onchange((e.dataTransfer || e.target).files);
-  		}
+  		onchange(options)(e);
   	}
   }
 
@@ -1243,14 +1319,18 @@
   	};
   };
 
-  var uploadBox = function uploadBox(ctrl) {
-  	return m('form.upload', { method: 'post', enctype: 'multipart/form-data', config: uploadConfig(ctrl) }, [m('i.fa.fa-download	.fa-3x.m-b-1'), m('input.box__file', { id: 'upload', type: 'file', name: 'files[]', 'data-multiple-caption': '{count} files selected', multiple: true, onchange: ctrl.onchange }), m('label', { for: 'upload' }, m('strong', 'Choose a file'), m('span', ' or drag it here'))]);
+  var uploadBox = function uploadBox(args) {
+  	return m('form.upload', { method: 'post', enctype: 'multipart/form-data', config: uploadConfig(args) }, [m('i.fa.fa-download	.fa-3x.m-b-1'), m('input.box__file', { id: 'upload', type: 'file', name: 'files[]', 'data-multiple-caption': '{count} files selected', multiple: true, onchange: onchange(args) }), m('label', { for: 'upload' }, m('strong', 'Choose a file'), m('span', ' or drag it here'))]);
   };
 
-  var isAdvancedUpload = function () {
-  	var div = document.createElement('div');
-  	return ('draggable' in div || 'ondragstart' in div && 'ondrop' in div) && 'FormData' in window && 'FileReader' in window;
-  }();
+  // call onchange with files
+  var onchange = function onchange(args) {
+  	return function (e) {
+  		if (typeof args.onchange == 'function') {
+  			args.onchange((e.dataTransfer || e.target).files);
+  		}
+  	};
+  };
 
   var node = function node(file, args) {
   	return m.component(nodeComponent, file, args);
@@ -1277,7 +1357,7 @@
   				return vm.isOpen(!vm.isOpen());
   			} : choose(file),
   			oncontextmenu: fileContext(file, study),
-  			config: file.isDir ? uploadConfig(ctrl) : null
+  			config: file.isDir ? uploadConfig({ onchange: uploadFiles(file.path, study) }) : null
   		}, [m('a.wholerow', {
   			unselectable: 'on',
   			class: classNames({
@@ -1319,6 +1399,7 @@
   		var filesVM = _ref.filesVM;
 
   		var files = folderHash[path] || [];
+
   		return m('.files', [m('ul', files.map(function (file) {
   			return node(file, { folderHash: folderHash, study: study, filesVM: filesVM });
   		}))]);
@@ -1347,7 +1428,8 @@
   		var study = _ref2.study;
 
   		var folderHash = parseFiles(study.files());
-  		return folder('/', { folderHash: folderHash, study: study, filesVM: filesVM });
+  		var config = uploadConfig({ onchange: uploadFiles('/', study) });
+  		return m('div', { config: config }, folder('/', { folderHash: folderHash, study: study, filesVM: filesVM }));
   	}
   };
 
@@ -1509,7 +1591,7 @@
   		var study = _ref.study;
   		var filesVM = _ref.filesVM;
 
-  		return m('.sidebar', [m('h5', study.id), m.component(sidebarButtons, { study: study }), m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ study: study })]);
+  		return m('.sidebar', [m('h5', study.id), m.component(sidebarButtons, { study: study }), m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ onchange: uploadFiles('/', study) })]);
   	}
   };
 
