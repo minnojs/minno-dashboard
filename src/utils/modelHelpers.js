@@ -43,14 +43,11 @@ export function fetchJson(url, options){
 
 export function fetchUpload(url, options){
 	let opts = Object.assign({
-		credentials: 'same-origin',
-		headers: {
-			'Accept': 'multipart/form-data',
-			'Content-Type': 'multipart/form-data'
-		}
+		credentials: 'same-origin'
 	}, options);
 
 	return fetch(url, opts)
 		.then(checkStatus)
+		.then(toJSON)
 		.catch(catchJSON);
 }

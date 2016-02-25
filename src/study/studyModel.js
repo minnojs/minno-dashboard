@@ -5,8 +5,8 @@ export default studyFactory;
 let baseUrl = '/dashboard/dashboard';
 
 let studyPrototype = {
-	apiURL(){
-		return `${baseUrl}/files/${encodeURIComponent(this.id)}`;
+	apiURL(path = ''){
+		return `${baseUrl}/files/${encodeURIComponent(this.id)}${path}`;
 	},
 
 	get(){
@@ -51,7 +51,7 @@ let studyPrototype = {
 	},
 
 	createFile(name, content=''){
-		return fetchJson(this.apiURL() + '/file', {method:'post', body: {name, content}})
+		return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content}})
 			.then(response => {
 				Object.assign(response, {studyId: this.id, content});
 				let file = fileFactory(response);
@@ -62,17 +62,29 @@ let studyPrototype = {
 	},
 
 	uploadFiles(path, files){
-		var formData = new FormData;
-		formData.append('path', path);
-		addFiles(formData, files);
+		let paths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
+		let formData = buildFormData(path === '/' ? '' : path, files);
 
-		return fetchUpload(this.apiURL(), {method:'post'})
-			.then();
+		// validation (make sure files do not already exist)
+		let exists = this.files().find(file => paths.includes(file.path));
+		if (exists) return Promise.reject({message: `The file "${exists.path}" already exists`});
 
-		function addFiles(formData, files) {
+		return fetchUpload(this.apiURL('/file'), {method:'post', body:formData})
+			.then(response => {
+				response.forEach(src => {
+					let file = fileFactory(src);
+					this.files().push(file);
+				});
+
+				return response;
+			});
+
+		function buildFormData(path, files) {
+			var formData = new FormData;
+			formData.append('path', path);
 
 			for (let file in files) {
-				formData.append(file, files[file]);
+				formData.append('files', files[file]);
 			}
 
 			return formData;

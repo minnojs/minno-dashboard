@@ -13,7 +13,7 @@
     "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
     "bundle": "rollup --config --sourcemap",
     "serve": "node fixtures.js",
-    "start": "npm run watch & npm run serve"
+    "start": "npm run watch:js & npm run watch:css & npm run serve"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -29,6 +29,7 @@
     "gulp-rollup": "^1.7.0",
     "gulp-sass": "^2.1.0",
     "gulp-sourcemaps": "^1.6.0",
+    "multer": "^1.1.0",
     "node-sass": "^3.4.2",
     "rollup": "^0.25.4",
     "rollup-plugin-babel": "^2.3.9",

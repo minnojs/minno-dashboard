@@ -26,7 +26,7 @@ let sidebarButtons = {
 							return response;
 						})
 						.catch(err => messages.alert({
-							heaser: 'Failed to create file:',
+							header: 'Failed to create file:',
 							content: err.message
 						}));
 				}

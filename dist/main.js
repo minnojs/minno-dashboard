@@ -67,14 +67,10 @@
 
   function fetchUpload(url, options) {
   	var opts = Object.assign({
-  		credentials: 'same-origin',
-  		headers: {
-  			'Accept': 'multipart/form-data',
-  			'Content-Type': 'multipart/form-data'
-  		}
+  		credentials: 'same-origin'
   	}, options);
 
-  	return fetch(url, opts).then(checkStatus).catch(catchJSON);
+  	return fetch(url, opts).then(checkStatus).then(toJSON).catch(catchJSON);
   }
 
   var mainComponent = {
@@ -276,7 +272,9 @@
 
   var studyPrototype = {
   	apiURL: function apiURL() {
-  		return baseUrl + '/files/' + encodeURIComponent(this.id);
+  		var path = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+
+  		return baseUrl + '/files/' + encodeURIComponent(this.id) + path;
   	},
   	get: function get() {
   		var _this = this;
@@ -326,7 +324,7 @@
 
   		var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 
-  		return fetchJson(this.apiURL() + '/file', { method: 'post', body: { name: name, content: content } }).then(function (response) {
+  		return fetchJson(this.apiURL('/file'), { method: 'post', body: { name: name, content: content } }).then(function (response) {
   			Object.assign(response, { studyId: _this2.id, content: content });
   			var file = fileFactory(response);
   			file.loaded = true;
@@ -335,30 +333,48 @@
   		});
   	},
   	uploadFiles: function uploadFiles(path, files) {
-  		var formData = new FormData();
-  		formData.append('path', path);
-  		addFiles(formData, files);
+  		var _this3 = this;
 
-  		return fetchUpload(this.apiURL(), { method: 'post' }).then();
+  		var paths = Array.from(files, function (file) {
+  			return path === '/' ? file.name : path + '/' + file.name;
+  		});
+  		var formData = buildFormData(path === '/' ? '' : path, files);
 
-  		function addFiles(formData, files) {
+  		// validation (make sure files do not already exist)
+  		var exists = this.files().find(function (file) {
+  			return paths.includes(file.path);
+  		});
+  		if (exists) return Promise.reject({ message: 'The file "' + exists.path + '" already exists' });
+
+  		return fetchUpload(this.apiURL('/file'), { method: 'post', body: formData }).then(function (response) {
+  			response.forEach(function (src) {
+  				var file = fileFactory(src);
+  				_this3.files().push(file);
+  			});
+
+  			return response;
+  		});
+
+  		function buildFormData(path, files) {
+  			var formData = new FormData();
+  			formData.append('path', path);
 
   			for (var file in files) {
-  				formData.append(file, files[file]);
+  				formData.append('files', files[file]);
   			}
 
   			return formData;
   		}
   	},
   	del: function del(fileId) {
-  		var _this3 = this;
+  		var _this4 = this;
 
   		var file = this.getFile(fileId);
   		return file.del().then(function () {
-  			var files = _this3.files().filter(function (f) {
+  			var files = _this4.files().filter(function (f) {
   				return f.path.indexOf(file.path) !== 0;
   			}); // all paths that start with the same path are deleted
-  			_this3.files(files);
+  			_this4.files(files);
   		});
   	}
   };
@@ -1245,9 +1261,10 @@
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
   var fileContext = function fileContext(file, study) {
-  	var menu = [{ icon: 'fa-copy', text: 'Duplicate', action: function action() {
-  			return messages.alert({ header: 'Duplicate: ' + file.name, content: 'Duplicate has not been implemented yet' });
-  		} }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
+  	var menu = [
+  	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
+  	// {separator:true},
+  	{ icon: 'fa-download', text: 'Download', action: downloadFile },
 
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
   	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { text: 'Move/Rename...', action: moveFile(file, study) }];
@@ -1299,7 +1316,7 @@
 
   	function activate(e) {
   		e.preventDefault();
-  		e.currentTarget === element && console.log(element);
+  		e.stopPropagation(); // so that only the lowest level element gets focused
   		element.classList.add(DRAGOVER_CLASS);
   	}
   	function deactivate() {
@@ -1307,6 +1324,7 @@
   	}
   	function update(e) {
   		e.preventDefault();
+  		e.stopPropagation();
   		onchange(options)(e);
   	}
   }
@@ -1541,7 +1559,7 @@
   						return response;
   					}).catch(function (err) {
   						return messages.alert({
-  							heaser: 'Failed to create file:',
+  							header: 'Failed to create file:',
   							content: err.message
   						});
   					});

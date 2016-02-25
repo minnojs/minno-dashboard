@@ -10,7 +10,7 @@ function dragdrop(element, options) {
 
 	function activate(e) {
 		e.preventDefault();
-		e.currentTarget === element && console.log(element)
+		e.stopPropagation(); // so that only the lowest level element gets focused
 		element.classList.add(DRAGOVER_CLASS);
 	}
 	function deactivate() {
@@ -18,6 +18,7 @@ function dragdrop(element, options) {
 	}
 	function update(e) {
 		e.preventDefault();
+		e.stopPropagation();
 		onchange(options)(e);
 	}
 }

@@ -7,6 +7,7 @@
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
+var upload  = require('multer')(); // for file uploads
 var fs = require('fs');
 var isMac = process.platform === 'darwin';
 
@@ -106,8 +107,14 @@ router.route('/files/:studyId')
 
 router.route('/files/:studyId/file')
 	// create file
-	.post((req,res)=>{
-		res.json({id: req.body.name, url:`/test/${req.body.name}`});
+	.post(upload.array('files'), (req,res)=>{
+		if (req.files){
+			var path = req.body.path;
+			var resp = req.files.map(f => ({id: Math.random(), path: path === '' ? f.originalname : path + '/' + f.originalname}));
+			res.json(resp);
+		} else {
+			res.json({id: req.body.name, url:`/test/${req.body.name}`});
+		}
 	});
 
 router.route('/files/:studyId/file/:id')
