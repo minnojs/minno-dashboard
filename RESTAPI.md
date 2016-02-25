@@ -80,7 +80,7 @@ When uploading files we cannot use Json, therefore we formData.
 You can tell the difference by inspecting the content header. When sending Json we use `application/json` and when sending formData we use `form-data/multipart`.
 The content of the post is organized as follows:
 The `path` attribute holds the path to which the files should be uploaded.
-Each file gets a numeric attribute from 0 to n-1.
+The `files` attribute holds an array of files.
 
 Returns a file object:
 
