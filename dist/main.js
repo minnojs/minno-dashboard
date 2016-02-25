@@ -125,7 +125,7 @@
   	save: function save() {
   		var _this2 = this;
 
-  		return fetchJson(this.apiUrl(), {
+  		return fetchVoid(this.apiUrl(), {
   			method: 'put',
   			body: { content: this.content }
   		}).then(function (response) {

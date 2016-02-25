@@ -30,7 +30,7 @@ let filePrototype = {
 	},
 
 	save(){
-		return fetchJson(this.apiUrl(), {
+		return fetchVoid(this.apiUrl(), {
 			method:'put',
 			body: {content: this.content}
 		})
