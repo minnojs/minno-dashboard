@@ -21,9 +21,20 @@ let editorLayoutComponent = {
 			isChanged: m.prop(false)
 		});
 
-		let ctrl = {study, filesVM};
+		let ctrl = {study, filesVM, onunload};
+
+		window.addEventListener('beforeunload', beforeunload);
+
 
 		return ctrl;
+
+		function beforeunload(event) {
+			if (study.files().some(f => f.content() !== f.sourceContent())) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+		}
+
+		function onunload(){
+			window.removeEventListener('beforeunload', beforeunload);
+		}
 	},
 	view: ctrl => {
 		let study = ctrl.study;

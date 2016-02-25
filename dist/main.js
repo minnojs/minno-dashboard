@@ -1629,9 +1629,21 @@
   			isChanged: m.prop(false)
   		});
 
-  		var ctrl = { study: study, filesVM: filesVM };
+  		var ctrl = { study: study, filesVM: filesVM, onunload: onunload };
+
+  		window.addEventListener('beforeunload', beforeunload);
 
   		return ctrl;
+
+  		function beforeunload(event) {
+  			if (study.files().some(function (f) {
+  				return f.content() !== f.sourceContent();
+  			})) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+  		}
+
+  		function onunload() {
+  			window.removeEventListener('beforeunload', beforeunload);
+  		}
   	},
   	view: function view(ctrl) {
   		var study = ctrl.study;
