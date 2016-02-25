@@ -1,4 +1,7 @@
 import messages from 'utils/messagesComponent';
+import pipWizard from './wizards/pipWizard';
+import questWizard from './wizards/questWizard';
+import managerWizard from './wizards/managerWizard';
 
 export let uploadFiles = (path,study) => files => {
 	study
@@ -58,4 +61,49 @@ export let save = file => () => {
 		header: 'Error Saving:',
 		content: err.message
 	}));
+};
+
+function create(study, name, content){
+	return response => {
+		if (response) {
+			study.createFile(name(), content())
+				.then(response => {
+					m.route(`/editor/${study.id}/${encodeURIComponent(response.id)}`);
+					return response;
+				})
+				.catch(err => messages.alert({
+					header: 'Failed to create file:',
+					content: err.message
+				}));
+		}
+	};
+}
+
+export let createEmpty = (study, path = '') => () => {
+	let name = m.prop(path);
+	let content = ()=>'';
+
+	messages.prompt({
+		header: 'Create file',
+		content: 'Please insert the file name:',
+		prop: name
+	}).then(create(study, name,content));
+};
+
+export let createPIP = (study, path = '') => () => {
+	let name = m.prop(path);
+	let content = m.prop();
+	pipWizard({ name, content}).then(create(study, name, content));
+};
+
+export let createQuest = (study, path = '') => () => {
+	let name = m.prop(path);
+	let content = m.prop();
+	questWizard({ name, content}).then(create(study, name, content));
+};
+
+export let createManager = (study, path = '') => () => {
+	let name = m.prop(path);
+	let content = m.prop();
+	managerWizard({ name, content}).then(create(study, name, content));
 };

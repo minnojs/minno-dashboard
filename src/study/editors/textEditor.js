@@ -1,4 +1,4 @@
-import {save} from '../sidebar/filesActions';
+import {save} from '../sidebar/fileActions';
 import ace from './ace/aceComponent';
 
 import syntaxComponent from './ace/syntaxComponent';
@@ -22,7 +22,6 @@ let textEditorComponent = {
 	},
 
 	view: function(ctrl, {file}){
-
 
 		if (!file.loaded) return m('.loader');
 

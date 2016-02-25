@@ -113,7 +113,7 @@ router.route('/files/:studyId/file')
 			var resp = req.files.map(f => ({id: Math.random(), path: path === '' ? f.originalname : path + '/' + f.originalname}));
 			res.json(resp);
 		} else {
-			res.json({id: req.body.name, url:`/test/${req.body.name}`});
+			res.json({id: req.body.name, path: req.body.name, url:`/test/${req.body.name}`});
 		}
 	});
 

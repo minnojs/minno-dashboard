@@ -1,4 +1,4 @@
-import {play, save} from '../sidebar/filesActions';
+import {play, save} from '../sidebar/fileActions';
 
 export default textMenuView;
 

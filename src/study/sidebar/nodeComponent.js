@@ -2,7 +2,7 @@ import folder from './folderComponent';
 import classNames from 'utils/classNames';
 import fileContext from './fileContext';
 import {uploadConfig} from 'utils/uploader';
-import {uploadFiles} from './filesActions';
+import {uploadFiles} from './fileActions';
 
 export default node;
 

@@ -1,6 +1,6 @@
 import folderComponent from './folderComponent';
 import {uploadConfig} from 'utils/uploader';
-import {uploadFiles} from './filesActions';
+import {uploadFiles} from './fileActions';
 export default filesComponent;
 
 let currentStudy, filesVM;

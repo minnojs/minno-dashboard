@@ -46,6 +46,8 @@ let aceComponent = {
 					});
 
 					editor.setValue(content());
+
+					ctx.onunload = () => editor.destroy();
 				});
 
 			}

@@ -1,7 +1,4 @@
-import messages from 'utils/messagesComponent';
-import pipWizard from './wizards/pipWizard';
-import questWizard from './wizards/questWizard';
-import managerWizard from './wizards/managerWizard';
+import {createPIP, createQuest, createManager, createEmpty} from './fileActions';
 export default sidebarButtons;
 
 let sidebarButtons = {
@@ -9,60 +6,13 @@ let sidebarButtons = {
 		let ctrl = {
 			newOpen: false,
 			toggleNew: () => ctrl.newOpen = !ctrl.newOpen,
-			createEmpty: createEmpty,
-			createPIP: createPIP,
-			createQuest: createQuest,
-			createManager: createManager
+			createEmpty: createEmpty(study),
+			createPIP: createPIP(study),
+			createQuest: createQuest(study),
+			createManager: createManager(study)
 		};
 
 		return ctrl;
-
-		function create(name, content){
-			return response => {
-				if (response) {
-					study.createFile(name(), content())
-						.then(response => {
-							m.route(`/editor/${study.id}/${response.id}`);
-							return response;
-						})
-						.catch(err => messages.alert({
-							header: 'Failed to create file:',
-							content: err.message
-						}));
-				}
-			};
-		}
-
-		function createEmpty(){
-			let name = m.prop();
-			let content = ()=>'';
-
-			messages.prompt({
-				header: 'Create file',
-				content: 'Please insert the file name:',
-				prop: name
-			}).then(create(name,content));
-		}
-
-		function createPIP(){
-			let name = m.prop();
-			let content = m.prop();
-			pipWizard({name, content}).then(create(name, content));
-		}
-
-		function createQuest(){
-			let name = m.prop();
-			let content = m.prop();
-			questWizard({name, content}).then(create(name, content));
-		}
-
-		function createManager(){
-			let name = m.prop();
-			let content = m.prop();
-			managerWizard({name, content}).then(create(name, content));
-		}
-
-
 	},
 
 	view: ctrl => {

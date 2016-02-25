@@ -564,6 +564,66 @@
   	}
   };
 
+  var pipWizard = function pipWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create PIP',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template());
+  		}
+  		return response;
+  	});
+  };
+
+  var template = function template() {
+  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hello World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  };
+
+  var questWizard = function questWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create piQuest',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template$1());
+  		}
+  		return response;
+  	});
+  };
+
+  var template$1 = function template() {
+  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\tname: \'pickaname\',\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
+  };
+
+  var managerWizard = function managerWizard(_ref) {
+  	var name = _ref.name;
+  	var content = _ref.content;
+
+  	return messages.prompt({
+  		header: 'Create piManager',
+  		content: 'Please insert the file name:',
+  		prop: name
+  	}).then(function (response) {
+  		if (response) {
+  			content(template$2());
+  		}
+  		return response;
+  	});
+  };
+
+  var template$2 = function template() {
+  	return 'define([\'managerAPI\'], function(Manager){\n\n    var API = new Manager();\n\n    API.addSequence([\n        {type:\'message\', template:\'<h1>Hellow world</h1>\', keys: \' \'}\n    ]);\n\n    return API.script;\n});';
+  };
+
   var uploadFiles = function uploadFiles(path, study) {
   	return function (files) {
   		study.uploadFiles(path, files).catch(function (response) {
@@ -631,6 +691,65 @@
   	};
   };
 
+  function create(study, name, content) {
+  	return function (response) {
+  		if (response) {
+  			study.createFile(name(), content()).then(function (response) {
+  				m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
+  				return response;
+  			}).catch(function (err) {
+  				return messages.alert({
+  					header: 'Failed to create file:',
+  					content: err.message
+  				});
+  			});
+  		}
+  	};
+  }
+
+  var createEmpty = function createEmpty(study) {
+  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  	return function () {
+  		var name = m.prop(path);
+  		var content = function content() {
+  			return '';
+  		};
+
+  		messages.prompt({
+  			header: 'Create file',
+  			content: 'Please insert the file name:',
+  			prop: name
+  		}).then(create(study, name, content));
+  	};
+  };
+
+  var createPIP = function createPIP(study) {
+  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  	return function () {
+  		var name = m.prop(path);
+  		var content = m.prop();
+  		pipWizard({ name: name, content: content }).then(create(study, name, content));
+  	};
+  };
+
+  var createQuest = function createQuest(study) {
+  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  	return function () {
+  		var name = m.prop(path);
+  		var content = m.prop();
+  		questWizard({ name: name, content: content }).then(create(study, name, content));
+  	};
+  };
+
+  var createManager = function createManager(study) {
+  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  	return function () {
+  		var name = m.prop(path);
+  		var content = m.prop();
+  		managerWizard({ name: name, content: content }).then(create(study, name, content));
+  	};
+  };
+
   var ace = function ace(args) {
   	return m.component(aceComponent, args);
   };
@@ -682,6 +801,10 @@
   					});
 
   					editor.setValue(content());
+
+  					ctx.onunload = function () {
+  						return editor.destroy();
+  					};
   				});
   			}
 
@@ -1123,7 +1246,6 @@
   	view: function view(ctrl, _ref2) {
   		var file = _ref2.file;
 
-
   		if (!file.loaded) return m('.loader');
 
   		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
@@ -1278,13 +1400,14 @@
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
   var fileContext = function fileContext(file, study) {
+  	var path = file.isDir ? file.path : file.basePath;
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
-  	// {separator:true},
-  	{ icon: 'fa-download', text: 'Download', action: downloadFile },
+
+  	{ icon: 'fa-folder', text: 'New Folder', action: null }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
 
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-  	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
 
@@ -1491,66 +1614,6 @@
   	}, {});
   };
 
-  var pipWizard = function pipWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create PIP',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template());
-  		}
-  		return response;
-  	});
-  };
-
-  var template = function template() {
-  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hello World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var questWizard = function questWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piQuest',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$1());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$1 = function template() {
-  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\tname: \'pickaname\',\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var managerWizard = function managerWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piManager',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$2());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$2 = function template() {
-  	return 'define([\'managerAPI\'], function(Manager){\n\n    var API = new Manager();\n\n    API.addSequence([\n        {type:\'message\', template:\'<h1>Hellow world</h1>\', keys: \' \'}\n    ]);\n\n    return API.script;\n});';
-  };
-
   var sidebarButtons = {
   	controller: function controller(_ref) {
   		var study = _ref.study;
@@ -1560,60 +1623,13 @@
   			toggleNew: function toggleNew() {
   				return ctrl.newOpen = !ctrl.newOpen;
   			},
-  			createEmpty: createEmpty,
-  			createPIP: createPIP,
-  			createQuest: createQuest,
-  			createManager: createManager
+  			createEmpty: createEmpty(study),
+  			createPIP: createPIP(study),
+  			createQuest: createQuest(study),
+  			createManager: createManager(study)
   		};
 
   		return ctrl;
-
-  		function create(name, content) {
-  			return function (response) {
-  				if (response) {
-  					study.createFile(name(), content()).then(function (response) {
-  						m.route('/editor/' + study.id + '/' + response.id);
-  						return response;
-  					}).catch(function (err) {
-  						return messages.alert({
-  							header: 'Failed to create file:',
-  							content: err.message
-  						});
-  					});
-  				}
-  			};
-  		}
-
-  		function createEmpty() {
-  			var name = m.prop();
-  			var content = function content() {
-  				return '';
-  			};
-
-  			messages.prompt({
-  				header: 'Create file',
-  				content: 'Please insert the file name:',
-  				prop: name
-  			}).then(create(name, content));
-  		}
-
-  		function createPIP() {
-  			var name = m.prop();
-  			var content = m.prop();
-  			pipWizard({ name: name, content: content }).then(create(name, content));
-  		}
-
-  		function createQuest() {
-  			var name = m.prop();
-  			var content = m.prop();
-  			questWizard({ name: name, content: content }).then(create(name, content));
-  		}
-
-  		function createManager() {
-  			var name = m.prop();
-  			var content = m.prop();
-  			managerWizard({ name: name, content: content }).then(create(name, content));
-  		}
   	},
 
   	view: function view(ctrl) {
@@ -2061,7 +2077,7 @@
   	});
   };
 
-  var create = function create(list) {
+  var create$1 = function create(list) {
   	var output = m.prop();
   	return createMessage({ output: output }).then(function (response) {
   		if (response) {
@@ -2215,7 +2231,7 @@
   			remove: remove,
   			edit: edit,
   			reset: reset,
-  			create: create,
+  			create: create$1,
   			canCreate: function canCreate() {
   				return getRole() === 'SU';
   			},
@@ -2642,7 +2658,7 @@
    * Create download
    */
 
-  function create$1(list, cancel) {
+  function create$2(list, cancel) {
   	var output = m.prop();
   	return createMessage$1({ output: output }).then(function (response) {
   		if (response) {
@@ -2683,7 +2699,7 @@
   		var ctrl = {
   			list: list,
   			cancelDownload: cancelDownload,
-  			create: create$1,
+  			create: create$2,
   			remove: remove$1,
   			globalSearch: m.prop(''),
   			sortBy: m.prop('studyId'),

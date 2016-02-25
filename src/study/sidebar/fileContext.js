@@ -1,20 +1,29 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {moveFile} from './filesActions';
+import {createPIP, createQuest, createManager, createEmpty, moveFile} from './fileActions';
 export default fileContext;
 
 // download support according to modernizer
 let downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
 let fileContext = (file, study) => {
+	let path = file.isDir ? file.path : file.basePath;
 	let menu = [
 		// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
-		// {separator:true},
+
+		{icon:'fa-folder', text:'New Folder', action: null},
+		{icon:'fa-file', text:'New File', action: createEmpty(study, path)},
+		{icon:'fa-magic', text:'New from wizard', menu:[
+			{text:'piPlayer', action: createPIP(study, path)},
+			{text:'piQuest', action: createQuest(study, path)},
+			{text:'piManager', action: createManager(study, path)}
+		]},
+		{separator:true},
 		{icon:'fa-download', text:'Download', action: downloadFile},
 
 		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
 		{icon:'fa-close', text:'Delete', action: deleteFile},
-		{text:'Move/Rename...', action: moveFile(file,study)}
+		{icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
 	];
 
 	return contextMenu.open(menu);
