@@ -64,12 +64,11 @@ let studyPrototype = {
 	uploadFiles(path, files){
 		let paths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
 		let formData = buildFormData(path === '/' ? '' : path, files);
-
 		// validation (make sure files do not already exist)
 		let exists = this.files().find(file => paths.includes(file.path));
 		if (exists) return Promise.reject({message: `The file "${exists.path}" already exists`});
 
-		return fetchUpload(this.apiURL('/file'), {method:'post', body:formData})
+		return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:formData})
 			.then(response => {
 				response.forEach(src => {
 					let file = fileFactory(src);
@@ -81,10 +80,14 @@ let studyPrototype = {
 
 		function buildFormData(path, files) {
 			var formData = new FormData;
-			formData.append('path', path);
+			// formData.append('path', path);
 
-			for (let file in files) {
-				formData.append('files', files[file]);
+			// for (let file in files) {
+			// 	formData.append('files', files[file]);
+			// }
+
+			for (let i = 0; i < files.length; i++) {
+				formData.append(i, files[i]);
 			}
 
 			return formData;

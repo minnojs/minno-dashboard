@@ -1,12 +1,14 @@
 export default syntax;
 
+let syntax = args => m.component(syntaxComponent, args);
+
 /**
  * Syntax component
  * Takes an argument as follows:
  *
  * {valid: Boolean, data: jshint(script).data()}
  */
-var syntax = {
+var syntaxComponent = {
 
 	/**
 	 * Analyze script
@@ -69,7 +71,7 @@ var syntax = {
 
 	controller:  args => {
 		var file = args.file;
-		return syntax.analize(file.syntaxValid, file.syntaxData);
+		return syntaxComponent.analize(file.syntaxValid, file.syntaxData);
 	},
 
 	view: ctrl => {

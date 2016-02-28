@@ -1,6 +1,6 @@
 import messages from 'utils/messagesComponent';
 import aceComponent from './aceComponent';
-export default editorPage;
+export default null; // editorPage;
 
 var editorPage = {
 	controller: function({file}){

@@ -6,10 +6,12 @@ $navbar-height:    58px;
 }
 
 .main-content {
-	margin-top:70px;
+	margin-top: $navbar-height + 1;
 	.is-iframe & {margin-top:0}
 }
 
+
+// used within the validator
 .stringified {
 	.pre {text-decoration: none;white-space: pre;}
 	.string { color: green; }
@@ -21,6 +23,7 @@ $navbar-height:    58px;
 	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
 }
 
+// utility
 .centrify {
 	display:flex;
 	justify-content:center;
@@ -28,6 +31,7 @@ $navbar-height:    58px;
 	flex-direction:column;
 	height: 100%;
 }
+
 
 .info-box {
 	display: none;
@@ -41,17 +45,9 @@ $navbar-height:    58px;
 	z-index: 5;
 }
 
-.tab-content {
-  margin-top: 10px;
-}
-
+// I don't know what this is for....
 .form-group{
 	input + .btn-toolbar {margin-top: 5px; margin-bottom:0;}
-}
-
-.backdrop .spinner {
-	font-size: 6em;
-	color: #5BC0DE;
 }
 
 #messages .card {

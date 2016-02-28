@@ -34,3 +34,28 @@ export let moveFile = (file,study) => () => {
 		return def;
 	}
 };
+
+export let play = file => () => {
+	let playground;
+
+	playground = window.open('playground.html', 'Playground');
+
+	playground.onload = function(){
+		// first set the unload listener
+		playground.addEventListener('unload', function() {
+			// get focus back here
+			window.focus();
+		});
+
+		// then activate the player (this ensures that when )
+		playground.activate(file);
+		playground.focus();
+	};
+};
+
+export let save = file => () => {
+	file.save().catch(err => messages.alert({
+		header: 'Error Saving:',
+		content: err.message
+	}));
+};

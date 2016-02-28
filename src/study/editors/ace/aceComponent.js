@@ -1,26 +1,18 @@
 import fullHeight from 'utils/fullHeight';
-export default aceComponent;
+export default ace;
 
-var noop = function(){};
+let ace = args => m.component(aceComponent, args);
 
-var aceComponent = {
-	controller: function controller(args){
-		var ctrl = {
-			content: args.content
-		};
+let noop = function(){};
 
-		return ctrl;
-	},
-
+let aceComponent = {
 	view: function editorView(ctrl, args){
-		return m('.editor', {config: aceComponent.config(ctrl, args)});
+		return m('.editor', {config: aceComponent.config(args)});
 	},
 
-	config: function(ctrl, args){
+	config: function({content, settings = {}}){
 		return function(element, isInitialized, ctx){
-			var editor;
-			var content = ctrl.content;
-			var settings = args.settings || {};
+			let editor;
 			let mode = settings.mode || 'javascript';
 
 			if (!isInitialized){
@@ -31,7 +23,7 @@ var aceComponent = {
 					ace.config.set('basePath', require.toUrl('ace'));
 
 					editor = ace.edit(element);
-					var commands = editor.commands;
+					let commands = editor.commands;
 
 					editor.setTheme('ace/theme/monokai');
 					editor.getSession().setMode('ace/mode/' + mode);
@@ -50,7 +42,7 @@ var aceComponent = {
 					commands.addCommand({
 						name: 'save',
 						bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
-						exec: ctrl.onSave || noop
+						exec: settings.onSave || noop
 					});
 
 					editor.setValue(content());

@@ -1,5 +1,7 @@
 import validator from './parser/validator';
-export default validateComponent;
+export default validate;
+
+let validate = args => m.component(validateComponent, args);
 
 var validateComponent = {
 	controller: args => {

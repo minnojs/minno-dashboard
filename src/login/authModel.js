@@ -1,6 +1,6 @@
 import {fetchJson,fetchVoid} from 'utils/modelHelpers';
 
-const loginUrl = '/dashboard/connect';
+const loginUrl = '/dashboard/dashboard/connect';
 const logoutUrl = '/dashboard/logout';
 
 let authorizeState = {};

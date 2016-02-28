@@ -341,14 +341,13 @@
   			return path === '/' ? file.name : path + '/' + file.name;
   		});
   		var formData = buildFormData(path === '/' ? '' : path, files);
-
   		// validation (make sure files do not already exist)
   		var exists = this.files().find(function (file) {
   			return paths.includes(file.path);
   		});
   		if (exists) return Promise.reject({ message: 'The file "' + exists.path + '" already exists' });
 
-  		return fetchUpload(this.apiURL('/file'), { method: 'post', body: formData }).then(function (response) {
+  		return fetchUpload(this.apiURL('/upload/' + (path === '/' ? '' : path)), { method: 'post', body: formData }).then(function (response) {
   			response.forEach(function (src) {
   				var file = fileFactory(src);
   				_this3.files().push(file);
@@ -359,10 +358,14 @@
 
   		function buildFormData(path, files) {
   			var formData = new FormData();
-  			formData.append('path', path);
+  			// formData.append('path', path);
 
-  			for (var file in files) {
-  				formData.append('files', files[file]);
+  			// for (let file in files) {
+  			// 	formData.append('files', files[file]);
+  			// }
+
+  			for (var i = 0; i < files.length; i++) {
+  				formData.append(i, files[i]);
   			}
 
   			return formData;
@@ -407,6 +410,25 @@
   	function onResize() {
   		element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
   	}
+  };
+
+  var imgEditor = function imgEditor(_ref) {
+  	var file = _ref.file;
+  	return m('div.img-editor.centrify', [m('img', { src: file.url })]);
+  };
+
+  var pdfEditor = function pdfEditor(_ref) {
+  	var file = _ref.file;
+  	return m('object', {
+  		data: file.url,
+  		type: 'application/pdf',
+  		width: '100%',
+  		height: '100%'
+  	});
+  };
+
+  var unknownComponent = function unknownComponent() {
+  	return m('.centrify', [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')]);
   };
 
   var noop = function noop() {};
@@ -542,26 +564,91 @@
   	}
   };
 
+  var uploadFiles = function uploadFiles(path, study) {
+  	return function (files) {
+  		study.uploadFiles(path, files).catch(function (response) {
+  			return messages.alert({
+  				header: 'Upload File',
+  				content: response.message
+  			});
+  		}).then(m.redraw);
+  	};
+  };
+
+  var moveFile = function moveFile(file, study) {
+  	return function () {
+  		var newPath = m.prop(file.path);
+  		return messages.prompt({
+  			header: 'Move/Rename File',
+  			prop: newPath
+  		}).then(function (response) {
+  			if (response) return moveAction(file, study);
+  		});
+
+  		function moveAction(file, study) {
+  			var def = file.move(newPath(), study) // the actual movement
+  			.catch(function (response) {
+  				return messages.alert({
+  					header: 'Move/Rename File',
+  					content: response.message
+  				});
+  			}).then(m.redraw); // redraw after server response
+
+  			m.redraw();
+  			return def;
+  		}
+  	};
+  };
+
+  var play = function play(file) {
+  	return function () {
+  		var playground = undefined;
+
+  		playground = window.open('playground.html', 'Playground');
+
+  		playground.onload = function () {
+  			// first set the unload listener
+  			playground.addEventListener('unload', function () {
+  				// get focus back here
+  				window.focus();
+  			});
+
+  			// then activate the player (this ensures that when )
+  			playground.activate(file);
+  			playground.focus();
+  		};
+  	};
+  };
+
+  var save = function save(file) {
+  	return function () {
+  		file.save().catch(function (err) {
+  			return messages.alert({
+  				header: 'Error Saving:',
+  				content: err.message
+  			});
+  		});
+  	};
+  };
+
+  var ace = function ace(args) {
+  	return m.component(aceComponent, args);
+  };
+
   var noop$1 = function noop() {};
 
   var aceComponent = {
-  	controller: function controller(args) {
-  		var ctrl = {
-  			content: args.content
-  		};
-
-  		return ctrl;
-  	},
-
   	view: function editorView(ctrl, args) {
-  		return m('.editor', { config: aceComponent.config(ctrl, args) });
+  		return m('.editor', { config: aceComponent.config(args) });
   	},
 
-  	config: function config(ctrl, args) {
+  	config: function config(_ref) {
+  		var content = _ref.content;
+  		var _ref$settings = _ref.settings;
+  		var settings = _ref$settings === undefined ? {} : _ref$settings;
+
   		return function (element, isInitialized, ctx) {
-  			var editor;
-  			var content = ctrl.content;
-  			var settings = args.settings || {};
+  			var editor = undefined;
   			var mode = settings.mode || 'javascript';
 
   			if (!isInitialized) {
@@ -591,7 +678,7 @@
   					commands.addCommand({
   						name: 'save',
   						bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
-  						exec: ctrl.onSave || noop$1
+  						exec: settings.onSave || noop$1
   					});
 
   					editor.setValue(content());
@@ -603,59 +690,8 @@
   	}
   };
 
-  var editorPage = {
-  	controller: function controller(_ref) {
-  		var file = _ref.file;
-
-  		file.loaded || file.get().then(m.redraw).catch(function (err) {
-  			return messages.alert({
-  				header: 'Loading Error',
-  				content: err.message
-  			});
-  		});
-
-  		var ctrl = {
-  			content: file.content,
-  			play: play,
-  			save: save
-  		};
-
-  		return ctrl;
-
-  		function play() {
-  			var playground;
-
-  			playground = window.open('playground.html', 'Playground');
-
-  			playground.onload = function () {
-  				// first set the unload listener
-  				playground.addEventListener('unload', function () {
-  					// get focus back here
-  					window.focus();
-  				});
-
-  				// then activate the player (this ensures that when )
-  				playground.activate(file);
-  				playground.focus();
-  			};
-  		}
-
-  		function save() {
-  			file.save().catch(function (err) {
-  				return messages.alert({
-  					header: 'Error Saving:',
-  					content: err.message
-  				});
-  			});
-  		}
-  	},
-
-  	view: function view(ctrl, _ref2) {
-  		var file = _ref2.file;
-  		var settings = _ref2.settings;
-
-  		return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']) : [m('.btn-toolbar', [m('.btn-group.btn-group-sm', [file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play, title: 'Play this task' }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.save, title: 'Save (ctrl+s)' }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: settings })]]);
-  	}
+  var syntax = function syntax(args) {
+  	return m.component(syntaxComponent, args);
   };
 
   /**
@@ -664,7 +700,7 @@
    *
    * {valid: Boolean, data: jshint(script).data()}
    */
-  var syntax = {
+  var syntaxComponent = {
 
   	/**
     * Analyze script
@@ -728,7 +764,7 @@
 
   	controller: function controller(args) {
   		var file = args.file;
-  		return syntax.analize(file.syntaxValid, file.syntaxData);
+  		return syntaxComponent.analize(file.syntaxValid, file.syntaxData);
   	},
 
   	view: function view(ctrl) {
@@ -952,7 +988,7 @@
   	return errors;
   }
 
-  function validate(script) {
+  function validate$1(script) {
   	var type = script.type && script.type.toLowerCase();
   	switch (type) {
   		case 'pip':
@@ -966,6 +1002,10 @@
   	}
   }
 
+  var validate = function validate(args) {
+  	return m.component(validateComponent, args);
+  };
+
   var validateComponent = {
   	controller: function controller(args) {
   		var file = args.file;
@@ -978,7 +1018,7 @@
   		file.define().then(function () {
   			return file.require();
   		}).then(function (script) {
-  			ctrl.validations(validate(script, file.url));
+  			ctrl.validations(validate$1(script, file.url));
   			m.endComputation();
   		}).catch(function () {
   			ctrl.isError = true;
@@ -1048,6 +1088,109 @@
   	});
   }
 
+  var textMenuView = function textMenuView(_ref) {
+  	var mode = _ref.mode;
+  	var file = _ref.file;
+
+  	var setMode = function setMode(value) {
+  		return function () {
+  			return mode(value);
+  		};
+  	};
+  	var modeClass = function modeClass(value) {
+  		return mode() === value ? 'active' : '';
+  	};
+  	var isJs = file.type === 'js';
+
+  	return m('.btn-toolbar', [m('.btn-group.btn-group-sm', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)' }, [m('strong.fa.fa-save')])]), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax')]), m('a.btn.btn-secondary', { onclick: setMode('validator'), class: modeClass('validator') }, [m('strong', 'Validator')])])]);
+  };
+
+  var textEditor = function textEditor(args) {
+  	return m.component(textEditorComponent, args);
+  };
+
+  var textEditorComponent = {
+  	controller: function controller(_ref) {
+  		var file = _ref.file;
+
+  		file.loaded || file.get().then(m.redraw).catch(m.redraw);
+
+  		var ctrl = { mode: m.prop('edit') };
+
+  		return ctrl;
+  	},
+
+  	view: function view(ctrl, _ref2) {
+  		var file = _ref2.file;
+
+
+  		if (!file.loaded) return m('.loader');
+
+  		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
+
+  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file }), textContent(ctrl, { file: file })]);
+  	}
+  };
+
+  var textContent = function textContent(ctrl, _ref3) {
+  	var file = _ref3.file;
+
+  	var textMode = modeMap[file.type] || 'javascript';
+  	switch (ctrl.mode()) {
+  		case 'edit':
+  			return ace({ content: file.content, settings: { onSave: save, mode: textMode } });
+  		case 'validator':
+  			return validate({ file: file });
+  		case 'syntax':
+  			return syntax({ file: file });
+  	}
+  };
+
+  var modeMap = {
+  	js: 'javascript',
+  	jst: 'ejs',
+  	html: 'ejs',
+  	htm: 'ejs',
+  	xml: 'xml'
+  };
+
+  var editors = {
+  	js: textEditor,
+  	html: textEditor,
+  	htm: textEditor,
+  	jst: textEditor,
+  	xml: textEditor,
+
+  	jpg: imgEditor,
+  	bmp: imgEditor,
+  	png: imgEditor,
+
+  	pdf: pdfEditor
+  };
+
+  var fileEditorComponent = {
+  	controller: function controller(_ref) {
+  		var study = _ref.study;
+
+  		var id = m.route.param('fileID');
+  		var file = study.getFile(id);
+  		var ctrl = {
+  			file: file
+  		};
+
+  		return ctrl;
+  	},
+
+  	view: function view(ctrl) {
+  		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  		var file = ctrl.file;
+  		var editor = file && editors[file.type] || unknownComponent;
+
+  		return m('div', { config: fullHeight }, [file ? editor({ file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
+  	}
+  };
+
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = {}.hasOwnProperty;
@@ -1076,110 +1219,6 @@
 
   	return classes.substr(1);
   }
-
-  var jsEditor = {
-  	controller: function controller(args) {
-  		return {
-  			file: args.file,
-  			activeTab: m.prop('edit')
-  		};
-  	},
-  	view: function view(ctrl) {
-  		var file = ctrl.file;
-  		var activeTab = ctrl.activeTab;
-  		return m('div', [!file.loaded ? '' : m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a[data-tab="syntax"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'syntax' }) }, ['Syntax ', m('span.badge.alert-danger', file.syntaxValid ? '' : file.syntaxData.errors.length)])]), m('li.nav-item', [m('a[data-tab="validate"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'validate' }) }, 'Validate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file }) : '', activeTab() == 'syntax' ? m.component(syntax, { file: file }) : '', activeTab() == 'validate' ? m.component(validateComponent, { file: file }) : ''])]);
-  	}
-  };
-
-  var jsEditor$1 = {
-  	controller: function controller(args) {
-  		return {
-  			file: args.file,
-  			activeTab: m.prop('edit')
-  		};
-  	},
-  	view: function view(ctrl) {
-  		var file = ctrl.file;
-  		var activeTab = ctrl.activeTab;
-  		return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a.nav-link.disabled', 'Syntax')]), m('li.nav-item', [m('a.nav-link.disabled', 'Vaildate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file, settings: { mode: 'ejs' } }) : ''])]);
-  	}
-  };
-
-  var xmlEditor = {
-  	controller: function controller(args) {
-  		return {
-  			file: args.file,
-  			activeTab: m.prop('edit')
-  		};
-  	},
-  	view: function view(ctrl) {
-  		var file = ctrl.file;
-  		var activeTab = ctrl.activeTab;
-  		return m('div', [m('ul.nav.nav-tabs', [m('li.nav-item', [m('a[data-tab="edit"].nav-link', { onclick: m.withAttr('data-tab', activeTab), class: classNames({ active: activeTab() == 'edit' }) }, 'Edit')]), m('li.nav-item', [m('a.nav-link.disabled', 'Syntax')]), m('li.nav-item', [m('a.nav-link.disabled', 'Vaildate')])]), m('.tab-content', [activeTab() == 'edit' ? m.component(editorPage, { file: file, settings: { mode: 'xml' } }) : ''])]);
-  	}
-  };
-
-  var imgEditor = {
-  	view: function view(ctrl, args) {
-  		var file = args.file;
-  		return m('div.img-editor.centrify', [m('img', { src: file.url })]);
-  	}
-  };
-
-  var pdfEditor = {
-  	view: function view(ctrl, args) {
-  		var file = args.file;
-  		return m('object', {
-  			data: file.url,
-  			type: 'application/pdf',
-  			width: '100%',
-  			height: '100%'
-  		});
-  	}
-  };
-
-  var unknownComponent = {
-  	view: function view() {
-  		return m('.centrify', [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')]);
-  	}
-  };
-
-  var editors = {
-  	js: jsEditor,
-
-  	jpg: imgEditor,
-  	bmp: imgEditor,
-  	png: imgEditor,
-
-  	html: jsEditor$1,
-  	jst: jsEditor$1,
-  	xml: xmlEditor,
-
-  	pdf: pdfEditor
-  };
-
-  var fileEditorComponent = {
-  	controller: function controller(_ref) {
-  		var study = _ref.study;
-
-  		var id = m.route.param('fileID');
-  		var file = study.getFile(id);
-  		var ctrl = {
-  			file: file
-  		};
-
-  		return ctrl;
-  	},
-
-  	view: function view(ctrl) {
-  		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-  		var file = ctrl.file;
-  		var editor = editors[file.type] || unknownComponent;
-
-  		return m('div', { config: fullHeight }, [file ? m.component(editor, { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
-  	}
-  };
 
   /**
    * Set this component into your layout then use any mouse event to open the context menu:
@@ -1233,42 +1272,6 @@
 
   var menuNode = function menuNode(node, key) {
   	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
-  };
-
-  var uploadFiles = function uploadFiles(path, study) {
-  	return function (files) {
-  		study.uploadFiles(path, files).catch(function (response) {
-  			return messages.alert({
-  				header: 'Upload File',
-  				content: response.message
-  			});
-  		}).then(m.redraw);
-  	};
-  };
-
-  var moveFile = function moveFile(file, study) {
-  	return function () {
-  		var newPath = m.prop(file.path);
-  		return messages.prompt({
-  			header: 'Move/Rename File',
-  			prop: newPath
-  		}).then(function (response) {
-  			if (response) return moveAction(file, study);
-  		});
-
-  		function moveAction(file, study) {
-  			var def = file.move(newPath(), study) // the actual movement
-  			.catch(function (response) {
-  				return messages.alert({
-  					header: 'Move/Rename File',
-  					content: response.message
-  				});
-  			}).then(m.redraw); // redraw after server response
-
-  			m.redraw();
-  			return def;
-  		}
-  	};
   };
 
   // download support according to modernizer
@@ -1994,7 +1997,7 @@
   	if (!isInitialized) element.focus();
   };
 
-  function play(study) {
+  function play$1(study) {
   	return messages.confirm({
   		header: 'Continue Study:',
   		content: 'Are you sure you want to continue "' + study.studyId + '"?'
@@ -2140,7 +2143,7 @@
   	}, {});
   };
 
-  var loginUrl = '/dashboard/connect';
+  var loginUrl = '/dashboard/dashboard/connect';
   var logoutUrl = '/dashboard/logout';
 
   var authorizeState = {};
@@ -2207,7 +2210,7 @@
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
-  			play: play,
+  			play: play$1,
   			pause: pause,
   			remove: remove,
   			edit: edit,
@@ -2821,11 +2824,7 @@
   			}
   		},
   		view: function view(ctrl) {
-  			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [
-  			// m('li.nav-item',[
-  			// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
-  			// ]),
-  			m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')]), m('li.nav-item.pull-xs-right', [m('button.btn.btn-info', { onclick: ctrl.doLogout }, [m('i.fa.fa-sign-out'), '  Logout'])])])]), m('.main-content.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
+  			return m('.dashboard-root', { class: window.top != window.self ? 'is-iframe' : '' }, [m('nav.navbar.navbar-dark.navbar-fixed-top', [m('a.navbar-brand', { href: '/dashboard/dashboard' }, 'Dashboard'), m('ul.nav.navbar-nav', [m('li.nav-item', [m('a.nav-link', { href: '/studies', config: m.route }, 'Studies')]), m('li.nav-item', [m('a.nav-link', { href: '/pool', config: m.route }, 'Pool')]), m('li.nav-item', [m('a.nav-link', { href: '/downloads', config: m.route }, 'Downloads')]), m('li.nav-item.pull-xs-right', [m('button.btn.btn-info', { onclick: ctrl.doLogout }, [m('i.fa.fa-sign-out'), '  Logout'])])])]), m('.main-content.container-fluid', [route]), m.component(contextMenuComponent), // register context menu
   			m.component(messages), // register modal
   			m.component(spinner) // register spinner
   			]);

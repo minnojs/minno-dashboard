@@ -42,12 +42,14 @@
 
 		+ label {
 			max-width: 80%;
-			text-overflow: ellipsis;
 			cursor: pointer;
 			display: inline-block;
 			overflow: hidden;
 
-			strong, span {display:block}
+			strong, span {
+				display:block;
+				white-space: nowrap;
+			}
 
 		}
 

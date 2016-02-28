@@ -22,9 +22,9 @@ let layout = route => {
 				m('nav.navbar.navbar-dark.navbar-fixed-top', [
 					m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
 					m('ul.nav.navbar-nav',[
-						// m('li.nav-item',[
-						// 	m('a.nav-link',{href:'/studies', config:m.route},'Studies')
-						// ]),
+						m('li.nav-item',[
+							m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+						]),
 						m('li.nav-item',[
 							m('a.nav-link',{href:'/pool', config:m.route},'Pool')
 						]),

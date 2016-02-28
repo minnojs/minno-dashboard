@@ -5,7 +5,7 @@
     display: none; }
 
 .main-content {
-  margin-top: 70px; }
+  margin-top: 59px; }
   .is-iframe .main-content {
     margin-top: 0; }
 
@@ -54,16 +54,9 @@
   margin-left: 10px;
   z-index: 5; }
 
-.tab-content {
-  margin-top: 10px; }
-
 .form-group input + .btn-toolbar {
   margin-top: 5px;
   margin-bottom: 0; }
-
-.backdrop .spinner {
-  font-size: 6em;
-  color: #5BC0DE; }
 
 #messages .card {
   overflow-y: auto; }
@@ -323,12 +316,16 @@
   align-items: center;
   z-index: 1050; }
 
+.backdrop .spinner {
+  font-size: 6em;
+  color: #5BC0DE; }
+
 .study .col-md-10, .study .col-md-2 {
   padding-left: 0;
   padding-right: 0; }
 
 .study .editor .btn-toolbar {
-  margin-bottom: 10px; }
+  padding-bottom: 4px; }
 
 .study .sidebar {
   position: fixed;
@@ -597,12 +594,12 @@ th[data-sort-by].active:before {
     z-index: -1; }
     .upload input + label {
       max-width: 80%;
-      text-overflow: ellipsis;
       cursor: pointer;
       display: inline-block;
       overflow: hidden; }
       .upload input + label strong, .upload input + label span {
-        display: block; }
+        display: block;
+        white-space: nowrap; }
     .upload input:hover + label strong,
     .upload input:focus + label strong,
     .upload input.has-focus + label strong {
