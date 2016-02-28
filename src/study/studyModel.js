@@ -50,10 +50,10 @@ let studyPrototype = {
 		return this.files().find(f => f.id === id);
 	},
 
-	createFile(name, content=''){
-		return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content}})
+	createFile({name, content='',isDir}){
+		return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content, isDir}})
 			.then(response => {
-				Object.assign(response, {studyId: this.id, content});
+				Object.assign(response, {studyId: this.id, content, path:name, isDir});
 				let file = fileFactory(response);
 				file.loaded = true;
 				this.files().push(file);

@@ -1,6 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createPIP, createQuest, createManager, createEmpty, moveFile} from './fileActions';
+import {createDir, createPIP, createQuest, createManager, createEmpty, moveFile} from './fileActions';
 export default fileContext;
 
 // download support according to modernizer
@@ -11,7 +11,7 @@ let fileContext = (file, study) => {
 	let menu = [
 		// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-		{icon:'fa-folder', text:'New Folder', action: null},
+		{icon:'fa-folder', text:'New Folder', action: createDir(study, path)},
 		{icon:'fa-file', text:'New File', action: createEmpty(study, path)},
 		{icon:'fa-magic', text:'New from wizard', menu:[
 			{text:'piPlayer', action: createPIP(study, path)},

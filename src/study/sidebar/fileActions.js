@@ -63,10 +63,15 @@ export let save = file => () => {
 	}));
 };
 
+
+// add trailing slash if needed, and then remove proceeding slash
+// return prop
+let pathProp = path => m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
+
 function create(study, name, content){
 	return response => {
 		if (response) {
-			study.createFile(name(), content())
+			study.createFile({name:name(), content:content()})
 				.then(response => {
 					m.route(`/editor/${study.id}/${encodeURIComponent(response.id)}`);
 					return response;
@@ -79,8 +84,25 @@ function create(study, name, content){
 	};
 }
 
+export let createDir = (study, path='') => () => {
+	let name = pathProp(path);
+
+	messages.prompt({
+		header: 'Create Directory',
+		content: 'Please insert directory name',
+		prop: name
+	})
+		.then(response => {
+			if (response) return study.createFile({name:name(), isDir:true});
+		})
+		.catch(err => messages.alert({
+			header: 'Failed to create directory:',
+			content: err.message
+		}));
+};
+
 export let createEmpty = (study, path = '') => () => {
-	let name = m.prop(path);
+	let name = pathProp(path);
 	let content = ()=>'';
 
 	messages.prompt({
@@ -91,19 +113,19 @@ export let createEmpty = (study, path = '') => () => {
 };
 
 export let createPIP = (study, path = '') => () => {
-	let name = m.prop(path);
+	let name = pathProp(path);
 	let content = m.prop();
 	pipWizard({ name, content}).then(create(study, name, content));
 };
 
 export let createQuest = (study, path = '') => () => {
-	let name = m.prop(path);
+	let name = pathProp(path);
 	let content = m.prop();
 	questWizard({ name, content}).then(create(study, name, content));
 };
 
 export let createManager = (study, path = '') => () => {
-	let name = m.prop(path);
+	let name = pathProp(path);
 	let content = m.prop();
 	managerWizard({ name, content}).then(create(study, name, content));
 };

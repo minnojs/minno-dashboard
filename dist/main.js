@@ -321,13 +321,16 @@
   			return f.id === id;
   		});
   	},
-  	createFile: function createFile(name) {
+  	createFile: function createFile(_ref2) {
   		var _this2 = this;
 
-  		var content = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  		var name = _ref2.name;
+  		var _ref2$content = _ref2.content;
+  		var content = _ref2$content === undefined ? '' : _ref2$content;
+  		var isDir = _ref2.isDir;
 
-  		return fetchJson(this.apiURL('/file'), { method: 'post', body: { name: name, content: content } }).then(function (response) {
-  			Object.assign(response, { studyId: _this2.id, content: content });
+  		return fetchJson(this.apiURL('/file'), { method: 'post', body: { name: name, content: content, isDir: isDir } }).then(function (response) {
+  			Object.assign(response, { studyId: _this2.id, content: content, path: name, isDir: isDir });
   			var file = fileFactory(response);
   			file.loaded = true;
   			_this2.files().push(file);
@@ -691,10 +694,16 @@
   	};
   };
 
+  // add trailing slash if needed, and then remove proceeding slash
+  // return prop
+  var pathProp = function pathProp(path) {
+  	return m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
+  };
+
   function create(study, name, content) {
   	return function (response) {
   		if (response) {
-  			study.createFile(name(), content()).then(function (response) {
+  			study.createFile({ name: name(), content: content() }).then(function (response) {
   				m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
   				return response;
   			}).catch(function (err) {
@@ -707,10 +716,30 @@
   	};
   }
 
+  var createDir = function createDir(study) {
+  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  	return function () {
+  		var name = pathProp(path);
+
+  		messages.prompt({
+  			header: 'Create Directory',
+  			content: 'Please insert directory name',
+  			prop: name
+  		}).then(function (response) {
+  			if (response) return study.createFile({ name: name(), isDir: true });
+  		}).catch(function (err) {
+  			return messages.alert({
+  				header: 'Failed to create directory:',
+  				content: err.message
+  			});
+  		});
+  	};
+  };
+
   var createEmpty = function createEmpty(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
   	return function () {
-  		var name = m.prop(path);
+  		var name = pathProp(path);
   		var content = function content() {
   			return '';
   		};
@@ -726,7 +755,7 @@
   var createPIP = function createPIP(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
   	return function () {
-  		var name = m.prop(path);
+  		var name = pathProp(path);
   		var content = m.prop();
   		pipWizard({ name: name, content: content }).then(create(study, name, content));
   	};
@@ -735,7 +764,7 @@
   var createQuest = function createQuest(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
   	return function () {
-  		var name = m.prop(path);
+  		var name = pathProp(path);
   		var content = m.prop();
   		questWizard({ name: name, content: content }).then(create(study, name, content));
   	};
@@ -744,7 +773,7 @@
   var createManager = function createManager(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
   	return function () {
-  		var name = m.prop(path);
+  		var name = pathProp(path);
   		var content = m.prop();
   		managerWizard({ name: name, content: content }).then(create(study, name, content));
   	};
@@ -1404,7 +1433,7 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: null }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
 
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
   	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
