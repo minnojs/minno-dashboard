@@ -193,11 +193,13 @@
   		this.syntaxData = jshint.data();
   		return this.syntaxValid;
   	},
-  	setPath: function setPath(path) {
+  	setPath: function setPath() {
+  		var path = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+
   		this.path = path;
   		this.name = path.substring(path.lastIndexOf('/') + 1);
   		this.basePath = path.substring(0, path.lastIndexOf('/')) + '/';
-  		this.type = path.substring(path.lastIndexOf('.') + 1);
+  		this.type = path.substring(path.lastIndexOf('.') + 1).toLowerCase();
   	}
   };
 
@@ -602,8 +604,9 @@
   };
 
   var editorPage = {
-  	controller: function controller(args) {
-  		var file = args.file;
+  	controller: function controller(_ref) {
+  		var file = _ref.file;
+
   		file.loaded || file.get().then(m.redraw).catch(function (err) {
   			return messages.alert({
   				header: 'Loading Error',
@@ -612,7 +615,6 @@
   		});
 
   		var ctrl = {
-  			file: file,
   			content: file.content,
   			play: play,
   			save: save
@@ -648,9 +650,11 @@
   		}
   	},
 
-  	view: function view(ctrl, args) {
-  		var file = ctrl.file;
-  		return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.url + '" was not found']) : [m('.btn-toolbar', [m('.btn-group', [ctrl.file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.save }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: args.settings })]]);
+  	view: function view(ctrl, _ref2) {
+  		var file = _ref2.file;
+  		var settings = _ref2.settings;
+
+  		return m('.editor', [!file.loaded ? m('.loader') : file.error ? m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']) : [m('.btn-toolbar', [m('.btn-group.btn-group-sm', [file.type === 'js' ? m('a.btn.btn-secondary', { onclick: ctrl.play, title: 'Play this task' }, [m('strong.fa.fa-play')]) : '', m('a.btn.btn-secondary', { onclick: ctrl.save, title: 'Save (ctrl+s)' }, [m('strong.fa.fa-save')])])]), m.component(aceComponent, { content: ctrl.content, settings: settings })]]);
   	}
   };
 
@@ -1134,14 +1138,23 @@
   	}
   };
 
+  var unknownComponent = {
+  	view: function view() {
+  		return m('.centrify', [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')]);
+  	}
+  };
+
   var editors = {
   	js: jsEditor,
+
   	jpg: imgEditor,
   	bmp: imgEditor,
   	png: imgEditor,
+
   	html: jsEditor$1,
   	jst: jsEditor$1,
   	xml: xmlEditor,
+
   	pdf: pdfEditor
   };
 
@@ -1162,8 +1175,9 @@
   		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
   		var file = ctrl.file;
+  		var editor = editors[file.type] || unknownComponent;
 
-  		return m('div', { config: fullHeight }, [file ? editors[file.type] ? m.component(editors[file.type], { file: file, settings: args.settings }) : m('.centrify', [!file.isDir ? [m('i.fa.fa-file.fa-5x'), m('h5', 'Unknow file type')] : [m('i.fa.fa-folder-open-o.fa-5x'), m('h5', 'Sub directories are not supported yet.'), m('p', 'We have a team of monkeys hacking at it as we speak...')]]) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
+  		return m('div', { config: fullHeight }, [file ? m.component(editor, { file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
   	}
   };
 
@@ -1629,20 +1643,32 @@
   			isChanged: m.prop(false)
   		});
 
-  		var ctrl = { study: study, filesVM: filesVM, onunload: onunload };
+  		var ctrl = { study: study, filesVM: filesVM, onunload: debounce(onunload, 0, true) };
 
   		window.addEventListener('beforeunload', beforeunload);
 
   		return ctrl;
 
-  		function beforeunload(event) {
-  			if (study.files().some(function (f) {
+  		function hasUnsavedData() {
+  			return study.files().some(function (f) {
   				return f.content() !== f.sourceContent();
-  			})) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+  			});
   		}
 
-  		function onunload() {
-  			window.removeEventListener('beforeunload', beforeunload);
+  		function beforeunload(event) {
+  			if (hasUnsavedData()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+  		}
+
+  		// this function needs to be debounced because of https://github.com/lhorie/mithril.js/issues/931
+  		function onunload(e) {
+  			var leavingEditor = function leavingEditor() {
+  				return !/^\/editor\//.test(m.route());
+  			};
+  			if (leavingEditor() && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')) {
+  				e.preventDefault();
+  			} else {
+  				window.removeEventListener('beforeunload', beforeunload);
+  			}
   		}
   	},
   	view: function view(ctrl) {
@@ -1665,6 +1691,26 @@
   		return map[key];
   	};
   };
+
+  // Returns a function, that, as long as it continues to be invoked, will not
+  // be triggered. The function will be called after it stops being called for
+  // N milliseconds. If `immediate` is passed, trigger the function on the
+  // leading edge, instead of the trailing.
+  function debounce(func, wait, immediate) {
+  	var timeout;
+  	return function () {
+  		var context = this,
+  		    args = arguments;
+  		var later = function later() {
+  			timeout = null;
+  			if (!immediate) func.apply(context, args);
+  		};
+  		var callNow = immediate && !timeout;
+  		clearTimeout(timeout);
+  		timeout = setTimeout(later, wait);
+  		if (callNow) func.apply(context, args);
+  	};
+  }
 
   var url = '/dashboard/StudyData';
 
@@ -2527,7 +2573,7 @@
    * Get all downloads
    */
 
-  var recursiveGetAll = debounce(getAll, 5000);
+  var recursiveGetAll = debounce$1(getAll, 5000);
   function getAll(_ref) {
   	var list = _ref.list;
   	var cancel = _ref.cancel;
@@ -2543,7 +2589,7 @@
   }
 
   // debounce but call at first iteration
-  function debounce(func, wait) {
+  function debounce$1(func, wait) {
   	var first = true;
   	var timeout = undefined;
   	return function () {

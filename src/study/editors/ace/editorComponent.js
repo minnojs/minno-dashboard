@@ -3,8 +3,7 @@ import aceComponent from './aceComponent';
 export default editorPage;
 
 var editorPage = {
-	controller: function(args){
-		var file = args.file;
+	controller: function({file}){
 		file.loaded || file.get()
 			.then(m.redraw)
 			.catch(err => {
@@ -15,7 +14,6 @@ var editorPage = {
 			});
 
 		var ctrl = {
-			file: file,
 			content:file.content,
 			play: play,
 			save: save
@@ -49,8 +47,7 @@ var editorPage = {
 		}
 	},
 
-	view: function(ctrl, args){
-		let file = ctrl.file;
+	view: function(ctrl, {file, settings}){
 		return m('.editor', [
 			!file.loaded
 				?
@@ -60,25 +57,25 @@ var editorPage = {
 					?
 					m('div', {class:'alert alert-danger'}, [
 						m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-						`The file "${file.url}" was not found`
+						`The file "${file.path}" was not found`
 					])
 					:
 					[
 						m('.btn-toolbar', [
-							m('.btn-group', [
-								ctrl.file.type === 'js'
+							m('.btn-group.btn-group-sm', [
+								file.type === 'js'
 									?
-									m('a.btn.btn-secondary', {onclick: ctrl.play},[
+									m('a.btn.btn-secondary', {onclick: ctrl.play, title:'Play this task'},[
 										m('strong.fa.fa-play')
 									])
 									:
 									'',
-								m('a.btn.btn-secondary', {onclick: ctrl.save},[
+								m('a.btn.btn-secondary', {onclick: ctrl.save, title:'Save (ctrl+s)'},[
 									m('strong.fa.fa-save')
 								])
 							])
 						]),
-						m.component(aceComponent, {content:ctrl.content, settings: args.settings})
+						m.component(aceComponent, {content:ctrl.content, settings: settings})
 					]
 		]);
 	}

@@ -21,19 +21,29 @@ let editorLayoutComponent = {
 			isChanged: m.prop(false)
 		});
 
-		let ctrl = {study, filesVM, onunload};
+		let ctrl = {study, filesVM, onunload: debounce(onunload,0, true)};
 
 		window.addEventListener('beforeunload', beforeunload);
 
 
 		return ctrl;
 
-		function beforeunload(event) {
-			if (study.files().some(f => f.content() !== f.sourceContent())) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+		function hasUnsavedData(){
+			return study.files().some(f => f.content() !== f.sourceContent());
 		}
 
-		function onunload(){
-			window.removeEventListener('beforeunload', beforeunload);
+		function beforeunload(event) {
+			if (hasUnsavedData()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+		}
+
+		// this function needs to be debounced because of https://github.com/lhorie/mithril.js/issues/931
+		function onunload(e){
+			let leavingEditor = () => !/^\/editor\//.test(m.route());
+			if (leavingEditor() && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
+				e.preventDefault();
+			} else {
+				window.removeEventListener('beforeunload', beforeunload);
+			}
 		}
 	},
 	view: ctrl => {
@@ -66,3 +76,22 @@ var viewModelMap = function(signature) {
 		return map[key];
 	};
 };
+
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this, args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) func.apply(context, args);
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) func.apply(context, args);
+	};
+}

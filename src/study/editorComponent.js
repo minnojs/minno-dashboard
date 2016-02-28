@@ -4,17 +4,21 @@ import jstEditor from './editors/jstEditor';
 import xmlEditor from './editors/xmlEditor';
 import imgEditor from './editors/imgEditor';
 import pdfEditor from './editors/pdfEditor';
+import unknowEditor from './editors/unknownEditor';
 
 export default fileEditorComponent;
 
 let editors = {
 	js: jsEditor,
+
 	jpg: imgEditor,
 	bmp: imgEditor,
 	png: imgEditor,
+
 	html: jstEditor,
 	jst: jstEditor,
 	xml: xmlEditor,
+
 	pdf: pdfEditor
 };
 
@@ -30,26 +34,12 @@ let fileEditorComponent = {
 	},
 
 	view: (ctrl, args = {}) => {
-		var file = ctrl.file;
+		let file = ctrl.file;
+		let editor = editors[file.type] || unknowEditor;
 
 		return m('div', {config:fullHeight}, [
 			file
-				? editors[file.type]
-					? m.component(editors[file.type], {file:file, settings: args.settings})
-					: m('.centrify', [
-						!file.isDir
-							?
-							[
-								m('i.fa.fa-file.fa-5x'),
-								m('h5', 'Unknow file type')
-							]
-							:
-							[
-								m('i.fa.fa-folder-open-o.fa-5x'),
-								m('h5', 'Sub directories are not supported yet.'),
-								m('p', 'We have a team of monkeys hacking at it as we speak...')
-							]
-					])
+				? m.component(editor, {file:file, settings: args.settings})
 				: m('.centrify', [
 					m('i.fa.fa-smile-o.fa-5x'),
 					m('h5', 'Please select a file to start working')

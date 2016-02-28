@@ -97,11 +97,11 @@ let filePrototype = {
 		return this.syntaxValid;
 	},
 
-	setPath(path){
+	setPath(path = ''){
 		this.path = path;
 		this.name = path.substring(path.lastIndexOf('/')+1);
 		this.basePath = (path.substring(0, path.lastIndexOf('/'))) + '/';
-		this.type = path.substring(path.lastIndexOf('.')+1);
+		this.type = path.substring(path.lastIndexOf('.')+1).toLowerCase();
 	}
 };
 
