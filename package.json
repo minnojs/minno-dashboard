@@ -17,10 +17,12 @@
   },
   "author": "",
   "license": "Apache-2.0",
+  "dependencies": {
+    "bower": "^1.6.8"
+  },
   "devDependencies": {
     "babel-preset-es2015-rollup": "^1.0.0",
     "body-parser": "^1.14.2",
-    "bower": "^1.6.8",
     "eslint": "^1.10.2",
     "express": "^4.13.3",
     "gulp": "^3.9.0",
