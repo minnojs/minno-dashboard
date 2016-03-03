@@ -12,43 +12,9 @@
 	<script src="bower_components/jshint/dist/jshint.js"></script>
 	<script src="bower_components/pikaday/pikaday.js"></script>
 	<script src="bower_components/requirejs/require.js"></script>
-	<script>
-		require.config({
-			// in order to catch IE errors
-			paths: {
-				// libs
-				underscore: 'bower_components/lodash-compat/lodash.min',
-				angular: 'bower_components/angular/angular',
-				animate: 'bower_components/angular-animate/angular-animate.min',
-				text: 'bower_components/requirejs-text/text',
-				fastclick: 'bower_components/fastclick/lib/fastclick',
-				ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/',
-
-				// this lib is needed for pipScorer
-				jquery: ['bower_components/jquery/dist/jquery.min']
-			},
-
-			packages:[
-				{
-					name: 'pipScorer',
-					location: 'bower_components/PIPlayer/dist/js/extensions/dscore',
-					main: 'Scorer'
-				}
-			],
-			shim: {
-				angular : {exports : 'angular'},
-				animate : {deps: ['angular'], exports: 'angular'}
-			},
-			map: {
-				'*': {
-					pipAPI: 'bower_components/piquest/src/js/APIs/PIpipAPI',
-					questAPI: 'bower_components/piquest/src/js/APIs/PIquestAPI',
-					managerAPI: 'bower_components/piquest/src/js/APIs/PImanagerAPI'
-				}
-			}
-		});
-	</script>
 </head>
-<body></body>
+<body>
+	<div class="loader"></div>
+</body>
 
 <script src="dist/main.js"></script>
