@@ -7,13 +7,17 @@ let textMenuView = ({mode, file}) => {
 	let modeClass = value => mode() === value ? 'active' : '';
 	let isJs = file.type === 'js';
 
-	return m('.btn-toolbar', [
+	return m('.btn-toolbar.editor-menu', [
+		m('.file-name',
+			file.hasChanged() ? m('span.text-danger','* ') : '',
+			file.path
+		),
 		m('.btn-group.btn-group-sm', [
 			!isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file), title:'Play this task'},[
 				m('strong.fa.fa-play')
 			]),
 
-			m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)'},[
+			m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)',class: file.hasChanged() ? 'btn-danger-outline' : ''},[
 				m('strong.fa.fa-save')
 			])
 		]),

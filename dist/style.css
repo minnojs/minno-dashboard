@@ -324,8 +324,14 @@
   padding-left: 0;
   padding-right: 0; }
 
-.study .editor .btn-toolbar {
+.study .editor .editor-menu {
   padding-bottom: 4px; }
+
+.study .editor .file-name {
+  font-weight: bold;
+  color: #818a91;
+  margin: 4px;
+  float: left; }
 
 .study .sidebar {
   position: fixed;

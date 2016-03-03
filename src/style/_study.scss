@@ -5,8 +5,15 @@
 	}
 
 	.editor {
-	  .btn-toolbar {
+	  .editor-menu {
 	    padding-bottom: 4px;
+	  }
+
+	  .file-name {
+	  	font-weight: bold;
+	  	color: #818a91;
+	  	margin: 4px;
+	  	float: left;
 	  }
 	}
 

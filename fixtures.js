@@ -135,7 +135,7 @@ router.route('/files/:studyId/file/:id')
 	})
 	// update file
 	.put((req, res)=>{
-		res.status(403);
+		res.end();
 	})
 	// delete file
 	.delete((req,res)=>{

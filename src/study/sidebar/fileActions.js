@@ -21,7 +21,7 @@ export let moveFile = (file,study) => () => {
 		prop: newPath
 	})
 		.then(response => {
-			if (response) return moveAction(file,study);
+			if (response) return moveAction(file,study).then(m.redraw);
 		});
 
 	function moveAction(file,study){
@@ -57,10 +57,12 @@ export let play = file => () => {
 };
 
 export let save = file => () => {
-	file.save().catch(err => messages.alert({
-		header: 'Error Saving:',
-		content: err.message
-	}));
+	file.save()
+		.then(m.redraw)
+		.catch(err => messages.alert({
+			header: 'Error Saving:',
+			content: err.message
+		}));
 };
 
 

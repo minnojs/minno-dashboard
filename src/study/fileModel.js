@@ -68,7 +68,7 @@ let filePrototype = {
 
 
 	hasChanged() {
-		return this.sourceContent() === this.content();
+		return this.sourceContent() !== this.content();
 	},
 
 	define(context = window){
