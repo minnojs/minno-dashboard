@@ -20,9 +20,28 @@
 <script src="bower_components/requirejs/require.js"></script>
 <script>
 	require.config({
+	    baseUrl: '/implicit/common/all/js/quest/0.0/',
+
 		paths: {
+			underscore: 'bower_components/lodash-compat/lodash.min',
+			jquery: ["//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min","bower_components/jquery/dist/jquery.min"],
 			ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/'
-		}
+		},
+		map: {
+			'*': {
+				pipAPI: 'src/js/APIs/PIpipAPI',
+				questAPI: 'src/js/APIs/PIquestAPI',
+				managerAPI: 'src/js/APIs/PImanagerAPI'
+			}
+		},
+		packages:[
+			{
+				name: 'pipScorer',
+				location: '/implicit/common/all/js/pip/0.3/dist/js/extensions/dscore',
+				main: 'Scorer'
+			}
+		]
+
 	})
 </script>
 

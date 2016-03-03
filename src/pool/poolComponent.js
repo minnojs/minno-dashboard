@@ -101,7 +101,7 @@ let poolComponent = {
 
 								// ### Completions
 								m('td', [
-									(100 * study.completedSessions / study.targetCompletions).toFixed(1) + '% ',
+									study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
 									m('i.fa.fa-info-circle'),
 									m('.card.info-box', [
 										m('.card-header', 'Completion Details'),
