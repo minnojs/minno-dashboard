@@ -1786,9 +1786,8 @@
 
   function updateStatus(study, status) {
   	var body = Object.assign({
-  		action: 'updateStudyStatus',
-  		studyStatus: status
-  	}, study);
+  		action: 'updateStudyStatus'
+  	}, study, { studyStatus: status });
 
   	return fetchJson(url, { method: 'post', body: body }).then(interceptErrors);
   }

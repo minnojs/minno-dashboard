@@ -27,9 +27,8 @@ export function updateStudy(study){
 
 export function updateStatus(study, status){
 	let body = Object.assign({
-		action:'updateStudyStatus',
-		studyStatus: status
-	}, study);
+		action:'updateStudyStatus'
+	}, study,{studyStatus: status});
 
 	return  fetchJson(url, {method: 'post',body:body})
 		.then(interceptErrors);
