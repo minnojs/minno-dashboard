@@ -95,6 +95,7 @@ export let createDir = (study, path='') => () => {
 		.then(response => {
 			if (response) return study.createFile({name:name(), isDir:true});
 		})
+		.then(m.redraw)
 		.catch(err => messages.alert({
 			header: 'Failed to create directory:',
 			content: err.message

@@ -41,7 +41,7 @@ let filePrototype = {
 	},
 
 	move(path, study){
-		let basePath = (path.substring(0, path.lastIndexOf('/'))) + '/';
+		let basePath = (path.substring(0, path.lastIndexOf('/')));
 		let folderExists = basePath === '/' || study.files().some(f => f.isDir && f.path === basePath);
 
 		if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});

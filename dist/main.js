@@ -136,7 +136,7 @@
   	move: function move(path, study) {
   		var _this3 = this;
 
-  		var basePath = path.substring(0, path.lastIndexOf('/')) + '/';
+  		var basePath = path.substring(0, path.lastIndexOf('/'));
   		var folderExists = basePath === '/' || study.files().some(function (f) {
   			return f.isDir && f.path === basePath;
   		});
@@ -727,7 +727,7 @@
   			prop: name
   		}).then(function (response) {
   			if (response) return study.createFile({ name: name(), isDir: true });
-  		}).catch(function (err) {
+  		}).then(m.redraw).catch(function (err) {
   			return messages.alert({
   				header: 'Failed to create directory:',
   				content: err.message
