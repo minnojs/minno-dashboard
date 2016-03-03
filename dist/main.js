@@ -1899,7 +1899,10 @@
   					return response[key];
   				});
 
-  				if (isValid) close(true);
+  				if (isValid) {
+  					study.targetCompletions(+study.targetCompletions()); // targetCompletions should be cast as a number
+  					close(true);
+  				}
   			},
   			cancel: function cancel() {
   				close(null);

@@ -43,7 +43,10 @@ let editComponent = {
 				let response = ctrl.validity();
 				let isValid = Object.keys(response).every(key => response[key]);
 
-				if (isValid) close(true);
+				if (isValid) {
+					study.targetCompletions(+study.targetCompletions());// targetCompletions should be cast as a number
+					close(true);
+				}
 			},
 			cancel() {
 				close(null);
