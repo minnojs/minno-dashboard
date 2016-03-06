@@ -1,3 +1,4 @@
+import {STATUS_RUNNING, STATUS_COMPLETE, STATUS_ERROR} from './downloadsModel';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 import {getAll, remove, create} from './downloadsActions';
@@ -78,11 +79,11 @@ const downloadsComponent = {
 
 								// ### Study url
 								m('td',
-									download.studyUrl
-										? download.fileSize
+									download.studyStatus == STATUS_RUNNING
+										? m('i.text-muted', 'Loading...')
+										: download.fileSize
 											? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
 											: m('i.text-muted', 'No Data')
-										: m('i.text-muted', 'Loading...')
 								),
 
 								// ### Database
@@ -118,9 +119,9 @@ const downloadsComponent = {
 								// ### Status
 								m('td', [
 									{
-										C: m('span.label.label-success', 'Complete'),
-										R: m('span.label.label-info', 'Running'),
-										X: m('span.label.label-danger', 'Error')
+										[STATUS_COMPLETE]: m('span.label.label-success', 'Complete'),
+										[STATUS_RUNNING]: m('span.label.label-info', 'Running'),
+										[STATUS_ERROR]: m('span.label.label-danger', 'Error')
 									}[download.studyStatus]
 								]),
 

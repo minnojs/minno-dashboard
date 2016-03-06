@@ -8,6 +8,21 @@
     return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
   };
 
+  babelHelpers.defineProperty = function (obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  };
+
   babelHelpers.toConsumableArray = function (arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
@@ -2501,6 +2516,9 @@
   var url$1 = '/dashboard/DashboardData';
 
   var STATUS_RUNNING$1 = 'R';
+  var STATUS_COMPLETE = 'C';
+  var STATUS_ERROR = 'X';
+
   var getAllDownloads = function getAllDownloads() {
   	return fetchJson(url$1, {
   		method: 'post',
@@ -2748,12 +2766,14 @@
   	view: function view(ctrl) {
   		var list = ctrl.list;
   		return m('.downloads', [m('h2', 'Downloads'), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error().message) : m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th', { colspan: TABLE_WIDTH$1 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th.text-xs-center', { colspan: TABLE_WIDTH$1 }, [m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list, ctrl.cancelDownload) }, [m('i.fa.fa-plus'), '  Download request'])])]), m('tr', [m('th', thConfig$2('studyId', ctrl.sortBy), 'ID'), m('th', 'Data file'), m('th', thConfig$2('db', ctrl.sortBy), 'Database'), m('th', thConfig$2('fileSize', ctrl.sortBy), 'File Size'), m('th', thConfig$2('creationDate', ctrl.sortBy), 'Date Added'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().length === 0 ? m('tr.table-info', m('td.text-xs-center', { colspan: TABLE_WIDTH$1 }, m('strong', 'Heads up! '), 'There are no downloads running yet')) : list().filter(studyFilter$2(ctrl)).map(function (download) {
+  			var _STATUS_COMPLETE$STAT;
+
   			return m('tr', [
   			// ### ID
   			m('td', download.studyId),
 
   			// ### Study url
-  			m('td', download.studyUrl ? download.fileSize ? m('a', { href: download.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data') : m('i.text-muted', 'Loading...')),
+  			m('td', download.studyStatus == STATUS_RUNNING$1 ? m('i.text-muted', 'Loading...') : download.fileSize ? m('a', { href: download.studyUrl, download: true, target: '_blank' }, 'Download') : m('i.text-muted', 'No Data')),
 
   			// ### Database
   			m('td', download.db),
@@ -2765,11 +2785,7 @@
   			m('td', [formatDate(new Date(download.creationDate)), '  ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Creation Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))]), m('li.list-group-item', [m('strong', 'Start Date: '), formatDate(new Date(download.startDate))]), m('li.list-group-item', [m('strong', 'End Date: '), formatDate(new Date(download.endDate))])])])]),
 
   			// ### Status
-  			m('td', [{
-  				C: m('span.label.label-success', 'Complete'),
-  				R: m('span.label.label-info', 'Running'),
-  				X: m('span.label.label-danger', 'Error')
-  			}[download.studyStatus]]),
+  			m('td', [(_STATUS_COMPLETE$STAT = {}, babelHelpers.defineProperty(_STATUS_COMPLETE$STAT, STATUS_COMPLETE, m('span.label.label-success', 'Complete')), babelHelpers.defineProperty(_STATUS_COMPLETE$STAT, STATUS_RUNNING$1, m('span.label.label-info', 'Running')), babelHelpers.defineProperty(_STATUS_COMPLETE$STAT, STATUS_ERROR, m('span.label.label-danger', 'Error')), _STATUS_COMPLETE$STAT)[download.studyStatus]]),
 
   			// ### Actions
   			m('td', [m('.btn-group', [m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, download, list) }, [m('i.fa.fa-close')])])])]);
