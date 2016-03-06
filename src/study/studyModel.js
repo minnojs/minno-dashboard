@@ -15,10 +15,10 @@ let studyPrototype = {
 				this.loaded = true;
 				let files = flattenFiles(study.files)
 					.map(assignStudyId(this.id))
-					.map(fileFactory)
-					.sort(sort);
+					.map(fileFactory);
 
 				this.files(files);
+				this.sort();
 			})
 			.catch(reason => {
 				this.error = true;
@@ -37,13 +37,7 @@ let studyPrototype = {
 			return [file, ...flattenFiles(file.files)];
 		}
 
-		function sort(a,b){
-			// sort by isDir then name
-			let nameA= +a.isDir + a.name.toLowerCase(), nameB=+b.isDir + b.name.toLowerCase();
-			if (nameA < nameB) return -1;//sort string ascending
-			if (nameA > nameB) return 1;
-			return 0; //default return value (no sorting)
-		}
+
 	},
 
 	getFile(id){
@@ -58,7 +52,22 @@ let studyPrototype = {
 				file.loaded = true;
 				this.files().push(file);
 				return response;
-			});
+			})
+			.then(this.sort.bind(this));
+	},
+
+	sort(response){
+		let files = this.files().sort(sort);
+		this.files(files);
+		return response;
+
+		function sort(a,b){
+			// sort by isDir then name
+			let nameA= +a.isDir + a.name.toLowerCase(), nameB=+b.isDir + b.name.toLowerCase();
+			if (nameA < nameB) return -1;//sort string ascending
+			if (nameA > nameB) return 1;
+			return 0; //default return value (no sorting)
+		}
 	},
 
 	uploadFiles(path, files){
@@ -76,7 +85,8 @@ let studyPrototype = {
 				});
 
 				return response;
-			});
+			})
+			.then(this.sort.bind(this));
 
 		function buildFormData(path, files) {
 			var formData = new FormData;

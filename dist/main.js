@@ -298,9 +298,10 @@
 
   		return fetchJson(this.apiURL()).then(function (study) {
   			_this.loaded = true;
-  			var files = flattenFiles(study.files).map(assignStudyId(_this.id)).map(fileFactory).sort(sort);
+  			var files = flattenFiles(study.files).map(assignStudyId(_this.id)).map(fileFactory);
 
   			_this.files(files);
+  			_this.sort();
   		}).catch(function (reason) {
   			_this.error = true;
   			return Promise.reject(reason); // do not swallow error
@@ -320,15 +321,6 @@
 
   		function spreadFile(file) {
   			return [file].concat(babelHelpers.toConsumableArray(flattenFiles(file.files)));
-  		}
-
-  		function sort(a, b) {
-  			// sort by isDir then name
-  			var nameA = +a.isDir + a.name.toLowerCase(),
-  			    nameB = +b.isDir + b.name.toLowerCase();
-  			if (nameA < nameB) return -1; //sort string ascending
-  			if (nameA > nameB) return 1;
-  			return 0; //default return value (no sorting)
   		}
   	},
   	getFile: function getFile(id) {
@@ -350,7 +342,21 @@
   			file.loaded = true;
   			_this2.files().push(file);
   			return response;
-  		});
+  		}).then(this.sort.bind(this));
+  	},
+  	sort: function sort(response) {
+  		var files = this.files().sort(sort);
+  		this.files(files);
+  		return response;
+
+  		function sort(a, b) {
+  			// sort by isDir then name
+  			var nameA = +a.isDir + a.name.toLowerCase(),
+  			    nameB = +b.isDir + b.name.toLowerCase();
+  			if (nameA < nameB) return -1; //sort string ascending
+  			if (nameA > nameB) return 1;
+  			return 0; //default return value (no sorting)
+  		}
   	},
   	uploadFiles: function uploadFiles(path, files) {
   		var _this3 = this;
@@ -372,7 +378,7 @@
   			});
 
   			return response;
-  		});
+  		}).then(this.sort.bind(this));
 
   		function buildFormData(path, files) {
   			var formData = new FormData();

@@ -108,14 +108,17 @@ router.route('/files/:studyId')
 router.route('/files/:studyId/file')
 	// create file
 	.post(upload.array('files'), (req,res)=>{
-		if (req.files){
-			var path = req.body.path;
-			var resp = req.files.map(f => ({id: Math.random(), path: path === '' ? f.originalname : path + '/' + f.originalname}));
-			res.json(resp);
-		} else {
-			res.json({id: req.body.name, path: req.body.name, url:`/test/${req.body.name}`});
-		}
+		res.json({id: req.body.name, path: req.body.name, url:`/test/${req.body.name}`});
 	});
+
+
+var uploadMiddle =  (req,res) => {
+	var path = req.params.path || '';
+	var resp = req.files.map(f => ({id: Math.random(), path: path === '' ? f.originalname : path + '/' + f.originalname}));
+	res.json(resp);
+};
+router.route('/files/:studyId/upload/').post(upload.any(),uploadMiddle);
+router.route('/files/:studyId/upload/:path').post(upload.any(),uploadMiddle);
 
 router.route('/files/:studyId/file/:id')
 	// get file data
@@ -150,6 +153,7 @@ router.route('/files/:studyId/file/:id/move/:target')
 	.post((req, res) => {
 		res.json({id:req.body.target, url: req.body.url});
 	});
+
 var adminRouter = express.Router();
 adminRouter.route('/studyData')
 	.post((req,res)=> {
