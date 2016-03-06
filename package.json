@@ -11,7 +11,7 @@
     "watch:js": "watch \"npm run bundle\" src/",
     "css": "node-sass src/style/style.scss --output dist --source-map=true",
     "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
-    "bundle": "rollup --config --sourcemap",
+    "bundle": "rollup --config --sourcemap && echo \"Bundle finished at $(date +\"%T\")\"",
     "serve": "node fixtures.js",
     "start": "npm run watch:js & npm run watch:css & npm run serve"
   },
