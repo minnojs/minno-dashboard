@@ -9,7 +9,7 @@ let textMenuView = ({mode, file}) => {
 
 	return m('.btn-toolbar.editor-menu', [
 		m('.file-name',
-			file.hasChanged() ? m('span.text-danger','* ') : '',
+			m('span.text-danger', {class: file.hasChanged() ? '' : 'invisible'}, '* '),
 			file.path
 		),
 		m('.btn-group.btn-group-sm', [
