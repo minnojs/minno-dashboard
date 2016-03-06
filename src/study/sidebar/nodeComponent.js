@@ -50,7 +50,7 @@ let nodeComponent = {
 							'fa-folder-o': file.isDir
 						})
 					}),
-					` ${file.name}`,
+					m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},` ${file.name}`),
 					file.isDir ? folder(file.path + '/', {folderHash, study, filesVM}) : ''
 				])
 			]

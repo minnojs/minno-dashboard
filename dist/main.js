@@ -1290,6 +1290,7 @@
   	view: function view(ctrl, _ref2) {
   		var file = _ref2.file;
 
+
   		if (!file.loaded) return m('.loader');
 
   		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
@@ -1578,7 +1579,7 @@
   				'fa-file-pdf-o': /(pdf)$/.test(file.type),
   				'fa-folder-o': file.isDir
   			})
-  		}), ' ' + file.name, file.isDir ? folder(file.path + '/', { folderHash: folderHash, study: study, filesVM: filesVM }) : ''])]);
+  		}), m('span', { class: classNames({ 'font-weight-bold': file.hasChanged() }) }, ' ' + file.name), file.isDir ? folder(file.path + '/', { folderHash: folderHash, study: study, filesVM: filesVM }) : ''])]);
   	}
   };
 
