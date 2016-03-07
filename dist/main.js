@@ -351,8 +351,8 @@
 
   		function sort(a, b) {
   			// sort by isDir then name
-  			var nameA = +a.isDir + a.name.toLowerCase(),
-  			    nameB = +b.isDir + b.name.toLowerCase();
+  			var nameA = +!a.isDir + a.name.toLowerCase(),
+  			    nameB = +!b.isDir + b.name.toLowerCase();
   			if (nameA < nameB) return -1; //sort string ascending
   			if (nameA > nameB) return 1;
   			return 0; //default return value (no sorting)
