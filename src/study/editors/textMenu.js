@@ -18,7 +18,12 @@ let textMenuView = ({mode, file}) => {
 				m('strong','Edit')
 			]),
 			m('a.btn.btn-secondary', {onclick: setMode('syntax'), class: modeClass('syntax')},[
-				m('strong','Syntax')
+				m('strong',
+					'Syntax ',
+					file.syntaxValid
+						? m('i.fa.fa-check-square.text-success')
+						: m('span.label.label-danger', file.syntaxData.errors.length)
+				)
 			]),
 			m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
 				m('strong','Validator')
