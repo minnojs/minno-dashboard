@@ -20,8 +20,7 @@ let contextMenuComponent = {
 	vm: {
 		show: m.prop(false),
 		style: m.prop({}),
-		menu: m.prop([
-		])
+		menu: m.prop([])
 	},
 	view: () => {
 		return m(
@@ -47,9 +46,9 @@ let contextMenuComponent = {
 
 		document.addEventListener('mousedown', onClick, false);
 		function onClick(){
+			m.redraw();
 			contextMenuComponent.vm.show(false);
 			document.removeEventListener('mousedown', onClick);
-			m.redraw();
 		}
 	}
 };

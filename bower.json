@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "jshint": "~2.9.0",
-    "mithril": "~0.2.0",
+    "mithril": "~0.2.3",
     "piquest": "https://github.com/ProjectImplicit/PIquest.git#latest",
     "requirejs": "~2.1.22",
     "bootstrap": "4.0",

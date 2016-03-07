@@ -21,7 +21,7 @@ export let moveFile = (file,study) => () => {
 		prop: newPath
 	})
 		.then(response => {
-			if (response) return moveAction(file,study).then(m.redraw);
+			if (response) return moveAction(file,study);
 		});
 
 	function moveAction(file,study){

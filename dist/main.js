@@ -561,6 +561,7 @@
   			};
   			var prop = opts.prop || noop;
   			return [m('h4', opts.header), m('.card-text', opts.content), m('.card-block', [m('input.form-control', {
+  				key: 'prompt',
   				value: prop(),
   				onchange: m.withAttr('value', prop),
   				config: function config(element, isInitialized) {
@@ -666,7 +667,7 @@
   			header: 'Move/Rename File',
   			prop: newPath
   		}).then(function (response) {
-  			if (response) return moveAction(file, study).then(m.redraw);
+  			if (response) return moveAction(file, study);
   		});
 
   		function moveAction(file, study) {
@@ -1435,9 +1436,9 @@
 
   			document.addEventListener('mousedown', onClick, false);
   			function onClick() {
+  				m.redraw();
   				contextMenuComponent.vm.show(false);
   				document.removeEventListener('mousedown', onClick);
-  				m.redraw();
   			}
   		};
   	}

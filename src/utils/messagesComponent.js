@@ -108,6 +108,7 @@ let messages = {
 				m('.card-text', opts.content),
 				m('.card-block', [
 					m('input.form-control', {
+						key: 'prompt',
 						value: prop(),
 						onchange: m.withAttr('value', prop),
 						config: (element, isInitialized) => {
