@@ -255,7 +255,7 @@ adminRouter.route('/DashboardData')
 		}
 	});
 
-adminRouter.route('/connect')
+router.route('/connect')
 	.post(function(req,res){
 		if (req.body.username === 'elad' && req.body.password === 'zlot') res.cookie('PiLogin', JSON.stringify({isLoggedin: true,role: 'SU'}));
 		console.log(req.body)

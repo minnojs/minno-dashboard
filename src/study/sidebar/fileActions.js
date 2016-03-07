@@ -65,6 +65,38 @@ export let save = file => () => {
 		}));
 };
 
+export let copyUrl = file => () => {
+	let input = document.createElement('input');
+	input.value = file.url;
+	document.body.appendChild(input);
+	input.select();
+	if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
+		messages.alert({
+			header: 'Copy URL',
+			content: m('.card-block', [
+				m('.form-group', [
+					m('label', 'Copy Url by clicking Ctrl + C'),
+					m('input.form-control', {
+						config: el => el.select(),
+						value: file.url
+					})
+				])
+			])
+		});
+	}
+
+	try {
+		document.execCommand('copy');
+	} catch(err){
+		messages.alert({
+			header: 'Copy URL',
+			content: 'Copying the URL has failed.'
+		});
+	}
+
+	input.parentNode.removeChild(input);
+};
+
 
 // add trailing slash if needed, and then remove proceeding slash
 // return prop

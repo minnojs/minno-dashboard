@@ -1,6 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createPIP, createQuest, createManager, createEmpty, moveFile} from './fileActions';
+import {createDir, createPIP, createQuest, createManager, createEmpty, moveFile, copyUrl} from './fileActions';
 export default fileContext;
 
 // download support according to modernizer
@@ -20,6 +20,7 @@ let fileContext = (file, study) => {
 		]},
 		{separator:true},
 		{icon:'fa-download', text:'Download', action: downloadFile},
+		{icon:'fa-link', text: 'Copy URL', action: copyUrl(file)},
 
 		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
 		{icon:'fa-close', text:'Delete', action: deleteFile},

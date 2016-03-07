@@ -46,9 +46,9 @@ let contextMenuComponent = {
 
 		document.addEventListener('mousedown', onClick, false);
 		function onClick(){
-			m.redraw();
 			contextMenuComponent.vm.show(false);
 			document.removeEventListener('mousedown', onClick);
+			m.redraw();
 		}
 	}
 };

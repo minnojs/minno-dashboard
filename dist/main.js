@@ -716,6 +716,37 @@
   	};
   };
 
+  var copyUrl = function copyUrl(file) {
+  	return function () {
+  		var input = document.createElement('input');
+  		input.value = file.url;
+  		document.body.appendChild(input);
+  		input.select();
+  		if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+  			messages.alert({
+  				header: 'Copy URL',
+  				content: m('.card-block', [m('.form-group', [m('label', 'Copy Url by clicking Ctrl + C'), m('input.form-control', {
+  					config: function config(el) {
+  						return el.select();
+  					},
+  					value: file.url
+  				})])])
+  			});
+  		}
+
+  		try {
+  			document.execCommand('copy');
+  		} catch (err) {
+  			messages.alert({
+  				header: 'Copy URL',
+  				content: 'Copying the URL has failed.'
+  			});
+  		}
+
+  		input.parentNode.removeChild(input);
+  	};
+  };
+
   // add trailing slash if needed, and then remove proceeding slash
   // return prop
   var pathProp = function pathProp(path) {
@@ -1435,9 +1466,9 @@
 
   			document.addEventListener('mousedown', onClick, false);
   			function onClick() {
-  				m.redraw();
   				contextMenuComponent.vm.show(false);
   				document.removeEventListener('mousedown', onClick);
+  				m.redraw();
   			}
   		};
   	}
@@ -1455,7 +1486,7 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile },
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) },
 
   	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
   	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
