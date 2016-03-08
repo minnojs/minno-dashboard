@@ -149,9 +149,9 @@ router.route('/files/:studyId/file/:id')
 	});
 
 
-router.route('/files/:studyId/file/:id/move/:target')
+router.route('/files/:studyId/file/:id/move')
 	.post((req, res) => {
-		res.json({id:req.body.target, url: req.body.url});
+		res.json({id:req.body.path, url: req.body.url});
 	});
 
 var adminRouter = express.Router();
