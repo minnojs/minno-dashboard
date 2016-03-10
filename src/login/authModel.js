@@ -17,7 +17,7 @@ export let login = (username, password) => fetchJson(loginUrl, {
 	body: {username, password}
 });
 
-export let logout = () => fetchVoid(logoutUrl, {method:'post'});
+export let logout = () => fetchVoid(logoutUrl, {method:'post'}).then(getAuth);
 
 function getAuth(){
 	var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));

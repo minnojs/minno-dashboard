@@ -13,8 +13,7 @@ let layout = route => {
 			return {doLogout};
 
 			function doLogout(){
-				logout();
-				m.route('/login');
+				logout().then(() => m.route('/login'));
 			}
 		},
 		view(ctrl){

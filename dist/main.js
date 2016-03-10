@@ -2268,7 +2268,7 @@
   };
 
   var logout = function logout() {
-  	return fetchVoid(logoutUrl, { method: 'post' });
+  	return fetchVoid(logoutUrl, { method: 'post' }).then(getAuth);
   };
 
   function getAuth() {
@@ -2921,8 +2921,9 @@
   			return { doLogout: doLogout };
 
   			function doLogout() {
-  				logout();
-  				m.route('/login');
+  				logout().then(function () {
+  					return m.route('/login');
+  				});
   			}
   		},
   		view: function view(ctrl) {
