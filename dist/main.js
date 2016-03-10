@@ -1343,7 +1343,7 @@
   	var textMode = modeMap[file.type] || 'javascript';
   	switch (ctrl.mode()) {
   		case 'edit':
-  			return ace({ content: file.content, settings: { onSave: save, mode: textMode } });
+  			return ace({ content: file.content, settings: { onSave: save(file), mode: textMode } });
   		case 'validator':
   			return validate({ file: file });
   		case 'syntax':

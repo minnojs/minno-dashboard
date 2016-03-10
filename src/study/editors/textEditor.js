@@ -40,7 +40,7 @@ let textEditorComponent = {
 let textContent = (ctrl, {file}) => {
 	let textMode = modeMap[file.type] || 'javascript';
 	switch (ctrl.mode()){
-	case 'edit' : return ace({content:file.content, settings: {onSave: save, mode: textMode}});
+	case 'edit' : return ace({content:file.content, settings: {onSave: save(file), mode: textMode}});
 	case 'validator': return validatorComponent({file});
 	case 'syntax': return syntaxComponent({file});
 	}
