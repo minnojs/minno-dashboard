@@ -13,7 +13,7 @@
     "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
     "bundle": "rollup --config --sourcemap && echo \"Bundle finished at $(date +\"%T\")\"",
     "serve": "node fixtures.js",
-    "start": "npm run watch:js & npm run watch:css & npm run serve"
+    "start": "npm run watch:css | npm run serve | npm run watch:js "
   },
   "author": "",
   "license": "Apache-2.0",

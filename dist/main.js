@@ -152,7 +152,7 @@
   		var _this3 = this;
 
   		var basePath = path.substring(0, path.lastIndexOf('/'));
-  		var folderExists = basePath === '/' || study.files().some(function (f) {
+  		var folderExists = basePath === '' || study.files().some(function (f) {
   			return f.isDir && f.path === basePath;
   		});
 
