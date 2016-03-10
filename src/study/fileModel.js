@@ -50,7 +50,7 @@ let filePrototype = {
 		let oldPath = this.path;
 		this.setPath(path);
 		return fetchJson(this.apiUrl() + `/move/`, {
-			method:'post',
+			method:'put',
 			body: {path}
 		})
 			.then(response => {

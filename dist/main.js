@@ -164,7 +164,7 @@
   		var oldPath = this.path;
   		this.setPath(path);
   		return fetchJson(this.apiUrl() + '/move/', {
-  			method: 'post',
+  			method: 'put',
   			body: { path: path }
   		}).then(function (response) {
   			_this3.id = response.id;
