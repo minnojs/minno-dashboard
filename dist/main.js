@@ -112,13 +112,6 @@
 
   var baseUrl$1 = '/dashboard/dashboard';
 
-  /**
-   * file = {
-   * 	id: #hash,
-   * 	url: URL
-   * }
-   */
-
   var filePrototype = {
   	apiUrl: function apiUrl() {
   		return baseUrl$1 + '/files/' + encodeURIComponent(this.studyId) + '/file/' + encodeURIComponent(this.id);
@@ -238,6 +231,14 @@
   	// Custom Globals
   	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   };
+
+  /**
+   * fileObj = {
+   * 	id: #hash,
+   *	path: path, 	
+   * 	url: URL
+   * }
+   */
 
   var fileFactory = function fileFactory(fileObj) {
   	var file = Object.create(filePrototype);
@@ -374,7 +375,7 @@
 
   		return fetchUpload(this.apiURL('/upload/' + (path === '/' ? '' : path)), { method: 'post', body: formData }).then(function (response) {
   			response.forEach(function (src) {
-  				var file = fileFactory(src);
+  				var file = fileFactory(Object.assign({ studyId: _this3.id }, src));
   				_this3.files().push(file);
   			});
 

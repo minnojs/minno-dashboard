@@ -80,7 +80,7 @@ let studyPrototype = {
 		return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:formData})
 			.then(response => {
 				response.forEach(src => {
-					let file = fileFactory(src);
+					let file = fileFactory(Object.assign({studyId: this.id},src));
 					this.files().push(file);
 				});
 
