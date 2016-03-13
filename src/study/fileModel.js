@@ -2,12 +2,6 @@ import {fetchVoid, fetchJson} from 'utils/modelHelpers';
 export default fileFactory;
 let baseUrl = '/dashboard/dashboard';
 
-/**
- * file = {
- * 	id: #hash,
- * 	url: URL
- * }
- */
 
 let filePrototype = {
 	apiUrl(){
@@ -126,6 +120,15 @@ var jshintOptions = {
 	predef: ['piGlobal','define','require','requirejs','angular']
 };
 
+
+/**
+ * fileObj = {
+ * 	id: #hash,
+ *	path: path, 	
+ * 	url: URL
+ * }
+ */
+
 const fileFactory = fileObj => {
 	let file = Object.create(filePrototype);
 	let path = decodeURIComponent(fileObj.path);
@@ -134,8 +137,8 @@ const fileFactory = fileObj => {
 	file.setPath(path);
 
 	Object.assign(file, fileObj, {
-		id				: fileObj.id,
-		sourceContent	: m.prop(fileObj.content || ''),
+		id			: fileObj.id,
+		sourceContent		: m.prop(fileObj.content || ''),
 		content 		: contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 
 		// keep track of loaded state
