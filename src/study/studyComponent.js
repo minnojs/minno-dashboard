@@ -25,7 +25,6 @@ let editorLayoutComponent = {
 
 		window.addEventListener('beforeunload', beforeunload);
 
-
 		return ctrl;
 
 		function hasUnsavedData(){

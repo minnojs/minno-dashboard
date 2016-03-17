@@ -847,12 +847,19 @@
 
   	config: function config(_ref) {
   		var content = _ref.content;
+  		var observer = _ref.observer;
   		var _ref$settings = _ref.settings;
   		var settings = _ref$settings === undefined ? {} : _ref$settings;
 
   		return function (element, isInitialized, ctx) {
   			var editor = undefined;
   			var mode = settings.mode || 'javascript';
+  			var paste = function paste(text) {
+  				if (editor) {
+  					editor.insert(text);
+  					editor.focus();
+  				}
+  			};
 
   			if (!isInitialized) {
   				fullHeight(element, isInitialized, ctx);
@@ -884,18 +891,47 @@
   						exec: settings.onSave || noop$1
   					});
 
+  					if (observer) observer.on('paste', paste);
+
   					editor.setValue(content());
+  					editor.moveCursorTo(0, 0);
+  					editor.focus();
 
   					ctx.onunload = function () {
-  						return editor.destroy();
+  						editor.destroy();
+  						if (observer) observer.off(paste);
   					};
   				});
   			}
-
-  			editor && editor.setValue(content());
   		};
   	}
   };
+
+  function observer() {
+  	var channels = {};
+  	return {
+  		on: function on(channel, cb) {
+  			channels[channel] || (channels[channel] = []);
+  			channels[channel].push(cb);
+  		},
+  		off: function off(cb) {
+  			for (var channel in channels) {
+  				var index = channels[channel].indexOf(cb);
+  				if (index > -1) channels[channel].splice(index, 1);
+  			}
+  		},
+  		trigger: function trigger(channel) {
+  			for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+  				args[_key - 1] = arguments[_key];
+  			}
+
+  			if (!channels[channel]) return;
+  			channels[channel].forEach(function (cb) {
+  				return cb.apply(null, args);
+  			});
+  		}
+  	};
+  }
 
   var syntax = function syntax(args) {
   	return m.component(syntaxComponent, args);
@@ -1298,6 +1334,7 @@
   var textMenuView = function textMenuView(_ref) {
   	var mode = _ref.mode;
   	var file = _ref.file;
+  	var observer = _ref.observer;
 
   	var setMode = function setMode(value) {
   		return function () {
@@ -1309,7 +1346,9 @@
   	};
   	var isJs = file.type === 'js';
 
-  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))]), m('a.btn.btn-secondary', { onclick: setMode('validator'), class: modeClass('validator') }, [m('strong', 'Validator')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))]), m('a.btn.btn-secondary', { onclick: setMode('validator'), class: modeClass('validator') }, [m('strong', 'Validator')])]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick(a) {
+  			return observer.trigger('paste', '<%= %>');
+  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
 
   var textEditor = function textEditor(args) {
@@ -1322,7 +1361,7 @@
 
   		file.loaded || file.get().then(m.redraw).catch(m.redraw);
 
-  		var ctrl = { mode: m.prop('edit') };
+  		var ctrl = { mode: m.prop('edit'), observer: observer() };
 
   		return ctrl;
   	},
@@ -1330,21 +1369,24 @@
   	view: function view(ctrl, _ref2) {
   		var file = _ref2.file;
 
+  		var observer = ctrl.observer;
+
   		if (!file.loaded) return m('.loader');
 
   		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
 
-  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file }), textContent(ctrl, { file: file })]);
+  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file, observer: observer }), textContent(ctrl, { file: file, observer: observer })]);
   	}
   };
 
   var textContent = function textContent(ctrl, _ref3) {
   	var file = _ref3.file;
+  	var observer = _ref3.observer;
 
   	var textMode = modeMap[file.type] || 'javascript';
   	switch (ctrl.mode()) {
   		case 'edit':
-  			return ace({ content: file.content, settings: { onSave: save(file), mode: textMode } });
+  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode } });
   		case 'validator':
   			return validate({ file: file });
   		case 'syntax':

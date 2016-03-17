@@ -1,5 +1,6 @@
 import {save} from '../sidebar/fileActions';
 import ace from './ace/aceComponent';
+import observerFactory from 'utils/observer';
 
 import syntaxComponent from './ace/syntaxComponent';
 import validatorComponent from './ace/validatorComponent';
@@ -16,12 +17,13 @@ let textEditorComponent = {
 			.then(m.redraw)
 			.catch(m.redraw);
 
-		let ctrl = {mode:m.prop('edit')};
+		let ctrl = {mode:m.prop('edit'), observer: observerFactory()};
 
 		return ctrl;
 	},
 
 	view: function(ctrl, {file}){
+		let observer = ctrl.observer;
 
 		if (!file.loaded) return m('.loader');
 
@@ -31,16 +33,16 @@ let textEditorComponent = {
 		]);
 
 		return m('.editor', [
-			textMenu({mode: ctrl.mode, file}),
-			textContent(ctrl, {file})
+			textMenu({mode: ctrl.mode, file,observer}),
+			textContent(ctrl, {file,observer})
 		]);
 	}
 };
 
-let textContent = (ctrl, {file}) => {
+let textContent = (ctrl, {file, observer}) => {
 	let textMode = modeMap[file.type] || 'javascript';
 	switch (ctrl.mode()){
-	case 'edit' : return ace({content:file.content, settings: {onSave: save(file), mode: textMode}});
+	case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode}});
 	case 'validator': return validatorComponent({file});
 	case 'syntax': return syntaxComponent({file});
 	}

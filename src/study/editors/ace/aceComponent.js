@@ -10,10 +10,16 @@ let aceComponent = {
 		return m('.editor', {config: aceComponent.config(args)});
 	},
 
-	config: function({content, settings = {}}){
+	config: function({content, observer, settings = {}}){
 		return function(element, isInitialized, ctx){
 			let editor;
 			let mode = settings.mode || 'javascript';
+			let paste = text => {
+				if (editor) {
+					editor.insert(text);
+					editor.focus();
+				}
+			};
 
 			if (!isInitialized){
 				fullHeight(element, isInitialized, ctx);
@@ -44,15 +50,21 @@ let aceComponent = {
 						bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
 						exec: settings.onSave || noop
 					});
-
+					
+					if(observer) observer.on('paste',paste );
+					
 					editor.setValue(content());
+					editor.moveCursorTo(0,0);
+					editor.focus();
 
-					ctx.onunload = () => editor.destroy();
+					ctx.onunload = () => {
+						editor.destroy();
+						if(observer) observer.off(paste );
+					};
 				});
 
 			}
 
-			editor && editor.setValue(content());
 		};
 	}
 };

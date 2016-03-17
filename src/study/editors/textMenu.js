@@ -2,7 +2,7 @@ import {play, save} from '../sidebar/fileActions';
 
 export default textMenuView;
 
-let textMenuView = ({mode, file}) => {
+let textMenuView = ({mode, file, observer}) => {
 	let setMode = value => () => mode(value);
 	let modeClass = value => mode() === value ? 'active' : '';
 	let isJs = file.type === 'js';
@@ -30,10 +30,15 @@ let textMenuView = ({mode, file}) => {
 			])
 		]),
 		m('.btn-group.btn-group-sm.pull-xs-right', [
+			m('a.btn.btn-secondary', {onclick:a=> observer.trigger('paste', '<%= %>'), title:'Paste a template wizard'},[
+				m('strong.fa.fa-percent')
+			])
+		]),
+		m('.btn-group.btn-group-sm.pull-xs-right', [
 			!isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file), title:'Play this task'},[
 				m('strong.fa.fa-play')
 			]),
-
+			
 			m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)',class: file.hasChanged() ? 'btn-danger-outline' : ''},[
 				m('strong.fa.fa-save')
 			])
