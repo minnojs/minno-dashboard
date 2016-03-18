@@ -19,15 +19,20 @@ let fileContext = (file, study) => {
 			{text:'piManager', action: createManager(study, path)}
 		]},
 		{separator:true},
+		{icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
 		{icon:'fa-download', text:'Download', action: downloadFile},
 		{icon:'fa-link', text: 'Copy URL', action: copyUrl(file)},
 
-		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
 		{icon:'fa-close', text:'Delete', action: deleteFile},
 		{icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
 	];
 
 	return contextMenu.open(menu);
+
+	function refreshFile(){
+		file.content(file.sourceContent());
+		m.redraw();
+	}
 
 	function downloadFile(){
 		if (downloadSupport){
