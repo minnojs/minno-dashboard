@@ -868,7 +868,7 @@
   					ace.config.set('packaged', true);
   					ace.config.set('basePath', require.toUrl('ace'));
 
-  					editor = ace.edit(element);
+  					editor = ctx.editor = ace.edit(element);
   					var commands = editor.commands;
 
   					editor.setTheme('ace/theme/monokai');
@@ -880,9 +880,8 @@
   					editor.$blockScrolling = Infinity; // scroll to top
 
   					editor.getSession().on('change', function () {
-  						m.startComputation();
   						content(editor.getValue());
-  						m.endComputation();
+  						m.redraw();
   					});
 
   					commands.addCommand({
@@ -893,15 +892,28 @@
 
   					if (observer) observer.on('paste', paste);
 
-  					editor.setValue(content());
-  					editor.moveCursorTo(0, 0);
-  					editor.focus();
+  					setContent();
 
   					ctx.onunload = function () {
   						editor.destroy();
   						if (observer) observer.off(paste);
   					};
   				});
+  			}
+
+  			// each redraw set content from model (the function makes sure that this is not done when not needed...)
+  			setContent();
+
+  			function setContent() {
+  				var editor = ctx.editor;
+  				if (!editor) return;
+
+  				if (editor.getValue() !== content()) {
+  					editor.setValue(content());
+  					editor.moveCursorTo(0, 0);
+  				}
+
+  				editor.focus();
   			}
   		};
   	}
@@ -1530,12 +1542,14 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) },
-
-  	// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
-  	{ icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
+
+  	function refreshFile() {
+  		file.content(file.sourceContent());
+  		m.redraw();
+  	}
 
   	function downloadFile() {
   		if (downloadSupport) {
