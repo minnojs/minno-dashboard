@@ -53,6 +53,7 @@ let aceComponent = {
 					if(observer) observer.on('paste',paste );
 					
 					setContent();
+					editor.focus();
 					
 					ctx.onunload = () => {
 						editor.destroy();
@@ -72,9 +73,8 @@ let aceComponent = {
 				if (editor.getValue() !== content()){
 					editor.setValue(content());
 					editor.moveCursorTo(0,0);
+					editor.focus();
 				}
-				
-				editor.focus();
 			}
 		};
 	}

@@ -80,6 +80,12 @@
   	return fetchVoid(url, options).then(toJSON);
   }
 
+  function fetchText(url, options) {
+  	return fetchVoid(url, options).then(function (response) {
+  		return response.text();
+  	});
+  }
+
   function fetchUpload(url, options) {
   	var opts = Object.assign({
   		credentials: 'same-origin'
@@ -591,66 +597,6 @@
   	}
   };
 
-  var pipWizard = function pipWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create PIP',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template());
-  		}
-  		return response;
-  	});
-  };
-
-  var template = function template() {
-  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hello World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var questWizard = function questWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piQuest',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$1());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$1 = function template() {
-  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\tname: \'pickaname\',\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var managerWizard = function managerWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piManager',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$2());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$2 = function template() {
-  	return 'define([\'managerAPI\'], function(Manager){\n\n    var API = new Manager();\n\n    API.addSequence([\n        {type:\'message\', template:\'<h1>Hellow world</h1>\', keys: \' \'}\n    ]);\n\n    return API.script;\n});';
-  };
-
   var uploadFiles = function uploadFiles(path, study) {
   	return function (files) {
   		study.uploadFiles(path, files).catch(function (response) {
@@ -755,21 +701,17 @@
   	return m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
   };
 
-  function create(study, name, content) {
-  	return function (response) {
-  		if (response) {
-  			study.createFile({ name: name(), content: content() }).then(function (response) {
-  				m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
-  				return response;
-  			}).catch(function (err) {
-  				return messages.alert({
-  					header: 'Failed to create file:',
-  					content: err.message
-  				});
-  			});
-  		}
-  	};
-  }
+  var createFile = function createFile(study, name, content) {
+  	study.createFile({ name: name(), content: content() }).then(function (response) {
+  		m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
+  		return response;
+  	}).catch(function (err) {
+  		return messages.alert({
+  			header: 'Failed to create file:',
+  			content: err.message
+  		});
+  	});
+  };
 
   var createDir = function createDir(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
@@ -803,34 +745,9 @@
   			header: 'Create file',
   			content: 'Please insert the file name:',
   			prop: name
-  		}).then(create(study, name, content));
-  	};
-  };
-
-  var createPIP = function createPIP(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		pipWizard({ name: name, content: content }).then(create(study, name, content));
-  	};
-  };
-
-  var createQuest = function createQuest(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		questWizard({ name: name, content: content }).then(create(study, name, content));
-  	};
-  };
-
-  var createManager = function createManager(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		managerWizard({ name: name, content: content }).then(create(study, name, content));
+  		}).then(function (response) {
+  			if (response) return createFile(study, name, content);
+  		});
   	};
   };
 
@@ -893,6 +810,7 @@
   					if (observer) observer.on('paste', paste);
 
   					setContent();
+  					editor.focus();
 
   					ctx.onunload = function () {
   						editor.destroy();
@@ -911,9 +829,8 @@
   				if (editor.getValue() !== content()) {
   					editor.setValue(content());
   					editor.moveCursorTo(0, 0);
+  					editor.focus();
   				}
-
-  				editor.focus();
   			}
   		};
   	}
@@ -1534,6 +1451,62 @@
   	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
   };
 
+  // add trailing slash if needed, and then remove proceeding slash
+  // return prop
+  var pathProp$1 = function pathProp(path) {
+  	return m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
+  };
+
+  var createFromTemplate = function createFromTemplate(_ref) {
+  	var study = _ref.study;
+  	var path = _ref.path;
+  	var url = _ref.url;
+  	var templateName = _ref.templateName;
+  	return function () {
+  		var name = pathProp$1(path);
+  		var template = fetchText(url);
+
+  		return messages.prompt({
+  			header: 'Create from "' + templateName + '"',
+  			content: 'Please insert the file name:',
+  			prop: name
+  		}).then(function (response) {
+  			if (response) return template.then(function (content) {
+  				return createFile(study, name, function () {
+  					return content;
+  				});
+  			});
+  		}).catch(function (err) {
+  			var message = err.response && err.response.status === 404 ? 'Template file not found at ' + url : err.message;
+
+  			return messages.alert({
+  				header: 'Create from "' + templateName + '" failed',
+  				content: message
+  			});
+  		});
+  	};
+  };
+
+  var hash = {};
+
+  hash.piPlayer = {
+  	'Empty': '/implicit/user/yba/wizards/emptyPIP.js',
+  	'IAT extenssion': '/implicit/user/yba/wizards/iat.js',
+  	'Attitude induction': '/implicit/user/yba/wizards/attitude.js',
+  	'Evaluative Conditioning': '/implicit/user/yba/wizards/conditioning.js',
+  	'Mobile IAT': '/implicit/user/yba/wizards/mobile.js',
+  	'Sorting Task': '/implicit/user/yba/wizards/sorting.js'
+  };
+
+  hash.piQuest = {
+  	'Empty': '/implicit/user/yba/wizards/emptyQuest.js',
+  	'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js'
+  };
+
+  hash.piManager = {
+  	'Empty': '/implicit/user/yba/wizards/emptyManager.js'
+  };
+
   // download support according to modernizer
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1542,9 +1515,16 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: mapWizardHash(hash) }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
+
+  	function mapWizardHash(wizardHash) {
+  		return Object.keys(wizardHash).map(function (text) {
+  			var value = wizardHash[text];
+  			return typeof value === 'string' ? { text: text, action: createFromTemplate({ study: study, path: path, url: value, templateName: text }) } : { text: text, menu: mapWizardHash(value) };
+  		});
+  	}
 
   	function refreshFile() {
   		file.content(file.sourceContent());
@@ -1763,17 +1743,18 @@
   			toggleNew: function toggleNew() {
   				return ctrl.newOpen = !ctrl.newOpen;
   			},
-  			createEmpty: createEmpty(study),
-  			createPIP: createPIP(study),
-  			createQuest: createQuest(study),
-  			createManager: createManager(study)
+  			createEmpty: createEmpty(study)
   		};
 
   		return ctrl;
   	},
 
   	view: function view(ctrl) {
-  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [m('a.dropdown-item', { onclick: ctrl.createPIP }, 'piPlayer'), m('a.dropdown-item', { onclick: ctrl.createQuest }, 'piQuest'), m('a.dropdown-item', { onclick: ctrl.createManager }, 'piManager')])]);
+  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [
+  			//		m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
+  			//		m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
+  			//		m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
+  		])]);
   	}
   };
 
@@ -1782,7 +1763,9 @@
   		var study = _ref.study;
   		var filesVM = _ref.filesVM;
 
-  		return m('.sidebar', [m('h5', study.id), m.component(sidebarButtons, { study: study }), m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ onchange: uploadFiles('/', study) })]);
+  		return m('.sidebar', [m('h5', study.id), m('p.text-muted.m-a-1', [m('small', 'Right click the file list in order to perform actions.')]),
+  		//			m.component(sidebarButtons, {study}),
+  		m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ onchange: uploadFiles('/', study) })]);
   	}
   };
 
@@ -2219,7 +2202,7 @@
   	});
   };
 
-  var create$1 = function create(list) {
+  var create = function create(list) {
   	var output = m.prop();
   	return createMessage({ output: output }).then(function (response) {
   		if (response) {
@@ -2373,7 +2356,7 @@
   			remove: remove,
   			edit: edit,
   			reset: reset,
-  			create: create$1,
+  			create: create,
   			canCreate: function canCreate() {
   				return getRole() === 'SU';
   			},
@@ -2803,7 +2786,7 @@
    * Create download
    */
 
-  function create$2(list, cancel) {
+  function create$1(list, cancel) {
   	var output = m.prop();
   	return createMessage$1({ output: output }).then(function (response) {
   		if (response) {
@@ -2844,7 +2827,7 @@
   		var ctrl = {
   			list: list,
   			cancelDownload: cancelDownload,
-  			create: create$2,
+  			create: create$1,
   			remove: remove$1,
   			globalSearch: m.prop(''),
   			sortBy: m.prop('studyId'),
