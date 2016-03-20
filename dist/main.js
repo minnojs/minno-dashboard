@@ -1785,7 +1785,7 @@
   			isChanged: m.prop(false)
   		});
 
-  		var ctrl = { study: study, filesVM: filesVM, onunload: debounce(onunload, 0, true) };
+  		var ctrl = { study: study, filesVM: filesVM, onunload: onunload };
 
   		window.addEventListener('beforeunload', beforeunload);
 
@@ -1801,7 +1801,6 @@
   			if (hasUnsavedData()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
   		}
 
-  		// this function needs to be debounced because of https://github.com/lhorie/mithril.js/issues/931
   		function onunload(e) {
   			var leavingEditor = function leavingEditor() {
   				return !/^\/editor\//.test(m.route());
@@ -1833,26 +1832,6 @@
   		return map[key];
   	};
   };
-
-  // Returns a function, that, as long as it continues to be invoked, will not
-  // be triggered. The function will be called after it stops being called for
-  // N milliseconds. If `immediate` is passed, trigger the function on the
-  // leading edge, instead of the trailing.
-  function debounce(func, wait, immediate) {
-  	var timeout;
-  	return function () {
-  		var context = this,
-  		    args = arguments;
-  		var later = function later() {
-  			timeout = null;
-  			if (!immediate) func.apply(context, args);
-  		};
-  		var callNow = immediate && !timeout;
-  		clearTimeout(timeout);
-  		timeout = setTimeout(later, wait);
-  		if (callNow) func.apply(context, args);
-  	};
-  }
 
   var url = '/dashboard/StudyData';
 
@@ -2720,7 +2699,7 @@
    * Get all downloads
    */
 
-  var recursiveGetAll = debounce$1(getAll, 5000);
+  var recursiveGetAll = debounce(getAll, 5000);
   function getAll(_ref) {
   	var list = _ref.list;
   	var cancel = _ref.cancel;
@@ -2736,7 +2715,7 @@
   }
 
   // debounce but call at first iteration
-  function debounce$1(func, wait) {
+  function debounce(func, wait) {
   	var first = true;
   	var timeout = undefined;
   	return function () {
