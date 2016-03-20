@@ -1351,9 +1351,7 @@
 
   		var id = m.route.param('fileID');
   		var file = study.getFile(id);
-  		var ctrl = {
-  			file: file
-  		};
+  		var ctrl = { file: file };
 
   		return ctrl;
   	},
@@ -1662,7 +1660,7 @@
   	return function (e) {
   		e.stopPropagation();
   		e.preventDefault();
-  		m.route('/editor/' + file.studyId + '/' + encodeURIComponent(file.id));
+  		m.route('/editor/' + file.studyId + '/file/' + encodeURIComponent(file.id));
   	};
   };
 
@@ -1831,6 +1829,13 @@
   		}
   		return map[key];
   	};
+  };
+
+  var wizardComponent = {
+  	controller: function controller() {},
+  	view: function view() {
+  		return m('.wizard', [m('h3', 'Wizard Name')]);
+  	}
   };
 
   var url = '/dashboard/StudyData';
@@ -2925,7 +2930,8 @@
   	'/login': loginComponent,
   	'/studies': mainComponent,
   	'/editor/:studyId': editorLayoutComponent,
-  	'/editor/:studyId/:fileID': editorLayoutComponent,
+  	'/editor/:studyId/file/:fileID': editorLayoutComponent,
+  	'/editor/:studyId/wizard/:wizardType': wizardComponent,
   	'/pool': poolComponent,
   	'/pool/history': poolComponent$1,
   	'/downloads': downloadsComponent

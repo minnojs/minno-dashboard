@@ -61,5 +61,5 @@ let nodeComponent = {
 let choose = (file) => e => {
 	e.stopPropagation();
 	e.preventDefault();
-	m.route(`/editor/${file.studyId}/${encodeURIComponent(file.id)}`);
+	m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
 };
