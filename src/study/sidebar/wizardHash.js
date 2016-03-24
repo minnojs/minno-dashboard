@@ -3,7 +3,9 @@ export default hash;
 let hash = {};
 
 hash.piPlayer = {
-	'Empty': '/implicit/user/yba/wizards/emptyPIP.js',
+	'Empty': '/implicit/user/yba/wizards/emptypip.js',
+	'Typical': '/implicit/user/yba/wizards/typical.js',
+	'Simple sorting task': '/implicit/user/yba/wizards/sorting.js',
 	'IAT (images)': '/implicit/user/yba/wizards/iatimages.js',
 	'IAT (words)': '/implicit/user/yba/wizards/iatwords.js',
 	'IAT (modify attributes)': '/implicit/user/yba/wizards/iatatt.js',
@@ -16,12 +18,11 @@ hash.piPlayer = {
 	'Brief-IAT': '/implicit/user/yba/wizards/batsimple.js',
 	'Brief-IAT (all parameters)': '/implicit/user/yba/wizards/batall.js',
 	'Attitude induction (behaviors)': '/implicit/user/yba/wizards/attitude.js',
-	'Evaluative Conditioning': '/implicit/user/yba/wizards/ec.js',
-	'Simple sorting task': '/implicit/user/yba/wizards/sorting.js'
+	'Evaluative Conditioning': '/implicit/user/yba/wizards/ec.js'
 };
 
 hash.piQuest = {
-	'Empty': '/implicit/user/yba/wizards/emptyQuest.js',
+	'Empty': '/implicit/user/yba/wizards/emptyquest.js',
 	'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js',
 	'Rating Questionnaire (with images)': '/implicit/user/yba/wizards/ratingimages.js'
 };
@@ -33,5 +34,6 @@ hash.piMessage = {
 };
 
 hash.piManager = {
-	'Empty': '/implicit/user/yba/wizards/emptyManager.js'
+	'Empty': '/implicit/user/yba/wizards/emptymanager.js',
+	'Typical': '/implicit/user/yba/wizards/emptymanager.js'
 };
