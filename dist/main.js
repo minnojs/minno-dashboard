@@ -1850,10 +1850,116 @@
   	};
   };
 
+  var END_LINE = '\n';
+  var TAB = '\t';
+  var indent = function indent(str) {
+  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
+  	return str.replace(/^/gm, tab);
+  };
+
+  var print = function print(obj) {
+  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
+  		case 'boolean':
+  			return obj ? 'true' : 'false';
+  		case 'string':
+  			return '\'' + obj.replace('\'', '\\\'') + '\''; // escape "
+  		case 'number':
+  			return obj + '';
+  		case 'function':
+  			return obj.toString();
+  	}
+
+  	if (Array.isArray(obj)) return printArray(obj);
+
+  	return printObj(obj);
+
+  	function printArray(arr) {
+  		var isShort = arr.every(function (element) {
+  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
+  		});
+  		var content = arr.map(function (value) {
+  			return print(value);
+  		}).join(isShort ? ', ' : ',\n');
+
+  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
+  	}
+
+  	function printObj(obj) {
+  		var content = Object.keys(obj).map(function (key) {
+  			return key + ' : ' + print(obj[key]);
+  		}).map(function (row) {
+  			return indent(row);
+  		}).join(',' + END_LINE);
+  		return '{\n' + content + '\n}';
+  	}
+  };
+
+  function ratingWizard(_ref) {
+  	var basicPage = _ref.basicPage;
+  	var basicSelect = _ref.basicSelect;
+  	var questionList = _ref.questionList;
+  	var sequence = _ref.sequence;
+
+  	var NEW_LINE = '\n';
+  	var content = ['var API = new Quest();', '', '// The structure for the basic questionnaire page', 'API.addPagesSet(\'basicPage\', ' + print(basicPage) + ');', '', '// The structure for the basic question\t', 'API.addQuestionsSet(\'basicSelect\', ' + print(basicSelect) + ');', '// This is the question pool, the sequence picks the questions from here', 'API.addQuestionSet(\'questionList\', ' + print(questionList), '', '// This is the sequence of questions', 'API.addSequence(' + print(sequence) + ')', '', 'return API.script;'].join(NEW_LINE);
+
+  	return 'define([\'questAPI\'], function(Quest){\n' + indent(content) + '\n});';
+  }
+
+  /*
+  define(['questAPI'], function(Quest){
+
+  	var API = new Quest();
+  	
+  	// The structure for the basic questionnaire page
+  	API.addPagesSet('basicPage', {
+  		header: '<%= header %>',
+  		autoFocus:true,
+  		questions: [
+  			{inherit: {type:'exRandom', set:'questionList'}}
+  		]
+  	});
+
+  	// The structure for the basic question	
+  	API.addQuestionsSet('basicSelect',{
+  		type: 'selectOne',
+  		autoSubmit: '<%= autoSubmit ? "true" : "false" %>',
+  		numericValues:true,
+  		help: '<%= pagesMeta.number < 3 %>',
+  		helpText: 'Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'
+  	});
+
+  	// This is the question pool, the sequence picks the questions from here
+  	API.addQuestionSet('questionList', [
+  		{inherit:'basicSelect', name: 'n001', stem:'How are you?'}
+  	]);
+
+  	// This is the sequence of questions
+  	API.addSequence([
+  		{
+  			mixer: 'repeat',
+  			times: 10,
+  			data: [
+  				{inherit:'basicPage'}
+  			]
+  		}
+  	]);
+
+  	return API.script;
+  });
+  */
+
   var wizardComponent = {
-  	controller: function controller() {},
+  	controller: function controller() {
+  		console.log(ratingWizard({
+  			basicPage: { header: 'blog', decline: true },
+  			basicSelect: {},
+  			questionList: [],
+  			sequence: []
+  		}));
+  	},
   	view: function view() {
-  		return m('.wizard', [m('h3', 'Wizard Name')]);
+  		return m('.wizard', [m('h3', 'Rating wizard')]);
   	}
   };
 
