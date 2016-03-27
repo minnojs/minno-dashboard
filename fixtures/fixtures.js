@@ -38,6 +38,12 @@ router.get('/studies', (req,res)=>{
 var files = isMac
 	? [
 		{
+			id: 'kt.jst',
+			path: 'jt.jst',
+			url: '/test/kt.jst',
+			noDel: true
+		},
+		{
 			id: 'iatExtenssion.js',
 			path: 'iatExtenssion.js',
 			url: '/test/iatExtenssion.js',

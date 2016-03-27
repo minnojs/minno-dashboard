@@ -29,17 +29,18 @@ let aceComponent = {
 					ace.config.set('basePath', require.toUrl('ace'));
 
 					editor = ctx.editor = ace.edit(element);
+					let session = editor.getSession();
 					let commands = editor.commands;
 
 					editor.setTheme('ace/theme/monokai');
-					editor.getSession().setMode('ace/mode/' + mode);
-					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
+					session.setMode('ace/mode/' + mode);
+					if (mode !== 'javascript') session.setUseWorker(false);
 					editor.setHighlightActiveLine(true);
 					editor.setShowPrintMargin(false);
 					editor.setFontSize('18px');
 					editor.$blockScrolling = Infinity; // scroll to top
 
-					editor.getSession().on('change', function(){
+					session.on('change', function(){
 						content(editor.getValue());
 						m.redraw();
 					});

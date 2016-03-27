@@ -786,17 +786,18 @@
   					ace.config.set('basePath', require.toUrl('ace'));
 
   					editor = ctx.editor = ace.edit(element);
+  					var session = editor.getSession();
   					var commands = editor.commands;
 
   					editor.setTheme('ace/theme/monokai');
-  					editor.getSession().setMode('ace/mode/' + mode);
-  					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
+  					session.setMode('ace/mode/' + mode);
+  					if (mode !== 'javascript') session.setUseWorker(false);
   					editor.setHighlightActiveLine(true);
   					editor.setShowPrintMargin(false);
   					editor.setFontSize('18px');
   					editor.$blockScrolling = Infinity; // scroll to top
 
-  					editor.getSession().on('change', function () {
+  					session.on('change', function () {
   						content(editor.getValue());
   						m.redraw();
   					});
@@ -1488,21 +1489,39 @@
   var hash = {};
 
   hash.piPlayer = {
-  	'Empty': '/implicit/user/yba/wizards/emptyPIP.js',
-  	'IAT extenssion': '/implicit/user/yba/wizards/iat.js',
-  	'Attitude induction': '/implicit/user/yba/wizards/attitude.js',
-  	'Evaluative Conditioning': '/implicit/user/yba/wizards/conditioning.js',
-  	'Mobile IAT': '/implicit/user/yba/wizards/mobile.js',
-  	'Sorting Task': '/implicit/user/yba/wizards/sorting.js'
+  	'Empty': '/implicit/user/yba/wizards/emptypip.js',
+  	'Typical': '/implicit/user/yba/wizards/typical.js',
+  	'Simple sorting task': '/implicit/user/yba/wizards/sorting.js',
+  	'IAT (images)': '/implicit/user/yba/wizards/iatimages.js',
+  	'IAT (words)': '/implicit/user/yba/wizards/iatwords.js',
+  	'IAT (modify attributes)': '/implicit/user/yba/wizards/iatatt.js',
+  	'IAT (all the parameters)': '/implicit/user/yba/wizards/iatall.js',
+  	'Mobile IAT': '/implicit/user/yba/wizards/iatmobile.js',
+  	'ST-IAT': '/implicit/user/yba/wizards/stiatsimple.js',
+  	'ST-IAT (all parameters)': '/implicit/user/yba/wizards/stiatall.js',
+  	'AMP (with words as primes)': '/implicit/user/yba/wizards/ampwords.js',
+  	'AMP (all parameters)': '/implicit/user/yba/wizards/ampall.js',
+  	'Brief-IAT': '/implicit/user/yba/wizards/batsimple.js',
+  	'Brief-IAT (all parameters)': '/implicit/user/yba/wizards/batall.js',
+  	'Attitude induction (behaviors)': '/implicit/user/yba/wizards/attitude.js',
+  	'Evaluative Conditioning': '/implicit/user/yba/wizards/ec.js'
   };
 
   hash.piQuest = {
-  	'Empty': '/implicit/user/yba/wizards/emptyQuest.js',
-  	'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js'
+  	'Empty': '/implicit/user/yba/wizards/emptyquest.js',
+  	'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js',
+  	'Rating Questionnaire (with images)': '/implicit/user/yba/wizards/ratingimages.js'
+  };
+
+  hash.piMessage = {
+  	'Consent (Yoav lab)': '/implicit/user/yba/wizards/consent.jst',
+  	'Intro': '/implicit/user/yba/wizards/intro.jst',
+  	'Debriefing': '/implicit/user/yba/wizards/debriefing.jst'
   };
 
   hash.piManager = {
-  	'Empty': '/implicit/user/yba/wizards/emptyManager.js'
+  	'Empty': '/implicit/user/yba/wizards/emptymanager.js',
+  	'Typical': '/implicit/user/yba/wizards/emptymanager.js'
   };
 
   // download support according to modernizer
