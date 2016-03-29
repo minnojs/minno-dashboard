@@ -1519,7 +1519,13 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-file-text', text: 'New from template', menu: mapWizardHash(hash) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'Work in progress...' }, { text: 'Work in progress...' }, { text: 'Work in progress...' }] }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-file-text', text: 'New from template', menu: mapWizardHash(hash) },
+  	// {icon:'fa-magic', text:'New from wizard', menu: [
+  	// {text: 'Work in progress...'},
+  	// {text: 'Work in progress...'},
+  	// {text: 'Work in progress...'}
+  	// ]},
+  	{ separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
 

@@ -16,11 +16,11 @@ let fileContext = (file, study) => {
 		{icon:'fa-folder', text:'New Folder', action: createDir(study, path)},
 		{icon:'fa-file', text:'New File', action: createEmpty(study, path)},
 		{icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
-		{icon:'fa-magic', text:'New from wizard', menu: [
-			{text: 'Work in progress...'},
-			{text: 'Work in progress...'},
-			{text: 'Work in progress...'}
-		]},
+		// {icon:'fa-magic', text:'New from wizard', menu: [
+			// {text: 'Work in progress...'},
+			// {text: 'Work in progress...'},
+			// {text: 'Work in progress...'}
+		// ]},
 		{separator:true},
 		{icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
 		{icon:'fa-download', text:'Download', action: downloadFile},
