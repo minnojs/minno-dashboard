@@ -40,6 +40,13 @@ let aceComponent = {
 					editor.setFontSize('18px');
 					editor.$blockScrolling = Infinity; // scroll to top
 
+					// set jshintOptions
+					editor.session.on('changeMode', function(e, session){
+						if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
+							session.$worker.send('setOptions', [settings.jshintOptions]);
+						}
+					});
+
 					session.on('change', function(){
 						content(editor.getValue());
 						m.redraw();

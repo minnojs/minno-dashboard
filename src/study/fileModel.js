@@ -1,7 +1,7 @@
+import jshintOptions from './editors/jshintOptions';
 import {fetchVoid, fetchJson} from 'utils/modelHelpers';
 export default fileFactory;
 let baseUrl = '/dashboard/dashboard';
-
 
 let filePrototype = {
 	apiUrl(){
@@ -11,8 +11,9 @@ let filePrototype = {
 	get(){
 		return fetchJson(this.apiUrl())
 			.then(response => {
-				this.sourceContent(response.content);
-				this.content(response.content);
+				let content = response.content.replace(/\r\n?|\n?$/g, '\n'); // replace carriage returns and add new line to EOF. this makes sure all files are unix encoded...
+				this.sourceContent(content);
+				this.content(content);
 				this.loaded = true;
 				this.error = false;
 			})
@@ -99,27 +100,6 @@ let filePrototype = {
 		this.type = path.substring(path.lastIndexOf('.')+1).toLowerCase();
 	}
 };
-
-var jshintOptions = {
-	// JSHint Default Configuration File (as on JSHint website)
-	// See http://jshint.com/docs/ for more details
-
-	'curly'         : false,    // true: Require {} for every new block or scope
-	'latedef'       : 'nofunc', // true: Require variables/functions to be defined before being used
-	'undef'         : true,     // true: Require all non-global variables to be declared (prevents global leaks)
-	'unused'        : 'vars',   // Unused variables:
-								//   true     : all variables, last function parameter
-								//   'vars'   : all variables only
-								//   'strict' : all variables, all function parameters
-	'strict'        : false,    // true: Requires all functions run in ES5 Strict Mode
-
-	'browser'       : true,     // Web Browser (window, document, etc)
-	'devel'         : true,     // Development/debugging (alert, confirm, etc)
-
-	// Custom Globals
-	predef: ['piGlobal','define','require','requirejs','angular']
-};
-
 
 /**
  * fileObj = {

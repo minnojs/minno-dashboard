@@ -116,6 +116,25 @@
   	}
   };
 
+  var jshintOptions = {
+  	// JSHint Default Configuration File (as on JSHint website)
+  	// See http://jshint.com/docs/ for more details
+
+  	'curly': false, // true: Require {} for every new block or scope
+  	'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
+  	'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
+  	'unused': 'vars', // Unused variables:
+  	'strict': false, // true: Requires all functions run in ES5 Strict Mode
+
+  	'browser': true, // Web Browser (window, document, etc)
+  	'devel': true, // Development/debugging (alert, confirm, etc)
+
+  	esversion: 3, // Require es3 syntax for backward compatibility
+
+  	// Custom Globals
+  	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
+  };
+
   var baseUrl$1 = '/dashboard/dashboard';
 
   var filePrototype = {
@@ -126,8 +145,9 @@
   		var _this = this;
 
   		return fetchJson(this.apiUrl()).then(function (response) {
-  			_this.sourceContent(response.content);
-  			_this.content(response.content);
+  			var content = response.content.replace(/\r\n?|\n?$/g, '\n'); // replace carriage returns and add new line to EOF. this makes sure all files are unix encoded...
+  			_this.sourceContent(content);
+  			_this.content(content);
   			_this.loaded = true;
   			_this.error = false;
   		}).catch(function (reason) {
@@ -216,26 +236,6 @@
   		this.basePath = path.substring(0, path.lastIndexOf('/')) + '/';
   		this.type = path.substring(path.lastIndexOf('.') + 1).toLowerCase();
   	}
-  };
-
-  var jshintOptions = {
-  	// JSHint Default Configuration File (as on JSHint website)
-  	// See http://jshint.com/docs/ for more details
-
-  	'curly': false, // true: Require {} for every new block or scope
-  	'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-  	'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-  	'unused': 'vars', // Unused variables:
-  	//   true     : all variables, last function parameter
-  	//   'vars'   : all variables only
-  	//   'strict' : all variables, all function parameters
-  	'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-  	'browser': true, // Web Browser (window, document, etc)
-  	'devel': true, // Development/debugging (alert, confirm, etc)
-
-  	// Custom Globals
-  	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   };
 
   /**
@@ -797,6 +797,13 @@
   					editor.setFontSize('18px');
   					editor.$blockScrolling = Infinity; // scroll to top
 
+  					// set jshintOptions
+  					editor.session.on('changeMode', function (e, session) {
+  						if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
+  							session.$worker.send('setOptions', [settings.jshintOptions]);
+  						}
+  					});
+
   					session.on('change', function () {
   						content(editor.getValue());
   						m.redraw();
@@ -913,26 +920,6 @@
   			errorCount: errorCount,
   			warningCount: warningCount
   		};
-  	},
-
-  	jshintOptions: {
-  		// JSHint Default Configuration File (as on JSHint website)
-  		// See http://jshint.com/docs/ for more details
-
-  		'curly': false, // true: Require {} for every new block or scope
-  		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-  		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-  		'unused': 'vars', // Unused variables:
-  		//   true     : all variables, last function parameter
-  		//   'vars'   : all variables only
-  		//   'strict' : all variables, all function parameters
-  		'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-  		'browser': true, // Web Browser (window, document, etc)
-  		'devel': true, // Development/debugging (alert, confirm, etc)
-
-  		// Custom Globals
-  		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   	},
 
   	controller: function controller(args) {
@@ -1316,7 +1303,7 @@
   	var textMode = modeMap[file.type] || 'javascript';
   	switch (ctrl.mode()) {
   		case 'edit':
-  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode } });
+  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode, jshintOptions: jshintOptions } });
   		case 'validator':
   			return validate({ file: file });
   		case 'syntax':
@@ -2509,7 +2496,7 @@
   			}[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
   		})])])]);
   	}
   };
@@ -2643,6 +2630,7 @@
   	return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();
   };
 
+  var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
   var poolComponent$1 = {
   	controller: function controller() {
   		var ctrl = {
@@ -2659,20 +2647,38 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig$1('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig$1('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', thConfig$1('completedSessions', ctrl.sortBy), 'Completion'), m('th', 'New Status'), m('th', 'Old Status'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
-  			m('td', study.studyId), m('td', study.updaterId),
+  			m('td', study.studyId),
+
+  			// ### Study url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.studyUrl, target: '_blank' }, 'Study')]),
+
+  			// ### Rules url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.rulesUrl, target: '_blank' }, 'Rules')]),
+
+  			// ### Autopause url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.autopauseUrl, target: '_blank' }, 'Autopause')]),
 
   			// ### Date
   			m('td', formatDate(new Date(study.creationDate))),
 
-  			// ### Status
+  			// ### Target Completionss
+  			m('td', [study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
+
+  			// ### New Status
   			m('td', [{
   				R: m('span.label.label-success', 'Running'),
   				P: m('span.label.label-info', 'Paused'),
   				S: m('span.label.label-danger', 'Stopped')
-  			}[study.newStatus]])]);
+  			}[study.newStatus]]),
+  			// ### Old Status
+  			m('td', [{
+  				R: m('span.label.label-success', 'Running'),
+  				P: m('span.label.label-info', 'Paused'),
+  				S: m('span.label.label-danger', 'Stopped')
+  			}[study.studyStatus]]), m('td', study.updaterId)]);
   		})])])]);
   	}
   };
@@ -2684,8 +2690,8 @@
 
   function studyFilter$1(ctrl) {
   	return function (study) {
-  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime();
-  	};
+  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()) || includes(study.targetCompletions, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime() + 86000000;
+  	}; //include the end day selected
 
   	function includes(val, search) {
   		return typeof val === 'string' && val.includes(search);
