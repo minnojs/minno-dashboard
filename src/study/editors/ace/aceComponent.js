@@ -32,7 +32,7 @@ let aceComponent = {
 					let session = editor.getSession();
 					let commands = editor.commands;
 
-					editor.setTheme('ace/theme/monokai');
+					editor.setTheme('ace/theme/solarized_light');
 					session.setMode('ace/mode/' + mode);
 					if (mode !== 'javascript') session.setUseWorker(false);
 					editor.setHighlightActiveLine(true);
@@ -78,6 +78,7 @@ let aceComponent = {
 				let editor = ctx.editor;
 				if (!editor) return;
 				
+				// this should trigger only drastic changes such as the first time the editor is set
 				if (editor.getValue() !== content()){
 					editor.setValue(content());
 					editor.moveCursorTo(0,0);

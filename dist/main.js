@@ -789,7 +789,7 @@
   					var session = editor.getSession();
   					var commands = editor.commands;
 
-  					editor.setTheme('ace/theme/monokai');
+  					editor.setTheme('ace/theme/solarized_light');
   					session.setMode('ace/mode/' + mode);
   					if (mode !== 'javascript') session.setUseWorker(false);
   					editor.setHighlightActiveLine(true);
@@ -834,6 +834,7 @@
   				var editor = ctx.editor;
   				if (!editor) return;
 
+  				// this should trigger only drastic changes such as the first time the editor is set
   				if (editor.getValue() !== content()) {
   					editor.setValue(content());
   					editor.moveCursorTo(0, 0);
@@ -1263,7 +1264,11 @@
   	};
   	var isJs = file.type === 'js';
 
-  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))]), m('a.btn.btn-secondary', { onclick: setMode('validator'), class: modeClass('validator') }, [m('strong', 'Validator')])]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick(a) {
+  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))])
+  	//m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
+  	//	m('strong','Validator')
+  	//])
+  	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
   			return observer.trigger('paste', '<%= %>');
   		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
