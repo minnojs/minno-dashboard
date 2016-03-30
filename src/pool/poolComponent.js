@@ -144,9 +144,9 @@ let poolComponent = {
 											study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
 												m('i.fa.fa-pause')
 											]) : '',
-											m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
+											study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
 												m('i.fa.fa-edit')
-											]),
+											]): '',
 											study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
 												m('i.fa.fa-refresh')
 											]) : '',

@@ -4,6 +4,7 @@ import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default poolComponent;
 
+const PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
 let poolComponent = {
 	controller: () => {
 		const ctrl = {
@@ -46,9 +47,14 @@ let poolComponent = {
 					]),
 					m('tr', [
 						m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
-						m('th', thConfig('updaterId',ctrl.sortBy), 'Updater'),
+							m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
+							m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
+							m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),		
 						m('th', thConfig('creationDate',ctrl.sortBy), 'Creation Date'),
-						m('th','New Status')
+						m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
+						m('th','New Status'),
+						m('th','Old Status'),
+						m('th', thConfig('updaterId',ctrl.sortBy), 'Updater'),
 					])
 				]),
 				m('tbody', [
@@ -56,19 +62,63 @@ let poolComponent = {
 						// ### ID
 						m('td', study.studyId),
 
-						m('td', study.updaterId),
+						// ### Study url
+						m('td', [
+							m('a', {href:PRODUCTION_URL + study.studyUrl, target: '_blank'}, 'Study')
+						]),
+
+						// ### Rules url
+						m('td', [
+							m('a', {href:PRODUCTION_URL + study.rulesUrl, target: '_blank'}, 'Rules')
+						]),
+
+						// ### Autopause url
+						m('td', [
+							m('a', {href:PRODUCTION_URL + study.autopauseUrl, target: '_blank'}, 'Autopause')
+						]),
+						
+					
 
 						// ### Date
 						m('td', formatDate(new Date(study.creationDate))),
+						
+						// ### Target Completionss
+						m('td', [
+							study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
+							m('i.fa.fa-info-circle'),
+							m('.card.info-box', [
+								m('.card-header', 'Completion Details'),
+								m('ul.list-group.list-group-flush',[
+									m('li.list-group-item', [
+										m('strong', 'Target Completions: '), study.targetCompletions
+									]),
+									m('li.list-group-item', [
+										m('strong', 'Started Sessions: '), study.startedSessions
+									]),
+									m('li.list-group-item', [
+										m('strong', 'Completed Sessions: '), study.completedSessions
+									])
+								])
+							])
+						]),
 
-						// ### Status
+						// ### New Status
 						m('td', [
 							{
 								R: m('span.label.label-success', 'Running'),
 								P: m('span.label.label-info', 'Paused'),
 								S: m('span.label.label-danger', 'Stopped')
 							}[study.newStatus]
-						])
+						]),
+						// ### Old Status
+						m('td', [
+							{
+								R: m('span.label.label-success', 'Running'),
+								P: m('span.label.label-info', 'Paused'),
+								S: m('span.label.label-danger', 'Stopped')
+							}[study.studyStatus]
+						]),
+						m('td', study.updaterId),
 					]))
 				])
 			])
@@ -81,9 +131,10 @@ let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === pr
 
 function studyFilter(ctrl){
 	return study =>
-		(includes(study.studyId, ctrl.globalSearch()) ||	includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()))
+		(includes(study.studyId, ctrl.globalSearch()) ||	includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
+		 	|| includes(study.targetCompletions, ctrl.globalSearch()))
 		&& (new Date(study.creationDate)).getTime() >= ctrl.startDate().getTime()
-		&& (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime();
+	&& (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime()+86000000; //include the end day selected
 
 	function includes(val, search){
 		return typeof val === 'string' && val.includes(search);
