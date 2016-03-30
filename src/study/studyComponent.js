@@ -1,6 +1,7 @@
 export default editorLayoutComponent;
 import studyFactory from './studyModel';
 import editorComponent from './editorComponent';
+import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
 
 let study, filesVM;
@@ -44,9 +45,7 @@ let editorLayoutComponent = {
 			}
 		}
 	},
-	view: ctrl => {
-		let study = ctrl.study;
-		let filesVM = ctrl.filesVM;
+	view: ({study, filesVM}) => {
 		return m('.row.study', [
 			study.loaded
 				? [
@@ -54,7 +53,9 @@ let editorLayoutComponent = {
 						m.component(sidebarComponent, {study, filesVM})
 					]),
 					m('.col-md-10',[
-						m.component(editorComponent, {study, filesVM})
+						m.route.param('resource') === 'file'
+							? m.component(editorComponent, {study, filesVM})
+							: m.component(wizardComponent, {study})
 					])
 				]
 				:
