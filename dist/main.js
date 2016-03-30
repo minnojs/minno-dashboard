@@ -789,7 +789,7 @@
   					var session = editor.getSession();
   					var commands = editor.commands;
 
-  					editor.setTheme('ace/theme/solarized_light');
+  					editor.setTheme('ace/theme/cobalt');
   					session.setMode('ace/mode/' + mode);
   					if (mode !== 'javascript') session.setUseWorker(false);
   					editor.setHighlightActiveLine(true);
