@@ -38,6 +38,12 @@ router.get('/studies', (req,res)=>{
 var files = isMac
 	? [
 		{
+			id: 'kt.jst',
+			path: 'jt.jst',
+			url: '/test/kt.jst',
+			noDel: true
+		},
+		{
 			id: 'iatExtenssion.js',
 			path: 'iatExtenssion.js',
 			url: '/test/iatExtenssion.js',
@@ -273,6 +279,7 @@ adminRouter.route('/logout')
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
+app.use('/implicit/user/yba/wizards', express.static('fixtures/wizards'));
 app.use('/implicit/common/all/js/pip/0.3', express.static('../pip'));
 app.use('/implicit/common/all/js/quest/0.0', express.static('../quest'));
 app.use(express.static('..'));

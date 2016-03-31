@@ -2,6 +2,7 @@ import {save} from '../sidebar/fileActions';
 import ace from './ace/aceComponent';
 import observerFactory from 'utils/observer';
 
+import jshintOptions from './jshintOptions';
 import syntaxComponent from './ace/syntaxComponent';
 import validatorComponent from './ace/validatorComponent';
 
@@ -42,9 +43,9 @@ let textEditorComponent = {
 let textContent = (ctrl, {file, observer}) => {
 	let textMode = modeMap[file.type] || 'javascript';
 	switch (ctrl.mode()){
-	case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode}});
-	case 'validator': return validatorComponent({file});
-	case 'syntax': return syntaxComponent({file});
+		case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode, jshintOptions}});
+		case 'validator': return validatorComponent({file});
+		case 'syntax': return syntaxComponent({file});
 	}
 };
 

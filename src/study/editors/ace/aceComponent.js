@@ -29,17 +29,25 @@ let aceComponent = {
 					ace.config.set('basePath', require.toUrl('ace'));
 
 					editor = ctx.editor = ace.edit(element);
+					let session = editor.getSession();
 					let commands = editor.commands;
 
-					editor.setTheme('ace/theme/monokai');
-					editor.getSession().setMode('ace/mode/' + mode);
-					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
+					editor.setTheme('ace/theme/cobalt');
+					session.setMode('ace/mode/' + mode);
+					if (mode !== 'javascript') session.setUseWorker(false);
 					editor.setHighlightActiveLine(true);
 					editor.setShowPrintMargin(false);
 					editor.setFontSize('18px');
 					editor.$blockScrolling = Infinity; // scroll to top
 
-					editor.getSession().on('change', function(){
+					// set jshintOptions
+					editor.session.on('changeMode', function(e, session){
+						if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
+							session.$worker.send('setOptions', [settings.jshintOptions]);
+						}
+					});
+
+					session.on('change', function(){
 						content(editor.getValue());
 						m.redraw();
 					});
@@ -53,6 +61,7 @@ let aceComponent = {
 					if(observer) observer.on('paste',paste );
 					
 					setContent();
+					editor.focus();
 					
 					ctx.onunload = () => {
 						editor.destroy();
@@ -69,12 +78,12 @@ let aceComponent = {
 				let editor = ctx.editor;
 				if (!editor) return;
 				
+				// this should trigger only drastic changes such as the first time the editor is set
 				if (editor.getValue() !== content()){
 					editor.setValue(content());
 					editor.moveCursorTo(0,0);
+					editor.focus();
 				}
-				
-				editor.focus();
 			}
 		};
 	}

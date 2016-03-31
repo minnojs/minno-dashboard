@@ -1,6 +1,8 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createPIP, createQuest, createManager, createEmpty, moveFile, copyUrl} from './fileActions';
+import {createDir, createEmpty, moveFile, copyUrl} from './fileActions';
+import {createFromTemplate} from './wizardActions';
+import wizardHash from './wizardHash';
 export default fileContext;
 
 // download support according to modernizer
@@ -13,11 +15,12 @@ let fileContext = (file, study) => {
 
 		{icon:'fa-folder', text:'New Folder', action: createDir(study, path)},
 		{icon:'fa-file', text:'New File', action: createEmpty(study, path)},
-		{icon:'fa-magic', text:'New from wizard', menu:[
-			{text:'piPlayer', action: createPIP(study, path)},
-			{text:'piQuest', action: createQuest(study, path)},
-			{text:'piManager', action: createManager(study, path)}
-		]},
+		{icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
+		// {icon:'fa-magic', text:'New from wizard', menu: [
+			// {text: 'Work in progress...'},
+			// {text: 'Work in progress...'},
+			// {text: 'Work in progress...'}
+		// ]},
 		{separator:true},
 		{icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
 		{icon:'fa-download', text:'Download', action: downloadFile},
@@ -28,6 +31,15 @@ let fileContext = (file, study) => {
 	];
 
 	return contextMenu.open(menu);
+
+	function mapWizardHash(wizardHash){
+		return Object.keys(wizardHash).map((text) => {
+			let value = wizardHash[text];
+			return typeof value === 'string'
+				? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
+				: {text, menu: mapWizardHash(value)};
+		});
+	}
 
 	function refreshFile(){
 		file.content(file.sourceContent());

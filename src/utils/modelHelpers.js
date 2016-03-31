@@ -41,6 +41,11 @@ export function fetchJson(url, options){
 		.then(toJSON);
 }
 
+export function fetchText(url, options){
+	return fetchVoid(url, options)
+		.then(response => response.text());
+}
+
 export function fetchUpload(url, options){
 	let opts = Object.assign({
 		credentials: 'same-origin'

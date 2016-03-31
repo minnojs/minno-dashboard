@@ -80,6 +80,12 @@
   	return fetchVoid(url, options).then(toJSON);
   }
 
+  function fetchText(url, options) {
+  	return fetchVoid(url, options).then(function (response) {
+  		return response.text();
+  	});
+  }
+
   function fetchUpload(url, options) {
   	var opts = Object.assign({
   		credentials: 'same-origin'
@@ -110,6 +116,25 @@
   	}
   };
 
+  var jshintOptions = {
+  	// JSHint Default Configuration File (as on JSHint website)
+  	// See http://jshint.com/docs/ for more details
+
+  	'curly': false, // true: Require {} for every new block or scope
+  	'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
+  	'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
+  	'unused': 'vars', // Unused variables:
+  	'strict': false, // true: Requires all functions run in ES5 Strict Mode
+
+  	'browser': true, // Web Browser (window, document, etc)
+  	'devel': true, // Development/debugging (alert, confirm, etc)
+
+  	esversion: 3, // Require es3 syntax for backward compatibility
+
+  	// Custom Globals
+  	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
+  };
+
   var baseUrl$1 = '/dashboard/dashboard';
 
   var filePrototype = {
@@ -120,8 +145,9 @@
   		var _this = this;
 
   		return fetchJson(this.apiUrl()).then(function (response) {
-  			_this.sourceContent(response.content);
-  			_this.content(response.content);
+  			var content = response.content.replace(/\r\n?|\n?$/g, '\n'); // replace carriage returns and add new line to EOF. this makes sure all files are unix encoded...
+  			_this.sourceContent(content);
+  			_this.content(content);
   			_this.loaded = true;
   			_this.error = false;
   		}).catch(function (reason) {
@@ -210,26 +236,6 @@
   		this.basePath = path.substring(0, path.lastIndexOf('/')) + '/';
   		this.type = path.substring(path.lastIndexOf('.') + 1).toLowerCase();
   	}
-  };
-
-  var jshintOptions = {
-  	// JSHint Default Configuration File (as on JSHint website)
-  	// See http://jshint.com/docs/ for more details
-
-  	'curly': false, // true: Require {} for every new block or scope
-  	'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-  	'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-  	'unused': 'vars', // Unused variables:
-  	//   true     : all variables, last function parameter
-  	//   'vars'   : all variables only
-  	//   'strict' : all variables, all function parameters
-  	'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-  	'browser': true, // Web Browser (window, document, etc)
-  	'devel': true, // Development/debugging (alert, confirm, etc)
-
-  	// Custom Globals
-  	predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   };
 
   /**
@@ -591,66 +597,6 @@
   	}
   };
 
-  var pipWizard = function pipWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create PIP',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template());
-  		}
-  		return response;
-  	});
-  };
-
-  var template = function template() {
-  	return 'define([\'pipAPI\',\'pipScorer\'], function(APIConstructor,Scorer) {\n\n\tvar API = new APIConstructor();\n\tvar scorer = new Scorer();\n\n\t// add something to the current object\n\tAPI.addCurrent({});\n\n\t// set the base urls for images and templates\n\tAPI.addSettings(\'base_url\',{\n\t\timage : \'/my/folder/images\',\n\t\ttemplate : \'/my/folder/templates\'\n\t});\n\n\t// base trial\n\tAPI.addTrialSets(\'base\',{\n\t\tinput: [\n\t\t\t{handle:\'space\',on:\'space\'}\n\t\t],\n\n\t\tstimuli: [\n\t\t\t{media: \'Hello World!!\'}\n\t\t],\n\n\t\tinteractions: [\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'begin\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'showStim\',handle:\'All\'}\n\t\t\t\t]\n\t\t\t},\n\t\t\t{\n\t\t\t\tconditions: [\n\t\t\t\t\t{type:\'inputEquals\',value:\'space\'}\n\t\t\t\t],\n\t\t\t\tactions: [\n\t\t\t\t\t{type:\'endTrial\'}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t});\n\n\tAPI.addSequence([\n\t\t{\n\t\t\tmixer: \'random\',\n\t\t\tdata: [\n\t\t\t\t{\n\t\t\t\t\tmixer: \'repeat\',\n\t\t\t\t\ttimes: 10,\n\t\t\t\t\tdata: [\n\t\t\t\t\t\t{inherit:\'base\'}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var questWizard = function questWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piQuest',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$1());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$1 = function template() {
-  	return 'define([\'questAPI\'], function(Quest){\n\n\tvar API = new Quest();\n\n\tAPI.addSequence([\n\t\t{\n\t\t\theader: \'Hello World\',\n\t\t\tquestions: [\n\t\t\t\t{\n\t\t\t\t\tname: \'pickaname\',\n\t\t\t\t\ttype: \'selectOne\',\n\t\t\t\t\tstem: \'What is you favorite color?\',\n\t\t\t\t\tanswers: [\'red\', \'blue\', \'green\']\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]);\n\n\treturn API.script;\n});';
-  };
-
-  var managerWizard = function managerWizard(_ref) {
-  	var name = _ref.name;
-  	var content = _ref.content;
-
-  	return messages.prompt({
-  		header: 'Create piManager',
-  		content: 'Please insert the file name:',
-  		prop: name
-  	}).then(function (response) {
-  		if (response) {
-  			content(template$2());
-  		}
-  		return response;
-  	});
-  };
-
-  var template$2 = function template() {
-  	return 'define([\'managerAPI\'], function(Manager){\n\n    var API = new Manager();\n\n    API.addSequence([\n        {type:\'message\', template:\'<h1>Hellow world</h1>\', keys: \' \'}\n    ]);\n\n    return API.script;\n});';
-  };
-
   var uploadFiles = function uploadFiles(path, study) {
   	return function (files) {
   		study.uploadFiles(path, files).catch(function (response) {
@@ -755,21 +701,17 @@
   	return m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
   };
 
-  function create(study, name, content) {
-  	return function (response) {
-  		if (response) {
-  			study.createFile({ name: name(), content: content() }).then(function (response) {
-  				m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
-  				return response;
-  			}).catch(function (err) {
-  				return messages.alert({
-  					header: 'Failed to create file:',
-  					content: err.message
-  				});
-  			});
-  		}
-  	};
-  }
+  var createFile = function createFile(study, name, content) {
+  	study.createFile({ name: name(), content: content() }).then(function (response) {
+  		m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
+  		return response;
+  	}).catch(function (err) {
+  		return messages.alert({
+  			header: 'Failed to create file:',
+  			content: err.message
+  		});
+  	});
+  };
 
   var createDir = function createDir(study) {
   	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
@@ -803,34 +745,9 @@
   			header: 'Create file',
   			content: 'Please insert the file name:',
   			prop: name
-  		}).then(create(study, name, content));
-  	};
-  };
-
-  var createPIP = function createPIP(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		pipWizard({ name: name, content: content }).then(create(study, name, content));
-  	};
-  };
-
-  var createQuest = function createQuest(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		questWizard({ name: name, content: content }).then(create(study, name, content));
-  	};
-  };
-
-  var createManager = function createManager(study) {
-  	var path = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-  	return function () {
-  		var name = pathProp(path);
-  		var content = m.prop();
-  		managerWizard({ name: name, content: content }).then(create(study, name, content));
+  		}).then(function (response) {
+  			if (response) return createFile(study, name, content);
+  		});
   	};
   };
 
@@ -869,17 +786,25 @@
   					ace.config.set('basePath', require.toUrl('ace'));
 
   					editor = ctx.editor = ace.edit(element);
+  					var session = editor.getSession();
   					var commands = editor.commands;
 
-  					editor.setTheme('ace/theme/monokai');
-  					editor.getSession().setMode('ace/mode/' + mode);
-  					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
+  					editor.setTheme('ace/theme/cobalt');
+  					session.setMode('ace/mode/' + mode);
+  					if (mode !== 'javascript') session.setUseWorker(false);
   					editor.setHighlightActiveLine(true);
   					editor.setShowPrintMargin(false);
   					editor.setFontSize('18px');
   					editor.$blockScrolling = Infinity; // scroll to top
 
-  					editor.getSession().on('change', function () {
+  					// set jshintOptions
+  					editor.session.on('changeMode', function (e, session) {
+  						if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
+  							session.$worker.send('setOptions', [settings.jshintOptions]);
+  						}
+  					});
+
+  					session.on('change', function () {
   						content(editor.getValue());
   						m.redraw();
   					});
@@ -893,6 +818,7 @@
   					if (observer) observer.on('paste', paste);
 
   					setContent();
+  					editor.focus();
 
   					ctx.onunload = function () {
   						editor.destroy();
@@ -908,12 +834,12 @@
   				var editor = ctx.editor;
   				if (!editor) return;
 
+  				// this should trigger only drastic changes such as the first time the editor is set
   				if (editor.getValue() !== content()) {
   					editor.setValue(content());
   					editor.moveCursorTo(0, 0);
+  					editor.focus();
   				}
-
-  				editor.focus();
   			}
   		};
   	}
@@ -995,26 +921,6 @@
   			errorCount: errorCount,
   			warningCount: warningCount
   		};
-  	},
-
-  	jshintOptions: {
-  		// JSHint Default Configuration File (as on JSHint website)
-  		// See http://jshint.com/docs/ for more details
-
-  		'curly': false, // true: Require {} for every new block or scope
-  		'latedef': 'nofunc', // true: Require variables/functions to be defined before being used
-  		'undef': true, // true: Require all non-global variables to be declared (prevents global leaks)
-  		'unused': 'vars', // Unused variables:
-  		//   true     : all variables, last function parameter
-  		//   'vars'   : all variables only
-  		//   'strict' : all variables, all function parameters
-  		'strict': false, // true: Requires all functions run in ES5 Strict Mode
-
-  		'browser': true, // Web Browser (window, document, etc)
-  		'devel': true, // Development/debugging (alert, confirm, etc)
-
-  		// Custom Globals
-  		predef: ['piGlobal', 'define', 'require', 'requirejs', 'angular']
   	},
 
   	controller: function controller(args) {
@@ -1358,7 +1264,11 @@
   	};
   	var isJs = file.type === 'js';
 
-  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))]), m('a.btn.btn-secondary', { onclick: setMode('validator'), class: modeClass('validator') }, [m('strong', 'Validator')])]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick(a) {
+  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))])
+  	//m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
+  	//	m('strong','Validator')
+  	//])
+  	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
   			return observer.trigger('paste', '<%= %>');
   		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
@@ -1398,7 +1308,7 @@
   	var textMode = modeMap[file.type] || 'javascript';
   	switch (ctrl.mode()) {
   		case 'edit':
-  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode } });
+  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode, jshintOptions: jshintOptions } });
   		case 'validator':
   			return validate({ file: file });
   		case 'syntax':
@@ -1434,9 +1344,7 @@
 
   		var id = m.route.param('fileID');
   		var file = study.getFile(id);
-  		var ctrl = {
-  			file: file
-  		};
+  		var ctrl = { file: file };
 
   		return ctrl;
   	},
@@ -1534,6 +1442,80 @@
   	return node.separator ? m('.context-menu-separator', { key: key }) : m('.context-menu-item', { class: classNames({ disabled: node.disabled, submenu: node.menu, key: key }) }, [m('button.context-menu-btn', { onmousedown: node.disabled || node.action }, [m('i.fa', { class: node.icon }), m('span.context-menu-text', node.text)]), node.menu ? m('.context-menu', node.menu.map(menuNode)) : '']);
   };
 
+  // add trailing slash if needed, and then remove proceeding slash
+  // return prop
+  var pathProp$1 = function pathProp(path) {
+  	return m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
+  };
+
+  var createFromTemplate = function createFromTemplate(_ref) {
+  	var study = _ref.study;
+  	var path = _ref.path;
+  	var url = _ref.url;
+  	var templateName = _ref.templateName;
+  	return function () {
+  		var name = pathProp$1(path);
+  		var template = fetchText(url);
+
+  		return messages.prompt({
+  			header: 'Create from "' + templateName + '"',
+  			content: 'Please insert the file name:',
+  			prop: name
+  		}).then(function (response) {
+  			if (response) return template.then(function (content) {
+  				return createFile(study, name, function () {
+  					return content;
+  				});
+  			});
+  		}).catch(function (err) {
+  			var message = err.response && err.response.status === 404 ? 'Template file not found at ' + url : err.message;
+
+  			return messages.alert({
+  				header: 'Create from "' + templateName + '" failed',
+  				content: message
+  			});
+  		});
+  	};
+  };
+
+  var hash = {};
+
+  hash.piPlayer = {
+  	'Empty': '/implicit/user/yba/wizards/emptypip.js',
+  	'Typical': '/implicit/user/yba/wizards/typical.js',
+  	'Simple sorting task': '/implicit/user/yba/wizards/sorting.js',
+  	'IAT (images)': '/implicit/user/yba/wizards/iatimages.js',
+  	'IAT (words)': '/implicit/user/yba/wizards/iatwords.js',
+  	'IAT (modify attributes)': '/implicit/user/yba/wizards/iatatt.js',
+  	'IAT (all the parameters)': '/implicit/user/yba/wizards/iatall.js',
+  	'Mobile IAT': '/implicit/user/yba/wizards/iatmobile.js',
+  	'ST-IAT': '/implicit/user/yba/wizards/stiatsimple.js',
+  	'ST-IAT (all parameters)': '/implicit/user/yba/wizards/stiatall.js',
+  	'AMP (with words as primes)': '/implicit/user/yba/wizards/ampwords.js',
+  	'AMP (all parameters)': '/implicit/user/yba/wizards/ampall.js',
+  	'Brief-IAT': '/implicit/user/yba/wizards/batsimple.js',
+  	'Brief-IAT (all parameters)': '/implicit/user/yba/wizards/batall.js',
+  	'Attitude induction (behaviors)': '/implicit/user/yba/wizards/attitude.js',
+  	'Evaluative Conditioning': '/implicit/user/yba/wizards/ec.js'
+  };
+
+  hash.piQuest = {
+  	'Empty': '/implicit/user/yba/wizards/emptyquest.js',
+  	'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js',
+  	'Rating Questionnaire (with images)': '/implicit/user/yba/wizards/ratingimages.js'
+  };
+
+  hash.piMessage = {
+  	'Consent (Yoav lab)': '/implicit/user/yba/wizards/consent.jst',
+  	'Intro': '/implicit/user/yba/wizards/intro.jst',
+  	'Debriefing': '/implicit/user/yba/wizards/debriefing.jst'
+  };
+
+  hash.piManager = {
+  	'Empty': '/implicit/user/yba/wizards/emptymanager.js',
+  	'Typical': '/implicit/user/yba/wizards/emptymanager.js'
+  };
+
   // download support according to modernizer
   var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1542,9 +1524,22 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'piPlayer', action: createPIP(study, path) }, { text: 'piQuest', action: createQuest(study, path) }, { text: 'piManager', action: createManager(study, path) }] }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-file-text', text: 'New from template', menu: mapWizardHash(hash) },
+  	// {icon:'fa-magic', text:'New from wizard', menu: [
+  	// {text: 'Work in progress...'},
+  	// {text: 'Work in progress...'},
+  	// {text: 'Work in progress...'}
+  	// ]},
+  	{ separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
+
+  	function mapWizardHash(wizardHash) {
+  		return Object.keys(wizardHash).map(function (text) {
+  			var value = wizardHash[text];
+  			return typeof value === 'string' ? { text: text, action: createFromTemplate({ study: study, path: path, url: value, templateName: text }) } : { text: text, menu: mapWizardHash(value) };
+  		});
+  	}
 
   	function refreshFile() {
   		file.content(file.sourceContent());
@@ -1682,7 +1677,7 @@
   	return function (e) {
   		e.stopPropagation();
   		e.preventDefault();
-  		m.route('/editor/' + file.studyId + '/' + encodeURIComponent(file.id));
+  		m.route('/editor/' + file.studyId + '/file/' + encodeURIComponent(file.id));
   	};
   };
 
@@ -1763,17 +1758,18 @@
   			toggleNew: function toggleNew() {
   				return ctrl.newOpen = !ctrl.newOpen;
   			},
-  			createEmpty: createEmpty(study),
-  			createPIP: createPIP(study),
-  			createQuest: createQuest(study),
-  			createManager: createManager(study)
+  			createEmpty: createEmpty(study)
   		};
 
   		return ctrl;
   	},
 
   	view: function view(ctrl) {
-  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [m('a.dropdown-item', { onclick: ctrl.createPIP }, 'piPlayer'), m('a.dropdown-item', { onclick: ctrl.createQuest }, 'piQuest'), m('a.dropdown-item', { onclick: ctrl.createManager }, 'piManager')])]);
+  		return m('.btn-group', { class: ctrl.newOpen ? 'open' : '' }, [m('.btn.btn-sm.btn-secondary', { onclick: ctrl.createEmpty }, [m('i.fa.fa-plus'), ' New']), m('.btn.btn-sm.btn-secondary.dropdown-toggle', { onclick: ctrl.toggleNew }), m('.dropdown-menu', { onclick: ctrl.toggleNew }, [
+  			//		m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
+  			//		m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
+  			//		m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
+  		])]);
   	}
   };
 
@@ -1782,7 +1778,9 @@
   		var study = _ref.study;
   		var filesVM = _ref.filesVM;
 
-  		return m('.sidebar', [m('h5', study.id), m.component(sidebarButtons, { study: study }), m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ onchange: uploadFiles('/', study) })]);
+  		return m('.sidebar', [m('h5', study.id), m('p.text-muted.m-a-1', [m('small', 'Right click the file list in order to perform actions.')]),
+  		//			m.component(sidebarButtons, {study}),
+  		m.component(filesComponent, { study: study, filesVM: filesVM, files: study.files() || [] }), uploadBox({ onchange: uploadFiles('/', study) })]);
   	}
   };
 
@@ -1802,7 +1800,7 @@
   			isChanged: m.prop(false)
   		});
 
-  		var ctrl = { study: study, filesVM: filesVM, onunload: debounce(onunload, 0, true) };
+  		var ctrl = { study: study, filesVM: filesVM, onunload: onunload };
 
   		window.addEventListener('beforeunload', beforeunload);
 
@@ -1818,7 +1816,6 @@
   			if (hasUnsavedData()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
   		}
 
-  		// this function needs to be debounced because of https://github.com/lhorie/mithril.js/issues/931
   		function onunload(e) {
   			var leavingEditor = function leavingEditor() {
   				return !/^\/editor\//.test(m.route());
@@ -1851,25 +1848,118 @@
   	};
   };
 
-  // Returns a function, that, as long as it continues to be invoked, will not
-  // be triggered. The function will be called after it stops being called for
-  // N milliseconds. If `immediate` is passed, trigger the function on the
-  // leading edge, instead of the trailing.
-  function debounce(func, wait, immediate) {
-  	var timeout;
-  	return function () {
-  		var context = this,
-  		    args = arguments;
-  		var later = function later() {
-  			timeout = null;
-  			if (!immediate) func.apply(context, args);
-  		};
-  		var callNow = immediate && !timeout;
-  		clearTimeout(timeout);
-  		timeout = setTimeout(later, wait);
-  		if (callNow) func.apply(context, args);
-  	};
+  var END_LINE = '\n';
+  var TAB = '\t';
+  var indent = function indent(str) {
+  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
+  	return str.replace(/^/gm, tab);
+  };
+
+  var print = function print(obj) {
+  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
+  		case 'boolean':
+  			return obj ? 'true' : 'false';
+  		case 'string':
+  			return '\'' + obj.replace('\'', '\\\'') + '\''; // escape "
+  		case 'number':
+  			return obj + '';
+  		case 'function':
+  			return obj.toString();
+  	}
+
+  	if (Array.isArray(obj)) return printArray(obj);
+
+  	return printObj(obj);
+
+  	function printArray(arr) {
+  		var isShort = arr.every(function (element) {
+  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
+  		});
+  		var content = arr.map(function (value) {
+  			return print(value);
+  		}).join(isShort ? ', ' : ',\n');
+
+  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
+  	}
+
+  	function printObj(obj) {
+  		var content = Object.keys(obj).map(function (key) {
+  			return key + ' : ' + print(obj[key]);
+  		}).map(function (row) {
+  			return indent(row);
+  		}).join(',' + END_LINE);
+  		return '{\n' + content + '\n}';
+  	}
+  };
+
+  function ratingWizard(_ref) {
+  	var basicPage = _ref.basicPage;
+  	var basicSelect = _ref.basicSelect;
+  	var questionList = _ref.questionList;
+  	var sequence = _ref.sequence;
+
+  	var NEW_LINE = '\n';
+  	var content = ['var API = new Quest();', '', '// The structure for the basic questionnaire page', 'API.addPagesSet(\'basicPage\', ' + print(basicPage) + ');', '', '// The structure for the basic question\t', 'API.addQuestionsSet(\'basicSelect\', ' + print(basicSelect) + ');', '// This is the question pool, the sequence picks the questions from here', 'API.addQuestionSet(\'questionList\', ' + print(questionList), '', '// This is the sequence of questions', 'API.addSequence(' + print(sequence) + ')', '', 'return API.script;'].join(NEW_LINE);
+
+  	return 'define([\'questAPI\'], function(Quest){\n' + indent(content) + '\n});';
   }
+
+  /*
+  define(['questAPI'], function(Quest){
+
+  	var API = new Quest();
+  	
+  	// The structure for the basic questionnaire page
+  	API.addPagesSet('basicPage', {
+  		header: '<%= header %>',
+  		autoFocus:true,
+  		questions: [
+  			{inherit: {type:'exRandom', set:'questionList'}}
+  		]
+  	});
+
+  	// The structure for the basic question	
+  	API.addQuestionsSet('basicSelect',{
+  		type: 'selectOne',
+  		autoSubmit: '<%= autoSubmit ? "true" : "false" %>',
+  		numericValues:true,
+  		help: '<%= pagesMeta.number < 3 %>',
+  		helpText: 'Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'
+  	});
+
+  	// This is the question pool, the sequence picks the questions from here
+  	API.addQuestionSet('questionList', [
+  		{inherit:'basicSelect', name: 'n001', stem:'How are you?'}
+  	]);
+
+  	// This is the sequence of questions
+  	API.addSequence([
+  		{
+  			mixer: 'repeat',
+  			times: 10,
+  			data: [
+  				{inherit:'basicPage'}
+  			]
+  		}
+  	]);
+
+  	return API.script;
+  });
+  */
+
+  var wizardComponent = {
+  	controller: function controller() {
+  		console.log(ratingWizard({
+  			basicPage: { header: 'blog', decline: true },
+  			basicSelect: {},
+  			questionList: [],
+  			sequence: []
+  		}));
+  	},
+  	view: function view() {
+  		return m('.wizard', [m('h3', 'Rating wizard')]);
+  	}
+  };
 
   var url = '/dashboard/StudyData';
 
@@ -2219,7 +2309,7 @@
   	});
   };
 
-  var create$1 = function create(list) {
+  var create = function create(list) {
   	var output = m.prop();
   	return createMessage({ output: output }).then(function (response) {
   		if (response) {
@@ -2373,7 +2463,7 @@
   			remove: remove,
   			edit: edit,
   			reset: reset,
-  			create: create$1,
+  			create: create,
   			canCreate: function canCreate() {
   				return getRole() === 'SU';
   			},
@@ -2417,7 +2507,7 @@
   			}[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
   		})])])]);
   	}
   };
@@ -2551,6 +2641,7 @@
   	return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();
   };
 
+  var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
   var poolComponent$1 = {
   	controller: function controller() {
   		var ctrl = {
@@ -2567,20 +2658,38 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig$1('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig$1('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', thConfig$1('completedSessions', ctrl.sortBy), 'Completion'), m('th', 'New Status'), m('th', 'Old Status'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
-  			m('td', study.studyId), m('td', study.updaterId),
+  			m('td', study.studyId),
+
+  			// ### Study url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.studyUrl, target: '_blank' }, 'Study')]),
+
+  			// ### Rules url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.rulesUrl, target: '_blank' }, 'Rules')]),
+
+  			// ### Autopause url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.autopauseUrl, target: '_blank' }, 'Autopause')]),
 
   			// ### Date
   			m('td', formatDate(new Date(study.creationDate))),
 
-  			// ### Status
+  			// ### Target Completionss
+  			m('td', [study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
+
+  			// ### New Status
   			m('td', [{
   				R: m('span.label.label-success', 'Running'),
   				P: m('span.label.label-info', 'Paused'),
   				S: m('span.label.label-danger', 'Stopped')
-  			}[study.newStatus]])]);
+  			}[study.newStatus]]),
+  			// ### Old Status
+  			m('td', [{
+  				R: m('span.label.label-success', 'Running'),
+  				P: m('span.label.label-info', 'Paused'),
+  				S: m('span.label.label-danger', 'Stopped')
+  			}[study.studyStatus]]), m('td', study.updaterId)]);
   		})])])]);
   	}
   };
@@ -2592,8 +2701,8 @@
 
   function studyFilter$1(ctrl) {
   	return function (study) {
-  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime();
-  	};
+  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()) || includes(study.targetCompletions, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime() + 86000000;
+  	}; //include the end day selected
 
   	function includes(val, search) {
   		return typeof val === 'string' && val.includes(search);
@@ -2737,7 +2846,7 @@
    * Get all downloads
    */
 
-  var recursiveGetAll = debounce$1(getAll, 5000);
+  var recursiveGetAll = debounce(getAll, 5000);
   function getAll(_ref) {
   	var list = _ref.list;
   	var cancel = _ref.cancel;
@@ -2753,7 +2862,7 @@
   }
 
   // debounce but call at first iteration
-  function debounce$1(func, wait) {
+  function debounce(func, wait) {
   	var first = true;
   	var timeout = undefined;
   	return function () {
@@ -2803,7 +2912,7 @@
    * Create download
    */
 
-  function create$2(list, cancel) {
+  function create$1(list, cancel) {
   	var output = m.prop();
   	return createMessage$1({ output: output }).then(function (response) {
   		if (response) {
@@ -2844,7 +2953,7 @@
   		var ctrl = {
   			list: list,
   			cancelDownload: cancelDownload,
-  			create: create$2,
+  			create: create$1,
   			remove: remove$1,
   			globalSearch: m.prop(''),
   			sortBy: m.prop('studyId'),
@@ -2963,7 +3072,8 @@
   	'/login': loginComponent,
   	'/studies': mainComponent,
   	'/editor/:studyId': editorLayoutComponent,
-  	'/editor/:studyId/:fileID': editorLayoutComponent,
+  	'/editor/:studyId/file/:fileID': editorLayoutComponent,
+  	'/editor/:studyId/wizard/:wizardType': wizardComponent,
   	'/pool': poolComponent,
   	'/pool/history': poolComponent$1,
   	'/downloads': downloadsComponent
