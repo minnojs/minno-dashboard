@@ -35,11 +35,12 @@ export let moveFile = (file,study) => () => {
 	}
 };
 
+let playground;
 export let play = file => () => {
-	let playground;
+	// this is important, if we don't close the original window we get problems with onload
+	if (playground && !playground.closed) playground.close();
 
 	playground = window.open('playground.html', 'Playground');
-
 	playground.onload = function(){
 		// first set the unload listener
 		playground.addEventListener('unload', function() {
