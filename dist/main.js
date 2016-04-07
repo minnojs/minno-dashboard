@@ -344,6 +344,22 @@
   		var content = _ref2$content === undefined ? '' : _ref2$content;
   		var isDir = _ref2.isDir;
 
+  		// validation (make sure there are no invalid characters)
+  		if (/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({ message: 'The file name "' + name + '" is not valid' });
+
+  		// validation (make sure file does not already exist)
+  		var exists = this.files().some(function (file) {
+  			return file.path === name;
+  		});
+  		if (exists) return Promise.reject({ message: 'The file "' + name + '" already exists' });
+
+  		// validateion (make sure direcotry exists)
+  		var basePath = name.substring(0, name.lastIndexOf('/')).replace(/^\//, '');
+  		var dirExists = basePath === '' || this.files().some(function (file) {
+  			return file.isDir && file.path === basePath;
+  		});
+  		if (!dirExists) return Promise.reject({ message: 'The directory "' + basePath + '" does not exist' });
+
   		return fetchJson(this.apiURL('/file'), { method: 'post', body: { name: name, content: content, isDir: isDir } }).then(function (response) {
   			Object.assign(response, { studyId: _this2.id, content: content, path: name, isDir: isDir });
   			var file = fileFactory(response);
@@ -703,7 +719,7 @@
 
   var createFile = function createFile(study, name, content) {
   	study.createFile({ name: name(), content: content() }).then(function (response) {
-  		m.route('/editor/' + study.id + '/' + encodeURIComponent(response.id));
+  		m.route('/editor/' + study.id + '/file/' + encodeURIComponent(response.id));
   		return response;
   	}).catch(function (err) {
   		return messages.alert({
@@ -1360,6 +1376,340 @@
   	}
   };
 
+  function formFactory() {
+  	var validationHash = [];
+  	return {
+  		register: function register(fn) {
+  			validationHash.push(fn);
+  		},
+  		isValid: function isValid() {
+  			return validationHash.every(function (fn) {
+  				return fn.call();
+  			});
+  		},
+
+  		showValidation: m.prop(false)
+  	};
+  }
+
+  var viewWrapper = function viewWrapper(view) {
+  	var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+  	return function (ctrl, args) {
+  		var isValid = !ctrl.validity || ctrl.validity();
+  		var groupClass = undefined;
+  		var inputClass = undefined;
+  		var _opts$isFormControl = opts.isFormControl;
+  		var isFormControl = _opts$isFormControl === undefined ? true : _opts$isFormControl;
+
+  		if (ctrl.showValidation && ctrl.showValidation() && !isValid) {
+  			groupClass = isValid ? 'has-success' : 'has-danger';
+  			inputClass = isValid ? 'form-controll-success' : 'form-control-error';
+  		}
+
+  		return m('.form-group.row', { class: groupClass }, [m('label.col-sm-2', { class: isFormControl ? 'form-control-label' : '' }, args.label), m('.col-sm-10', [view(ctrl, args, { inputClass: inputClass })]), args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help)]);
+  	};
+  };
+
+  var textInput = function textInput(args) {
+  	return m.component(textInputComponent, args);
+  };
+  var textInputComponent = {
+  	controller: function controller(_ref) {
+  		var prop = _ref.prop;
+  		var form = _ref.form;
+  		var _ref$required = _ref.required;
+  		var required = _ref$required === undefined ? false : _ref$required;
+
+  		if (!form) throw new Error('Text input requires a form');
+
+  		var validity = function validity() {
+  			return !required || prop().length;
+  		};
+  		form.register(validity);
+
+  		return { validity: validity, showValidation: form.showValidation };
+  	},
+
+  	view: viewWrapper(function (ctrl, _ref2, _ref3) {
+  		var prop = _ref2.prop;
+  		var _ref2$isArea = _ref2.isArea;
+  		var isArea = _ref2$isArea === undefined ? false : _ref2$isArea;
+  		var _ref2$isFirst = _ref2.isFirst;
+  		var isFirst = _ref2$isFirst === undefined ? false : _ref2$isFirst;
+  		var _ref2$placeholder = _ref2.placeholder;
+  		var placeholder = _ref2$placeholder === undefined ? '' : _ref2$placeholder;
+  		var help = _ref2.help;
+  		var _ref2$rows = _ref2.rows;
+  		var rows = _ref2$rows === undefined ? 3 : _ref2$rows;
+  		var inputClass = _ref3.inputClass;
+
+  		return !isArea ? m('input.form-control', {
+  			class: inputClass,
+  			placeholder: placeholder,
+  			value: prop(),
+  			onkeyup: m.withAttr('value', prop),
+  			config: function config(element, isInit) {
+  				return isFirst && isInit && element.focus();
+  			}
+  		}) : m('textarea.form-control', {
+  			class: inputClass,
+  			placeholder: placeholder,
+  			onkeyup: m.withAttr('value', prop),
+  			rows: rows,
+  			config: function config(element, isInit) {
+  				return isFirst && isInit && element.focus();
+  			}
+  		}, [prop()]);
+  	})
+  };
+
+  var checkboxInput = function checkboxInput(args) {
+  	return m.component(checkboxInputComponent, args);
+  };
+  var checkboxInputComponent = {
+  	controller: function controller(_ref4) {
+  		var prop = _ref4.prop;
+  		var form = _ref4.form;
+  		var required = _ref4.required;
+
+  		if (!form) throw new Error('Inputs require a form');
+
+  		var validity = function validity() {
+  			return !required || prop();
+  		};
+  		form.register(validity);
+
+  		return { validity: validity, showValidation: form.showValidation };
+  	},
+
+  	view: viewWrapper(function (ctrl, _ref5) {
+  		var prop = _ref5.prop;
+  		var _ref5$description = _ref5.description;
+  		var description = _ref5$description === undefined ? '' : _ref5$description;
+
+  		return m('.checkbox', [m('label.c-input.c-checkbox', [m('input.form-control', {
+  			type: 'checkbox',
+  			onclick: m.withAttr('checked', prop),
+  			checked: prop()
+  		}), m('span.c-indicator'), m.trust('&nbsp;'), m('span.text-muted', description)])]);
+  	}, { isFormControl: false })
+  };
+
+  var maybeInput = function maybeInput(args) {
+  	return m.component(maybeInputComponent, args);
+  };
+  var maybeInputComponent = {
+  	controller: function controller(_ref6) {
+  		var prop = _ref6.prop;
+  		var form = _ref6.form;
+  		var required = _ref6.required;
+
+  		if (!form) throw new Error('Inputs require a form');
+
+  		var _text = m.prop(typeof prop() == 'boolean' ? '' : prop());
+  		var _checked = m.prop(typeof prop() == 'string' ? true : prop());
+  		var validity = function validity() {
+  			return !required || prop();
+  		};
+  		form.register(validity);
+
+  		return { validity: validity, showValidation: form.showValidation,
+  			text: function text(value) {
+  				if (arguments.length) {
+  					_text(value);
+  					prop(value || true);
+  				}
+  				return _text();
+  			},
+  			checked: function checked(value) {
+  				if (arguments.length) {
+  					_checked(value);
+  					if (_checked() && _text()) prop(_text());else prop(_checked());
+  				}
+  				return _checked();
+  			}
+  		};
+  	},
+
+  	view: viewWrapper(function (_ref7, _ref8) {
+  		var text = _ref7.text;
+  		var checked = _ref7.checked;
+  		var _ref8$placeholder = _ref8.placeholder;
+  		var placeholder = _ref8$placeholder === undefined ? '' : _ref8$placeholder;
+
+  		return m('.input-group', [m('span.input-group-addon', [m('input', {
+  			type: 'checkbox',
+  			onclick: m.withAttr('checked', checked),
+  			checked: checked()
+  		})]), m('input.form-control', {
+  			placeholder: placeholder,
+  			value: text(),
+  			onkeyup: m.withAttr('value', text),
+  			disabled: !checked()
+  		})]);
+  	})
+  };
+
+  var END_LINE = '\n';
+  var TAB = '\t';
+  var indent = function indent(str) {
+  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
+  	return str.replace(/^/gm, tab);
+  };
+
+  var print = function print(obj) {
+  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
+  		case 'boolean':
+  			return obj ? 'true' : 'false';
+  		case 'string':
+  			return printString(obj);
+  		case 'number':
+  			return obj + '';
+  		case 'function':
+  			if (obj.toJSON) return print(obj()); // Support m.prop
+  			else return obj.toString();
+  	}
+
+  	if (Array.isArray(obj)) return printArray(obj);
+
+  	return printObj(obj);
+
+  	function printString(str) {
+  		return '\'' + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + '\''; // escape string and add parenthesis
+  	}
+
+  	function printArray(arr) {
+  		var isShort = arr.every(function (element) {
+  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
+  		});
+  		var content = arr.map(function (value) {
+  			return print(value);
+  		}).join(isShort ? ', ' : ',\n');
+
+  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
+  	}
+
+  	function printObj(obj) {
+  		var content = Object.keys(obj).map(function (key) {
+  			return key + ' : ' + print(obj[key]);
+  		}).map(function (row) {
+  			return indent(row);
+  		}).join(',' + END_LINE);
+  		return '{\n' + content + '\n}';
+  	}
+  };
+
+  function ratingWizard(_ref) {
+  	var basicPage = _ref.basicPage;
+  	var basicSelect = _ref.basicSelect;
+  	var questionList = _ref.questionList;
+  	var sequence = _ref.sequence;
+
+  	var NEW_LINE = '\n';
+  	var content = ['var API = new Quest();', '', '// The structure for the basic questionnaire page', 'API.addPagesSet(\'basicPage\', ' + print(basicPage) + ');', '', '// The structure for the basic question\t', 'API.addQuestionsSet(\'basicSelect\', ' + print(basicSelect) + ');', '// This is the question pool, the sequence picks the questions from here', 'API.addQuestionsSet(\'questionList\', ' + print(questionList) + ');', '', '// This is the sequence of questions', '// Note that you may want to update the "times" property if you change the number of questions', 'API.addSequence(' + print(sequence) + ');', '', 'return API.script;'].join(NEW_LINE);
+
+  	return 'define([\'questAPI\'], function(Quest){\n' + indent(content) + '\n});';
+  }
+
+  var wizardComponent = {
+  	controller: function controller(_ref) {
+  		var study = _ref.study;
+
+  		var path = m.prop('');
+  		var form = formFactory();
+  		var submit = function submit() {
+  			form.showValidation(true);
+  			if (form.isValid()) {
+  				createFile(study, path, compileScript(script));
+  			}
+  		};
+
+  		var compileScript = function compileScript(script) {
+  			return function () {
+  				script.basicPage.questions = [{ inherit: { type: script.randomize() ? 'exRandom' : 'sequential', set: 'questionList' } }];
+  				script.sequence = [{
+  					mixer: 'repeat',
+  					times: script.times() || script.questionList().length,
+  					data: [{ inherit: 'basicPage' }]
+  				}];
+
+  				return ratingWizard(script);
+  			};
+  		};
+
+  		var script = {
+  			basicPage: {
+  				header: m.prop(''),
+  				decline: m.prop(true),
+  				autoFocus: true
+  			},
+  			basicSelect: {
+  				type: 'selectOne',
+  				autoSubmit: m.prop(false),
+  				numericValues: m.prop(false),
+  				help: m.prop('<%= pagesMeta.number < 3 %>'),
+  				helpText: m.prop('Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'),
+  				answers: m.prop(['Very much', 'Somewhat', 'Undecided', 'Not realy', 'Not at all'])
+  			},
+  			questionList: m.prop([{ stem: 'Do you like chocolate?', name: 'q1', inherit: 'basicSelect' }, { stem: 'Do you like bannanas?', name: 'q2', inherit: 'basicSelect' }]),
+  			times: m.prop(false),
+  			randomize: m.prop(true),
+  			sequence: [{
+  				mixer: 'repeat',
+  				times: m.prop(10),
+  				data: [{ inherit: 'basicPage' }]
+  			}]
+  		};
+  		return { path: path, form: form, submit: submit, script: script };
+  	},
+  	view: function view(_ref2) {
+  		var form = _ref2.form;
+  		var submit = _ref2.submit;
+  		var script = _ref2.script;
+  		var path = _ref2.path;
+
+  		var basicPage = script.basicPage;
+  		var basicSelect = script.basicSelect;
+
+  		return m('.wizard.container', [m('h3', 'Rating wizard'), m('p', 'This wizard is responsible for rating stuff'), textInput({ label: 'File Name', placeholder: 'Path to file', prop: path, form: form, required: true }), m('h4', 'Basic Page'), textInput({ label: 'Header', placeholder: 'Page header', help: 'The header for all pages.', prop: basicPage.header, form: form }), checkboxInput({ label: 'Decline', description: 'Allow users to decline', prop: basicPage.decline, form: form }), m('h4', 'Basic Select'), checkboxInput({ label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form: form }), textInput({ label: 'answers', prop: str2Answers(basicSelect.answers), rows: 7, form: form, isArea: true, help: 'Each row here represents an answer option', required: true }), checkboxInput({ label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form: form }), maybeInput({ label: 'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help, form: form }), basicSelect.help() ? textInput({ label: 'helpText', help: 'The instruction text for using this type of question', prop: basicSelect.helpText, form: form, isArea: true }) : '', m('h4', 'Sequence'), checkboxInput({ label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form }), maybeInput({ label: 'Choose', help: 'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times }), textInput({ label: 'questions', prop: str2Questions(script.questionList), rows: 20, form: form, isArea: true, help: 'Each row here represents a questions', required: true }), m('.row', [m('.col-cs-12.text-xs-right', [!form.showValidation() || form.isValid() ? m('button.btn.btn-primary', { onclick: submit }, 'Create') : m('button.btn.btn-danger', { disabled: true }, 'Not Valid')])])]);
+  	}
+  };
+
+  var transformProp = function transformProp(prop, input, output) {
+  	var p = function p() {
+  		if (arguments.length) prop(input(arguments.length <= 0 ? undefined : arguments[0]));
+  		return output(prop());
+  	};
+
+  	p.toJSON = function () {
+  		return output(prop());
+  	};
+
+  	return p;
+  };
+
+  // transorm a "m.prop" so that an array is expressed as a "\n" separated string.
+  var str2Answers = function str2Answers(prop) {
+  	return transformProp(prop, function (str) {
+  		return str.replace(/\n*$/, '').split('\n');
+  	}, function (arr) {
+  		return arr.join('\n');
+  	});
+  };
+
+  // Create the plain text version of the question list
+  var str2Questions = function str2Questions(prop) {
+  	return transformProp(prop, function (str) {
+  		return str.replace(/\n*$/, '').split('\n').map(function (stem, index) {
+  			return { stem: stem, name: 'q' + index, inherit: 'basicSelect' };
+  		});
+  	}, function (arr) {
+  		return arr.map(function (q) {
+  			return q.stem;
+  		}).join('\n');
+  	});
+  };
+
   // taken from here:
   // https://github.com/JedWatson/classnames/blob/master/index.js
   var hasOwn = {}.hasOwnProperty;
@@ -1525,15 +1875,15 @@
   	var menu = [
   	// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-  	{ icon: 'fa-folder', text: 'New Folder', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-file-text', text: 'New from template', menu: mapWizardHash(hash) },
-  	// {icon:'fa-magic', text:'New from wizard', menu: [
-  	// {text: 'Work in progress...'},
-  	// {text: 'Work in progress...'},
-  	// {text: 'Work in progress...'}
-  	// ]},
-  	{ separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
+  	{ icon: 'fa-folder', text: 'New Directory', action: createDir(study, path) }, { icon: 'fa-file', text: 'New File', action: createEmpty(study, path) }, { icon: 'fa-file-text', text: 'New from template', menu: mapWizardHash(hash) }, { icon: 'fa-magic', text: 'New from wizard', menu: [{ text: 'Rating wizard', action: activateWizard('rating') }] }, { separator: true }, { icon: 'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent() }, { icon: 'fa-download', text: 'Download', action: downloadFile }, { icon: 'fa-link', text: 'Copy URL', action: copyUrl(file) }, { icon: 'fa-close', text: 'Delete', action: deleteFile }, { icon: 'fa-exchange', text: 'Move/Rename...', action: moveFile(file, study) }];
 
   	return contextMenuComponent.open(menu);
+
+  	function activateWizard(route) {
+  		return function () {
+  			return m.route('/editor/' + study.id + '/wizard/' + route);
+  		};
+  	}
 
   	function mapWizardHash(wizardHash) {
   		return Object.keys(wizardHash).map(function (text) {
@@ -1828,10 +2178,11 @@
   			}
   		}
   	},
-  	view: function view(ctrl) {
-  		var study = ctrl.study;
-  		var filesVM = ctrl.filesVM;
-  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, { study: study, filesVM: filesVM })]), m('.col-md-10', [m.component(fileEditorComponent, { study: study, filesVM: filesVM })])] : '']);
+  	view: function view(_ref) {
+  		var study = _ref.study;
+  		var filesVM = _ref.filesVM;
+
+  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, { study: study, filesVM: filesVM })]), m('.col-md-10', [m.route.param('resource') === 'file' ? m.component(fileEditorComponent, { study: study, filesVM: filesVM }) : m.component(wizardComponent, { study: study })])] : '']);
   	}
   };
 
@@ -1847,119 +2198,6 @@
   		}
   		return map[key];
   	};
-  };
-
-  var END_LINE = '\n';
-  var TAB = '\t';
-  var indent = function indent(str) {
-  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
-  	return str.replace(/^/gm, tab);
-  };
-
-  var print = function print(obj) {
-  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
-  		case 'boolean':
-  			return obj ? 'true' : 'false';
-  		case 'string':
-  			return '\'' + obj.replace('\'', '\\\'') + '\''; // escape "
-  		case 'number':
-  			return obj + '';
-  		case 'function':
-  			return obj.toString();
-  	}
-
-  	if (Array.isArray(obj)) return printArray(obj);
-
-  	return printObj(obj);
-
-  	function printArray(arr) {
-  		var isShort = arr.every(function (element) {
-  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
-  		});
-  		var content = arr.map(function (value) {
-  			return print(value);
-  		}).join(isShort ? ', ' : ',\n');
-
-  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
-  	}
-
-  	function printObj(obj) {
-  		var content = Object.keys(obj).map(function (key) {
-  			return key + ' : ' + print(obj[key]);
-  		}).map(function (row) {
-  			return indent(row);
-  		}).join(',' + END_LINE);
-  		return '{\n' + content + '\n}';
-  	}
-  };
-
-  function ratingWizard(_ref) {
-  	var basicPage = _ref.basicPage;
-  	var basicSelect = _ref.basicSelect;
-  	var questionList = _ref.questionList;
-  	var sequence = _ref.sequence;
-
-  	var NEW_LINE = '\n';
-  	var content = ['var API = new Quest();', '', '// The structure for the basic questionnaire page', 'API.addPagesSet(\'basicPage\', ' + print(basicPage) + ');', '', '// The structure for the basic question\t', 'API.addQuestionsSet(\'basicSelect\', ' + print(basicSelect) + ');', '// This is the question pool, the sequence picks the questions from here', 'API.addQuestionSet(\'questionList\', ' + print(questionList), '', '// This is the sequence of questions', 'API.addSequence(' + print(sequence) + ')', '', 'return API.script;'].join(NEW_LINE);
-
-  	return 'define([\'questAPI\'], function(Quest){\n' + indent(content) + '\n});';
-  }
-
-  /*
-  define(['questAPI'], function(Quest){
-
-  	var API = new Quest();
-  	
-  	// The structure for the basic questionnaire page
-  	API.addPagesSet('basicPage', {
-  		header: '<%= header %>',
-  		autoFocus:true,
-  		questions: [
-  			{inherit: {type:'exRandom', set:'questionList'}}
-  		]
-  	});
-
-  	// The structure for the basic question	
-  	API.addQuestionsSet('basicSelect',{
-  		type: 'selectOne',
-  		autoSubmit: '<%= autoSubmit ? "true" : "false" %>',
-  		numericValues:true,
-  		help: '<%= pagesMeta.number < 3 %>',
-  		helpText: 'Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'
-  	});
-
-  	// This is the question pool, the sequence picks the questions from here
-  	API.addQuestionSet('questionList', [
-  		{inherit:'basicSelect', name: 'n001', stem:'How are you?'}
-  	]);
-
-  	// This is the sequence of questions
-  	API.addSequence([
-  		{
-  			mixer: 'repeat',
-  			times: 10,
-  			data: [
-  				{inherit:'basicPage'}
-  			]
-  		}
-  	]);
-
-  	return API.script;
-  });
-  */
-
-  var wizardComponent = {
-  	controller: function controller() {
-  		console.log(ratingWizard({
-  			basicPage: { header: 'blog', decline: true },
-  			basicSelect: {},
-  			questionList: [],
-  			sequence: []
-  		}));
-  	},
-  	view: function view() {
-  		return m('.wizard', [m('h3', 'Rating wizard')]);
-  	}
   };
 
   var url = '/dashboard/StudyData';
@@ -3073,8 +3311,7 @@
   	'/login': loginComponent,
   	'/studies': mainComponent,
   	'/editor/:studyId': editorLayoutComponent,
-  	'/editor/:studyId/file/:fileID': editorLayoutComponent,
-  	'/editor/:studyId/wizard/:wizardType': wizardComponent,
+  	'/editor/:studyId/:resource/:fileID': editorLayoutComponent,
   	'/pool': poolComponent,
   	'/pool/history': poolComponent$1,
   	'/downloads': downloadsComponent
