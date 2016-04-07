@@ -51,6 +51,7 @@ let textContent = (ctrl, {file, observer}) => {
 
 let modeMap = {
 	js: 'javascript',
+	jsp: 'jsp',
 	jst: 'ejs',
 	html: 'ejs',
 	htm: 'ejs',
