@@ -6,6 +6,7 @@ let textMenuView = ({mode, file, observer}) => {
 	let setMode = value => () => mode(value);
 	let modeClass = value => mode() === value ? 'active' : '';
 	let isJs = file.type === 'js';
+	let isExpt = /\.expt\.xml$/.test(file.path);
 
 	return m('.btn-toolbar.editor-menu', [
 		m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
@@ -39,6 +40,10 @@ let textMenuView = ({mode, file, observer}) => {
 				m('strong.fa.fa-play')
 			]),
 			
+			!isExpt ? '' :  m('a.btn.btn-secondary', {href: `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`, title:'Play this task'},[
+				m('strong.fa.fa-play')
+			]),
+
 			m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)',class: file.hasChanged() ? 'btn-danger-outline' : ''},[
 				m('strong.fa.fa-save')
 			])
