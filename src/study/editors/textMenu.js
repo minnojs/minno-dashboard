@@ -40,7 +40,7 @@ let textMenuView = ({mode, file, observer}) => {
 				m('strong.fa.fa-play')
 			]),
 			
-			!isExpt ? '' :  m('a.btn.btn-secondary', {href: `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`, title:'Play this task'},[
+			!isExpt ? '' :  m('a.btn.btn-secondary', {href: `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`, target: '_blank', title:'Play this task'},[
 				m('strong.fa.fa-play')
 			]),
 

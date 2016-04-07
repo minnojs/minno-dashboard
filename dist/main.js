@@ -1288,7 +1288,7 @@
   	//])
   	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
   			return observer.trigger('paste', '<%= %>');
-  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), target: '_blank', title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
 
   var textEditor = function textEditor(args) {
