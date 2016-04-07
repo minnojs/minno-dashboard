@@ -14,6 +14,12 @@ let textMenuView = ({mode, file, study, observer}) => {
 			file.path
 		),
 
+		m('.btn-group.btn-group-sm.pull-xs-right', [
+			m('a.btn.btn-secondary', {href: `https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts`, target: '_blank', title:'Editor help'},[
+				m('strong.fa.fa-info')
+			])
+		]),
+
 		!isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
 			m('a.btn.btn-secondary', {onclick: setMode('edit'), class: modeClass('edit')},[
 				m('strong','Edit')
