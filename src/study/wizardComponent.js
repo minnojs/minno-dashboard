@@ -37,14 +37,15 @@ let wizardComponent = {
 			basicPage: {
 				header: m.prop(''),
 				decline: m.prop(true),
-				autoFocus:true
+				autoFocus:true,
+				v1style: 2
 			},
 			basicSelect: {
 				type: 'selectOne',
 				autoSubmit: m.prop(false),
-				numericValues: m.prop(false),
+				numericValues: m.prop(true),
 				help: m.prop('<%= pagesMeta.number < 3 %>'),
-				helpText: m.prop('Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'),
+				helpText: m.prop('Tip: For quick response, click to select your answer, and then click again to submit.'),
 				answers: m.prop([
 					'Very much',
 					'Somewhat',

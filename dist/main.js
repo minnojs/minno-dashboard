@@ -1280,6 +1280,7 @@
   		return mode() === value ? 'active' : '';
   	};
   	var isJs = file.type === 'js';
+  	var isExpt = /\.expt\.xml$/.test(file.path);
 
   	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))])
   	//m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
@@ -1287,7 +1288,7 @@
   	//])
   	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
   			return observer.trigger('paste', '<%= %>');
-  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
 
   var textEditor = function textEditor(args) {
@@ -1644,14 +1645,15 @@
   			basicPage: {
   				header: m.prop(''),
   				decline: m.prop(true),
-  				autoFocus: true
+  				autoFocus: true,
+  				v1style: 2
   			},
   			basicSelect: {
   				type: 'selectOne',
   				autoSubmit: m.prop(false),
-  				numericValues: m.prop(false),
+  				numericValues: m.prop(true),
   				help: m.prop('<%= pagesMeta.number < 3 %>'),
-  				helpText: m.prop('Selecting an answer once colors it blue.<br/>You can change your answer by selecting another option.<br/>To confirm, click the selected (blue) button a second time.'),
+  				helpText: m.prop('Tip: For quick response, click to select your answer, and then click again to submit.'),
   				answers: m.prop(['Very much', 'Somewhat', 'Undecided', 'Not realy', 'Not at all'])
   			},
   			questionList: m.prop([{ stem: 'Do you like chocolate?', name: 'q1', inherit: 'basicSelect' }, { stem: 'Do you like bannanas?', name: 'q2', inherit: 'basicSelect' }]),
