@@ -650,23 +650,36 @@
   };
 
   var playground = undefined;
-  var play = function play(file) {
+  var play = function play(file, study) {
   	return function () {
-  		// this is important, if we don't close the original window we get problems with onload
-  		if (playground && !playground.closed) playground.close();
+  		var isSaved = study.files().every(function (file) {
+  			return !file.hasChanged();
+  		});
 
-  		playground = window.open('playground.html', 'Playground');
-  		playground.onload = function () {
-  			// first set the unload listener
-  			playground.addEventListener('unload', function () {
-  				// get focus back here
-  				window.focus();
-  			});
+  		if (isSaved) open();else messages.confirm({
+  			header: 'Play task',
+  			content: 'You have unsaved files, the player will use the saved version, are you sure you want to proceed?'
+  		}).then(function (response) {
+  			return response && open();
+  		});
 
-  			// then activate the player (this ensures that when )
-  			playground.activate(file);
-  			playground.focus();
-  		};
+  		function open() {
+  			// this is important, if we don't close the original window we get problems with onload
+  			if (playground && !playground.closed) playground.close();
+
+  			playground = window.open('playground.html', 'Playground');
+  			playground.onload = function () {
+  				// first set the unload listener
+  				playground.addEventListener('unload', function () {
+  					// get focus back here
+  					window.focus();
+  				});
+
+  				// then activate the player (this ensures that when )
+  				playground.activate(file);
+  				playground.focus();
+  			};
+  		}
   	};
   };
 
@@ -1270,6 +1283,7 @@
   var textMenuView = function textMenuView(_ref) {
   	var mode = _ref.mode;
   	var file = _ref.file;
+  	var study = _ref.study;
   	var observer = _ref.observer;
 
   	var setMode = function setMode(value) {
@@ -1289,7 +1303,7 @@
   	//])
   	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
   			return observer.trigger('paste', '<%= %>');
-  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), target: '_blank', title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file, study), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), target: '_blank', title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
   };
 
   var textEditor = function textEditor(args) {
@@ -1299,16 +1313,18 @@
   var textEditorComponent = {
   	controller: function controller(_ref) {
   		var file = _ref.file;
+  		var study = _ref.study;
 
   		file.loaded || file.get().then(m.redraw).catch(m.redraw);
 
-  		var ctrl = { mode: m.prop('edit'), observer: observer() };
+  		var ctrl = { mode: m.prop('edit'), observer: observer(), study: study };
 
   		return ctrl;
   	},
 
   	view: function view(ctrl, _ref2) {
   		var file = _ref2.file;
+  		var study = _ref2.study;
 
   		var observer = ctrl.observer;
 
@@ -1316,7 +1332,7 @@
 
   		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
 
-  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file, observer: observer }), textContent(ctrl, { file: file, observer: observer })]);
+  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file, study: study, observer: observer }), textContent(ctrl, { file: file, observer: observer })]);
   	}
   };
 
@@ -1364,18 +1380,19 @@
 
   		var id = m.route.param('fileID');
   		var file = study.getFile(id);
-  		var ctrl = { file: file };
+  		var ctrl = { file: file, study: study };
 
   		return ctrl;
   	},
 
-  	view: function view(ctrl) {
+  	view: function view(_ref2) {
+  		var file = _ref2.file;
+  		var study = _ref2.study;
   		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-  		var file = ctrl.file;
   		var editor = file && editors[file.type] || unknownComponent;
 
-  		return m('div', { config: fullHeight }, [file ? editor({ file: file, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
+  		return m('div', { config: fullHeight }, [file ? editor({ file: file, study: study, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
   	}
   };
 
@@ -2701,12 +2718,7 @@
   var poolComponent = {
   	controller: function controller() {
   		var ctrl = {
-  			play: play$1,
-  			pause: pause,
-  			remove: remove,
-  			edit: edit,
-  			reset: reset,
-  			create: create,
+  			play: play$1, pause: pause, remove: remove, edit: edit, reset: reset, create: create,
   			canCreate: function canCreate() {
   				return getRole() === 'SU';
   			},

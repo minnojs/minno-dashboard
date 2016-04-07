@@ -2,7 +2,7 @@ import {play, save} from '../sidebar/fileActions';
 
 export default textMenuView;
 
-let textMenuView = ({mode, file, observer}) => {
+let textMenuView = ({mode, file, study, observer}) => {
 	let setMode = value => () => mode(value);
 	let modeClass = value => mode() === value ? 'active' : '';
 	let isJs = file.type === 'js';
@@ -36,7 +36,7 @@ let textMenuView = ({mode, file, observer}) => {
 			])
 		]),
 		m('.btn-group.btn-group-sm.pull-xs-right', [
-			!isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file), title:'Play this task'},[
+			!isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
 				m('strong.fa.fa-play')
 			]),
 			

@@ -36,22 +36,32 @@ export let moveFile = (file,study) => () => {
 };
 
 let playground;
-export let play = file => () => {
-	// this is important, if we don't close the original window we get problems with onload
-	if (playground && !playground.closed) playground.close();
+export let play = (file,study) => () => {
+	let isSaved = study.files().every(file => !file.hasChanged());	
 
-	playground = window.open('playground.html', 'Playground');
-	playground.onload = function(){
-		// first set the unload listener
-		playground.addEventListener('unload', function() {
-			// get focus back here
-			window.focus();
-		});
+	if (isSaved) open();
+	else messages.confirm({
+		header: 'Play task',
+		content: 'You have unsaved files, the player will use the saved version, are you sure you want to proceed?'	
+	}).then(response => response && open());
 
-		// then activate the player (this ensures that when )
-		playground.activate(file);
-		playground.focus();
-	};
+	function open(){
+		// this is important, if we don't close the original window we get problems with onload
+		if (playground && !playground.closed) playground.close();
+
+		playground = window.open('playground.html', 'Playground');
+		playground.onload = function(){
+			// first set the unload listener
+			playground.addEventListener('unload', function() {
+				// get focus back here
+				window.focus();
+			});
+
+			// then activate the player (this ensures that when )
+			playground.activate(file);
+			playground.focus();
+		};
+	}
 };
 
 export let save = file => () => {
