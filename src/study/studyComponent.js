@@ -53,9 +53,9 @@ let editorLayoutComponent = {
 						m.component(sidebarComponent, {study, filesVM})
 					]),
 					m('.col-md-10',[
-						m.route.param('resource') === 'file'
-							? m.component(editorComponent, {study, filesVM})
-							: m.component(wizardComponent, {study})
+						m.route.param('resource') === 'wizard'
+							? m.component(wizardComponent, {study})
+							: m.component(editorComponent, {study, filesVM})
 					])
 				]
 				:

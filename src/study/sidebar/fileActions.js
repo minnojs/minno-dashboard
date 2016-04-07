@@ -24,6 +24,7 @@ export let moveFile = (file,study) => () => {
 	function moveAction(file,study){
 		let def = file
 			.move(newPath(),study) // the actual movement
+			.then(redirect)
 			.catch(response => messages.alert({
 				header: 'Move/Rename File',
 				content: response.message
@@ -32,6 +33,11 @@ export let moveFile = (file,study) => () => {
 
 		m.redraw();
 		return def;
+	}
+
+	function redirect(response){
+		m.route(`/editor/${study.id}/file/${file.id}`);	
+		return response;
 	}
 };
 

@@ -44,6 +44,8 @@ let filePrototype = {
 
 		let oldPath = this.path;
 		this.setPath(path);
+		this.content(this.content()); // in case where changing into a file type that needs syntax checking
+
 		return fetchJson(this.apiUrl() + `/move/`, {
 			method:'put',
 			body: {path}

@@ -156,7 +156,7 @@ router.route('/files/:studyId/file/:id')
 
 
 router.route('/files/:studyId/file/:id/move')
-	.post((req, res) => {
+	.put((req, res) => {
 		res.json({id:req.body.path, url: req.body.url});
 	});
 

@@ -182,6 +182,8 @@
 
   		var oldPath = this.path;
   		this.setPath(path);
+  		this.content(this.content()); // in case where changing into a file type that needs syntax checking
+
   		return fetchJson(this.apiUrl() + '/move/', {
   			method: 'put',
   			body: { path: path }
@@ -636,7 +638,7 @@
 
   		function moveAction(file, study) {
   			var def = file.move(newPath(), study) // the actual movement
-  			.catch(function (response) {
+  			.then(redirect).catch(function (response) {
   				return messages.alert({
   					header: 'Move/Rename File',
   					content: response.message
@@ -645,6 +647,11 @@
 
   			m.redraw();
   			return def;
+  		}
+
+  		function redirect(response) {
+  			m.route('/editor/' + study.id + '/file/' + file.id);
+  			return response;
   		}
   	};
   };
@@ -2203,7 +2210,7 @@
   		var study = _ref.study;
   		var filesVM = _ref.filesVM;
 
-  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, { study: study, filesVM: filesVM })]), m('.col-md-10', [m.route.param('resource') === 'file' ? m.component(fileEditorComponent, { study: study, filesVM: filesVM }) : m.component(wizardComponent, { study: study })])] : '']);
+  		return m('.row.study', [study.loaded ? [m('.col-md-2', [m.component(sidebarComponent, { study: study, filesVM: filesVM })]), m('.col-md-10', [m.route.param('resource') === 'wizard' ? m.component(wizardComponent, { study: study }) : m.component(fileEditorComponent, { study: study, filesVM: filesVM })])] : '']);
   	}
   };
 
