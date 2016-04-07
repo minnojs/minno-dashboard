@@ -818,6 +818,7 @@
   					if (observer) observer.on('paste', paste);
 
   					setContent();
+  					session.setUndoManager(new ace.UndoManager()); // reset undo manager so that ctrl+z doesn't erase file
   					editor.focus();
 
   					ctx.onunload = function () {
