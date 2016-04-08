@@ -15,6 +15,10 @@ let textMenuView = ({mode, file, study, observer}) => {
 		),
 
 		m('.btn-group.btn-group-sm.pull-xs-right', [
+			m('a.btn.btn-secondary', {href: `http://projectimplicit.github.io/PIquest/0.0/basics/overview.html`, target: '_blank', title:'API documentation'},[
+				m('strong.fa.fa-book'),
+				m('strong', ' Docs')
+			]),
 			m('a.btn.btn-secondary', {href: `https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts`, target: '_blank', title:'Editor help'},[
 				m('strong.fa.fa-info')
 			])
