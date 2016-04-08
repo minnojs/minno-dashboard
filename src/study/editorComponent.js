@@ -24,18 +24,17 @@ let fileEditorComponent = {
 	controller: function({study}) {
 		var id = m.route.param('fileID');
 		var file = study.getFile(id);
-		var ctrl = {file};
+		var ctrl = {file,study};
 
 		return ctrl;
 	},
 
-	view: (ctrl, args = {}) => {
-		let file = ctrl.file;
+	view: ({file, study}, args = {}) => {
 		let editor = file && editors[file.type] || unknowEditor;
 
 		return m('div', {config:fullHeight}, [
 			file
-				? editor({file:file, settings: args.settings})
+				? editor({file, study,  settings: args.settings})
 				: m('.centrify', [
 					m('i.fa.fa-smile-o.fa-5x'),
 					m('h5', 'Please select a file to start working')

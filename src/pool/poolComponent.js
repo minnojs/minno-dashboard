@@ -11,12 +11,7 @@ const TABLE_WIDTH = 8;
 let poolComponent = {
 	controller: () => {
 		const ctrl = {
-			play: play,
-			pause: pause,
-			remove: remove,
-			edit: edit,
-			reset: reset,
-			create: create,
+			play, pause, remove, edit, reset, create,
 			canCreate: () => getRole() === 'SU',
 			list: m.prop([]),
 			globalSearch: m.prop(''),
