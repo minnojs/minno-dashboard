@@ -1428,6 +1428,7 @@
   		var _opts$isFormControl = opts.isFormControl;
   		var isFormControl = _opts$isFormControl === undefined ? true : _opts$isFormControl;
 
+
   		if (ctrl.showValidation && ctrl.showValidation() && !isValid) {
   			groupClass = isValid ? 'has-success' : 'has-danger';
   			inputClass = isValid ? 'form-controll-success' : 'form-control-error';
@@ -1456,6 +1457,7 @@
 
   		return { validity: validity, showValidation: form.showValidation };
   	},
+
 
   	view: viewWrapper(function (ctrl, _ref2, _ref3) {
   		var prop = _ref2.prop;
