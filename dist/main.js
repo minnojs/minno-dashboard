@@ -808,11 +808,18 @@
   		return function (element, isInitialized, ctx) {
   			var editor = undefined;
   			var mode = settings.mode || 'javascript';
+
+  			// paster with padding
   			var paste = function paste(text) {
-  				if (editor) {
-  					editor.insert(text);
-  					editor.focus();
-  				}
+  				if (!editor) return false;
+  				var pos = editor.getSelectionRange().start;
+  				var line = editor.getSession().getLine(pos.row);
+  				var padding = line.match(/^\s*/);
+  				// replace all new lines with padding
+  				if (padding) text = text.replace(/(?:\r\n|\r|\n)/g, '\n' + padding[0]);
+
+  				editor.insert(text);
+  				editor.focus();
   			};
 
   			if (!isInitialized) {
@@ -1287,119 +1294,52 @@
   	});
   }
 
-  var textMenuView = function textMenuView(_ref) {
-  	var mode = _ref.mode;
-  	var file = _ref.file;
-  	var study = _ref.study;
-  	var observer = _ref.observer;
-
-  	var setMode = function setMode(value) {
-  		return function () {
-  			return mode(value);
-  		};
-  	};
-  	var modeClass = function modeClass(value) {
-  		return mode() === value ? 'active' : '';
-  	};
-  	var isJs = file.type === 'js';
-  	var isExpt = /\.expt\.xml$/.test(file.path);
-
-  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { href: 'http://projectimplicit.github.io/PIquest/0.0/basics/overview.html', target: '_blank', title: 'API documentation' }, [m('strong.fa.fa-book'), m('strong', ' Docs')]), m('a.btn.btn-secondary', { href: 'https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts', target: '_blank', title: 'Editor help' }, [m('strong.fa.fa-info')])]), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))])
-  	//m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
-  	//	m('strong','Validator')
-  	//])
-  	]), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: function onclick() {
-  			return observer.trigger('paste', '<%= %>');
-  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file, study), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), target: '_blank', title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  var END_LINE = '\n';
+  var TAB = '\t';
+  var indent = function indent(str) {
+  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
+  	return str.replace(/^/gm, tab);
   };
 
-  var textEditor = function textEditor(args) {
-  	return m.component(textEditorComponent, args);
-  };
-
-  var textEditorComponent = {
-  	controller: function controller(_ref) {
-  		var file = _ref.file;
-  		var study = _ref.study;
-
-  		file.loaded || file.get().then(m.redraw).catch(m.redraw);
-
-  		var ctrl = { mode: m.prop('edit'), observer: observer(), study: study };
-
-  		return ctrl;
-  	},
-
-  	view: function view(ctrl, _ref2) {
-  		var file = _ref2.file;
-  		var study = _ref2.study;
-
-  		var observer = ctrl.observer;
-
-  		if (!file.loaded) return m('.loader');
-
-  		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
-
-  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file, study: study, observer: observer }), textContent(ctrl, { file: file, observer: observer })]);
+  var print = function print(obj) {
+  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
+  		case 'boolean':
+  			return obj ? 'true' : 'false';
+  		case 'string':
+  			return printString(obj);
+  		case 'number':
+  			return obj + '';
+  		case 'function':
+  			if (obj.toJSON) return print(obj()); // Support m.prop
+  			else return obj.toString();
   	}
-  };
 
-  var textContent = function textContent(ctrl, _ref3) {
-  	var file = _ref3.file;
-  	var observer = _ref3.observer;
+  	if (Array.isArray(obj)) return printArray(obj);
 
-  	var textMode = modeMap[file.type] || 'javascript';
-  	switch (ctrl.mode()) {
-  		case 'edit':
-  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode, jshintOptions: jshintOptions } });
-  		case 'validator':
-  			return validate({ file: file });
-  		case 'syntax':
-  			return syntax({ file: file });
+  	return printObj(obj);
+
+  	function printString(str) {
+  		return '\'' + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + '\''; // escape string and add parenthesis
   	}
-  };
 
-  var modeMap = {
-  	js: 'javascript',
-  	jsp: 'jsp',
-  	jst: 'ejs',
-  	html: 'ejs',
-  	htm: 'ejs',
-  	xml: 'xml'
-  };
+  	function printArray(arr) {
+  		var isShort = arr.every(function (element) {
+  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
+  		});
+  		var content = arr.map(function (value) {
+  			return print(value);
+  		}).join(isShort ? ', ' : ',\n');
 
-  var editors = {
-  	js: textEditor,
-  	html: textEditor,
-  	htm: textEditor,
-  	jst: textEditor,
-  	xml: textEditor,
+  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
+  	}
 
-  	jpg: imgEditor,
-  	bmp: imgEditor,
-  	png: imgEditor,
-
-  	pdf: pdfEditor
-  };
-
-  var fileEditorComponent = {
-  	controller: function controller(_ref) {
-  		var study = _ref.study;
-
-  		var id = m.route.param('fileID');
-  		var file = study.getFile(id);
-  		var ctrl = { file: file, study: study };
-
-  		return ctrl;
-  	},
-
-  	view: function view(_ref2) {
-  		var file = _ref2.file;
-  		var study = _ref2.study;
-  		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-  		var editor = file && editors[file.type] || unknownComponent;
-
-  		return m('div', { config: fullHeight }, [file ? editor({ file: file, study: study, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
+  	function printObj(obj) {
+  		var content = Object.keys(obj).map(function (key) {
+  			return key + ' : ' + print(obj[key]);
+  		}).map(function (row) {
+  			return indent(row);
+  		}).join(',' + END_LINE);
+  		return '{\n' + content + '\n}';
   	}
   };
 
@@ -1427,6 +1367,7 @@
   		var inputClass = undefined;
   		var _opts$isFormControl = opts.isFormControl;
   		var isFormControl = _opts$isFormControl === undefined ? true : _opts$isFormControl;
+
 
   		if (ctrl.showValidation && ctrl.showValidation() && !isValid) {
   			groupClass = isValid ? 'has-success' : 'has-danger';
@@ -1456,6 +1397,7 @@
 
   		return { validity: validity, showValidation: form.showValidation };
   	},
+
 
   	view: viewWrapper(function (ctrl, _ref2, _ref3) {
   		var prop = _ref2.prop;
@@ -1577,52 +1519,171 @@
   	})
   };
 
-  var END_LINE = '\n';
-  var TAB = '\t';
-  var indent = function indent(str) {
-  	var tab = arguments.length <= 1 || arguments[1] === undefined ? TAB : arguments[1];
-  	return str.replace(/^/gm, tab);
+  var pageComponent = {
+  	controller: function controller(_ref) {
+  		var content = _ref.content;
+  		var close = _ref.close;
+
+  		var form = formFactory();
+  		var page = {
+  			header: m.prop(''),
+  			decline: m.prop(false),
+  			progressBar: m.prop('<%= pagesMeta.number %> out of <%= pagesMeta.outOf%>'),
+  			autoFocus: true,
+  			questions: []
+  		};
+  		content(page);
+
+  		return { page: page, form: form, close: close };
+  	},
+  	view: function view(_ref2) {
+  		var page = _ref2.page;
+  		var form = _ref2.form;
+  		var close = _ref2.close;
+
+  		return m('div', [m('h4', 'Add Page'), m('.card-block', [textInput({ label: 'header', prop: page.header, help: 'The header for the page', form: form }), checkboxInput({ label: 'decline', description: 'Allow declining to answer', prop: page.decline, form: form }), maybeInput({ label: 'progressBar', help: 'If and when to display the  progress bar (use templates to control the when part)', prop: page.progressBar, form: form })]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(false) }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: close(true) }, 'Proceed')])]);
+  	}
   };
 
-  var print = function print(obj) {
-  	switch (typeof obj === 'undefined' ? 'undefined' : babelHelpers.typeof(obj)) {
-  		case 'boolean':
-  			return obj ? 'true' : 'false';
-  		case 'string':
-  			return printString(obj);
-  		case 'number':
-  			return obj + '';
-  		case 'function':
-  			if (obj.toJSON) return print(obj()); // Support m.prop
-  			else return obj.toString();
+  var snippetRunner = function snippetRunner(component) {
+  	return function (observer) {
+  		return function () {
+  			var content = m.prop('');
+  			messages.custom({
+  				content: m.component(component, { content: content, close: close }),
+  				wide: true
+  			}).then(function (isOk) {
+  				return isOk && observer.trigger('paste', print(content()));
+  			});
+
+  			function close(value) {
+  				return function () {
+  					return messages.close(value);
+  				};
+  			}
+  		};
+  	};
+  };
+
+  var pageSnippet = snippetRunner(pageComponent);
+
+  var textMenuView = function textMenuView(_ref) {
+  	var mode = _ref.mode;
+  	var file = _ref.file;
+  	var study = _ref.study;
+  	var observer = _ref.observer;
+
+  	var setMode = function setMode(value) {
+  		return function () {
+  			return mode(value);
+  		};
+  	};
+  	var modeClass = function modeClass(value) {
+  		return mode() === value ? 'active' : '';
+  	};
+  	var isJs = file.type === 'js';
+  	var isExpt = /\.expt\.xml$/.test(file.path);
+
+  	return m('.btn-toolbar.editor-menu', [m('.file-name', { class: file.hasChanged() ? 'text-danger' : '' }, m('span', { class: file.hasChanged() ? '' : 'invisible' }, '*'), file.path), m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { href: 'http://projectimplicit.github.io/PIquest/0.0/basics/overview.html', target: '_blank', title: 'API documentation' }, [m('strong.fa.fa-book'), m('strong', ' Docs')]), m('a.btn.btn-secondary', { href: 'https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts', target: '_blank', title: 'Editor help' }, [m('strong.fa.fa-info')])]), !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [m('a.btn.btn-secondary', { onclick: setMode('edit'), class: modeClass('edit') }, [m('strong', 'Edit')]), m('a.btn.btn-secondary', { onclick: setMode('syntax'), class: modeClass('syntax') }, [m('strong', 'Syntax ', file.syntaxValid ? m('i.fa.fa-check-square.text-success') : m('span.label.label-danger', file.syntaxData.errors.length))])
+  	//m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
+  	//	m('strong','Validator')
+  	//])
+  	]), m('.btn-group.btn-group-sm.pull-xs-right', [
+  	//m('a.btn.btn-secondary', {}, [
+  	//m('strong','Q')	
+  	//]),
+  	m('a.btn.btn-secondary', { onclick: pageSnippet(observer), title: 'Add page element' }, [m('strong', 'P')]), m('a.btn.btn-secondary', { onclick: function onclick() {
+  			return observer.trigger('paste', '{\n<%= %>\n}');
+  		}, title: 'Paste a template wizard' }, [m('strong.fa.fa-percent')])]), m('.btn-group.btn-group-sm.pull-xs-right', [!isJs ? '' : m('a.btn.btn-secondary', { onclick: play(file, study), title: 'Play this task' }, [m('strong.fa.fa-play')]), !isExpt ? '' : m('a.btn.btn-secondary', { href: 'https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=' + file.url.replace(/^.*?\/implicit\//, ''), target: '_blank', title: 'Play this task' }, [m('strong.fa.fa-play')]), m('a.btn.btn-secondary', { onclick: save(file), title: 'Save (ctrl+s)', class: file.hasChanged() ? 'btn-danger-outline' : '' }, [m('strong.fa.fa-save')])])]);
+  };
+
+  var textEditor = function textEditor(args) {
+  	return m.component(textEditorComponent, args);
+  };
+
+  var textEditorComponent = {
+  	controller: function controller(_ref) {
+  		var file = _ref.file;
+  		var study = _ref.study;
+
+  		file.loaded || file.get().then(m.redraw).catch(m.redraw);
+
+  		var ctrl = { mode: m.prop('edit'), observer: observer(), study: study };
+
+  		return ctrl;
+  	},
+
+  	view: function view(ctrl, _ref2) {
+  		var file = _ref2.file;
+  		var study = _ref2.study;
+
+  		var observer = ctrl.observer;
+
+  		if (!file.loaded) return m('.loader');
+
+  		if (file.error) return m('div', { class: 'alert alert-danger' }, [m('strong', { class: 'glyphicon glyphicon-exclamation-sign' }), 'The file "' + file.path + '" was not found']);
+
+  		return m('.editor', [textMenuView({ mode: ctrl.mode, file: file, study: study, observer: observer }), textContent(ctrl, { file: file, observer: observer })]);
   	}
+  };
 
-  	if (Array.isArray(obj)) return printArray(obj);
+  var textContent = function textContent(ctrl, _ref3) {
+  	var file = _ref3.file;
+  	var observer = _ref3.observer;
 
-  	return printObj(obj);
-
-  	function printString(str) {
-  		return '\'' + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + '\''; // escape string and add parenthesis
+  	var textMode = modeMap[file.type] || 'javascript';
+  	switch (ctrl.mode()) {
+  		case 'edit':
+  			return ace({ content: file.content, observer: observer, settings: { onSave: save(file), mode: textMode, jshintOptions: jshintOptions } });
+  		case 'validator':
+  			return validate({ file: file });
+  		case 'syntax':
+  			return syntax({ file: file });
   	}
+  };
 
-  	function printArray(arr) {
-  		var isShort = arr.every(function (element) {
-  			return ['string', 'number', 'boolean'].includes(typeof element === 'undefined' ? 'undefined' : babelHelpers.typeof(element)) && (element.length === undefined || element.length < 15);
-  		});
-  		var content = arr.map(function (value) {
-  			return print(value);
-  		}).join(isShort ? ', ' : ',\n');
+  var modeMap = {
+  	js: 'javascript',
+  	jsp: 'jsp',
+  	jst: 'ejs',
+  	html: 'ejs',
+  	htm: 'ejs',
+  	xml: 'xml'
+  };
 
-  		return isShort ? '[' + content + ']' : '[\n' + indent(content) + '\n]';
-  	}
+  var editors = {
+  	js: textEditor,
+  	html: textEditor,
+  	htm: textEditor,
+  	jst: textEditor,
+  	xml: textEditor,
 
-  	function printObj(obj) {
-  		var content = Object.keys(obj).map(function (key) {
-  			return key + ' : ' + print(obj[key]);
-  		}).map(function (row) {
-  			return indent(row);
-  		}).join(',' + END_LINE);
-  		return '{\n' + content + '\n}';
+  	jpg: imgEditor,
+  	bmp: imgEditor,
+  	png: imgEditor,
+
+  	pdf: pdfEditor
+  };
+
+  var fileEditorComponent = {
+  	controller: function controller(_ref) {
+  		var study = _ref.study;
+
+  		var id = m.route.param('fileID');
+  		var file = study.getFile(id);
+  		var ctrl = { file: file, study: study };
+
+  		return ctrl;
+  	},
+
+  	view: function view(_ref2) {
+  		var file = _ref2.file;
+  		var study = _ref2.study;
+  		var args = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  		var editor = file && editors[file.type] || unknownComponent;
+
+  		return m('div', { config: fullHeight }, [file ? editor({ file: file, study: study, settings: args.settings }) : m('.centrify', [m('i.fa.fa-smile-o.fa-5x'), m('h5', 'Please select a file to start working')])]);
   	}
   };
 

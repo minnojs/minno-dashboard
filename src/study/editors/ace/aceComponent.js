@@ -14,11 +14,18 @@ let aceComponent = {
 		return function(element, isInitialized, ctx){
 			let editor;
 			let mode = settings.mode || 'javascript';
+
+			// paster with padding
 			let paste = text => {
-				if (editor) {
-					editor.insert(text);
-					editor.focus();
-				}
+				if (!editor) return false;
+				let pos = editor.getSelectionRange().start; 
+				let line = editor.getSession().getLine(pos.row);
+				let padding = line.match(/^\s*/);
+				// replace all new lines with padding
+				if (padding) text = text.replace(/(?:\r\n|\r|\n)/g, '\n' + padding[0]);
+				
+				editor.insert(text);
+				editor.focus();
 			};
 
 			if (!isInitialized){
