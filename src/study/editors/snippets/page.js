@@ -2,7 +2,7 @@ import {formFactory, textInput, checkboxInput, maybeInput} from 'utils/formHelpe
 export default pageComponent;
 
 let pageComponent = {
-	controller({content,close}){
+	controller({output,close}){
 		let form = formFactory();
 		let page = {
 			header: m.prop(''),
@@ -11,7 +11,7 @@ let pageComponent = {
 			autoFocus: true,
 			questions: []
 		};
-		content(page);
+		output(page);
 
 		return {page,form, close};
 
