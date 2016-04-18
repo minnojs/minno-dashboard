@@ -1529,6 +1529,50 @@
   	})
   };
 
+  var arrayInput$1 = function arrayInput(args) {
+  	var identity = function identity(arg) {
+  		return arg;
+  	};
+  	var fixedArgs = Object.assign(args);
+  	fixedArgs.prop = transformProp({
+  		prop: args.prop,
+  		output: function output(arr) {
+  			return arr.map(args.fromArr || identity).join('\n');
+  		},
+  		input: function input(str) {
+  			return str.replace(/\n*$/, '').split('\n').map(args.toArr || identity);
+  		}
+  	});
+
+  	return m.component(textInputComponent, fixedArgs);
+  };
+
+  /**
+   * TransformedProp transformProp(Prop prop, Map input, Map output)
+   * 
+   * where:
+   *	Prop :: m.prop
+   *	Map  :: any Function(any)
+   *
+   *	Creates a Transformed prop that pipes the prop through transformation functions.
+   **/
+  var transformProp = function transformProp(_ref) {
+  	var prop = _ref.prop;
+  	var input = _ref.input;
+  	var output = _ref.output;
+
+  	var p = function p() {
+  		if (arguments.length) prop(input(arguments.length <= 0 ? undefined : arguments[0]));
+  		return output(prop());
+  	};
+
+  	p.toJSON = function () {
+  		return output(prop());
+  	};
+
+  	return p;
+  };
+
   function formFactory() {
   	var validationHash = [];
   	return {
@@ -1557,6 +1601,7 @@
   var selectInput = function selectInput(args) {
   	return m.component(selectInputComponent, args);
   };
+  var arrayInput = arrayInput$1;
 
   var pageComponent = {
   	controller: function controller(_ref) {
@@ -1879,43 +1924,12 @@
   		var basicPage = script.basicPage;
   		var basicSelect = script.basicSelect;
 
-  		return m('.wizard.container', [m('h3', 'Rating wizard'), m('p', 'This wizard is responsible for rating stuff'), textInput({ label: 'File Name', placeholder: 'Path to file', prop: path, form: form, required: true }), m('h4', 'Basic Page'), textInput({ label: 'Header', placeholder: 'Page header', help: 'The header for all pages.', prop: basicPage.header, form: form }), checkboxInput({ label: 'Decline', description: 'Allow users to decline', prop: basicPage.decline, form: form }), m('h4', 'Basic Select'), checkboxInput({ label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form: form }), textInput({ label: 'answers', prop: str2Answers(basicSelect.answers), rows: 7, form: form, isArea: true, help: 'Each row here represents an answer option', required: true }), checkboxInput({ label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form: form }), maybeInput({ label: 'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help, form: form }), basicSelect.help() ? textInput({ label: 'helpText', help: 'The instruction text for using this type of question', prop: basicSelect.helpText, form: form, isArea: true }) : '', m('h4', 'Sequence'), checkboxInput({ label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form }), maybeInput({ label: 'Choose', help: 'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times }), textInput({ label: 'questions', prop: str2Questions(script.questionList), rows: 20, form: form, isArea: true, help: 'Each row here represents a questions', required: true }), m('.row', [m('.col-cs-12.text-xs-right', [!form.showValidation() || form.isValid() ? m('button.btn.btn-primary', { onclick: submit }, 'Create') : m('button.btn.btn-danger', { disabled: true }, 'Not Valid')])])]);
+  		return m('.wizard.container', [m('h3', 'Rating wizard'), m('p', 'This wizard is responsible for rating stuff'), textInput({ label: 'File Name', placeholder: 'Path to file', prop: path, form: form, required: true }), m('h4', 'Basic Page'), textInput({ label: 'Header', placeholder: 'Page header', help: 'The header for all pages.', prop: basicPage.header, form: form }), checkboxInput({ label: 'Decline', description: 'Allow users to decline', prop: basicPage.decline, form: form }), m('h4', 'Basic Select'), checkboxInput({ label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form: form }), arrayInput({ label: 'answers', prop: basicSelect.answers, rows: 7, form: form, isArea: true, help: 'Each row here represents an answer option', required: true }), checkboxInput({ label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form: form }), maybeInput({ label: 'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help, form: form }), basicSelect.help() ? textInput({ label: 'helpText', help: 'The instruction text for using this type of question', prop: basicSelect.helpText, form: form, isArea: true }) : '', m('h4', 'Sequence'), checkboxInput({ label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form }), maybeInput({ label: 'Choose', help: 'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times }), arrayInput({ label: 'questions', prop: script.questionList, toArr: function toArr(stem, index) {
+  				return { stem: stem, name: 'q' + index, inherit: 'basicSelect' };
+  			}, fromArr: function fromArr(q) {
+  				return q.stem;
+  			}, rows: 20, form: form, isArea: true, help: 'Each row here represents a questions', required: true }), m('.row', [m('.col-cs-12.text-xs-right', [!form.showValidation() || form.isValid() ? m('button.btn.btn-primary', { onclick: submit }, 'Create') : m('button.btn.btn-danger', { disabled: true }, 'Not Valid')])])]);
   	}
-  };
-
-  var transformProp = function transformProp(prop, input, output) {
-  	var p = function p() {
-  		if (arguments.length) prop(input(arguments.length <= 0 ? undefined : arguments[0]));
-  		return output(prop());
-  	};
-
-  	p.toJSON = function () {
-  		return output(prop());
-  	};
-
-  	return p;
-  };
-
-  // transorm a "m.prop" so that an array is expressed as a "\n" separated string.
-  var str2Answers = function str2Answers(prop) {
-  	return transformProp(prop, function (str) {
-  		return str.replace(/\n*$/, '').split('\n');
-  	}, function (arr) {
-  		return arr.join('\n');
-  	});
-  };
-
-  // Create the plain text version of the question list
-  var str2Questions = function str2Questions(prop) {
-  	return transformProp(prop, function (str) {
-  		return str.replace(/\n*$/, '').split('\n').map(function (stem, index) {
-  			return { stem: stem, name: 'q' + index, inherit: 'basicSelect' };
-  		});
-  	}, function (arr) {
-  		return arr.map(function (q) {
-  			return q.stem;
-  		}).join('\n');
-  	});
   };
 
   // taken from here:
