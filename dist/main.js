@@ -1358,7 +1358,7 @@
   			inputClass = isValid ? 'form-controll-success' : 'form-control-error';
   		}
 
-  		return m('.form-group.row', { class: groupClass }, [m('label.col-sm-2', { class: isFormControl ? 'form-control-label' : '' }, args.label), m('.col-sm-10', [view(ctrl, args, { inputClass: inputClass })]), args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help)]);
+  		return args.stack ? m('.form-group', { class: groupClass }, [m('label', { class: isFormControl ? 'form-control-label' : '' }, args.label), view(ctrl, args, { inputClass: inputClass }), args.help && m('small.text-muted.m-y-0', args.help)]) : m('.form-group.row', { class: groupClass }, [m('label.col-sm-2', { class: isFormControl ? 'form-control-label' : '' }, args.label), m('.col-sm-10', [view(ctrl, args, { inputClass: inputClass })]), args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help)]);
   	};
   };
 
@@ -1658,7 +1658,7 @@
   		var close = _ref2.close;
   		var proceed = _ref2.proceed;
 
-  		return m('div', [m('h4', 'Add Question'), m('.card-block', [selectInput({ label: 'type', prop: type, form: form, values: { text: 'Text', selectOne: 'Select One' } }), textInput({ label: 'name', prop: common.name, help: 'The name by which this question will be recorded', form: form }), textInput({ label: 'stem', prop: common.stem, help: 'The question text', form: form }), m.component(question(type()), { quest: quest, form: form })]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(false) }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: proceed }, 'Proceed')])]);
+  		return m('div', [m('h4', 'Add Question'), m('.card-block', [selectInput({ label: 'type', prop: type, form: form, values: { text: 'Text', selectOne: 'Select One', selectMulti: 'Select Multiple' } }), textInput({ label: 'name', prop: common.name, help: 'The name by which this question will be recorded', form: form }), textInput({ label: 'stem', prop: common.stem, help: 'The question text', form: form }), m.component(question(type()), { quest: quest, form: form })]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: close(false) }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: proceed }, 'Proceed')])]);
   	}
   };
 
@@ -1667,6 +1667,8 @@
   		case 'text':
   			return textComponent;
   		case 'selectOne':
+  			return selectOneComponent;
+  		case 'selectMulti':
   			return selectOneComponent;
   		default:
   			throw new Error('Unknown question type');

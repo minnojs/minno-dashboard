@@ -24,7 +24,7 @@ let questComponent = {
 		return m('div', [	
 			m('h4', 'Add Question'),
 			m('.card-block', [
-				selectInput({label:'type', prop: type, form, values: {text: 'Text', selectOne: 'Select One'}}),
+				selectInput({label:'type', prop: type, form, values: {text: 'Text', selectOne: 'Select One',selectMulti: 'Select Multiple'}}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
 				m.component(question(type()), {quest,form})
@@ -41,6 +41,7 @@ let question = type => {
 	switch (type) {
 		case 'text' : return textComponent;
 		case 'selectOne' : return selectOneComponent;
+		case 'selectMulti' : return selectOneComponent;
 		default:
 			throw new Error('Unknown question type');
 	}

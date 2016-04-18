@@ -10,11 +10,17 @@ let inputWrapper = (view,opts={}) => (ctrl, args) => {
 		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
 	}
 
-	return m('.form-group.row', {class: groupClass}, [
-		m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
-		m('.col-sm-10', [
-			view(ctrl, args, {inputClass})
-		]),
-		args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-	]);
+	return args.stack
+		? m('.form-group', {class: groupClass}, [
+			m('label', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+			view(ctrl, args, {inputClass}),
+			args.help && m('small.text-muted.m-y-0', args.help )
+		])
+		: m('.form-group.row', {class: groupClass}, [
+			m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+			m('.col-sm-10', [
+				view(ctrl, args, {inputClass})
+			]),
+			args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
+		]);
 };
