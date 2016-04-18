@@ -1646,7 +1646,7 @@
   		return { type: type, common: common, quest: quest, form: form, close: close, proceed: proceed };
 
   		function proceed() {
-  			output(Object.assign({}, common, quest()));
+  			output(Object.assign({ type: type }, common, quest()));
   			close(true)();
   		}
   	},
@@ -1679,7 +1679,6 @@
 
   		// setup unique properties
   		quest({
-  			type: 'text',
   			autoSubmit: m.prop(false)
   		});
   	},
@@ -1698,9 +1697,8 @@
 
   		// setup unique properties
   		quest({
-  			type: 'selectOne',
   			autoSubmit: m.prop(false),
-  			questions: []
+  			answers: m.prop(['Very much', 'Somewhat', 'Undecided', 'Not realy', 'Not at all'])
   		});
   	},
   	view: function view(ctrl, _ref6) {
@@ -1708,7 +1706,7 @@
   		var form = _ref6.form;
 
   		var props = quest();
-  		return m('div', [checkboxInput({ label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form })]);
+  		return m('div', [checkboxInput({ label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form }), arrayInput({ label: 'answers', prop: props.answers, rows: 7, form: form, isArea: true, help: 'Each row here represents an answer option', required: true })]);
   	}
   };
 

@@ -1,4 +1,4 @@
-import {formFactory, textInput, checkboxInput, maybeInput, selectInput} from 'utils/formHelpers';
+import {formFactory, textInput, checkboxInput, arrayInput, selectInput} from 'utils/formHelpers';
 export default questComponent;
 
 let questComponent = {
@@ -15,7 +15,7 @@ let questComponent = {
 		return {type, common, quest,form, close, proceed};
 
 		function proceed(){
-			output(Object.assign({}, common, quest()));
+			output(Object.assign({type}, common, quest()));
 			close(true)();
 		}		
 
@@ -50,7 +50,6 @@ let textComponent = {
 	controller({quest}){
 		// setup unique properties
 		quest({
-			type: 'text',
 			autoSubmit: m.prop(false)
 		});
 	},
@@ -66,15 +65,21 @@ let selectOneComponent = {
 	controller({quest}){
 		// setup unique properties
 		quest({
-			type: 'selectOne',
 			autoSubmit: m.prop(false),
-			questions: []
+			answers: m.prop([
+				'Very much',
+				'Somewhat',
+				'Undecided',
+				'Not realy',
+				'Not at all'
+			]) 
 		});
 	},
 	view(ctrl, {quest, form}){
 		let props = quest();
 		return m('div', [
-			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form})
+			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form}),
+			arrayInput({label: 'answers', prop: props.answers, rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true})
 		]);	
 	}
 };
