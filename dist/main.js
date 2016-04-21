@@ -819,11 +819,18 @@
 			return function(element, isInitialized, ctx){
 				var editor;
 				var mode = settings.mode || 'javascript';
+
+				// paster with padding
 				var paste = function ( text ) {
-					if (editor) {
-						editor.insert(text);
-						editor.focus();
-					}
+					if (!editor) return false;
+					var pos = editor.getSelectionRange().start; 
+					var line = editor.getSession().getLine(pos.row);
+					var padding = line.match(/^\s*/);
+					// replace all new lines with padding
+					if (padding) text = text.replace(/(?:\r\n|\r|\n)/g, '\n' + padding[0]);
+					
+					editor.insert(text);
+					editor.focus();
 				};
 
 				if (!isInitialized){
@@ -1349,6 +1356,454 @@
 	    });
 	}
 
+	var END_LINE = '\n';
+	var TAB = '\t';
+	var indent = function (str, tab) {
+		if ( tab === void 0 ) tab = TAB;
+
+		return str.replace(/^/gm, tab);
+	};
+
+	var print = function ( obj ) {
+		switch (typeof obj) {
+			case 'boolean': return obj ? 'true' : 'false';
+			case 'string' : return printString(obj); 
+			case 'number' : return obj + '';
+			case 'function': 
+				if (obj.toJSON) return print(obj()); // Support m.prop
+				else return obj.toString();
+		}
+
+		if (Array.isArray(obj)) return printArray(obj);
+		
+		return printObj(obj);
+
+		function printString(str){
+			return "'" + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + "'"; // escape string and add parenthesis
+		}
+
+		
+		function printArray(arr){
+			var isShort = arr.every(function ( element ) { return ['string', 'number', 'boolean'].includes(typeof element) && (element.length === undefined || element.length < 15); } );
+			var content = arr
+				.map(function ( value ) { return print(value); })
+				.join(isShort ? ', ' : ',\n');
+
+			return isShort
+				? ("[" + content + "]")
+				: ("[\n" + (indent(content)) + "\n]");
+		}
+
+		function printObj(obj){
+			var content = Object.keys(obj)
+				.map(function ( key ) { return ("" + key + " : " + (print(obj[key]))); })
+				.map(function ( row ) { return indent(row); })
+				.join(',' + END_LINE);
+			return ("{\n" + content + "\n}");
+		}
+	};
+
+	var inputWrapper = function (view,opts) {
+		if ( opts === void 0 ) opts={};
+
+		return function (ctrl, args) {
+		var isValid = !ctrl.validity || ctrl.validity();
+		var groupClass;
+		var inputClass;
+		var isFormControl = opts.isFormControl !== false;
+
+		if (ctrl.showValidation && ctrl.showValidation() && !isValid){
+			groupClass = isValid ? 'has-success' : 'has-danger';
+			inputClass = isValid ? 'form-controll-success' : 'form-control-error';
+		}
+
+		return args.stack
+			? m('.form-group', {class: groupClass}, [
+				m('label', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+				view(ctrl, args, {inputClass: inputClass}),
+				args.help && m('small.text-muted.m-y-0', args.help )
+			])
+			: m('.form-group.row', {class: groupClass}, [
+				m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+				m('.col-sm-10', [
+					view(ctrl, args, {inputClass: inputClass})
+				]),
+				args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
+			]);
+	};
+	};
+
+	var textInputComponent  = {
+		controller: function controller(ref) {
+			var prop = ref.prop;
+			var form = ref.form;
+			var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
+
+			if (!form) throw new Error('Text input requires a form');
+			
+			var validity = function () { return !required || prop().length; };
+			form.register(validity);
+
+			return {validity: validity, showValidation: form.showValidation};
+		},
+
+		view: inputWrapper(function (ctrl, ref, ref$1) {
+			var prop = ref.prop;
+			var ref_isArea = ref.isArea, isArea = ref_isArea === void 0 ? false : ref_isArea;
+			var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
+			var ref_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
+			var help = ref.help;
+			var ref_rows = ref.rows, rows = ref_rows === void 0 ? 3 : ref_rows;
+			var inputClass = ref$1.inputClass;
+
+			return !isArea
+				? m('input.form-control', {
+					class: inputClass,
+					placeholder: placeholder,
+					value: prop(),
+					onkeyup: m.withAttr('value', prop),
+					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+				})
+				: m('textarea.form-control', {
+					class: inputClass,
+					placeholder: placeholder,
+					onkeyup: m.withAttr('value', prop),
+					rows: rows,
+					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+				} , [prop()]);
+		})
+	};
+
+	var  maybeInputComponent = {
+		controller: function controller(ref){
+			var prop = ref.prop;
+			var form = ref.form;
+			var required = ref.required;
+
+			if (!form) throw new Error('Inputs require a form');
+
+			var text = m.prop(typeof prop() == 'boolean' ? '' : prop());
+			var checked = m.prop(typeof prop() == 'string' ? true : prop()); 
+			var validity = function () { return !required || prop(); };
+			form.register(validity);
+
+			return {validity: validity, showValidation: form.showValidation,
+				text: function(value){
+					if (arguments.length){
+						text(value);
+						prop(value || true);
+					}
+					return text();
+				},
+				checked: function(value){
+					if (arguments.length) {
+						checked(value);
+						if (checked() && text()) prop(text());
+						else prop(checked());
+					}
+					return checked();
+				}	
+			};
+		},
+		view: inputWrapper(function (ref, args) {
+			var text = ref.text;
+			var checked = ref.checked;
+
+			var placeholder = args.placeholder || '';
+			return m('.input-group', [
+				m('span.input-group-addon', [
+					m('input', {
+						type:'checkbox',
+						onclick: m.withAttr('checked', checked),
+						checked: checked()
+					})
+				]),
+				m('input.form-control', {
+					placeholder: placeholder,
+					value: text(),
+					onkeyup: m.withAttr('value', text),
+					disabled: !checked()
+				})
+			]);
+		})
+	};
+
+	var  checkboxInputComponent = {
+		controller: function controller(ref){
+			var prop = ref.prop;
+			var form = ref.form;
+			var required = ref.required;
+
+			if (!form) throw new Error('Inputs require a form');
+			
+			var validity = function () { return !required || prop(); };
+			form.register(validity);
+
+			return {validity: validity, showValidation: form.showValidation};
+		},
+		view: inputWrapper(function (ctrl, ref) {
+			var prop = ref.prop;
+			var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+
+			return m('.checkbox', [
+				m('label.c-input.c-checkbox', [
+					m('input.form-control', {
+						type: 'checkbox',
+						onclick: m.withAttr('checked', prop),
+						checked: prop()
+					}),
+					m('span.c-indicator'),
+					m.trust('&nbsp;'),
+					m('span.text-muted', description)
+				])
+			]);
+		},{isFormControl:false})
+	};
+
+	var selectInputComponent = {
+		controller: function controller(ref){
+			var prop = ref.prop;
+			var form = ref.form;
+			var required = ref.required;
+
+			if (!form) throw new Error('Inputs require a form');
+
+			var validity = function () { return !required || prop(); };
+			form.register(validity);
+
+			return {validity: validity, showValidation: form.showValidation};
+		},
+		view: inputWrapper(function (ctrl, ref) {
+			var prop = ref.prop;
+			var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
+			var help = ref.help;
+			var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+
+			return m('.input-group', [
+				m('select.c-select', {
+					onchange: m.withAttr('value', prop),
+					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+				}, Object.keys(values).map(function ( key ) { return m('option', {value:key},values[key]); })),
+				help ? m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', help ) : ''
+			]);
+		})
+	};
+
+	var arrayInput$1 = function ( args ) {
+		var identity = function ( arg ) { return arg; };
+		var fixedArgs = Object.assign(args);
+		fixedArgs.prop = transformProp({
+			prop: args.prop,
+			output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
+			input: function ( str ) { return str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
+		});
+
+		return m.component(textInputComponent, fixedArgs);
+	};
+
+	/**
+	 * TransformedProp transformProp(Prop prop, Map input, Map output)
+	 * 
+	 * where:
+	 *	Prop :: m.prop
+	 *	Map  :: any Function(any)
+	 *
+	 *	Creates a Transformed prop that pipes the prop through transformation functions.
+	 **/
+	var transformProp = function (ref) {
+		var prop = ref.prop;
+		var input = ref.input;
+		var output = ref.output;
+
+		var p = function () {
+			var args = [], len = arguments.length;
+			while ( len-- ) args[ len ] = arguments[ len ];
+
+			if (args.length) prop(input(args[0]));
+			return output(prop());
+		};
+
+		p.toJSON = function () { return output(prop()); };
+
+		return p;
+	};
+
+	function formFactory(){
+		var validationHash = [];
+		return {
+			register: function register(fn){
+				validationHash.push(fn);
+			},
+			isValid: function isValid() {
+				return validationHash.every(function ( fn ) { return fn.call(); });
+			},
+			showValidation: m.prop(false)
+		};
+	}
+
+	var textInput = function ( args ) { return m.component(textInputComponent, args); };
+	var maybeInput = function ( args ) { return m.component(maybeInputComponent, args); };
+	var checkboxInput = function ( args ) { return m.component(checkboxInputComponent, args); };
+	var selectInput = function ( args ) { return m.component(selectInputComponent, args); };
+	var arrayInput = arrayInput$1;
+
+	var pageComponent = {
+		controller: function controller(ref){
+			var output = ref.output;
+			var close = ref.close;
+
+			var form = formFactory();
+			var page = {
+				header: m.prop(''),
+				decline: m.prop(false),
+				progressBar: m.prop('<%= pagesMeta.number %> out of <%= pagesMeta.outOf%>'),
+				autoFocus: true,
+				questions: []
+			};
+			output(page);
+
+			return {page: page,form: form, close: close};
+
+		},
+		view: function view(ref){
+			var page = ref.page;
+			var form = ref.form;
+			var close = ref.close;
+
+			return m('div', [	
+				m('h4', 'Add Page'),
+				m('.card-block', [
+					textInput({label: 'header', prop: page.header, help: 'The header for the page',form: form}),
+					checkboxInput({label: 'decline', description: 'Allow declining to answer', prop: page.decline,form: form}),
+					maybeInput({label:'progressBar', help: 'If and when to display the  progress bar (use templates to control the when part)', prop: page.progressBar,form: form})
+				]),
+				m('.text-xs-right.btn-toolbar',[
+					m('a.btn.btn-secondary.btn-sm', {onclick:close(false)}, 'Cancel'),
+					m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, 'Proceed')
+				])
+			]);
+		}
+	};
+
+	var questComponent = {
+		controller: function controller(ref){
+			var output = ref.output;
+			var close = ref.close;
+
+			var form = formFactory();
+			var type = m.prop('text');
+			var common = {
+				name: m.prop(''),
+				stem: m.prop('')
+			};
+			var quest = m.prop({});
+			output(quest);
+
+			return {type: type, common: common, quest: quest,form: form, close: close, proceed: proceed};
+
+			function proceed(){
+				output(Object.assign({type: type}, common, quest()));
+				close(true)();
+			}		
+
+		},
+		view: function view(ref){
+			var type = ref.type;
+			var common = ref.common;
+			var quest = ref.quest;
+			var form = ref.form;
+			var close = ref.close;
+			var proceed = ref.proceed;
+
+			return m('div', [	
+				m('h4', 'Add Question'),
+				m('.card-block', [
+					selectInput({label:'type', prop: type, form: form, values: {text: 'Text', selectOne: 'Select One',selectMulti: 'Select Multiple'}}),
+					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
+					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
+					m.component(question(type()), {quest: quest,form: form})
+				]),
+				m('.text-xs-right.btn-toolbar',[
+					m('a.btn.btn-secondary.btn-sm', {onclick:close(false)}, 'Cancel'),
+					m('a.btn.btn-primary.btn-sm', {onclick:proceed}, 'Proceed')
+				])
+			]);
+		}
+	};
+
+	var question = function ( type ) {
+		switch (type) {
+			case 'text' : return textComponent;
+			case 'selectOne' : return selectOneComponent;
+			case 'selectMulti' : return selectOneComponent;
+			default:
+				throw new Error('Unknown question type');
+		}
+	};
+
+	var textComponent = {
+		controller: function controller$1(ref){
+			// setup unique properties
+			var quest = ref.quest;
+
+			quest({
+				autoSubmit: m.prop(false)
+			});
+		},
+		view: function view$1(ctrl, ref){
+			var quest = ref.quest;
+			var form = ref.form;
+
+			var props = quest();
+			return m('div', [
+				checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on enter', form: form})
+			]);	
+		}
+	};
+
+	var selectOneComponent = {
+		controller: function controller$2(ref){
+			// setup unique properties
+			var quest = ref.quest;
+
+			quest({
+				autoSubmit: m.prop(false),
+				answers: m.prop([
+					'Very much',
+					'Somewhat',
+					'Undecided',
+					'Not realy',
+					'Not at all'
+				]) 
+			});
+		},
+		view: function view$2(ctrl, ref){
+			var quest = ref.quest;
+			var form = ref.form;
+
+			var props = quest();
+			return m('div', [
+				checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form}),
+				arrayInput({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true})
+			]);	
+		}
+	};
+
+	var  snippetRunner = function ( component ) { return function ( observer ) { return function () {
+		var output = m.prop();
+		messages
+			.custom({
+				content: m.component(component, {output: output, close: close}),
+				wide: true
+			})
+			.then(function ( isOk ) { return isOk && observer.trigger('paste', print(output())); });
+
+		function close(value) {return function () { return messages.close(value); };}
+	}; }; };
+
+	var pageSnippet = snippetRunner(pageComponent);
+	var questSnippet = snippetRunner(questComponent);
+
 	var textMenuView = function (ref) {
 		var mode = ref.mode;
 		var file = ref.file;
@@ -1393,7 +1848,13 @@
 				//])
 			]),
 			m('.btn-group.btn-group-sm.pull-xs-right', [
-				m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '<%= %>'); }, title:'Paste a template wizard'},[
+				m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
+					m('strong','Q')	
+				]),
+				m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
+					m('strong','P')	
+				]),
+				m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '{\n<%= %>\n}'); }, title:'Paste a template wizard'},[
 					m('strong.fa.fa-percent')
 				])
 			]),
@@ -1510,221 +1971,6 @@
 						m('h5', 'Please select a file to start working')
 					])
 			]);
-		}
-	};
-
-	function formFactory(){
-		var validationHash = [];
-		return {
-			register: function register(fn){
-				validationHash.push(fn);
-			},
-			isValid: function isValid() {
-				return validationHash.every(function ( fn ) { return fn.call(); });
-			},
-			showValidation: m.prop(false)
-		};
-	}
-
-	var viewWrapper = function (view,opts) {
-		if ( opts === void 0 ) opts={};
-
-		return function (ctrl, args) {
-		var isValid = !ctrl.validity || ctrl.validity();
-		var groupClass;
-		var inputClass;
-		var isFormControl = opts.isFormControl !== false;
-
-		if (ctrl.showValidation && ctrl.showValidation() && !isValid){
-			groupClass = isValid ? 'has-success' : 'has-danger';
-			inputClass = isValid ? 'form-controll-success' : 'form-control-error';
-		}
-
-		return m('.form-group.row', {class: groupClass}, [
-			m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
-			m('.col-sm-10', [
-				view(ctrl, args, {inputClass: inputClass})
-			]),
-			args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-		]);
-	};
-	};
-
-	var textInput = function ( args ) { return m.component(textInputComponent, args); };
-	var textInputComponent  = {
-		controller: function controller(ref) {
-			var prop = ref.prop;
-			var form = ref.form;
-			var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
-
-			if (!form) throw new Error('Text input requires a form');
-			
-			var validity = function () { return !required || prop().length; };
-			form.register(validity);
-
-			return {validity: validity, showValidation: form.showValidation};
-		},
-
-		view: viewWrapper(function (ctrl, ref, ref$1) {
-			var prop = ref.prop;
-			var ref_isArea = ref.isArea, isArea = ref_isArea === void 0 ? false : ref_isArea;
-			var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-			var ref_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
-			var help = ref.help;
-			var ref_rows = ref.rows, rows = ref_rows === void 0 ? 3 : ref_rows;
-			var inputClass = ref$1.inputClass;
-
-			return !isArea
-				? m('input.form-control', {
-					class: inputClass,
-					placeholder: placeholder,
-					value: prop(),
-					onkeyup: m.withAttr('value', prop),
-					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-				})
-				: m('textarea.form-control', {
-					class: inputClass,
-					placeholder: placeholder,
-					onkeyup: m.withAttr('value', prop),
-					rows: rows,
-					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-				} , [prop()]);
-		})
-	};
-
-	var checkboxInput = function ( args ) { return m.component(checkboxInputComponent, args); };
-	var  checkboxInputComponent = {
-		controller: function controller$1(ref){
-			var prop = ref.prop;
-			var form = ref.form;
-			var required = ref.required;
-
-			if (!form) throw new Error('Inputs require a form');
-			
-			var validity = function () { return !required || prop(); };
-			form.register(validity);
-
-			return {validity: validity, showValidation: form.showValidation};
-		},
-		view: viewWrapper(function (ctrl, ref) {
-			var prop = ref.prop;
-			var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
-
-			return m('.checkbox', [
-				m('label.c-input.c-checkbox', [
-					m('input.form-control', {
-						type: 'checkbox',
-						onclick: m.withAttr('checked', prop),
-						checked: prop()
-					}),
-					m('span.c-indicator'),
-					m.trust('&nbsp;'),
-					m('span.text-muted', description)
-				])
-			]);
-		},{isFormControl:false})
-	};
-
-
-	var maybeInput = function ( args ) { return m.component(maybeInputComponent, args); };
-	var  maybeInputComponent = {
-		controller: function controller$2(ref){
-			var prop = ref.prop;
-			var form = ref.form;
-			var required = ref.required;
-
-			if (!form) throw new Error('Inputs require a form');
-
-			var text = m.prop(typeof prop() == 'boolean' ? '' : prop());
-			var checked = m.prop(typeof prop() == 'string' ? true : prop()); 
-			var validity = function () { return !required || prop(); };
-			form.register(validity);
-
-			return {validity: validity, showValidation: form.showValidation,
-				text: function(value){
-					if (arguments.length){
-						text(value);
-						prop(value || true);
-					}
-					return text();
-				},
-				checked: function(value){
-					if (arguments.length) {
-						checked(value);
-						if (checked() && text()) prop(text());
-						else prop(checked());
-					}
-					return checked();
-				}	
-			};
-		},
-		view: viewWrapper(function (ref, ref$1) {
-			var text = ref.text;
-			var checked = ref.checked;
-			var ref$1_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
-
-			return m('.input-group', [
-				m('span.input-group-addon', [
-					m('input', {
-						type:'checkbox',
-						onclick: m.withAttr('checked', checked),
-						checked: checked()
-					})
-				]),
-				m('input.form-control', {
-					placeholder: placeholder,
-					value: text(),
-					onkeyup: m.withAttr('value', text),
-					disabled: !checked()
-				})
-			]);
-		})
-	};
-
-	var END_LINE = '\n';
-	var TAB = '\t';
-	var indent = function (str, tab) {
-		if ( tab === void 0 ) tab = TAB;
-
-		return str.replace(/^/gm, tab);
-	};
-
-	var print = function ( obj ) {
-		switch (typeof obj) {
-			case 'boolean': return obj ? 'true' : 'false';
-			case 'string' : return printString(obj); 
-			case 'number' : return obj + '';
-			case 'function': 
-				if (obj.toJSON) return print(obj()); // Support m.prop
-				else return obj.toString();
-		}
-
-		if (Array.isArray(obj)) return printArray(obj);
-		
-		return printObj(obj);
-
-		function printString(str){
-			return "'" + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + "'"; // escape string and add parenthesis
-		}
-
-		
-		function printArray(arr){
-			var isShort = arr.every(function ( element ) { return ['string', 'number', 'boolean'].includes(typeof element) && (element.length === undefined || element.length < 15); } );
-			var content = arr
-				.map(function ( value ) { return print(value); })
-				.join(isShort ? ', ' : ',\n');
-
-			return isShort
-				? ("[" + content + "]")
-				: ("[\n" + (indent(content)) + "\n]");
-		}
-
-		function printObj(obj){
-			var content = Object.keys(obj)
-				.map(function ( key ) { return ("" + key + " : " + (print(obj[key]))); })
-				.map(function ( row ) { return indent(row); })
-				.join(',' + END_LINE);
-			return ("{\n" + content + "\n}");
 		}
 	};
 
@@ -1852,7 +2098,7 @@
 
 				m('h4', 'Basic Select'),
 				checkboxInput({label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form: form}),
-				textInput({label: 'answers', prop: str2Answers(basicSelect.answers), rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+				arrayInput({label: 'answers', prop: (basicSelect.answers), rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
 				checkboxInput({label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form: form}),
 				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help,form: form}),
 				basicSelect.help()
@@ -1862,8 +2108,7 @@
 				m('h4', 'Sequence'),
 				checkboxInput({label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form}),
 				maybeInput({label: 'Choose', help:'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times}),
-				textInput({label: 'questions', prop: str2Questions(script.questionList), rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
-
+				arrayInput({label: 'questions', prop: script.questionList, toArr: function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }, fromArr: function ( q ) { return q.stem; }, rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
 				m('.row', [
 					m('.col-cs-12.text-xs-right', [
 						!form.showValidation() || form.isValid()
@@ -1874,29 +2119,6 @@
 			]); 
 		} 
 	};
-
-	var transformProp = function (prop, input, output) {
-		var p = function () {
-			var args = [], len = arguments.length;
-			while ( len-- ) args[ len ] = arguments[ len ];
-
-			if (args.length) prop(input(args[0]));
-			return output(prop());
-		};
-
-		p.toJSON = function () { return output(prop()); };
-
-		return p;
-	};
-
-	// transorm a "m.prop" so that an array is expressed as a "\n" separated string.
-	var str2Answers = function ( prop ) { return transformProp(prop, function ( str ) { return str.replace(/\n*$/, '').split('\n'); }, function ( arr ) { return arr.join('\n'); }); };
-
-	// Create the plain text version of the question list
-	var str2Questions = function ( prop ) { return transformProp(prop,
-		function ( str ) { return str.replace(/\n*$/, '').split('\n').map(function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }); },
-		function ( arr ) { return arr.map(function ( q ) { return q.stem; }).join('\n'); }
-	); };
 
 	// taken from here:
 	// https://github.com/JedWatson/classnames/blob/master/index.js

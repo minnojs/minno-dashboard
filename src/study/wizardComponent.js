@@ -1,4 +1,4 @@
-import {formFactory, textInput, checkboxInput, maybeInput} from 'utils/formHelpers';
+import {formFactory, textInput, checkboxInput, maybeInput, arrayInput} from 'utils/formHelpers';
 import {createFile} from './sidebar/fileActions';
 import ratingWizard from './wizards/ratingWizard';
 export default wizardComponent;
@@ -87,7 +87,7 @@ let wizardComponent = {
 
 			m('h4', 'Basic Select'),
 			checkboxInput({label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form}),
-			textInput({label: 'answers', prop: str2Answers(basicSelect.answers), rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+			arrayInput({label: 'answers', prop: (basicSelect.answers), rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true}),
 			checkboxInput({label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form}),
 			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help,form}),
 			basicSelect.help()
@@ -97,8 +97,7 @@ let wizardComponent = {
 			m('h4', 'Sequence'),
 			checkboxInput({label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form}),
 			maybeInput({label: 'Choose', help:'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form, prop: script.times}),
-			textInput({label: 'questions', prop: str2Questions(script.questionList), rows:20,  form, isArea:true, help: 'Each row here represents a questions', required:true}),
-
+			arrayInput({label: 'questions', prop: script.questionList, toArr: (stem, index) => ({stem, name: `q${index}`, inherit:'basicSelect'}), fromArr: q => q.stem, rows:20,  form, isArea:true, help: 'Each row here represents a questions', required:true}),
 			m('.row', [
 				m('.col-cs-12.text-xs-right', [
 					!form.showValidation() || form.isValid()
@@ -109,23 +108,3 @@ let wizardComponent = {
 		]); 
 	} 
 };
-
-let transformProp = (prop, input, output) => {
-	let p = (...args) => {
-		if (args.length) prop(input(args[0]));
-		return output(prop());
-	};
-
-	p.toJSON = () => output(prop());
-
-	return p;
-};
-
-// transorm a "m.prop" so that an array is expressed as a "\n" separated string.
-let str2Answers = prop => transformProp(prop, str => str.replace(/\n*$/, '').split('\n'), arr => arr.join('\n'));
-
-// Create the plain text version of the question list
-let str2Questions = prop => transformProp(prop,
-	str => str.replace(/\n*$/, '').split('\n').map((stem, index) => ({stem, name: `q${index}`, inherit:'basicSelect'})),
-	arr => arr.map(q => q.stem).join('\n')
-);
