@@ -1,5 +1,4 @@
-import babel from 'rollup-plugin-babel';
-
+import bubel from 'rollup-plugin-buble';
 
 export default {
 	format: 'iife',
@@ -16,6 +15,6 @@ export default {
 				return path.resolve( './src', id + '.js');
 			}
 		}},
-		babel({exclude: 'node_modules/**',  'presets': [ 'es2015-rollup' ]})
+		bubel()
 	]
 };

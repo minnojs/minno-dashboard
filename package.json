@@ -7,7 +7,6 @@
   "scripts": {
     "install": "bower install",
     "test": "eslint src",
-    "watch": "gulp watch",
     "watch:js": "watch \"npm run bundle\" src/",
     "css": "node-sass src/style/style.scss --output dist --source-map=true",
     "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
@@ -21,20 +20,14 @@
     "bower": "^1.6.8"
   },
   "devDependencies": {
-    "babel-preset-es2015-rollup": "^1.0.0",
     "body-parser": "^1.14.2",
+    "buble": "^0.5.5",
     "eslint": "^1.10.2",
     "express": "^4.13.3",
-    "gulp": "^3.9.0",
-    "gulp-debug": "^2.1.2",
-    "gulp-plumber": "^1.0.1",
-    "gulp-rollup": "^1.7.0",
-    "gulp-sass": "^2.1.0",
-    "gulp-sourcemaps": "^1.6.0",
     "multer": "^1.1.0",
     "node-sass": "^3.4.2",
     "rollup": "^0.25.4",
-    "rollup-plugin-babel": "^2.3.9",
+    "rollup-plugin-buble": "^0.5.0",
     "watch": "latest"
   }
 }

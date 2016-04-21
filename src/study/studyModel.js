@@ -26,7 +26,10 @@ let studyPrototype = {
 			});
 
 		function flattenFiles(files){
-			return files ? [].concat(...files.map(spreadFile)) : [];
+			if (!files) return [];
+			return files
+					.map(spreadFile)
+					.reduce((result, fileArr) => result.concat(fileArr),[]);
 		}
 
 		function assignStudyId(id){
@@ -34,7 +37,7 @@ let studyPrototype = {
 		}
 
 		function spreadFile(file){
-			return [file, ...flattenFiles(file.files)];
+			return [file].concat(flattenFiles(file.files));
 		}
 
 

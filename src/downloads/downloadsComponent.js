@@ -5,6 +5,7 @@ import {getAll, remove, create} from './downloadsActions';
 export default downloadsComponent;
 
 const TABLE_WIDTH = 7;
+const statusLabelsMap = {}; // defined at the bottom of this file
 
 const downloadsComponent = {
 	controller(){
@@ -118,11 +119,7 @@ const downloadsComponent = {
 
 								// ### Status
 								m('td', [
-									{
-										[STATUS_COMPLETE]: m('span.label.label-success', 'Complete'),
-										[STATUS_RUNNING]: m('span.label.label-info', 'Running'),
-										[STATUS_ERROR]: m('span.label.label-danger', 'Error')
-									}[download.studyStatus]
+									statusLabelsMap[download.studyStatus]
 								]),
 
 								// ### Actions
@@ -153,3 +150,7 @@ function studyFilter(ctrl){
 		return typeof val === 'string' && val.includes(search);
 	}
 }
+
+statusLabelsMap[STATUS_COMPLETE] = m('span.label.label-success', 'Complete');
+statusLabelsMap[STATUS_RUNNING] = m('span.label.label-info', 'Running');
+statusLabelsMap[STATUS_ERROR] = m('span.label.label-danger', 'Error');
