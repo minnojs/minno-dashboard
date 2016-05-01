@@ -1,4 +1,5 @@
 import {formFactory, textInput, checkboxInput, arrayInput, selectInput} from 'utils/formHelpers';
+import inheritInput from './inheritInput';
 export default questComponent;
 
 let questComponent = {
@@ -6,6 +7,7 @@ let questComponent = {
 		let form = formFactory();
 		let type = m.prop('text');
 		let common = {
+			inherit: m.prop(''),
 			name: m.prop(''),
 			stem: m.prop('')
 		};
@@ -25,6 +27,7 @@ let questComponent = {
 			m('h4', 'Add Question'),
 			m('.card-block', [
 				selectInput({label:'type', prop: type, form, values: {text: 'Text', selectOne: 'Select One',selectMulti: 'Select Multiple'}}),
+				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
 				m.component(question(type()), {quest,form})

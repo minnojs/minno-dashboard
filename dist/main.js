@@ -1589,18 +1589,6 @@
 		})
 	};
 
-	var arrayInput$1 = function ( args ) {
-		var identity = function ( arg ) { return arg; };
-		var fixedArgs = Object.assign(args);
-		fixedArgs.prop = transformProp({
-			prop: args.prop,
-			output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
-			input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
-		});
-
-		return m.component(textInputComponent, fixedArgs);
-	};
-
 	/**
 	 * TransformedProp transformProp(Prop prop, Map input, Map output)
 	 * 
@@ -1628,6 +1616,18 @@
 		return p;
 	};
 
+	var arrayInput$1 = function ( args ) {
+		var identity = function ( arg ) { return arg; };
+		var fixedArgs = Object.assign(args);
+		fixedArgs.prop = transformProp({
+			prop: args.prop,
+			output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
+			input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
+		});
+
+		return m.component(textInputComponent, fixedArgs);
+	};
+
 	function formFactory(){
 		var validationHash = [];
 		return {
@@ -1647,6 +1647,65 @@
 	var selectInput = function ( args ) { return m.component(selectInputComponent, args); };
 	var arrayInput = arrayInput$1;
 
+	var inheritInput = function ( args ) { return m.component(inheritInputComponent, args); };
+
+	var inheritInputComponent = {
+		controller: function controller(ref){
+			var prop = ref.prop;
+
+			var value = prop();
+			var rawType = m.prop(typeof value === 'string' ? 'random' : value.type);
+			var rawSet = m.prop(typeof value === 'string' ? value : value.set);
+
+			return {type: type, set: set};
+
+			function update(){
+				var type = rawType();
+				var set = rawSet();
+				prop(type === 'random' ? set : {type: type, set: set});
+			}
+			
+			function type(value){
+				if (arguments){
+					rawType(value);
+					update();
+				}
+
+				return rawType();
+			}
+			
+			function set(value){
+				if (arguments){
+					rawSet(value);
+					update();
+				}
+
+				return rawSet();
+			}
+		},
+
+		view: inputWrapper(function (ref) {
+
+			var type = ref.type;
+			var set = ref.set;
+
+			return m('.form-inline', [
+				m('.form-group.input-group', [
+					m('input.form-control', {
+						placeholder:'Set',
+						onchange: m.withAttr('value', set)
+					}),
+					m('span.input-group-addon', {style:'display:none'}) // needed to make the corners of the input square...
+				]),
+				m('select.c-select', {
+					onchange: m.withAttr('value', type)
+				}, TYPES.map(function ( key ) { return m('option', {value:key},key); }))
+			]);
+		})
+	};
+
+	var TYPES = ['random', 'exRandom', 'sequential'];
+
 	var pageComponent = {
 		controller: function controller(ref){
 			var output = ref.output;
@@ -1654,6 +1713,7 @@
 
 			var form = formFactory();
 			var page = {
+				inherit: m.prop(''),
 				header: m.prop(''),
 				decline: m.prop(false),
 				progressBar: m.prop('<%= pagesMeta.number %> out of <%= pagesMeta.outOf%>'),
@@ -1673,6 +1733,7 @@
 			return m('div', [	
 				m('h4', 'Add Page'),
 				m('.card-block', [
+					inheritInput({label:'inherit', prop:page.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'header', prop: page.header, help: 'The header for the page',form: form}),
 					checkboxInput({label: 'decline', description: 'Allow declining to answer', prop: page.decline,form: form}),
 					maybeInput({label:'progressBar', help: 'If and when to display the  progress bar (use templates to control the when part)', prop: page.progressBar,form: form})
@@ -1693,6 +1754,7 @@
 			var form = formFactory();
 			var type = m.prop('text');
 			var common = {
+				inherit: m.prop(''),
 				name: m.prop(''),
 				stem: m.prop('')
 			};
@@ -1719,6 +1781,7 @@
 				m('h4', 'Add Question'),
 				m('.card-block', [
 					selectInput({label:'type', prop: type, form: form, values: {text: 'Text', selectOne: 'Select One',selectMulti: 'Select Multiple'}}),
+					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
 					m.component(question(type()), {quest: quest,form: form})

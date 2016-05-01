@@ -67,6 +67,11 @@ var files = isMac
 	]
 	: [
 		{
+			'id': 'carlee.js',
+			'path': 'carlee.js',
+			'url': '/test/carlee.js'
+		},
+		{
 			'id': 'imageTest.js',
 			'path': 'imageTest.js',
 			'url': '/test/imageTest.js'
