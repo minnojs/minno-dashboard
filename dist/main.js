@@ -1595,7 +1595,7 @@
 		fixedArgs.prop = transformProp({
 			prop: args.prop,
 			output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
-			input: function ( str ) { return str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
+			input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
 		});
 
 		return m.component(textInputComponent, fixedArgs);
@@ -1796,13 +1796,27 @@
 				content: m.component(component, {output: output, close: close}),
 				wide: true
 			})
-			.then(function ( isOk ) { return isOk && observer.trigger('paste', print(output())); });
+			.then(function ( isOk ) { return isOk && observer.trigger('paste', print(clearUnused(output()))); });
 
 		function close(value) {return function () { return messages.close(value); };}
 	}; }; };
 
 	var pageSnippet = snippetRunner(pageComponent);
 	var questSnippet = snippetRunner(questComponent);
+
+	function clearUnused(obj){
+		return Object.keys(obj).reduce(function (result, key) {
+			var value = obj[key];
+			if (typeof value === 'function' && value.toJSON) value = value();
+			
+			// check if is empty
+			if (value === '' || value === undefined) return result;
+			if (Array.isArray(value) && !value.length) return result;
+
+			result[key] = value;
+			return result;
+		}, {});
+	}
 
 	var amdReg = /(?:define\(\[['"])(.*?)(?=['"])/;
 

@@ -7,7 +7,7 @@ let arrayInput = args => {
 	fixedArgs.prop = transformProp({
 		prop: args.prop,
 		output: arr => arr.map(args.fromArr || identity).join('\n'),
-		input: str => str.replace(/\n*$/, '').split('\n').map(args.toArr || identity)
+		input: str => str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity)
 	});
 
 	return m.component(textInputComponent, fixedArgs);
