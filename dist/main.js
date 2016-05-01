@@ -1804,6 +1804,8 @@
 	var pageSnippet = snippetRunner(pageComponent);
 	var questSnippet = snippetRunner(questComponent);
 
+	var amdReg = /(?:define\(\[['"])(.*?)(?=['"])/;
+
 	var textMenuView = function (ref) {
 		var mode = ref.mode;
 		var file = ref.file;
@@ -1814,6 +1816,8 @@
 		var modeClass = function ( value ) { return mode() === value ? 'active' : ''; };
 		var isJs = file.type === 'js';
 		var isExpt = /\.expt\.xml$/.test(file.path);
+		var amdMatch = amdReg.exec(file.content());
+		var APItype = amdMatch && amdMatch[1];
 
 		return m('.btn-toolbar.editor-menu', [
 			m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
@@ -1848,12 +1852,14 @@
 				//])
 			]),
 			m('.btn-group.btn-group-sm.pull-xs-right', [
-				m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
-					m('strong','Q')	
-				]),
-				m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
-					m('strong','P')	
-				]),
+				APItype !== 'questAPI' ? '' : [
+					m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
+						m('strong','Q')	
+					]),
+					m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
+						m('strong','P')	
+					])
+				],
 				m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '{\n<%= %>\n}'); }, title:'Paste a template wizard'},[
 					m('strong.fa.fa-percent')
 				])

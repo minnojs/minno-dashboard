@@ -3,11 +3,15 @@ import {pageSnippet, questSnippet} from './snippetActions';
 
 export default textMenuView;
 
+const amdReg = /(?:define\(\[['"])(.*?)(?=['"])/;
+
 let textMenuView = ({mode, file, study, observer}) => {
 	let setMode = value => () => mode(value);
 	let modeClass = value => mode() === value ? 'active' : '';
 	let isJs = file.type === 'js';
 	let isExpt = /\.expt\.xml$/.test(file.path);
+	let amdMatch = amdReg.exec(file.content());
+	let APItype = amdMatch && amdMatch[1];
 
 	return m('.btn-toolbar.editor-menu', [
 		m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
@@ -42,12 +46,14 @@ let textMenuView = ({mode, file, study, observer}) => {
 			//])
 		]),
 		m('.btn-group.btn-group-sm.pull-xs-right', [
-			m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
-				m('strong','Q')	
-			]),
-			m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
-				m('strong','P')	
-			]),
+			APItype !== 'questAPI' ? '' : [
+				m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
+					m('strong','Q')	
+				]),
+				m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
+					m('strong','P')	
+				])
+			],
 			m('a.btn.btn-secondary', {onclick:() => observer.trigger('paste', '{\n<%= %>\n}'), title:'Paste a template wizard'},[
 				m('strong.fa.fa-percent')
 			])
