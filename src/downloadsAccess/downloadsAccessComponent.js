@@ -46,11 +46,14 @@ let downloadsAccessComponent = {
 						m('tr', [m('th.text-xs-left', {colspan:1}, [
 								ctrl.isAdmin()? '' : m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
 									m('i.fa.fa-plus'), '  Request Access'
-								]), 
-								m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
-									m('i.fa.fa-plus'), '  Grant Access'
 								])
-							]),m('th.text-xs-left', {colspan:1}, [
+							]),
+							m('th.text-xs-left', {colspan:1}, [
+															m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
+																m('i.fa.fa-plus'), '  Grant Access'
+															])
+														])
+							,m('th.text-xs-left', {colspan:1}, [
 								ctrl.isAdmin()? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
 									m('i.fa.fa-plus'), '  Revoke Access'
 								]) : ''
