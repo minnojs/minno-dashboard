@@ -3,6 +3,7 @@ import studyComponent from './study/studyComponent';
 import poolComponent from './pool/poolComponent';
 import historyComponent from './pool/historyComponent';
 import downloadsComponent from './downloads/downloadsComponent';
+import downloadsAccessComponent from './downloadsAccess/downloadsAccessComponent';
 import loginComponent from './login/loginComponent';
 export default routes;
 
@@ -13,6 +14,7 @@ let routes = {
 	'/editor/:studyId/:fileID': studyComponent,
 	'/pool': poolComponent,
 	'/pool/history': historyComponent,
-	'/downloads': downloadsComponent
+	'/downloads': downloadsComponent,
+	'/downloadsAccess': downloadsAccessComponent
 };
 

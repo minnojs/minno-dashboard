@@ -689,7 +689,7 @@
 
   var play = function play(file) {
   	return function () {
-  		var playground = undefined;
+  		var playground = void 0;
 
   		playground = window.open('playground.html', 'Playground');
 
@@ -852,7 +852,7 @@
   		var settings = _ref$settings === undefined ? {} : _ref$settings;
 
   		return function (element, isInitialized, ctx) {
-  			var editor = undefined;
+  			var editor = void 0;
   			var mode = settings.mode || 'javascript';
   			var paste = function paste(text) {
   				if (editor) {
@@ -1690,8 +1690,8 @@
   	}
   };
 
-  var currentStudy = undefined;
-  var filesVM$1 = undefined;
+  var currentStudy = void 0;
+  var filesVM$1 = void 0;
   var filesComponent = {
   	controller: function controller() {
   		// Create new VM only if we change study name
@@ -1772,8 +1772,8 @@
   	}
   };
 
-  var study = undefined;
-  var filesVM = undefined;
+  var study = void 0;
+  var filesVM = void 0;
   var editorLayoutComponent = {
   	controller: function controller() {
   		var id = m.route.param('studyId');
@@ -1948,12 +1948,12 @@
    */
   var editMessage = function editMessage(args) {
   	return messages.custom({
-  		content: m.component(editComponent, Object.assign({ close: messages.close }, args)),
+  		content: m.component(editComponent$1, Object.assign({ close: messages.close }, args)),
   		wide: true
   	});
   };
 
-  var editComponent = {
+  var editComponent$1 = {
   	controller: function controller(_ref) {
   		var input = _ref.input;
   		var output = _ref.output;
@@ -2403,7 +2403,7 @@
   			}[study.studyStatus]]),
 
   			// ### Actions
-  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]), study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
+  			m('td', [study.$pending ? m('.l', 'Loading...') : m('.btn-group', [study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.play.bind(null, study) }, [m('i.fa.fa-play')]) : '', study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.pause.bind(null, study) }, [m('i.fa.fa-pause')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.edit.bind(null, study) }, [m('i.fa.fa-edit')]) : '', study.canReset ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.reset.bind(null, study) }, [m('i.fa.fa-refresh')]) : '', study.canStop ? m('button.btn.btn-sm.btn-secondary', { onclick: ctrl.remove.bind(null, study, list) }, [m('i.fa.fa-close')]) : ''])])]);
   		})])])]);
   	}
   };
@@ -2537,6 +2537,7 @@
   	return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();
   };
 
+  var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
   var poolComponent$1 = {
   	controller: function controller() {
   		var ctrl = {
@@ -2553,20 +2554,38 @@
   	},
   	view: function view(ctrl) {
   		var list = ctrl.list;
-  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', 'New Status')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
+  		return m('.pool', [m('h2', 'Pool history'), m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.row', { colspan: 8 }, [m('.col-sm-4', m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })), m('.col-sm-8', dateRangePicker(ctrl), m('.btn-group-vertical.history-button-group', [dayButtonView(ctrl, 'Last 7 Days', 7), dayButtonView(ctrl, 'Last 30 Days', 30), dayButtonView(ctrl, 'Last 90 Days', 90), dayButtonView(ctrl, 'All times', 3650)]))])]), m('tr', [m('th', thConfig$1('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$1('studyUrl', ctrl.sortBy), 'Study'), m('th', thConfig$1('rulesUrl', ctrl.sortBy), 'Rules'), m('th', thConfig$1('autopauseUrl', ctrl.sortBy), 'Autopause'), m('th', thConfig$1('creationDate', ctrl.sortBy), 'Creation Date'), m('th', thConfig$1('completedSessions', ctrl.sortBy), 'Completion'), m('th', 'New Status'), m('th', 'Old Status'), m('th', thConfig$1('updaterId', ctrl.sortBy), 'Updater')])]), m('tbody', [list().filter(studyFilter$1(ctrl)).map(function (study) {
   			return m('tr', [
   			// ### ID
-  			m('td', study.studyId), m('td', study.updaterId),
+  			m('td', study.studyId),
+
+  			// ### Study url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.studyUrl, target: '_blank' }, 'Study')]),
+
+  			// ### Rules url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.rulesUrl, target: '_blank' }, 'Rules')]),
+
+  			// ### Autopause url
+  			m('td', [m('a', { href: PRODUCTION_URL$1 + study.autopauseUrl, target: '_blank' }, 'Autopause')]),
 
   			// ### Date
   			m('td', formatDate(new Date(study.creationDate))),
 
-  			// ### Status
+  			// ### Target Completionss
+  			m('td', [study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ', m('i.fa.fa-info-circle'), m('.card.info-box', [m('.card-header', 'Completion Details'), m('ul.list-group.list-group-flush', [m('li.list-group-item', [m('strong', 'Target Completions: '), study.targetCompletions]), m('li.list-group-item', [m('strong', 'Started Sessions: '), study.startedSessions]), m('li.list-group-item', [m('strong', 'Completed Sessions: '), study.completedSessions])])])]),
+
+  			// ### New Status
   			m('td', [{
   				R: m('span.label.label-success', 'Running'),
   				P: m('span.label.label-info', 'Paused'),
   				S: m('span.label.label-danger', 'Stopped')
-  			}[study.newStatus]])]);
+  			}[study.newStatus]]),
+  			// ### Old Status
+  			m('td', [{
+  				R: m('span.label.label-success', 'Running'),
+  				P: m('span.label.label-info', 'Paused'),
+  				S: m('span.label.label-danger', 'Stopped')
+  			}[study.studyStatus]]), m('td', study.updaterId)]);
   		})])])]);
   	}
   };
@@ -2578,8 +2597,8 @@
 
   function studyFilter$1(ctrl) {
   	return function (study) {
-  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime();
-  	};
+  		return (includes(study.studyId, ctrl.globalSearch()) || includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch()) || includes(study.targetCompletions, ctrl.globalSearch())) && new Date(study.creationDate).getTime() >= ctrl.startDate().getTime() && new Date(study.creationDate).getTime() <= ctrl.endDate().getTime() + 86000000;
+  	}; //include the end day selected
 
   	function includes(val, search) {
   		return typeof val === 'string' && val.includes(search);
@@ -2741,7 +2760,7 @@
   // debounce but call at first iteration
   function debounce$1(func, wait) {
   	var first = true;
-  	var timeout = undefined;
+  	var timeout = void 0;
   	return function () {
   		var context = this,
   		    args = arguments;
@@ -2891,6 +2910,482 @@
   	}
   }
 
+  var url$2 = '/dashboard/DownloadsAccess';
+  var STATUS_APPROVED = true;
+  var STATUS_SUBMITTED = false;
+
+  function createDataAccessRequest(dataAccessRequest) {
+  	var body = Object.assign({
+  		action: 'createDataAccessRequest'
+  	}, dataAccessRequest);
+
+  	return fetchJson(url$2, { method: 'post', body: body }).then(interceptErrors$2);
+  }
+
+  function deleteDataAccessRequest(dataAccessRequest) {
+  	var body = Object.assign({
+  		action: 'deleteDataAccessRequest'
+  	}, dataAccessRequest);
+
+  	return fetchJson(url$2, { method: 'post', body: body }).then(interceptErrors$2);
+  }
+
+  function updateApproved(dataAccessRequest, approved) {
+  	var body = Object.assign({
+  		action: 'updateApproved'
+  	}, dataAccessRequest, { approved: approved });
+
+  	return fetchJson(url$2, { method: 'post', body: body }).then(interceptErrors$2);
+  }
+
+  function getAllOpenRequests() {
+  	return fetchJson(url$2, { method: 'post', body: { action: 'getAllOpenRequests' } }).then(interceptErrors$2);
+  }
+
+  function interceptErrors$2(response) {
+  	if (!response.error) {
+  		return response;
+  	}
+
+  	var errors = {
+  		1: 'This ID already exists.',
+  		2: 'The study could not be found.',
+  		3: 'The rule file could not be found.',
+  		4: 'The rules file does not fit the "research" schema.'
+  	};
+
+  	return Promise.reject({ message: errors[response.error] });
+  }
+
+  var createMessage$2 = function createMessage(args) {
+  	return messages.custom({
+  		content: m.component(createComponent$2, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  };
+
+  var createComponent$2 = {
+  	controller: function controller(_ref) {
+  		var output = _ref.output;
+  		var close = _ref.close;
+
+  		var downloadAccess = {
+  			studyId: m.prop('')
+  		};
+
+  		// export study to calling component
+  		output(downloadAccess);
+
+  		var ctrl = {
+  			downloadAccess: downloadAccess,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var response = {
+  					studyId: downloadAccess.studyId()
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var downloadAccess = ctrl.downloadAccess;
+  		var validity = ctrl.validity();
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Request Download'), m('.card-block', [m('.form-group', { class: groupClasses(validity.studyId) }, [m('label', 'Study Id'), m('input.form-control', {
+  			config: focusConfig$3,
+  			placeholder: 'Study Id',
+  			value: downloadAccess.studyId(),
+  			onkeyup: m.withAttr('value', downloadAccess.studyId),
+  			class: inputClasses(validity.studyId)
+  		}), validationView(validity.studyId, 'The study ID is required in order to request a download.')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  	}
+  };
+
+  var focusConfig$3 = function focusConfig(element, isInitialized) {
+  	if (!isInitialized) element.focus();
+  };
+
+  var grantMessage = function grantMessage(args) {
+  	return messages.custom({
+  		content: m.component(grantComponent, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  };
+
+  var grantComponent = {
+  	controller: function controller(_ref) {
+  		var output = _ref.output;
+  		var close = _ref.close;
+
+  		var downloadAccess = {
+  			studyId: m.prop(''),
+  			username: m.prop('')
+  		};
+
+  		// export study to calling component
+  		output(downloadAccess);
+
+  		var ctrl = {
+  			downloadAccess: downloadAccess,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var response = {
+  					studyId: downloadAccess.studyId(),
+  					username: downloadAccess.username()
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var downloadAccess = ctrl.downloadAccess;
+  		var validity = ctrl.validity();
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Grant Data Access'), m('.card-block', [m('.form-group', { class: groupClasses(validity.studyId) }, [m('label', 'Study Id'), m('input.form-control', {
+  			config: focusConfig$4,
+  			placeholder: 'Study Id',
+  			value: downloadAccess.studyId(),
+  			onkeyup: m.withAttr('value', downloadAccess.studyId),
+  			class: inputClasses(validity.studyId)
+  		}), m('label', 'Username'), m('input.form-control', {
+  			config: focusConfig$4,
+  			placeholder: 'Username',
+  			value: downloadAccess.username(),
+  			onkeyup: m.withAttr('value', downloadAccess.username),
+  			class: inputClasses(validity.username)
+  		}), validationView(validity.studyId, 'The study ID is required in order to grant access.'), validationView(validity.username, 'The username is required in order to grant access.')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  	}
+  };
+
+  var focusConfig$4 = function focusConfig(element, isInitialized) {
+  	if (!isInitialized) element.focus();
+  };
+
+  var revokeMessage = function revokeMessage(args) {
+  	return messages.custom({
+  		content: m.component(revokeComponent, Object.assign({ close: messages.close }, args)),
+  		wide: true
+  	});
+  };
+
+  var revokeComponent = {
+  	controller: function controller(_ref) {
+  		var output = _ref.output;
+  		var close = _ref.close;
+
+  		var downloadAccess = {
+  			studyId: m.prop(''),
+  			username: m.prop('')
+  		};
+
+  		// export study to calling component
+  		output(downloadAccess);
+
+  		var ctrl = {
+  			downloadAccess: downloadAccess,
+  			submitAttempt: false,
+  			validity: function validity() {
+  				var response = {
+  					studyId: downloadAccess.studyId(),
+  					username: downloadAccess.username()
+  				};
+  				return response;
+  			},
+  			ok: function ok() {
+  				ctrl.submitAttempt = true;
+  				var response = ctrl.validity();
+  				var isValid = Object.keys(response).every(function (key) {
+  					return response[key];
+  				});
+
+  				if (isValid) close(true);
+  			},
+  			cancel: function cancel() {
+  				close(null);
+  			}
+  		};
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var downloadAccess = ctrl.downloadAccess;
+  		var validity = ctrl.validity();
+  		var validationView = function validationView(isValid, message) {
+  			return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message);
+  		};
+  		var groupClasses = function groupClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'has-danger': !valid,
+  				'has-success': valid
+  			});
+  		};
+  		var inputClasses = function inputClasses(valid) {
+  			return !ctrl.submitAttempt ? '' : classNames({
+  				'form-control-danger': !valid,
+  				'form-control-success': valid
+  			});
+  		};
+
+  		return m('div', [m('h4', 'Revoke Data Access'), m('.card-block', [m('.form-group', { class: groupClasses(validity.studyId) }, [m('label', 'Study Id'), m('input.form-control', {
+  			config: focusConfig$5,
+  			placeholder: 'Study Id',
+  			value: downloadAccess.studyId(),
+  			onkeyup: m.withAttr('value', downloadAccess.studyId),
+  			class: inputClasses(validity.studyId)
+  		}), m('label', 'Username'), m('input.form-control', {
+  			config: focusConfig$5,
+  			placeholder: 'Username',
+  			value: downloadAccess.username(),
+  			onkeyup: m.withAttr('value', downloadAccess.username),
+  			class: inputClasses(validity.username)
+  		}), validationView(validity.studyId, 'The study ID is required in order to revoke access.'), validationView(validity.username, 'The username is required in order to revoke access.')])]), m('.text-xs-right.btn-toolbar', [m('a.btn.btn-secondary.btn-sm', { onclick: ctrl.cancel }, 'Cancel'), m('a.btn.btn-primary.btn-sm', { onclick: ctrl.ok }, 'OK')])]);
+  	}
+  };
+
+  var focusConfig$5 = function focusConfig(element, isInitialized) {
+  	if (!isInitialized) element.focus();
+  };
+
+  function play$2(downloadAccess, list) {
+  	return messages.confirm({
+  		header: 'Approve Access Request:',
+  		content: 'Are you sure you want to grant access of "' + downloadAccess.studyId + '" to "' + downloadAccess.username + '"?'
+  	}).then(function (response) {
+  		if (response) {
+  			return updateApproved(downloadAccess, STATUS_APPROVED).then(function () {
+  				return list(list().filter(function (el) {
+  					return el !== downloadAccess;
+  				}));
+  			}).then(messages.alert({ header: 'Grant access completed', content: 'Access granted' })).catch(reportError$2('Grant Access')).then(m.redraw());
+  		}
+  	});
+  }
+
+  var remove$2 = function remove(downloadAccess, list) {
+  	return messages.confirm({
+  		header: 'Delete request:',
+  		content: 'Are you sure you want to delete the access request for"' + downloadAccess.studyId + '"? If access has already been granted you will lose it'
+  	}).then(function (response) {
+  		if (response) {
+
+  			return deleteDataAccessRequest(downloadAccess).then(function () {
+  				return list(list().filter(function (el) {
+  					return el !== downloadAccess;
+  				}));
+  			}).then(messages.alert({ header: "Deletion complete", content: "Access has been deleted" })).catch(reportError$2('Remove Download Request')).then(m.redraw());
+  		}
+  	});
+  };
+  var grant = function grant(list) {
+  	var output = m.prop();
+  	return grantMessage({ output: output }).then(function (response) {
+  		if (response) {
+  			var now = new Date();
+  			var downloadAccess = Object.assign({
+  				approved: STATUS_APPROVED,
+  				creationDate: now
+  			}, null, unPropify$2(output()));
+  			return createDataAccessRequest(downloadAccess).then(messages.alert({ header: "Grant access completed", content: "Access granted" })).catch(reportError$2('Grant Access'));
+  		}
+  	});
+  };
+  var revoke = function revoke(list) {
+  	var output = m.prop();
+  	return revokeMessage({ output: output }).then(function (response) {
+  		if (response) {
+  			var now = new Date();
+  			var downloadAccess = Object.assign({
+  				creationDate: now
+  			}, null, unPropify$2(output()));
+  			return deleteDataAccessRequest(downloadAccess).then(messages.alert({ header: "Revoke access completed", content: "Access revoked" })).catch(reportError$2('Revoke Access'));
+  		}
+  	});
+  };
+  var create$3 = function create(list) {
+  	var output = m.prop();
+  	return createMessage$2({ output: output }).then(function (response) {
+  		if (response) {
+  			var now;
+
+  			var _ret = function () {
+  				now = new Date();
+
+  				var downloadAccess = Object.assign(babelHelpers.defineProperty({
+  					approved: STATUS_SUBMITTED,
+  					creationDate: now
+  				}, 'approved', 'access pending'), null, unPropify$2(output()));
+  				return {
+  					v: createDataAccessRequest(downloadAccess).then(function () {
+  						return list().unshift(downloadAccess);
+  					}).then(m.redraw).catch(reportError$2('Data Access Request'))
+  				};
+  			}();
+
+  			if ((typeof _ret === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret)) === "object") return _ret.v;
+  		}
+  	});
+
+  	/*export let create = (list) => {
+   	let output = m.prop();
+   	return createMessage({output})
+   		.then(response => {
+   			if (response) {
+   					editNewStudy(list);
+   			}
+   		});	*/
+
+  	function editNewStudy(input) {
+  		var output = m.prop();
+  		return createMessage$2({ input: input, output: output }).then(function (response) {
+  			if (response) {
+  				var _ret2 = function () {
+  					var downloadAccess = Object.assign({
+  						approved: STATUS_SUBMITTED
+  					}, input, unPropify$2(output()));
+  					return {
+  						v: createDataAccessRequest(downloadAccess).then(function () {
+  							return list().unshift(downloadAccess);
+  						}).then(m.redraw).catch(reportError$2('Data Access Request'))
+  					};
+  				}();
+
+  				if ((typeof _ret2 === 'undefined' ? 'undefined' : babelHelpers.typeof(_ret2)) === "object") return _ret2.v;
+  			}
+  		});
+  	}
+  };
+
+  var reportError$2 = function reportError(header) {
+  	return function (err) {
+  		return messages.alert({ header: header, content: err.message });
+  	};
+  };
+
+  var unPropify$2 = function unPropify(obj) {
+  	return Object.keys(obj).reduce(function (result, key) {
+  		result[key] = obj[key]();
+  		return result;
+  	}, {});
+  };
+
+  var TABLE_WIDTH$2 = 6;
+
+  var downloadsAccessComponent = {
+  	controller: function controller() {
+  		var ctrl = {
+  			play: play$2,
+  			remove: remove$2,
+  			create: create$3,
+  			grant: grant,
+  			revoke: revoke,
+  			list: m.prop([]),
+  			globalSearch: m.prop(''),
+  			sortBy: m.prop(),
+  			error: m.prop(''),
+  			isAdmin: function isAdmin() {
+  				return getRole() === 'SU';
+  			}
+  		};
+
+  		getAllOpenRequests().then(ctrl.list).catch(ctrl.error).then(m.redraw);
+
+  		return ctrl;
+  	},
+  	view: function view(ctrl) {
+  		var list = ctrl.list;
+  		return m('.downloadAccess', [m('h2', 'Data Download Access Requests'), ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error().message) : m('table', { class: 'table table-striped table-hover', onclick: sortTable(list, ctrl.sortBy) }, [m('thead', [m('tr', [m('th.text-xs-left', { colspan: 1 }, [ctrl.isAdmin() ? '' : m('button.btn.btn-secondary', { onclick: ctrl.create.bind(null, list) }, [m('i.fa.fa-plus'), '  Request Access']), m('button.btn.btn-secondary', { onclick: ctrl.grant.bind(null, list) }, [m('i.fa.fa-plus'), '  Grant Access'])]), m('th.text-xs-left', { colspan: 1 }, [ctrl.isAdmin() ? m('button.btn.btn-secondary', { onclick: ctrl.revoke.bind(null, list) }, [m('i.fa.fa-plus'), '  Revoke Access']) : '']), m('th', { colspan: TABLE_WIDTH$2 - 2 }, [m('input.form-control', { placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch) })])]), m('tr', [m('th', thConfig$3('studyId', ctrl.sortBy), 'ID'), m('th', thConfig$3('username', ctrl.sortBy), 'Username'), m('th', thConfig$3('email', ctrl.sortBy), 'Email'), m('th', thConfig$3('creationDate', ctrl.sortBy), 'Date'), m('th', 'Status'), m('th', 'Actions')])]), m('tbody', [list().length === 0 ? m('tr.table-info', m('td.text-xs-center', { colspan: TABLE_WIDTH$2 }, m('strong', 'Heads up! '), 'There are no requests yet')) : list().filter(dataRequestFilter(ctrl)).map(function (dataRequest) {
+  			return m('tr', [
+  			// ### ID
+  			m('td', dataRequest.studyId),
+
+  			// ### USERNAME
+  			m('td', dataRequest.username),
+
+  			// ### EMAIL
+  			m('td', dataRequest.email),
+
+  			// ### Date
+  			m('td', formatDate(new Date(dataRequest.creationDate))), dataRequest.approved === STATUS_APPROVED ? m('td', { style: 'color:green' }, 'access granted') : m('td', { style: 'color:red' }, 'access pending')
+
+  			// ### Actions
+  			, m('td', [m('.btn-group', [dataRequest.canApprove && dataRequest.approved === STATUS_SUBMITTED ? m('button.btn.btn-sm.btn-secondary', { title: 'Approve request, and auto email requester', onclick: ctrl.play.bind(null, dataRequest, list) }, [m('i.fa.fa-play')]) : '', dataRequest.canDelete ? m('button.btn.btn-sm.btn-secondary', { title: 'Delete request.  If this is a granted request owner will lose access to it', onclick: ctrl.remove.bind(null, dataRequest, list) }, [m('i.fa.fa-close')]) : ''])])]);
+  		})])])]);
+  	}
+  };
+
+  // @TODO: bad idiom! should change things within the object, not the object itself.
+  var thConfig$3 = function thConfig(prop, current) {
+  	return { 'data-sort-by': prop, class: current() === prop ? 'active' : '' };
+  };
+
+  function dataRequestFilter(ctrl) {
+  	return function (dataRequest) {
+  		return includes(dataRequest.studyId, ctrl.globalSearch()) || includes(dataRequest.username, ctrl.globalSearch()) || includes(dataRequest.email, ctrl.globalSearch());
+  	};
+
+  	function includes(val, search) {
+  		return typeof val === 'string' && val.includes(search);
+  	}
+  }
+
   var loginComponent = {
   	controller: function controller() {
   		var username = m.prop('');
@@ -2952,7 +3447,8 @@
   	'/editor/:studyId/:fileID': editorLayoutComponent,
   	'/pool': poolComponent,
   	'/pool/history': poolComponent$1,
-  	'/downloads': downloadsComponent
+  	'/downloads': downloadsComponent,
+  	'/downloadsAccess': downloadsAccessComponent
   };
 
   var layout = function layout(route) {
