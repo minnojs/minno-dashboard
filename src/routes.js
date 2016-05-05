@@ -11,7 +11,7 @@ let routes = {
 	'/login': loginComponent,
 	'/studies' : studiesComponent,
 	'/editor/:studyId': studyComponent,
-	'/editor/:studyId/:fileID': studyComponent,
+	'/editor/:studyId/:resource/:fileID': studyComponent,
 	'/pool': poolComponent,
 	'/pool/history': historyComponent,
 	'/downloads': downloadsComponent,

@@ -4718,7 +4718,7 @@
 		'/login': loginComponent,
 		'/studies' : mainComponent,
 		'/editor/:studyId': editorLayoutComponent,
-		'/editor/:studyId/:fileID': editorLayoutComponent,
+		'/editor/:studyId/:resource/:fileID': editorLayoutComponent,
 		'/pool': poolComponent,
 		'/pool/history': poolComponent$1,
 		'/downloads': downloadsComponent,
