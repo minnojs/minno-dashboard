@@ -14,11 +14,18 @@ let aceComponent = {
 		return function(element, isInitialized, ctx){
 			let editor;
 			let mode = settings.mode || 'javascript';
+
+			// paster with padding
 			let paste = text => {
-				if (editor) {
-					editor.insert(text);
-					editor.focus();
-				}
+				if (!editor) return false;
+				let pos = editor.getSelectionRange().start; 
+				let line = editor.getSession().getLine(pos.row);
+				let padding = line.match(/^\s*/);
+				// replace all new lines with padding
+				if (padding) text = text.replace(/(?:\r\n|\r|\n)/g, '\n' + padding[0]);
+				
+				editor.insert(text);
+				editor.focus();
 			};
 
 			if (!isInitialized){
@@ -28,21 +35,28 @@ let aceComponent = {
 					ace.config.set('packaged', true);
 					ace.config.set('basePath', require.toUrl('ace'));
 
-					editor = ace.edit(element);
+					editor = ctx.editor = ace.edit(element);
+					let session = editor.getSession();
 					let commands = editor.commands;
 
-					editor.setTheme('ace/theme/monokai');
-					editor.getSession().setMode('ace/mode/' + mode);
-					if (mode !== 'javascript') editor.getSession().setUseWorker(false);
+					editor.setTheme('ace/theme/cobalt');
+					session.setMode('ace/mode/' + mode);
+					if (mode !== 'javascript') session.setUseWorker(false);
 					editor.setHighlightActiveLine(true);
 					editor.setShowPrintMargin(false);
 					editor.setFontSize('18px');
 					editor.$blockScrolling = Infinity; // scroll to top
 
-					editor.getSession().on('change', function(){
-						m.startComputation();
+					// set jshintOptions
+					editor.session.on('changeMode', function(e, session){
+						if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
+							session.$worker.send('setOptions', [settings.jshintOptions]);
+						}
+					});
+
+					session.on('change', function(){
 						content(editor.getValue());
-						m.endComputation();
+						m.redraw();
 					});
 
 					commands.addCommand({
@@ -53,10 +67,10 @@ let aceComponent = {
 					
 					if(observer) observer.on('paste',paste );
 					
-					editor.setValue(content());
-					editor.moveCursorTo(0,0);
+					setContent();
+					session.setUndoManager(new ace.UndoManager()); // reset undo manager so that ctrl+z doesn't erase file
 					editor.focus();
-
+					
 					ctx.onunload = () => {
 						editor.destroy();
 						if(observer) observer.off(paste );
@@ -64,7 +78,21 @@ let aceComponent = {
 				});
 
 			}
+			
+			// each redraw set content from model (the function makes sure that this is not done when not needed...)
+			setContent();
 
+			function setContent(){
+				let editor = ctx.editor;
+				if (!editor) return;
+				
+				// this should trigger only drastic changes such as the first time the editor is set
+				if (editor.getValue() !== content()){
+					editor.setValue(content());
+					editor.moveCursorTo(0,0);
+					editor.focus();
+				}
+			}
 		};
 	}
 };

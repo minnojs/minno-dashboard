@@ -26,7 +26,10 @@ let studyPrototype = {
 			});
 
 		function flattenFiles(files){
-			return files ? [].concat(...files.map(spreadFile)) : [];
+			if (!files) return [];
+			return files
+					.map(spreadFile)
+					.reduce((result, fileArr) => result.concat(fileArr),[]);
 		}
 
 		function assignStudyId(id){
@@ -34,7 +37,7 @@ let studyPrototype = {
 		}
 
 		function spreadFile(file){
-			return [file, ...flattenFiles(file.files)];
+			return [file].concat(flattenFiles(file.files));
 		}
 
 
@@ -45,6 +48,18 @@ let studyPrototype = {
 	},
 
 	createFile({name, content='',isDir}){
+		// validation (make sure there are no invalid characters)
+		if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: `The file name "${name}" is not valid`});
+
+		// validation (make sure file does not already exist)
+		let exists = this.files().some(file => file.path === name);
+		if (exists) return Promise.reject({message: `The file "${name}" already exists`});
+
+		// validateion (make sure direcotry exists)
+		let basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
+		let dirExists = basePath === '' || this.files().some(file => file.isDir && file.path === basePath);
+		if (!dirExists) return Promise.reject({message: `The directory "${basePath}" does not exist`});
+
 		return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content, isDir}})
 			.then(response => {
 				Object.assign(response, {studyId: this.id, content, path:name, isDir});

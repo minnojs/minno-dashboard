@@ -1,6 +1,8 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createPIP, createQuest, createManager, createEmpty, moveFile, copyUrl} from './fileActions';
+import {createDir, createEmpty, moveFile, copyUrl} from './fileActions';
+import {createFromTemplate} from './wizardActions';
+import wizardHash from './wizardHash';
 export default fileContext;
 
 // download support according to modernizer
@@ -11,23 +13,40 @@ let fileContext = (file, study) => {
 	let menu = [
 		// {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
-		{icon:'fa-folder', text:'New Folder', action: createDir(study, path)},
+		{icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
 		{icon:'fa-file', text:'New File', action: createEmpty(study, path)},
-		{icon:'fa-magic', text:'New from wizard', menu:[
-			{text:'piPlayer', action: createPIP(study, path)},
-			{text:'piQuest', action: createQuest(study, path)},
-			{text:'piManager', action: createManager(study, path)}
+		{icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
+		{icon:'fa-magic', text:'New from wizard', menu: [
+			{text: 'Rating wizard', action: activateWizard(`rating`)}
 		]},
 		{separator:true},
+		{icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
 		{icon:'fa-download', text:'Download', action: downloadFile},
 		{icon:'fa-link', text: 'Copy URL', action: copyUrl(file)},
 
-		// {icon:'fa-clipboard', text:'Copy Url', action: () => alert('copy')},
 		{icon:'fa-close', text:'Delete', action: deleteFile},
 		{icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
 	];
 
 	return contextMenu.open(menu);
+
+	function activateWizard(route){
+		return () => m.route(`/editor/${study.id}/wizard/` + route);
+	}
+	
+	function mapWizardHash(wizardHash){
+		return Object.keys(wizardHash).map((text) => {
+			let value = wizardHash[text];
+			return typeof value === 'string'
+				? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
+				: {text, menu: mapWizardHash(value)};
+		});
+	}
+
+	function refreshFile(){
+		file.content(file.sourceContent());
+		m.redraw();
+	}
 
 	function downloadFile(){
 		if (downloadSupport){

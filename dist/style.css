@@ -347,6 +347,11 @@
 .is-iframe .study > .col-md-10 {
   width: 100%; }
 
+.ace_search input, .ace_search button {
+  color: initial;
+  font-size: 12px;
+  font-family: initial; }
+
 th[data-sort-by]:before {
   content: "\f0dc";
   font-family: FontAwesome;

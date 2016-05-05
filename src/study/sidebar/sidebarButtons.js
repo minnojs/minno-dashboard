@@ -1,4 +1,4 @@
-import {createPIP, createQuest, createManager, createEmpty} from './fileActions';
+import {createEmpty} from './fileActions';
 export default sidebarButtons;
 
 let sidebarButtons = {
@@ -7,9 +7,6 @@ let sidebarButtons = {
 			newOpen: false,
 			toggleNew: () => ctrl.newOpen = !ctrl.newOpen,
 			createEmpty: createEmpty(study),
-			createPIP: createPIP(study),
-			createQuest: createQuest(study),
-			createManager: createManager(study)
 		};
 
 		return ctrl;
@@ -22,9 +19,9 @@ let sidebarButtons = {
 			]),
 			m('.btn.btn-sm.btn-secondary.dropdown-toggle', {onclick:ctrl.toggleNew}),
 			m('.dropdown-menu', {onclick: ctrl.toggleNew}, [
-				m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
-				m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
-				m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
+		//		m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
+		//		m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
+		//		m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
 			])
 		]);
 	}

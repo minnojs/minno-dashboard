@@ -1,6 +1,7 @@
 export default editorLayoutComponent;
 import studyFactory from './studyModel';
 import editorComponent from './editorComponent';
+import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
 
 let study, filesVM;
@@ -21,7 +22,7 @@ let editorLayoutComponent = {
 			isChanged: m.prop(false)
 		});
 
-		let ctrl = {study, filesVM, onunload: debounce(onunload,0, true)};
+		let ctrl = {study, filesVM, onunload};
 
 		window.addEventListener('beforeunload', beforeunload);
 
@@ -35,7 +36,6 @@ let editorLayoutComponent = {
 			if (hasUnsavedData()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
 		}
 
-		// this function needs to be debounced because of https://github.com/lhorie/mithril.js/issues/931
 		function onunload(e){
 			let leavingEditor = () => !/^\/editor\//.test(m.route());
 			if (leavingEditor() && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
@@ -45,9 +45,7 @@ let editorLayoutComponent = {
 			}
 		}
 	},
-	view: ctrl => {
-		let study = ctrl.study;
-		let filesVM = ctrl.filesVM;
+	view: ({study, filesVM}) => {
 		return m('.row.study', [
 			study.loaded
 				? [
@@ -55,7 +53,9 @@ let editorLayoutComponent = {
 						m.component(sidebarComponent, {study, filesVM})
 					]),
 					m('.col-md-10',[
-						m.component(editorComponent, {study, filesVM})
+						m.route.param('resource') === 'wizard'
+							? m.component(wizardComponent, {study})
+							: m.component(editorComponent, {study, filesVM})
 					])
 				]
 				:
@@ -75,22 +75,3 @@ var viewModelMap = function(signature) {
 		return map[key];
 	};
 };
-
-// Returns a function, that, as long as it continues to be invoked, will not
-// be triggered. The function will be called after it stops being called for
-// N milliseconds. If `immediate` is passed, trigger the function on the
-// leading edge, instead of the trailing.
-function debounce(func, wait, immediate) {
-	var timeout;
-	return function() {
-		var context = this, args = arguments;
-		var later = function() {
-			timeout = null;
-			if (!immediate) func.apply(context, args);
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
-		if (callNow) func.apply(context, args);
-	};
-}
