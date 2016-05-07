@@ -514,7 +514,7 @@
 				!vm || !vm.isOpen
 					? ''
 					:[
-						m('.overlay', {config:messages.config()}),
+						m('.overlay', {config:messages.config(vm.opts)}),
 						m('.backdrop-content', {onclick:close}, [
 							m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config:maxHeight}, [
 								m('.card-block', {onclick: stopPropagation}, [
@@ -527,14 +527,14 @@
 
 		},
 
-		config: function () {
+		config: function (opts) {
 			return function (element, isInitialized, context) {
 				if (!isInitialized) {
 					var handleKey = function(e) {
 						if (e.keyCode == 27) {
 							messages.close(null);
 						}
-						if (e.keyCode == 13) {
+						if (e.keyCode == 13 && !opts.preventEnterSubmits) {
 							messages.close(true);
 						}
 					};
@@ -1379,9 +1379,15 @@
 		return printObj(obj);
 
 		function printString(str){
-			return "'" + str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0') + "'"; // escape string and add parenthesis
+			return str === '' ? str : str
+				// escape string
+				.replace(/[\\"']/g, '\\$&')
+				.replace(/\u0000/g, '\\0')
+				// manage rows separately
+				.split(END_LINE)
+				.map(function ( str ) { return ("'" + str + "'"); })
+				.join((" +" + END_LINE + "" + TAB));
 		}
-
 		
 		function printArray(arr){
 			var isShort = arr.every(function ( element ) { return ['string', 'number', 'boolean'].includes(typeof element) && (element.length === undefined || element.length < 15); } );
@@ -1576,15 +1582,13 @@
 		view: inputWrapper(function (ctrl, ref) {
 			var prop = ref.prop;
 			var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-			var help = ref.help;
 			var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
 
 			return m('.input-group', [
 				m('select.c-select', {
 					onchange: m.withAttr('value', prop),
 					config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-				}, Object.keys(values).map(function ( key ) { return m('option', {value:key},values[key]); })),
-				help ? m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', help ) : ''
+				}, Object.keys(values).map(function ( key ) { return m('option', {value:values[key]},key); }))
 			]);
 		})
 	};
@@ -1706,6 +1710,127 @@
 
 	var TYPES = ['random', 'exRandom', 'sequential'];
 
+	var taskComponent = {
+		controller: function controller(ref){
+			var output = ref.output;
+			var close = ref.close;
+
+			var form = formFactory();
+			
+			var type = m.prop('message');
+			var common = {
+				inherit: m.prop(''),
+				name: m.prop(''),
+				title: m.prop('')
+			};
+			var task = m.prop({});
+				
+			return {type: type, common: common, task: task, form: form, close: close, proceed: proceed};
+
+			function proceed(){
+				output(Object.assign({type: type}, common, task()));
+				close(true)();
+			}		
+
+		},
+		view: function view(ref){
+			var type = ref.type;
+			var common = ref.common;
+			var task = ref.task;
+			var form = ref.form;
+			var close = ref.close;
+			var proceed = ref.proceed;
+
+			return m('div', [	
+				m('h4', 'Add task'),
+				m('.card-block', [
+					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
+					selectInput({label:'type', prop: type, form: form, values: {message: 'message', pip: 'pip', quest: 'quest'}}),
+					textInput({label: 'name', prop: common.name, help: 'The name for the task',form: form}),
+					textInput({label: 'title', prop: common.title, help: 'The title to be displayed in the browsers tab',form: form}),
+					m.component(taskSwitch(type()), {task: task, form: form})
+				]),
+				m('.text-xs-right.btn-toolbar',[
+					m('a.btn.btn-secondary.btn-sm', {onclick:close(false)}, 'Cancel'),
+					m('a.btn.btn-primary.btn-sm', {onclick:proceed}, 'Proceed')
+				])
+			]);
+		}
+	};
+
+	function taskSwitch(type){
+		switch (type) {
+			case 'message' : return messageComponent;
+			case 'pip' : return pipComponent;
+			case 'quest' : return questComponent;
+			default :
+				throw new Error(("Unknown task type: " + type));
+		}
+	}
+
+	var messageComponent = {
+		controller: function controller$1(ref){
+			var task = ref.task;
+
+			task({
+				piTemplate: m.prop(true),
+				template: m.prop(''),
+				templateUrl: m.prop('')
+			});
+		},
+		view: function view$1(ctrl, ref){
+			var task = ref.task;
+			var form = ref.form;
+
+			var props = task();
+			return m('div', [
+				selectInput({label:'piTemplate', prop: props.piTemplate, form: form, values: {'Active': true, 'Debriefing template': 'debrief', 'Don\'t use': false}, help: 'Use the PI style templates'}),
+				textInput({label: 'templateUrl', prop: props.templateUrl, help: 'The URL for the task template file',form: form}),
+				textInput({label: 'template', prop: props.template, rows:6,  form: form, isArea:true, help: m.trust('You can manually create your template here <strong>instead</strong> of using a url')})
+			]);	
+		}
+	};
+
+	var pipComponent = {
+		controller: function controller$2(ref){
+			var task = ref.task;
+
+			task({
+				version: m.prop('0.3'),
+				scriptUrl: m.prop('')
+			});
+		},
+		view: function view$2(ctrl, ref){
+			var task = ref.task;
+			var form = ref.form;
+
+			var props = task();
+			return m('div', [
+				textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form: form}),
+				selectInput({label:'version', prop: props.version, form: form, values: {'0.3':0.3, '0.2':0.2}, help: 'The version of PIP that you want to use'})
+			]);	
+		}
+	};
+
+	var questComponent = {
+		controller: function controller$3(ref){
+			var task = ref.task;
+
+			task({
+				scriptUrl: m.prop('')
+			});
+		},
+		view: function view$3(ctrl, ref){
+			var task = ref.task;
+			var form = ref.form;
+
+			var props = task();
+			return m('div', [
+				textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form: form})
+			]);	
+		}
+	};
+
 	var pageComponent = {
 		controller: function controller(ref){
 			var output = ref.output;
@@ -1746,7 +1871,7 @@
 		}
 	};
 
-	var questComponent = {
+	var questComponent$1 = {
 		controller: function controller(ref){
 			var output = ref.output;
 			var close = ref.close;
@@ -1780,7 +1905,7 @@
 			return m('div', [	
 				m('h4', 'Add Question'),
 				m('.card-block', [
-					selectInput({label:'type', prop: type, form: form, values: {text: 'Text', selectOne: 'Select One',selectMulti: 'Select Multiple'}}),
+					selectInput({label:'type', prop: type, form: form, values: {text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti'}}),
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
@@ -1856,6 +1981,7 @@
 		var output = m.prop();
 		messages
 			.custom({
+				preventEnterSubmits: true,
 				content: m.component(component, {output: output, close: close}),
 				wide: true
 			})
@@ -1864,8 +1990,9 @@
 		function close(value) {return function () { return messages.close(value); };}
 	}; }; };
 
+	var taskSnippet = snippetRunner(taskComponent);
 	var pageSnippet = snippetRunner(pageComponent);
-	var questSnippet = snippetRunner(questComponent);
+	var questSnippet = snippetRunner(questComponent$1);
 
 	function clearUnused(obj){
 		return Object.keys(obj).reduce(function (result, key) {
@@ -1929,6 +2056,11 @@
 				//])
 			]),
 			m('.btn-group.btn-group-sm.pull-xs-right', [
+				APItype !== 'managerAPI' ? '' : [
+					m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
+						m('strong','T')	
+					])
+				],
 				APItype !== 'questAPI' ? '' : [
 					m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
 						m('strong','Q')	

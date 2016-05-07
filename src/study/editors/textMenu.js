@@ -1,5 +1,5 @@
 import {play, save} from '../sidebar/fileActions';
-import {pageSnippet, questSnippet} from './snippetActions';
+import {pageSnippet, questSnippet, taskSnippet} from './snippetActions';
 
 export default textMenuView;
 
@@ -46,6 +46,11 @@ let textMenuView = ({mode, file, study, observer}) => {
 			//])
 		]),
 		m('.btn-group.btn-group-sm.pull-xs-right', [
+			APItype !== 'managerAPI' ? '' : [
+				m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
+					m('strong','T')	
+				])
+			],
 			APItype !== 'questAPI' ? '' : [
 				m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
 					m('strong','Q')	

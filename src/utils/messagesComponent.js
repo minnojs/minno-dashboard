@@ -34,7 +34,7 @@ let messages = {
 			!vm || !vm.isOpen
 				? ''
 				:[
-					m('.overlay', {config:messages.config()}),
+					m('.overlay', {config:messages.config(vm.opts)}),
 					m('.backdrop-content', {onclick:close}, [
 						m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config:maxHeight}, [
 							m('.card-block', {onclick: stopPropagation}, [
@@ -47,14 +47,14 @@ let messages = {
 
 	},
 
-	config: () => {
+	config: (opts) => {
 		return (element, isInitialized, context) => {
 			if (!isInitialized) {
 				let handleKey = function(e) {
 					if (e.keyCode == 27) {
 						messages.close(null);
 					}
-					if (e.keyCode == 13) {
+					if (e.keyCode == 13 && !opts.preventEnterSubmits) {
 						messages.close(true);
 					}
 				};
