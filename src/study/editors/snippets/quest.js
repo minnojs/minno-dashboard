@@ -1,4 +1,4 @@
-import {formFactory, textInput, checkboxInput, arrayInput, selectInput} from 'utils/formHelpers';
+import {formFactory, textInput, checkboxInput, arrayInput, selectInput, maybeInput} from 'utils/formHelpers';
 import inheritInput from './inheritInput';
 export default questComponent;
 
@@ -9,7 +9,11 @@ let questComponent = {
 		let common = {
 			inherit: m.prop(''),
 			name: m.prop(''),
-			stem: m.prop('')
+			stem: m.prop(''),
+			required: m.prop(false),
+			errorMsg: {
+				required: m.prop('')
+			}
 		};
 		let quest = m.prop({});
 		output(quest);
@@ -17,7 +21,11 @@ let questComponent = {
 		return {type, common, quest,form, close, proceed};
 
 		function proceed(){
-			output(Object.assign({type}, common, quest()));
+			let script = output(Object.assign({type}, common, quest()));
+			console.log(script)
+			if (!script.required()) script.required = script.errorMsg = undefined;
+			if (!script.help || !script.help()) script.help = script.helpText = undefined;
+			
 			close(true)();
 		}		
 
@@ -30,7 +38,11 @@ let questComponent = {
 				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
-				m.component(question(type()), {quest,form})
+				m.component(question(type()), {quest,form,common}),
+				checkboxInput({label: 'required', prop: common.required, description: 'Require this question to be answered', form}),
+				common.required()
+					? textInput({label:'requiredText',  help: 'The error message for when the question has not been answered', prop: common.errorMsg.required ,form})
+					: ''
 			]),
 			m('.text-xs-right.btn-toolbar',[
 				m('a.btn.btn-secondary.btn-sm', {onclick:close(false)}, 'Cancel'),
@@ -51,7 +63,8 @@ let question = type => {
 };
 
 let textComponent = {
-	controller({quest}){
+	controller({quest, common}){
+		common.errorMsg.required('This text field is required');
 		// setup unique properties
 		quest({
 			autoSubmit: m.prop(false)
@@ -66,7 +79,8 @@ let textComponent = {
 };
 
 let selectOneComponent = {
-	controller({quest}){
+	controller({quest,common}){
+		common.errorMsg.required('Please select an answer, or click \'decline to answer\'');
 		// setup unique properties
 		quest({
 			autoSubmit: m.prop(false),
@@ -76,14 +90,21 @@ let selectOneComponent = {
 				'Undecided',
 				'Not realy',
 				'Not at all'
-			]) 
+			]),
+			numericValues:true,
+			help: m.prop(false),
+			helpText: m.prop('Tip: For quick response, click to select your answer, and then click again to submit.')
 		});
 	},
 	view(ctrl, {quest, form}){
 		let props = quest();
 		return m('div', [
 			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form}),
-			arrayInput({label: 'answers', prop: props.answers, rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true})
+			arrayInput({label: 'answers', prop: props.answers, rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form}),
+			props.help()
+				? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form, isArea: true})
+				: ''
 		]);	
 	}
 };

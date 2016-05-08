@@ -7,10 +7,13 @@ export let print = obj => {
 		case 'boolean': return obj ? 'true' : 'false';
 		case 'string' : return printString(obj); 
 		case 'number' : return obj + '';
+		case 'undefined' : return 'undefined';
 		case 'function': 
 			if (obj.toJSON) return print(obj()); // Support m.prop
 			else return obj.toString();
 	}
+
+	if (obj === null) return 'null';
 
 	if (Array.isArray(obj)) return printArray(obj);
 	

@@ -1369,10 +1369,13 @@
 			case 'boolean': return obj ? 'true' : 'false';
 			case 'string' : return printString(obj); 
 			case 'number' : return obj + '';
+			case 'undefined' : return 'undefined';
 			case 'function': 
 				if (obj.toJSON) return print(obj()); // Support m.prop
 				else return obj.toString();
 		}
+
+		if (obj === null) return 'null';
 
 		if (Array.isArray(obj)) return printArray(obj);
 		
@@ -1881,7 +1884,11 @@
 			var common = {
 				inherit: m.prop(''),
 				name: m.prop(''),
-				stem: m.prop('')
+				stem: m.prop(''),
+				required: m.prop(false),
+				errorMsg: {
+					required: m.prop('')
+				}
 			};
 			var quest = m.prop({});
 			output(quest);
@@ -1889,7 +1896,11 @@
 			return {type: type, common: common, quest: quest,form: form, close: close, proceed: proceed};
 
 			function proceed(){
-				output(Object.assign({type: type}, common, quest()));
+				var script = output(Object.assign({type: type}, common, quest()));
+				console.log(script)
+				if (!script.required()) script.required = script.errorMsg = undefined;
+				if (!script.help || !script.help()) script.help = script.helpText = undefined;
+				
 				close(true)();
 			}		
 
@@ -1909,7 +1920,11 @@
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
-					m.component(question(type()), {quest: quest,form: form})
+					m.component(question(type()), {quest: quest,form: form,common: common}),
+					checkboxInput({label: 'required', prop: common.required, description: 'Require this question to be answered', form: form}),
+					common.required()
+						? textInput({label:'requiredText',  help: 'The error message for when the question has not been answered', prop: common.errorMsg.required ,form: form})
+						: ''
 				]),
 				m('.text-xs-right.btn-toolbar',[
 					m('a.btn.btn-secondary.btn-sm', {onclick:close(false)}, 'Cancel'),
@@ -1931,9 +1946,11 @@
 
 	var textComponent = {
 		controller: function controller$1(ref){
-			// setup unique properties
 			var quest = ref.quest;
+			var common = ref.common;
 
+			common.errorMsg.required('This text field is required');
+			// setup unique properties
 			quest({
 				autoSubmit: m.prop(false)
 			});
@@ -1951,9 +1968,11 @@
 
 	var selectOneComponent = {
 		controller: function controller$2(ref){
-			// setup unique properties
 			var quest = ref.quest;
+			var common = ref.common;
 
+			common.errorMsg.required('Please select an answer, or click \'decline to answer\'');
+			// setup unique properties
 			quest({
 				autoSubmit: m.prop(false),
 				answers: m.prop([
@@ -1962,7 +1981,10 @@
 					'Undecided',
 					'Not realy',
 					'Not at all'
-				]) 
+				]),
+				numericValues:true,
+				help: m.prop(false),
+				helpText: m.prop('Tip: For quick response, click to select your answer, and then click again to submit.')
 			});
 		},
 		view: function view$2(ctrl, ref){
@@ -1972,7 +1994,11 @@
 			var props = quest();
 			return m('div', [
 				checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form}),
-				arrayInput({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true})
+				arrayInput({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form}),
+				props.help()
+					? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
+					: ''
 			]);	
 		}
 	};
