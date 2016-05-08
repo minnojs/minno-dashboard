@@ -22,7 +22,6 @@ let questComponent = {
 
 		function proceed(){
 			let script = output(Object.assign({type}, common, quest()));
-			console.log(script)
 			if (!script.required()) script.required = script.errorMsg = undefined;
 			if (!script.help || !script.help()) script.help = script.helpText = undefined;
 			
@@ -34,7 +33,7 @@ let questComponent = {
 		return m('div', [	
 			m('h4', 'Add Question'),
 			m('.card-block', [
-				selectInput({label:'type', prop: type, form, values: {text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti'}}),
+				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', /*Slider: 'slider'*/}}),
 				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
@@ -57,6 +56,7 @@ let question = type => {
 		case 'text' : return textComponent;
 		case 'selectOne' : return selectOneComponent;
 		case 'selectMulti' : return selectOneComponent;
+		case 'slider' : return sliderComponent;
 		default:
 			throw new Error('Unknown question type');
 	}
@@ -83,7 +83,7 @@ let selectOneComponent = {
 		common.errorMsg.required('Please select an answer, or click \'decline to answer\'');
 		// setup unique properties
 		quest({
-			autoSubmit: m.prop(false),
+			autoSubmit: m.prop(true),
 			answers: m.prop([
 				'Very much',
 				'Somewhat',
@@ -101,6 +101,33 @@ let selectOneComponent = {
 		return m('div', [
 			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form}),
 			arrayInput({label: 'answers', prop: props.answers, rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form}),
+			props.help()
+				? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form, isArea: true})
+				: ''
+		]);	
+	}
+};
+
+let sliderComponent = {
+	controller({quest,common}){
+		common.errorMsg.required('Please select an answer, or click \'decline to answer\'');
+		// setup unique properties
+		quest({
+			steps:201, min: -100, max:100, 
+			hidePips:true, 
+			//showTics:true,
+			highlight:true,
+			leftLabelCss : {color:'#8b2500','font-size':'1.5em'}, 
+			rightLabelCss: {color:'#8b2500','font-size':'1.5em'},
+			labels : m.prop([]),
+			help: m.prop(false),
+			helpText: m.prop('Click on the gray line to indicate your judgment. After clicking the line, you can slide the circle to choose the exact judgment.')
+		});
+	},
+	view(ctrl, {quest, form}){
+		let props = quest();
+		return m('div', [
 			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form}),
 			props.help()
 				? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form, isArea: true})
