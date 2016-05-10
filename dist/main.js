@@ -1492,11 +1492,12 @@
 			var prop = ref.prop;
 			var form = ref.form;
 			var required = ref.required;
+			var dflt = ref.dflt;
 
 			if (!form) throw new Error('Inputs require a form');
 
-			var text = m.prop(typeof prop() == 'boolean' ? '' : prop());
-			var checked = m.prop(typeof prop() == 'string' ? true : prop()); 
+			var text = m.prop(typeof prop() == 'boolean' ? dflt || '' : prop());
+			var checked = m.prop(!!prop()); 
 			var validity = function () { return !required || prop(); };
 			form.register(validity);
 
@@ -1919,7 +1920,7 @@
 			return m('div', [	
 				m('h4', 'Add Question'),
 				m('.card-block', [
-					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
+					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti'/*, Slider: 'slider'*/}}),
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
@@ -1999,7 +2000,7 @@
 			return m('div', [
 				checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form}),
 				arrayInput({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
-				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form}),
+				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form, dflt: '<%= pagesMeta.number < 3 %>'}),
 				props.help()
 					? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
 					: ''
@@ -2032,7 +2033,7 @@
 
 			var props = quest();
 			return m('div', [
-				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form}),
+				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form, dflt: '<%= pagesMeta.number < 3 %>'}),
 				props.help()
 					? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
 					: ''

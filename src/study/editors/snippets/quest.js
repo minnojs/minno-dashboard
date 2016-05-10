@@ -33,7 +33,7 @@ let questComponent = {
 		return m('div', [	
 			m('h4', 'Add Question'),
 			m('.card-block', [
-				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
+				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti'/*, Slider: 'slider'*/}}),
 				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
@@ -101,7 +101,7 @@ let selectOneComponent = {
 		return m('div', [
 			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form}),
 			arrayInput({label: 'answers', prop: props.answers, rows:7,  form, isArea:true, help: 'Each row here represents an answer option', required:true}),
-			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form}),
+			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form, dflt: '<%= pagesMeta.number < 3 %>'}),
 			props.help()
 				? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form, isArea: true})
 				: ''
@@ -128,7 +128,7 @@ let sliderComponent = {
 	view(ctrl, {quest, form}){
 		let props = quest();
 		return m('div', [
-			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form}),
+			maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form, dflt: '<%= pagesMeta.number < 3 %>'}),
 			props.help()
 				? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form, isArea: true})
 				: ''

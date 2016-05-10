@@ -2,11 +2,11 @@ import inputWrapper from './inputWrapper';
 export default maybeInputComponent;
 
 let  maybeInputComponent = {
-	controller({prop, form, required}){
+	controller({prop, form, required, dflt}){
 		if (!form) throw new Error('Inputs require a form');
 
-		let text = m.prop(typeof prop() == 'boolean' ? '' : prop());
-		let checked = m.prop(typeof prop() == 'string' ? true : prop()); 
+		let text = m.prop(typeof prop() == 'boolean' ? dflt || '' : prop());
+		let checked = m.prop(!!prop()); 
 		let validity = () => !required || prop();
 		form.register(validity);
 
