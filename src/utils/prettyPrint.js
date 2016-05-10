@@ -43,9 +43,13 @@ export let print = obj => {
 
 	function printObj(obj){
 		let content = Object.keys(obj)
-			.map(key => `${key} : ${print(obj[key])}`)
+			.map(key => `${escapeKey(key)} : ${print(obj[key])}`)
 			.map(row => indent(row))
 			.join(',' + END_LINE);
 		return `{\n${content}\n}`;
+
+		function escapeKey(key){
+			return /[^a-zA-Z$_]/.test(key) ? `'${key}'` : key;
+		}
 	}
 };

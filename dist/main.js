@@ -1405,10 +1405,14 @@
 
 		function printObj(obj){
 			var content = Object.keys(obj)
-				.map(function ( key ) { return ("" + key + " : " + (print(obj[key]))); })
+				.map(function ( key ) { return ("" + (escapeKey(key)) + " : " + (print(obj[key]))); })
 				.map(function ( row ) { return indent(row); })
 				.join(',' + END_LINE);
 			return ("{\n" + content + "\n}");
+
+			function escapeKey(key){
+				return /[^a-zA-Z$_]/.test(key) ? ("'" + key + "'") : key;
+			}
 		}
 	};
 
@@ -1915,7 +1919,7 @@
 			return m('div', [	
 				m('h4', 'Add Question'),
 				m('.card-block', [
-					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', /*Slider: 'slider'*/}}),
+					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),

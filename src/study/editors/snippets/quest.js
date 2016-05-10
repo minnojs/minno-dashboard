@@ -33,7 +33,7 @@ let questComponent = {
 		return m('div', [	
 			m('h4', 'Add Question'),
 			m('.card-block', [
-				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', /*Slider: 'slider'*/}}),
+				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
 				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
