@@ -1920,7 +1920,7 @@
 			return m('div', [	
 				m('h4', 'Add Question'),
 				m('.card-block', [
-					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti'/*, Slider: 'slider'*/}}),
+					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
@@ -2016,13 +2016,12 @@
 			common.errorMsg.required('Please select an answer, or click \'decline to answer\'');
 			// setup unique properties
 			quest({
-				steps:201, min: -100, max:100, 
-				hidePips:true, 
-				//showTics:true,
-				highlight:true,
-				leftLabelCss : {color:'#8b2500','font-size':'1.5em'}, 
-				rightLabelCss: {color:'#8b2500','font-size':'1.5em'},
-				labels : m.prop([]),
+				min: m.prop(0),
+				max: m.prop(100),
+				steps: m.prop(''),
+				hidePips: m.prop(false), 
+				highlight: m.prop(true),
+				labels : m.prop(['Low', 'Medium', 'High']),
 				help: m.prop(false),
 				helpText: m.prop('Click on the gray line to indicate your judgment. After clicking the line, you can slide the circle to choose the exact judgment.')
 			});
@@ -2033,6 +2032,13 @@
 
 			var props = quest();
 			return m('div', [
+				textInput({label: 'min', prop: props.min, help: 'The minimum value for the slider',form: form}),
+				textInput({label: 'max', prop: props.max, help: 'The maximum value for the slider',form: form}),
+				textInput({label: 'steps', prop: props.steps, help: 'Break the slider continuum to individual steps. Set to an integer or empty for a continuous slider',form: form}),
+				props.steps()
+					? '' 
+					: checkboxInput({label: 'hidePips', prop: props.hidePips, description: 'Hide the markers for the individual steps',form: form}),
+				arrayInput({label:'labels', prop: props.labels, help: 'A list of labels for the slider range', isArea: true, rows:5, form: form}),
 				maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form, dflt: '<%= pagesMeta.number < 3 %>'}),
 				props.help()
 					? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
