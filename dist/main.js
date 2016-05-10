@@ -1920,11 +1920,11 @@
 			return m('div', [	
 				m('h4', 'Add Question'),
 				m('.card-block', [
-					selectInput({label:'type', prop: type, form: form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
+					selectInput({label:'type', prop: type, form: form, values: typeMap}),
 					inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
 					textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form: form}),
 					textInput({label: 'stem', prop: common.stem, help: 'The question text',form: form}),
-					m.component(question(type()), {quest: quest,form: form,common: common}),
+					m.component(question(type()), {type: type,quest: quest,form: form,common: common}),
 					checkboxInput({label: 'required', prop: common.required, description: 'Require this question to be answered', form: form}),
 					common.required()
 						? textInput({label:'requiredText',  help: 'The error message for when the question has not been answered', prop: common.errorMsg.required ,form: form})
@@ -1938,9 +1938,12 @@
 		}
 	};
 
+	var typeMap = {Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
+
 	var question = function ( type ) {
 		switch (type) {
 			case 'text' : return textComponent;
+			case 'textarea' : return textareaComponent;
 			case 'selectOne' : return selectOneComponent;
 			case 'selectMulti' : return selectOneComponent;
 			case 'slider' : return sliderComponent;
@@ -1971,8 +1974,32 @@
 		}
 	};
 
-	var selectOneComponent = {
+	var textareaComponent = {
 		controller: function controller$2(ref){
+			var quest = ref.quest;
+			var common = ref.common;
+
+			common.errorMsg.required('This text field is required');
+			// setup unique properties
+			quest({
+				rows: m.prop(3),
+				columns: m.prop('')
+			});
+		},
+		view: function view$2(ctrl, ref){
+			var quest = ref.quest;
+			var form = ref.form;
+
+			var props = quest();
+			return m('div', [
+				textInput({label: 'rows', prop: props.rows, help: 'The number of visible text lines', form: form})
+			]);	
+
+		}
+	};
+
+	var selectOneComponent = {
+		controller: function controller$3(ref){
 			var quest = ref.quest;
 			var common = ref.common;
 
@@ -1992,7 +2019,7 @@
 				helpText: m.prop('Tip: For quick response, click to select your answer, and then click again to submit.')
 			});
 		},
-		view: function view$2(ctrl, ref){
+		view: function view$3(ctrl, ref){
 			var quest = ref.quest;
 			var form = ref.form;
 
@@ -2009,7 +2036,7 @@
 	};
 
 	var sliderComponent = {
-		controller: function controller$3(ref){
+		controller: function controller$4(ref){
 			var quest = ref.quest;
 			var common = ref.common;
 
@@ -2026,7 +2053,7 @@
 				helpText: m.prop('Click on the gray line to indicate your judgment. After clicking the line, you can slide the circle to choose the exact judgment.')
 			});
 		},
-		view: function view$3(ctrl, ref){
+		view: function view$4(ctrl, ref){
 			var quest = ref.quest;
 			var form = ref.form;
 

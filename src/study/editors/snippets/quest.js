@@ -33,11 +33,11 @@ let questComponent = {
 		return m('div', [	
 			m('h4', 'Add Question'),
 			m('.card-block', [
-				selectInput({label:'type', prop: type, form, values: {Text: 'text',  'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'}}),
+				selectInput({label:'type', prop: type, form, values: typeMap}),
 				inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
 				textInput({label: 'name', prop: common.name, help: 'The name by which this question will be recorded',form}),
 				textInput({label: 'stem', prop: common.stem, help: 'The question text',form}),
-				m.component(question(type()), {quest,form,common}),
+				m.component(question(type()), {type,quest,form,common}),
 				checkboxInput({label: 'required', prop: common.required, description: 'Require this question to be answered', form}),
 				common.required()
 					? textInput({label:'requiredText',  help: 'The error message for when the question has not been answered', prop: common.errorMsg.required ,form})
@@ -51,9 +51,12 @@ let questComponent = {
 	}
 };
 
+let typeMap = {Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
+
 let question = type => {
 	switch (type) {
 		case 'text' : return textComponent;
+		case 'textarea' : return textareaComponent;
 		case 'selectOne' : return selectOneComponent;
 		case 'selectMulti' : return selectOneComponent;
 		case 'slider' : return sliderComponent;
@@ -75,6 +78,24 @@ let textComponent = {
 		return m('div', [
 			checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on enter', form})
 		]);	
+	}
+};
+
+let textareaComponent = {
+	controller({quest, common}){
+		common.errorMsg.required('This text field is required');
+		// setup unique properties
+		quest({
+			rows: m.prop(3),
+			columns: m.prop('')
+		});
+	},
+	view(ctrl, {quest, form}){
+		let props = quest();
+		return m('div', [
+			textInput({label: 'rows', prop: props.rows, help: 'The number of visible text lines', form})
+		]);	
+
 	}
 };
 
