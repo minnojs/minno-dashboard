@@ -32,15 +32,15 @@ let layout = route => {
 						m('li.nav-item',[
 							m('a.nav-link',{href:'/downloads', config:m.route},'Downloads')
 						]),
-						m('li.nav-item',[
-							m('a.nav-link',{href:'/deploy', config:m.route},'Deploy')
-						]),
-						m('li.nav-item',[
-							m('a.nav-link',{href:'/studyRemoval', config:m.route}, 'Study Removal')
-						]),
-						m('li.nav-item',[
-							m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
-						]),
+//						m('li.nav-item',[
+//							m('a.nav-link',{href:'/deploy', config:m.route},'Deploy')
+//						]),
+//						m('li.nav-item',[
+//							m('a.nav-link',{href:'/studyRemoval', config:m.route}, 'Study Removal')
+//						]),
+//						m('li.nav-item',[
+//							m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
+//						]),
 						m('li.nav-item',[
 							m('a.nav-link',{href:'/addUser', config:m.route}, 'Add User')
 						]),
