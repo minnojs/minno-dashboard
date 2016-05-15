@@ -25,7 +25,8 @@ let loginComponent = {
 				.catch(response => {
 					ctrl.error(response.message);
 					m.redraw();
-				});
+				})
+                                ;
 		}
 	},
 	view(ctrl){
@@ -47,6 +48,7 @@ let loginComponent = {
 								placeholder: 'Username / Email',
 								value: ctrl.username(),
 								onkeyup: m.withAttr('value', ctrl.username),
+								onchange: m.withAttr('value', ctrl.username),
 								config: getStartValue(ctrl.username)
 							}),
 
@@ -55,17 +57,19 @@ let loginComponent = {
 								placeholder: 'Password',
 								value: ctrl.password(),
 								onkeyup: m.withAttr('value', ctrl.password),
+								onchange: m.withAttr('value', ctrl.password),
 								config: getStartValue(ctrl.password)
 							})
 						]),
 
-						ctrl.error() ? m('.alert.alert-warning', m('strong', 'Warning!! '), ctrl.error()) : '',
+						ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
 
 						m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
 
-						// m('p.text-center',
-						// 	m('a', m('small.text-muted','Lost your password?'))
-						// )
+						 m('p.text-center',
+                                                        m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
+
+						 )
 					])
 				])
 		]);
