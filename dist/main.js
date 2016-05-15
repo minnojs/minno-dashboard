@@ -1640,6 +1640,32 @@
 		return m.component(textInputComponent, fixedArgs);
 	};
 
+	var selectInputComponent$1 = {
+		controller: function controller(ref){
+			var prop = ref.prop;
+			var form = ref.form;
+			var required = ref.required;
+
+			if (!form) throw new Error('Inputs require a form');
+
+			var validity = function () { return !required || prop(); };
+			form.register(validity);
+
+			return {validity: validity, showValidation: form.showValidation};
+		},
+		view: inputWrapper(function (ctrl, ref) {
+			var prop = ref.prop;
+			var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+
+			return m('.c-inputs-stacked', Object.keys(values)
+				.map(function ( key ) { return m('label.c-input.c-radio', [
+					m('input', {type:'radio', checked: values[key] === prop(), onchange: prop.bind(null, values[key])}),
+					m('span.c-indicator'),
+					key
+				]); }));
+		})
+	};
+
 	function formFactory(){
 		var validationHash = [];
 		return {
