@@ -49,7 +49,7 @@ export let print = obj => {
 		return `{\n${content}\n}`;
 
 		function escapeKey(key){
-			return /[^a-zA-Z$_]/.test(key) ? `'${key}'` : key;
+			return /[^1-9a-zA-Z$_]/.test(key) ? `'${key}'` : key;
 		}
 	}
 };

@@ -11,7 +11,8 @@ let pageComponent = {
 			decline: m.prop(false),
 			progressBar: m.prop('<%= pagesMeta.number %> out of <%= pagesMeta.outOf%>'),
 			autoFocus: true,
-			questions: []
+			questions: [],
+			v1style:2
 		};
 		output(page);
 
