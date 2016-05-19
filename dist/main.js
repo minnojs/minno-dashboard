@@ -1568,7 +1568,7 @@
   				}),
   				m('span.c-indicator'),
   				m.trust('&nbsp;'),
-  				m('span.text-muted', description)
+  				description
   			])
   		]);
   	},{isFormControl:false})
