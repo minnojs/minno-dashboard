@@ -5,7 +5,7 @@ export default questComponent;
 let questComponent = {
 	controller({output,close}){
 		let form = formFactory();
-		let type = m.prop('text');
+		let type = m.prop();
 		let common = {
 			inherit: m.prop(''),
 			name: m.prop(''),
@@ -51,7 +51,7 @@ let questComponent = {
 	}
 };
 
-let typeMap = {Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
+let typeMap = {None: undefined, Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
 
 let question = type => {
 	switch (type) {
@@ -60,6 +60,7 @@ let question = type => {
 		case 'selectOne' : return selectOneComponent;
 		case 'selectMulti' : return selectOneComponent;
 		case 'slider' : return sliderComponent;
+		case undefined : return {view: () => m('div')};
 		default:
 			throw new Error('Unknown question type');
 	}

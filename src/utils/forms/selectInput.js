@@ -13,9 +13,9 @@ let selectInputComponent = {
 	view: inputWrapper((ctrl, {prop, isFirst = false, values = {}}) => {
 		return m('.input-group', [
 			m('select.c-select', {
-				onchange: m.withAttr('value', prop),
+				onchange: e => prop(values[e.target.value]),
 				config: (element, isInit) => isFirst && isInit && element.focus()
-			}, Object.keys(values).map(key => m('option', {value:values[key]},key)))
+			}, Object.keys(values).map(key => m('option',  key)))
 		]);
 	})
 };

@@ -1594,9 +1594,9 @@
 
   		return m('.input-group', [
   			m('select.c-select', {
-  				onchange: m.withAttr('value', prop),
+  				onchange: function ( e ) { return prop(values[e.target.value]); },
   				config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-  			}, Object.keys(values).map(function ( key ) { return m('option', {value:values[key]},key); }))
+  			}, Object.keys(values).map(function ( key ) { return m('option',  key); }))
   		]);
   	})
   };
@@ -1913,7 +1913,7 @@
   		var close = ref.close;
 
   		var form = formFactory();
-  		var type = m.prop('text');
+  		var type = m.prop();
   		var common = {
   			inherit: m.prop(''),
   			name: m.prop(''),
@@ -1966,7 +1966,7 @@
   	}
   };
 
-  var typeMap = {Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
+  var typeMap = {None: undefined, Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
 
   var question = function ( type ) {
   	switch (type) {
@@ -1975,6 +1975,7 @@
   		case 'selectOne' : return selectOneComponent;
   		case 'selectMulti' : return selectOneComponent;
   		case 'slider' : return sliderComponent;
+  		case undefined : return {view: function () { return m('div'); }};
   		default:
   			throw new Error('Unknown question type');
   	}
