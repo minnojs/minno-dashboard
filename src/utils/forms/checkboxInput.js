@@ -11,7 +11,7 @@ let  checkboxInputComponent = {
 		return {validity, showValidation: form.showValidation};
 	},
 	view: inputWrapper((ctrl, {prop, description = ''}) => {
-		return m('.checkbox', [
+		return m('div', [
 			m('label.c-input.c-checkbox', [
 				m('input.form-control', {
 					type: 'checkbox',

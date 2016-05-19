@@ -61,6 +61,8 @@ $navbar-height:    58px;
     top: 24px;
 }
 
+.c-inputs-stacked.fixed {margin-bottom: -1.5em}
+
 @import "./loader";
 @import "./context";
 @import "./files";

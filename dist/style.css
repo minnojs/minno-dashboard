@@ -67,6 +67,9 @@
   left: 15px;
   top: 24px; }
 
+.c-inputs-stacked.fixed {
+  margin-bottom: -1.5em; }
+
 .loader,
 .loader:before,
 .loader:after {

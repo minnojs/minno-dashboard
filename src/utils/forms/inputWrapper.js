@@ -10,9 +10,9 @@ let inputWrapper = (view,opts={}) => (ctrl, args) => {
 		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
 	}
 
-	return args.stack
+	return args.isStack
 		? m('.form-group', {class: groupClass}, [
-			m('label', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+			args.label != null ? m('label', args.label) : '',
 			view(ctrl, args, {inputClass}),
 			args.help && m('small.text-muted.m-y-0', args.help )
 		])
