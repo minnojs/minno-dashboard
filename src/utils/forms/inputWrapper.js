@@ -4,8 +4,9 @@ let inputWrapper = (view,opts={}) => (ctrl, args) => {
 	let groupClass;
 	let inputClass;
 	let isFormControl = opts.isFormControl !== false;
+	let form = args.form;
 
-	if (ctrl.showValidation && ctrl.showValidation() && !isValid){
+	if (form.showValidation()){
 		groupClass = isValid ? 'has-success' : 'has-danger';
 		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
 	}

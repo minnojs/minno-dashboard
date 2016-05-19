@@ -1424,8 +1424,9 @@
   	var groupClass;
   	var inputClass;
   	var isFormControl = opts.isFormControl !== false;
+  	var form = args.form;
 
-  	if (ctrl.showValidation && ctrl.showValidation() && !isValid){
+  	if (form.showValidation()){
   		groupClass = isValid ? 'has-success' : 'has-danger';
   		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
   	}
@@ -1559,7 +1560,7 @@
   		var prop = ref.prop;
   		var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
 
-  		return m('div', [
+  		return m('.checkbox', [
   			m('label.c-input.c-checkbox', [
   				m('input.form-control', {
   					type: 'checkbox',
