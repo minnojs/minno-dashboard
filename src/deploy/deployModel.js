@@ -1,7 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
-
 const baseUrl = '/dashboard/dashboard/studies';
-
 
 function get_prop_url(study_id)
 {	
@@ -12,7 +10,6 @@ function deploy_url(study_id)
 {	
     return `${baseUrl}/${encodeURIComponent(study_id)}/deploy`;
 }
-
 
 export function get_study_prop(study_id){
     var url = get_prop_url(study_id);
@@ -33,8 +30,3 @@ export let Study_change_request = (study_id, ctrl) => fetchJson(deploy_url(study
 	method: 'put',
 	body: {file_names: ctrl.file_names, target_sessions: ctrl.target_sessions, status: ctrl.status, comments: ctrl.comments}
 });
-
-
-//                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-//                        m('h5', ['The Deploy form was sent successfully ', m('a', {href:'deployList'}, 'View Deploy Requests')]'])
-//                        m('h5', 'No Rule File'])

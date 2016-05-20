@@ -1,8 +1,7 @@
 import {set_password, is_recovery_code} from './changePasswordModel';
-import {formFactory, textInput, checkboxInput} from 'utils/formHelpers';
+
 import fullHeight from 'utils/fullHeight';
 import {body} from './changePasswordView';
-import {authorize, isLoggedIn} from 'login/authModel';
 
 export default changePasswordComponent;
 

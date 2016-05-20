@@ -1,5 +1,4 @@
-import {add, isadded} from './addUserModel';
-import {formFactory, textInput, checkboxInput} from 'utils/formHelpers';
+import {add} from './addUserModel';
 import fullHeight from 'utils/fullHeight';
 export default addComponent;
 
@@ -20,7 +19,6 @@ let addComponent = {
                         added:false,
 			add: addAction
 		};
-
 		return ctrl;
 
 		function addAction(){
@@ -30,14 +28,12 @@ let addComponent = {
 					ctrl.added = true;
 				})
 				.catch(response => {
-//                                    console.log(JSON.parse(response)
 					ctrl.error(response.message);
 					m.redraw();
 				})
                                 .then(() => {
 					m.redraw();
-				})
-                                ;
+				});
 		}
 	},
 	view(ctrl){
@@ -61,7 +57,6 @@ let addComponent = {
 								onchange: m.withAttr('value', ctrl.username),
 								config: getStartValue(ctrl.username)
 							}),
-
 							m('input.form-control', {
 								type:'first_name',
 								placeholder: 'first name',
@@ -70,7 +65,6 @@ let addComponent = {
 								onchange: m.withAttr('value', ctrl.first_name),
 								config: getStartValue(ctrl.first_name)
 							}),
-                                                        
 							m('input.form-control', {
 								type:'last_name',
 								placeholder: 'last name',
@@ -87,26 +81,18 @@ let addComponent = {
 								onchange: m.withAttr('value', ctrl.email),
 								config: getStartValue(ctrl.email)
 							}),
-                                                        m('label.c-input.c-checkbox', [
-                                                                m('input.form-control', {
-                                                                        type: 'checkbox',
-                                                                        onclick: m.withAttr('checked', ctrl.iscu),
-//                                                                        checked: ctrl.iscu,
-
-                                                                }),
-                                                                m('span.c-indicator'),
-                                                                m.trust('&nbsp;'),
-                                                                m('span', 'contract user')
-                                                        ]),
+							m('label.c-input.c-checkbox', [
+								m('input.form-control', {
+									type: 'checkbox',
+									onclick: m.withAttr('checked', ctrl.iscu)}),
+								m('span.c-indicator'),
+								m.trust('&nbsp;'),
+								m('span', 'contract user')
+							]),
 						]),
 
 						ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-
-						m('button.btn.btn-primary.btn-block', {onclick: ctrl.add},'Add'),
-
-						// m('p.text-center',
-						// 	m('a', m('small.text-muted','Lost your password?'))
-						// )
+						m('button.btn.btn-primary.btn-block', {onclick: ctrl.add},'Add')
 					])
 				])
 		]);

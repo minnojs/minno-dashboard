@@ -1,8 +1,6 @@
 import {is_activation_code, set_password} from './activationModel';
-import {formFactory, textInput, checkboxInput} from 'utils/formHelpers';
 import fullHeight from 'utils/fullHeight';
 import {body} from 'changePassword/changePasswordView';
-import {authorize, isLoggedIn} from 'login/authModel';
 
 export default activationComponent;
 
@@ -27,7 +25,7 @@ let activationComponent = {
             m.redraw();
         });
         return ctrl;
-            
+
         function update(){
             set_password(m.route.param('code'), password, confirm)
                 .then(() => {
@@ -44,8 +42,7 @@ let activationComponent = {
     },
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
-            
-                ctrl.activated
+            ctrl.activated
             ?
             [
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),

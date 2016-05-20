@@ -1,6 +1,5 @@
-import {formFactory, textInput, checkboxInput, maybeInput, radioInput} from 'utils/formHelpers';
+import {formFactory, textInput, radioInput} from 'utils/formHelpers';
 import {study_removal, get_study_prop} from 'deploy/deployModel';
-import fullHeight from 'utils/fullHeight';
 export default StudyRemovalComponent;
 const ASTERIX = m('span.text-danger', '*');
 
@@ -18,13 +17,13 @@ let StudyRemovalComponent = {
         }
         get_study_prop(m.route.param('studyId'))
             .then(response =>{
-                    ctrl.researcher_name(response.researcher_name);
-                    ctrl.researcher_email(response.researcher_email);
-                    ctrl.study_names(response.experiment_file.reduce((obj, row) => {
-                            obj[row.file_id] = row.file_id;
-                            return obj;
-                        }, {}));
-                })
+                ctrl.researcher_name(response.researcher_name);
+                ctrl.researcher_email(response.researcher_email);
+                ctrl.study_names(response.experiment_file.reduce((obj, row) => {
+                    obj[row.file_id] = row.file_id;
+                    return obj;
+                }, {}));
+            })
             .catch(error => {
                 m.route('/');
             })
@@ -43,7 +42,8 @@ let StudyRemovalComponent = {
                 })
                 .catch(error => {
                     throw error;
-                }).then(m.redraw);
+                })
+                .then(m.redraw);
         };
     },
     view({form, ctrl, submit}){
@@ -58,8 +58,6 @@ let StudyRemovalComponent = {
             m('h1', 'Study Removal'),
             m('p', 'Researcher name: ', ctrl.researcher_name()),                
             m('p', 'Researcher email address: ', ctrl.researcher_email()),                
-//                textInput({label:'Researcher name',  placeholder: 'Researcher name', prop: ctrl.researcher_name, form, required:true, stack}),
-//                textInput({label:'Researcher email address',  placeholder: 'Researcher email address', prop: ctrl.researcher_email, form, required:true, stack}),
             radioInput({
                 label:m('span', ['Study name', ASTERIX]), 
                 prop: ctrl.study_name, 
@@ -71,7 +69,5 @@ let StudyRemovalComponent = {
             textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             m('button.btn.btn-primary', {onclick: submit}, 'Submit'), 
         ]);
-
-
      }
 };

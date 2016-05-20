@@ -1,4 +1,4 @@
-import {fetchJson,fetchVoid} from 'utils/modelHelpers';
+import {fetchJson} from 'utils/modelHelpers';
 
 const activation1_url = '/dashboard/dashboard/activation';
 
