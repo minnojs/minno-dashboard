@@ -10,9 +10,9 @@ let selectInputComponent = {
 
 		return {validity, showValidation: form.showValidation};
 	},
-	view: inputWrapper((ctrl, {prop, isFirst = false, values = {}}) => {
+	view: inputWrapper((ctrl, {prop, isFirst = false, values = {}}, {inputClass}) => {
 		return m('.input-group', [
-			m('select.c-select', {
+			m('select.c-select.form-control', {class: inputClass}, {
 				onchange: e => prop(values[e.target.value]),
 				config: (element, isInit) => isFirst && isInit && element.focus()
 			}, Object.keys(values).map(key => m('option',  key)))

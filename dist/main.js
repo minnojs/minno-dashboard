@@ -1416,36 +1416,39 @@
   	}
   };
 
-  var inputWrapper = function (view,opts) {
-  	if ( opts === void 0 ) opts={};
-
-  	return function (ctrl, args) {
+  var inputWrapper = function (view) { return function (ctrl, args) {
   	var isValid = !ctrl.validity || ctrl.validity();
   	var groupClass;
   	var inputClass;
-  	var isFormControl = opts.isFormControl !== false;
   	var form = args.form;
 
+  	if (!form) throw new Error('Inputs require a form');
+  		
   	if (form.showValidation()){
   		groupClass = isValid ? 'has-success' : 'has-danger';
-  		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
+  		inputClass = isValid ? 'form-control-success' : 'form-control-error';
   	}
 
-  	return args.isStack
-  		? m('.form-group', {class: groupClass}, [
-  			args.label != null ? m('label', args.label) : '',
-  			view(ctrl, args, {inputClass: inputClass}),
-  			args.help && m('small.text-muted.m-y-0', args.help )
-  		])
-  		: m('.form-group.row', {class: groupClass}, [
-  			m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+  	return m('.form-group.row', {class: groupClass}, [
+  		args.isStack
+  		? [ 
+  			m('.col-sm-12', [
+  				args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
+  				view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
+  				args.help && m('small.text-muted.m-y-0', args.help )
+  			])
+  		]
+  		: [
+  			m('.col-sm-2', [
+  				m('label.form-control-label', args.label)
+  			]),
   			m('.col-sm-10', [
-  				view(ctrl, args, {inputClass: inputClass})
+  				view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
   			]),
   			args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-  		]);
-  };
-  };
+  		]
+  	]);
+  }; };
 
   var textInputComponent  = {
   	controller: function controller(ref) {
@@ -1453,12 +1456,10 @@
   		var form = ref.form;
   		var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
 
-  		if (!form) throw new Error('Text input requires a form');
-  		
   		var validity = function () { return !required || prop().length; };
   		form.register(validity);
 
-  		return {validity: validity, showValidation: form.showValidation};
+  		return {validity: validity};
   	},
 
   	view: inputWrapper(function (ctrl, ref, ref$1) {
@@ -1549,19 +1550,19 @@
   		var form = ref.form;
   		var required = ref.required;
 
-  		if (!form) throw new Error('Inputs require a form');
-  		
   		var validity = function () { return !required || prop(); };
   		form.register(validity);
 
   		return {validity: validity, showValidation: form.showValidation};
   	},
-  	view: inputWrapper(function (ctrl, ref) {
+  	view: inputWrapper(function (ctrl, ref, ref$1) {
   		var prop = ref.prop;
   		var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+  		var groupClass = ref$1.groupClass;
+  		var inputClass = ref$1.inputClass;
 
-  		return m('.checkbox', [
-  			m('label.c-input.c-checkbox', [
+  		return m('.checkbox.checkbox-input-group', {class: groupClass}, [
+  			m('label.c-input.c-checkbox', {class: inputClass}, [
   				m('input.form-control', {
   					type: 'checkbox',
   					onclick: m.withAttr('checked', prop),
@@ -1572,7 +1573,7 @@
   				description
   			])
   		]);
-  	},{isFormControl:false})
+  	})
   };
 
   var selectInputComponent = {
@@ -1588,13 +1589,14 @@
 
   		return {validity: validity, showValidation: form.showValidation};
   	},
-  	view: inputWrapper(function (ctrl, ref) {
+  	view: inputWrapper(function (ctrl, ref, ref$1) {
   		var prop = ref.prop;
   		var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
   		var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+  		var inputClass = ref$1.inputClass;
 
   		return m('.input-group', [
-  			m('select.c-select', {
+  			m('select.c-select.form-control', {class: inputClass}, {
   				onchange: function ( e ) { return prop(values[e.target.value]); },
   				config: function (element, isInit) { return isFirst && isInit && element.focus(); }
   			}, Object.keys(values).map(function ( key ) { return m('option',  key); }))

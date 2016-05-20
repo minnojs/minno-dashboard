@@ -1,27 +1,34 @@
 export default inputWrapper;
-let inputWrapper = (view,opts={}) => (ctrl, args) => {
+let inputWrapper = (view) => (ctrl, args) => {
 	let isValid = !ctrl.validity || ctrl.validity();
 	let groupClass;
 	let inputClass;
-	let isFormControl = opts.isFormControl !== false;
 	let form = args.form;
 
+	if (!form) throw new Error('Inputs require a form');
+		
 	if (form.showValidation()){
 		groupClass = isValid ? 'has-success' : 'has-danger';
-		inputClass = isValid ? 'form-controll-success' : 'form-control-error';
+		inputClass = isValid ? 'form-control-success' : 'form-control-error';
 	}
 
-	return args.isStack
-		? m('.form-group', {class: groupClass}, [
-			args.label != null ? m('label', args.label) : '',
-			view(ctrl, args, {inputClass}),
-			args.help && m('small.text-muted.m-y-0', args.help )
-		])
-		: m('.form-group.row', {class: groupClass}, [
-			m('label.col-sm-2', {class: isFormControl ? 'form-control-label' : ''}, args.label),
+	return m('.form-group.row', {class: groupClass}, [
+		args.isStack
+		? [ 
+			m('.col-sm-12', [
+				args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
+				view(ctrl, args, {groupClass, inputClass}),
+				args.help && m('small.text-muted.m-y-0', args.help )
+			])
+		]
+		: [
+			m('.col-sm-2', [
+				m('label.form-control-label', args.label)
+			]),
 			m('.col-sm-10', [
-				view(ctrl, args, {inputClass})
+				view(ctrl, args, {groupClass, inputClass})
 			]),
 			args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-		]);
+		]
+	]);
 };

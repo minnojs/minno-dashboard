@@ -3,12 +3,10 @@ export default textInputComponent;
 
 let textInputComponent  = {
 	controller({prop, form, required = false}) {
-		if (!form) throw new Error('Text input requires a form');
-		
 		let validity = () => !required || prop().length;
 		form.register(validity);
 
-		return {validity, showValidation: form.showValidation};
+		return {validity};
 	},
 
 	view: inputWrapper((ctrl, {prop, isArea = false, isFirst = false, placeholder = '', help, rows = 3}, {inputClass}) => {

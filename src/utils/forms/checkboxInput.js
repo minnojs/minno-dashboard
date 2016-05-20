@@ -3,16 +3,14 @@ export default checkboxInputComponent;
 
 let  checkboxInputComponent = {
 	controller({prop, form, required}){
-		if (!form) throw new Error('Inputs require a form');
-		
 		let validity = () => !required || prop();
 		form.register(validity);
 
 		return {validity, showValidation: form.showValidation};
 	},
-	view: inputWrapper((ctrl, {prop, description = ''}) => {
-		return m('.checkbox', [
-			m('label.c-input.c-checkbox', [
+	view: inputWrapper((ctrl, {prop, description = ''}, {groupClass, inputClass}) => {
+		return m('.checkbox.checkbox-input-group', {class: groupClass}, [
+			m('label.c-input.c-checkbox', {class: inputClass}, [
 				m('input.form-control', {
 					type: 'checkbox',
 					onclick: m.withAttr('checked', prop),
@@ -23,5 +21,5 @@ let  checkboxInputComponent = {
 				description
 			])
 		]);
-	},{isFormControl:false})
+	})
 };
