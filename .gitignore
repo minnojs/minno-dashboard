@@ -14,6 +14,7 @@
 # OS or Editor folders
 .tmp
 .DS_Store
+.idea
 ._*
 Thumbs.db
 .cache
