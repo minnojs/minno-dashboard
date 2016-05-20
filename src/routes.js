@@ -1,4 +1,5 @@
 import studiesComponent from './study/studiesComponent';
+import statisticsComponent from './study/statistics/statisticsComponent';
 import studyComponent from './study/studyComponent';
 import poolComponent from './pool/poolComponent';
 import historyComponent from './pool/historyComponent';
@@ -17,7 +18,7 @@ import changePasswordComponent from './changePassword/changePasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
 export default routes;
 
-let routes = {
+let routes = { 
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
     '/change_password':  changePasswordComponent,
@@ -31,6 +32,7 @@ let routes = {
     '/changeRequestList': changeRequestListComponent,
     '/login': loginComponent,
     '/studies' : studiesComponent,
+    '/studies/statistics' : statisticsComponent,
     '/editor/:studyId': studyComponent,
     '/editor/:studyId/:resource/:fileID': studyComponent,
     '/pool': poolComponent,
