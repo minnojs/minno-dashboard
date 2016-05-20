@@ -18,24 +18,24 @@ import recoveryComponent from './recovery/recoveryComponent';
 export default routes;
 
 let routes = {
-	'/recovery':  recoveryComponent,
-	'/activation/:code':  activationComponent,
-	'/change_password':  changePasswordComponent,
-	'/change_password/:code':  changePasswordComponent,
-	'/addUser':  addUserComponent,
-	'/studyChangeRequest/:studyId':  studyChangeRequestComponent,
-	'/studyRemoval/:studyId':  studyRemovalComponent,
-	'/deploy/:studyId': deployComponent,
-	'/deployList': deployListComponent,
-	'/removalList': removalListComponent,
-	'/changeRequestList': changeRequestListComponent,
-	'/login': loginComponent,
-	'/studies' : studiesComponent,
-	'/editor/:studyId': studyComponent,
-	'/editor/:studyId/:resource/:fileID': studyComponent,
-	'/pool': poolComponent,
-	'/pool/history': historyComponent,
-	'/downloads': downloadsComponent,
-	'/downloadsAccess': downloadsAccessComponent
+    '/recovery':  recoveryComponent,
+    '/activation/:code':  activationComponent,
+    '/change_password':  changePasswordComponent,
+    '/change_password/:code':  changePasswordComponent,
+    '/addUser':  addUserComponent,
+    '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
+    '/studyRemoval/:studyId':  studyRemovalComponent,
+    '/deploy/:studyId': deployComponent,
+    '/deployList': deployListComponent,
+    '/removalList': removalListComponent,
+    '/changeRequestList': changeRequestListComponent,
+    '/login': loginComponent,
+    '/studies' : studiesComponent,
+    '/editor/:studyId': studyComponent,
+    '/editor/:studyId/:resource/:fileID': studyComponent,
+    '/pool': poolComponent,
+    '/pool/history': historyComponent,
+    '/downloads': downloadsComponent,
+    '/downloadsAccess': downloadsAccessComponent
 };
 

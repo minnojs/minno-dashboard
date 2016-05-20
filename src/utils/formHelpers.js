@@ -6,16 +6,16 @@ import arrayInputSrc from './forms/arrayInput';
 import radioInputComponent from './forms/radioInput';
 
 export function formFactory(){
-	let validationHash = [];
-	return {
-		register(fn){
-			validationHash.push(fn);
-		},
-		isValid() {
-			return validationHash.every(fn => fn.call());
-		},
-		showValidation: m.prop(false)
-	};
+    let validationHash = [];
+    return {
+        register(fn){
+            validationHash.push(fn);
+        },
+        isValid() {
+            return validationHash.every(fn => fn.call());
+        },
+        showValidation: m.prop(false)
+    };
 }
 
 export let textInput = args => m.component(textInputComponent, args);

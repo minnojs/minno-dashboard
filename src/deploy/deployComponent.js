@@ -48,7 +48,7 @@ let deployComponent = {
             .catch(error => {
                 throw error;
             }).then(m.redraw);
-	
+    
         return {ctrl, form, submit};
         function submit(){
             form.showValidation(true);

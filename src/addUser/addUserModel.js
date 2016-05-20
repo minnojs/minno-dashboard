@@ -7,7 +7,7 @@ let added = false;
 export let isadded = () => added;
 
 export let add = (username, first_name , last_name, email, iscu) => fetchJson(add_userUrl, {
-	method: 'post',
-	body: {username, first_name , last_name, email, iscu}
+    method: 'post',
+    body: {username, first_name , last_name, email, iscu}
 });
 

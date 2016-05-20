@@ -27,8 +27,8 @@ export let body = ctrl => m('.card.card-inverse.col-md-4', [
                 ]);
 
 function getStartValue(prop){
-//	console.log('horrible hack to manage chrome pw autocomplete')
-	return (element, isInit) => {// !isInit && prop(element.value);
-		if (!isInit) setTimeout(()=>prop(element.value), 30);
-	}
+//  console.log('horrible hack to manage chrome pw autocomplete')
+    return (element, isInit) => {// !isInit && prop(element.value);
+        if (!isInit) setTimeout(()=>prop(element.value), 30);
+    }
 }
