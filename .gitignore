@@ -35,3 +35,6 @@ nbproject
 node_modules
 bower_components
 dist/build.txt
+
+# Just for this project - prevent mistakes
+*.sql
