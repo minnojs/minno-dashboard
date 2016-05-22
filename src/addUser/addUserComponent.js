@@ -16,7 +16,7 @@ let addComponent = {
             email,
             iscu,
             error: m.prop(''),
-                        added:false,
+            added:false,
             add: addAction
         };
         return ctrl;
@@ -31,7 +31,7 @@ let addComponent = {
                     ctrl.error(response.message);
                     m.redraw();
                 })
-                                .then(() => {
+                .then(() => {
                     m.redraw();
                 });
         }
@@ -88,7 +88,7 @@ let addComponent = {
                                 m('span.c-indicator'),
                                 m.trust('&nbsp;'),
                                 m('span', 'contract user')
-                            ]),
+                            ])
                         ]),
 
                         ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',

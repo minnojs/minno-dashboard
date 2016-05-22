@@ -1,5 +1,4 @@
 import messages from 'utils/messagesComponent';
-import {dateRangePicker} from 'utils/dateRange';
 import classNames from 'utils/classNames';
 export default createMessage;
 

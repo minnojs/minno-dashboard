@@ -1,4 +1,4 @@
-import {formFactory, textInput, arrayInput, checkboxInput, selectInput, maybeInput} from 'utils/formHelpers';
+import {formFactory, textInput, selectInput} from 'utils/formHelpers';
 import inheritInput from './inheritInput';
 export default taskComponent;
 
@@ -97,4 +97,3 @@ let questComponent = {
         ]); 
     }
 };
-

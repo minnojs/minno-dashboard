@@ -68,7 +68,7 @@ var validateComponent = {
 };
 
 
-function stringify(value, pretty) {
+function stringify(value) {
     if (value == null) { // null || undefined
         return '<i class="text-muted">undefined</i>';
     }

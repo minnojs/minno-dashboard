@@ -9,8 +9,8 @@ let layout = route => {
         controller(){
             authorize();
 
-            if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param("code") && m.route() !== '/change_password/'+ m.route.param("code")) 
-                            m.route('/login');
+            if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')) 
+                m.route('/login');
 
             return {doLogout};
 
@@ -47,14 +47,17 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                         ]),
-                        m('li.nav-item.pull-xs-right',
-                                                isLoggedIn()
-                ?
-                                                        [
-                            m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
-                                m('i.fa.fa-sign-out'), '  Logout'
-                            ])
-                        ]:[])
+                        m('li.nav-item.pull-xs-right',[
+                            isLoggedIn()
+                                ?
+                                [
+                                    m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+                                        m('i.fa.fa-sign-out'), '  Logout'
+                                    ])
+                                ]
+                                :
+                                []
+                        ])
                     ])
                 ]),
 

@@ -1,7 +1,4 @@
-import messages from './messages';
-import {questElements} from './parser';
-
-export default function questValidator(script){
+export default function questValidator(){
     var errors = [];
 
     errors.push({type:'Settings', errors:[]});

@@ -1089,17 +1089,6 @@
         return {trials:trials, stimuli:stimuli, media:media};
     }
 
-    function managerElements(script){
-        var tasks;
-
-        tasks = [].concat(
-            flattenSequence(script.sequence),
-            script.pagesSets
-        ).filter(function ( t) { return t; });
-
-        return {tasks:tasks};
-    }
-
     function pipValidator(script, url){
         var errors = [];
         var elements = pipElements(script);
@@ -1214,7 +1203,7 @@
         }
     }
 
-    function questValidator(script){
+    function questValidator(){
         var errors = [];
 
         errors.push({type:'Settings', errors:[]});
@@ -1224,9 +1213,8 @@
         return errors;
     }
 
-    function managerValidator(script){
+    function managerValidator(){
         var errors = [];
-        var elements = managerElements(script);
 
         errors.push({type:'Settings', errors:[]});
         errors.push({type:'Tasks', errors:[]});
@@ -1237,11 +1225,11 @@
     function validate$1(script){
         var type = script.type && script.type.toLowerCase();
         switch (type){
-        case 'pip' : return pipValidator.apply(null, arguments);
-        case 'quest' : return questValidator.apply(null, arguments);
-        case 'manager' : return managerValidator.apply(null, arguments);
-        default:
-            throw new Error('Unknown script.type: ' + type);
+            case 'pip' : return pipValidator.apply(null, arguments);
+            case 'quest' : return questValidator.apply(null, arguments);
+            case 'manager' : return managerValidator.apply(null, arguments);
+            default:
+                throw new Error('Unknown script.type: ' + type);
         }
     }
 
@@ -1312,7 +1300,7 @@
     };
 
 
-    function stringify(value, pretty) {
+    function stringify(value) {
         if (value == null) { // null || undefined
             return '<i class="text-muted">undefined</i>';
         }
@@ -2890,34 +2878,6 @@
         return hash;
     }, {}); };
 
-    var sidebarButtons = {
-        controller: function (ref) {
-            var study = ref.study;
-
-            var ctrl = {
-                newOpen: false,
-                toggleNew: function () { return ctrl.newOpen = !ctrl.newOpen; },
-                createEmpty: createEmpty(study),
-            };
-
-            return ctrl;
-        },
-
-        view: function ( ctrl ) {
-            return m('.btn-group', {class: ctrl.newOpen ? 'open' : ''}, [
-                m('.btn.btn-sm.btn-secondary', {onclick:ctrl.createEmpty}, [
-                    m('i.fa.fa-plus'), ' New'
-                ]),
-                m('.btn.btn-sm.btn-secondary.dropdown-toggle', {onclick:ctrl.toggleNew}),
-                m('.dropdown-menu', {onclick: ctrl.toggleNew}, [
-            //      m('a.dropdown-item', {onclick: ctrl.createPIP}, 'piPlayer'),
-            //      m('a.dropdown-item', {onclick: ctrl.createQuest}, 'piQuest'),
-            //      m('a.dropdown-item', {onclick: ctrl.createManager}, 'piManager')
-                ])
-            ]);
-        }
-    };
-
     var sidebarComponent = {
         view: function (ctrl , ref) {
             var study = ref.study;
@@ -3843,14 +3803,14 @@
                         ]),
                         m('tr', [
                             m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
-                                m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
-                                m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
+                            m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
+                            m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
+                            m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
                             m('th', thConfig$1('creationDate',ctrl.sortBy), 'Creation Date'),
                             m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
                             m('th','New Status'),
                             m('th','Old Status'),
-                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater'),
+                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater')
                         ])
                     ]),
                     m('tbody', [
@@ -3914,7 +3874,7 @@
                                     S: m('span.label.label-danger', 'Stopped')
                                 }[study.studyStatus]
                             ]),
-                            m('td', study.updaterId),
+                            m('td', study.updaterId)
                         ]); })
                     ])
                 ])
@@ -5248,7 +5208,6 @@
             var value = ref.value;
             var edit = ref.edit;
             var remove = ref.remove;
-            var addcomments = ref.addcomments;
 
             return m('div', [
                 m('btn-toolbar', [
@@ -5258,7 +5217,7 @@
                     m('.btn.btn-secondary.btn-sm', {onclick: remove},  [
                         m('i.fa.fa-remove'), ' Clear rules'
                     ])
-                            ]),
+                ]),
                 m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                     m('.card-block', visual())
                 ]),
@@ -5311,8 +5270,8 @@
                     ctrl.researcher_email(response.researcher_email);
                     ctrl.folder_location(response.folder);
                     ctrl.experiment_files(response.experiment_file.reduce(function (obj, row) {obj[row.file_name] = row.file_name;
-                                                                                            return obj;
-                                                                                        }, {}));
+                        return obj;
+                    }, {}));
                 })
                 .catch(function ( error ) {
                     throw error;
@@ -5365,7 +5324,7 @@
                 textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form: form, required:true, isStack:true}),
 
                 m('h4', 'Participant restrictions'),
-                    rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
+                rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
 
                 m('h4', 'Acceptance checklist'),
                 checkboxInput({description: ['Did you make sure your study-id starts with your user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
@@ -5415,7 +5374,7 @@
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
             ]);
-         }
+        }
     };
 
     var ASTERIX$1 = m('span.text-danger', '*');
@@ -5598,7 +5557,7 @@
                 email: email,
                 iscu: iscu,
                 error: m.prop(''),
-                            added:false,
+                added:false,
                 add: addAction
             };
             return ctrl;
@@ -5613,7 +5572,7 @@
                         ctrl.error(response.message);
                         m.redraw();
                     })
-                                    .then(function () {
+                    .then(function () {
                         m.redraw();
                     });
             }
@@ -5670,7 +5629,7 @@
                                     m('span.c-indicator'),
                                     m.trust('&nbsp;'),
                                     m('span', 'contract user')
-                                ]),
+                                ])
                             ]),
 
                             ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
@@ -5942,8 +5901,8 @@
             controller: function controller(){
                 authorize();
 
-                if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param("code") && m.route() !== '/change_password/'+ m.route.param("code")) 
-                                m.route('/login');
+                if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')) 
+                    m.route('/login');
 
                 return {doLogout: doLogout};
 
@@ -5980,14 +5939,17 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                             ]),
-                            m('li.nav-item.pull-xs-right',
-                                                    isLoggedIn()
-                    ?
-                                                            [
-                                m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
-                                    m('i.fa.fa-sign-out'), '  Logout'
-                                ])
-                            ]:[])
+                            m('li.nav-item.pull-xs-right',[
+                                isLoggedIn()
+                                    ?
+                                    [
+                                        m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+                                            m('i.fa.fa-sign-out'), '  Logout'
+                                        ])
+                                    ]
+                                    :
+                                    []
+                            ])
                         ])
                     ]),
 

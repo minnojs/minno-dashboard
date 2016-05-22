@@ -47,14 +47,14 @@ let poolComponent = {
                     ]),
                     m('tr', [
                         m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
-                            m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
-                            m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
-                            m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),     
+                        m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
+                        m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
+                        m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),     
                         m('th', thConfig('creationDate',ctrl.sortBy), 'Creation Date'),
                         m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
                         m('th','New Status'),
                         m('th','Old Status'),
-                        m('th', thConfig('updaterId',ctrl.sortBy), 'Updater'),
+                        m('th', thConfig('updaterId',ctrl.sortBy), 'Updater')
                     ])
                 ]),
                 m('tbody', [
@@ -118,7 +118,7 @@ let poolComponent = {
                                 S: m('span.label.label-danger', 'Stopped')
                             }[study.studyStatus]
                         ]),
-                        m('td', study.updaterId),
+                        m('td', study.updaterId)
                     ]))
                 ])
             ])

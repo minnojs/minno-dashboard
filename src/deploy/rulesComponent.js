@@ -21,7 +21,7 @@ let rulesComponent = {
             });
         }
     },
-    view: ({visual, value, edit, remove, addcomments}) => {
+    view: ({visual, value, edit, remove}) => {
         return m('div', [
             m('btn-toolbar', [
                 m('.btn.btn-secondary.btn-sm', {onclick: edit},  [
@@ -30,7 +30,7 @@ let rulesComponent = {
                 m('.btn.btn-secondary.btn-sm', {onclick: remove},  [
                     m('i.fa.fa-remove'), ' Clear rules'
                 ])
-                        ]),
+            ]),
             m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                 m('.card-block', visual())
             ]),

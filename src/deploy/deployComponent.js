@@ -42,8 +42,8 @@ let deployComponent = {
                 ctrl.researcher_email(response.researcher_email);
                 ctrl.folder_location(response.folder);
                 ctrl.experiment_files(response.experiment_file.reduce((obj, row) => {obj[row.file_name] = row.file_name;
-                                                                                        return obj;
-                                                                                    }, {}));
+                    return obj;
+                }, {}));
             })
             .catch(error => {
                 throw error;
@@ -92,7 +92,7 @@ let deployComponent = {
             textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form, required:true, isStack:true}),
 
             m('h4', 'Participant restrictions'),
-                rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
+            rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
 
             m('h4', 'Acceptance checklist'),
             checkboxInput({description: ['Did you make sure your study-id starts with your user name', ASTERIX], prop: ctrl.valid_study_name, form, required:true, isStack:true}),
@@ -142,5 +142,5 @@ let deployComponent = {
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
         ]);
-     }
+    }
 };

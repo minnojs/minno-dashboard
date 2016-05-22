@@ -1,5 +1,4 @@
 import filesComponent from './filesComponent';
-import sidebarButtons from './sidebarButtons';
 import {uploadBox} from 'utils/uploader';
 import {uploadFiles} from './fileActions';
 export default sidebarComponent;

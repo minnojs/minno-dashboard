@@ -116,15 +116,3 @@ function trialTest(trial) {
         ];
     }
 }
-
-function stimuliTest(stim){
-    var tests = [];
-    return row(stim, tests);
-}
-
-function mediaTest(media){
-    var tests = [
-
-    ];
-    return row(media, tests);
-}

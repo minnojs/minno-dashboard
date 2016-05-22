@@ -6,7 +6,7 @@ let sidebarButtons = {
         let ctrl = {
             newOpen: false,
             toggleNew: () => ctrl.newOpen = !ctrl.newOpen,
-            createEmpty: createEmpty(study),
+            createEmpty: createEmpty(study)
         };
 
         return ctrl;

@@ -5,11 +5,11 @@ import managerValidate from './managerValidator';
 export default function validate(script){
     var type = script.type && script.type.toLowerCase();
     switch (type){
-    case 'pip' : return pipValidate.apply(null, arguments);
-    case 'quest' : return questValidate.apply(null, arguments);
-    case 'manager' : return managerValidate.apply(null, arguments);
-    default:
-        throw new Error('Unknown script.type: ' + type);
+        case 'pip' : return pipValidate.apply(null, arguments);
+        case 'quest' : return questValidate.apply(null, arguments);
+        case 'manager' : return managerValidate.apply(null, arguments);
+        default:
+            throw new Error('Unknown script.type: ' + type);
     }
 }
 
