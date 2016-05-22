@@ -22,7 +22,6 @@ let addComponent = {
         return ctrl;
 
         function addAction(){
-            console.log('va', username(), first_name(), last_name(), email())
             add(username, first_name , last_name, email, iscu)
                 .then(() => {
                     ctrl.added = true;
@@ -100,8 +99,7 @@ let addComponent = {
 };
 
 function getStartValue(prop){
-    console.log('horrible hack to manage chrome pw autocomplete')
     return (element, isInit) => {// !isInit && prop(element.value);
         if (!isInit) setTimeout(()=>prop(element.value), 30);
-    }
+    };
 }

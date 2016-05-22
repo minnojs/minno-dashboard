@@ -1,4 +1,4 @@
-import {fetchJson,fetchVoid} from 'utils/modelHelpers';
+import {fetchJson} from 'utils/modelHelpers';
 
 const change_password_url = '/dashboard/dashboard/change_password';
 

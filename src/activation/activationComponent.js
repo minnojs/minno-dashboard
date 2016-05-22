@@ -8,7 +8,6 @@ let activationComponent = {
     controller(){
         const password = m.prop('');
         const confirm = m.prop('');
-        const iscu = m.prop(false);
         const ctrl = {
             password,
             confirm,
@@ -18,7 +17,7 @@ let activationComponent = {
         };
        
         is_activation_code(m.route.param('code'))
-        .catch(response => {
+        .catch(() => {
             m.route('/');
         })
         .then(() => {
@@ -32,11 +31,11 @@ let activationComponent = {
                     ctrl.activated = true;
                 })
                 .catch(response => {
-                        ctrl.error(response.message);
-                        m.redraw();
+                    ctrl.error(response.message);
+                    m.redraw();
                 })
                 .then(() => {
-                        m.redraw();
+                    m.redraw();
                 });
         }
     },
@@ -44,10 +43,10 @@ let activationComponent = {
         return m('.activation.centrify', {config:fullHeight},[
             ctrl.activated
             ?
-            [
-                m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', 'Password successfully updated!')
-            ]
+                [
+                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                    m('h5', 'Password successfully updated!')
+                ]
             :
             body(ctrl)]);
     }

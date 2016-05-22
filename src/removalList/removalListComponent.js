@@ -9,12 +9,12 @@ let removalListComponent = {
     controller(){
         let ctrl = {
             list: m.prop(''),
-            sortBy: m.prop('CREATION_DATE'),
+            sortBy: m.prop('CREATION_DATE')
         };
         get_removal_list()
           .then(response =>{ctrl.list(response.requests);
-                sortTable(ctrl.list, ctrl.sortBy);
-            })
+              sortTable(ctrl.list, ctrl.sortBy);
+          })
             .catch(error => {
                 throw error;
             })
@@ -31,7 +31,7 @@ let removalListComponent = {
                     m('th', thConfig('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
                     m('th', thConfig('STUDY_NAME',ctrl.sortBy), 'Study name'),
                     m('th', thConfig('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments'),
+                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments')
                 ])
             ]),
             m('tbody', [
@@ -45,7 +45,7 @@ let removalListComponent = {
                 :
                 ctrl.list().map(study => m('tr', [
                     m('td', study.CREATION_DATE),
-                    m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                    m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                     m('td', study.RESEARCHER_NAME),
                     m('td', study.STUDY_NAME),
                     m('td', study.COMPLETED_N),
@@ -53,5 +53,5 @@ let removalListComponent = {
                 ]))
             ])
         ]);
-     }
+    }
 };

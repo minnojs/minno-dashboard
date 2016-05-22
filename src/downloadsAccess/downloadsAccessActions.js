@@ -53,7 +53,7 @@ export let remove  = (downloadAccess, list) => {
                     .then(messages.alert({header:"Grant access completed", content: "Access granted"}))
                         .catch(reportError('Grant Access'));
                 }
-            }); 
+            });
 };
     export let revoke = (list) => {
         let output = m.prop();
@@ -68,7 +68,7 @@ export let remove  = (downloadAccess, list) => {
                     .then(messages.alert({header:"Revoke access completed", content: "Access revoked"}))
                         .catch(reportError('Revoke Access'));
                 }
-            }); 
+            });
 };
 export let create = (list) => {
     let output = m.prop();

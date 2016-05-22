@@ -16,9 +16,9 @@ let changePasswordComponent = {
             changed:false,
             set_password: update
         };
-        var code = m.route.param('code')!== undefined ? m.route.param('code') : "";
+        var code = m.route.param('code')!== undefined ? m.route.param('code') : '';
         is_recovery_code(code)
-        .catch(response => {
+        .catch(() => {
             m.route('/');
         })
         .then(() => {
@@ -32,23 +32,22 @@ let changePasswordComponent = {
                     ctrl.changed = true;
                 })
                 .catch(response => {
-                        ctrl.error(response.message);
-                        m.redraw();
+                    ctrl.error(response.message);
+                    m.redraw();
                 })
                 .then(() => {
-                        m.redraw();
+                    m.redraw();
                 });
         }
     },
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
-            
-                ctrl.changed
+            ctrl.changed
             ?
-            [
-                m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', 'Password successfully updated!')
-            ]
+                [
+                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                    m('h5', 'Password successfully updated!')
+                ]
             :
             body(ctrl)]);
     }

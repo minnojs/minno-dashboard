@@ -1,4 +1,4 @@
-import {fetchJson,fetchVoid} from 'utils/modelHelpers';
+import {fetchJson} from 'utils/modelHelpers';
 
 const add_userUrl = '/dashboard/dashboard/add_user';
 

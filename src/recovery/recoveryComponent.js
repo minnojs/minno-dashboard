@@ -25,32 +25,32 @@ let recoveryComponent = {
     },
     view(ctrl){
         return  m('.recovery.centrify', {config:fullHeight},[
-                    m('.card.card-inverse.col-md-4', [
-                        m('.card-block',[
-                            m('h4', 'Password Reset Request'),
-                            m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
+            m('.card.card-inverse.col-md-4', [
+                m('.card-block',[
+                    m('h4', 'Password Reset Request'),
+                    m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                            m('form', {onsubmit:ctrl.recovery}, [
-                                m('input.form-control', {
-                                    type:'username',
-                                    placeholder: 'Username / Email',
-                                    value: ctrl.username(),
-                                    onkeyup: m.withAttr('value', ctrl.username),
-                                    onchange: m.withAttr('value', ctrl.username),
-                                    config: getStartValue(ctrl.username)
-                                })
-                            ]),
+                    m('form', {onsubmit:ctrl.recovery}, [
+                        m('input.form-control', {
+                            type:'username',
+                            placeholder: 'Username / Email',
+                            value: ctrl.username(),
+                            onkeyup: m.withAttr('value', ctrl.username),
+                            onchange: m.withAttr('value', ctrl.username),
+                            config: getStartValue(ctrl.username)
+                        })
+                    ]),
 
-                            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
-                        ])
-                    ])
-                ]);
+                    ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
+                ])
+            ])
+        ]);
     }
 };
 
 function getStartValue(prop){
     return (element, isInit) => {// !isInit && prop(element.value);
         if (!isInit) setTimeout(()=>prop(element.value), 30);
-    }
+    };
 }

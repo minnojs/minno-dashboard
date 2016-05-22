@@ -3,7 +3,6 @@ import sortTable from 'utils/sortTable';
 
 const TABLE_WIDTH = 8;
 
-import {formFactory, textInput, checkboxInput, maybeInput, radioInput} from 'utils/formHelpers';
 export default deployComponent;
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
 
@@ -11,7 +10,7 @@ let deployComponent = {
     controller(){
         let ctrl = {
             list: m.prop(''),
-            sortBy: m.prop('CREATION_DATE'),
+            sortBy: m.prop('CREATION_DATE')
         };
         get_study_list()
             .then(response =>{ctrl.list(response.requests);
@@ -36,7 +35,7 @@ let deployComponent = {
                     m('th', thConfig('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
                     m('th', thConfig('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
                     m('th', thConfig('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
-                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments'),
+                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments')
                 ])
             ]),
             m('tbody', [
@@ -52,7 +51,7 @@ let deployComponent = {
                     m('td', study.CREATION_DATE),
                     m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),
                     m('td', study.RULE_FILE),
-                    m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                    m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                     m('td', study.RESEARCHER_NAME),
                     m('td', study.TARGET_NUMBER),
                     m('td', study.APPROVED_BY_A_REVIEWER),
@@ -62,5 +61,5 @@ let deployComponent = {
                 ]))
             ])
         ]);
-     }
+    }
 };

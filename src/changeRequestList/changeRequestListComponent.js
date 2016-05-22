@@ -5,24 +5,23 @@ export default changeRequestListComponent;
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
 let changeRequestListComponent = {
     controller(){
-        let form = formFactory();
-        
+
         let ctrl = {
             list: m.prop(''),
-            sortBy: m.prop('CREATION_DATE'),
+            sortBy: m.prop('CREATION_DATE')
         };
         get_change_request_list()
           .then(response =>{ctrl.list(response.requests);
-                sortTable(ctrl.list, ctrl.sortBy);
-            })
+              sortTable(ctrl.list, ctrl.sortBy);
+          })
             .catch(error => {
                 throw error;
             })
             .then(m.redraw);
-        return {ctrl, form};
+        return {ctrl};
     },
 
-    view({form, ctrl}){
+    view({ctrl}){
         let list = ctrl.list;
 
         return m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
@@ -35,7 +34,7 @@ let changeRequestListComponent = {
                     m('th', thConfig('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
                     m('th', thConfig('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
                     m('th', thConfig('STATUS',ctrl.sortBy), 'Status'),
-                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments'),
+                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments')
                 ])
             ]),
             m('tbody', [
@@ -49,7 +48,7 @@ let changeRequestListComponent = {
                 :
                 ctrl.list().map(study => m('tr', [
                     m('td', study.CREATION_DATE),
-                    m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                    m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                     m('td', study.RESEARCHER_NAME),
                     m('td', study.FILE_NAMES),
                     m('td', study.TARGET_SESSIONS),
@@ -59,5 +58,5 @@ let changeRequestListComponent = {
                 ]))
             ])
         ]);
-     }
+    }
 };
