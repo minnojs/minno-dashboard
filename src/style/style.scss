@@ -57,14 +57,14 @@ h1, h2, h3, h4, h5 {font-weight: 300}
 
 .info-box {
 	display: none;
+	position: absolute;
 	border-color: #818A91;
+	padding-left: 10px; // using margin here does not allow hover to continue into the info-box
+	z-index: 5;
 }
 
-*:hover + .info-box {
-	position: absolute;
+*:hover + .info-box, .info-box:hover {
 	display: inline-block;
-	margin-left: 10px;
-	z-index: 5;
 }
 
 .pool {

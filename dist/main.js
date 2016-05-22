@@ -870,11 +870,25 @@
                 studydb: m.prop('Any')
             };
 
-            return {form: form, vars: vars};
+            var filters = {
+                study: m.prop(),
+                task: m.prop(),
+                group: m.prop(),
+                showEmpty: m.prop(),
+                timeDay: m.prop(),
+                timeWeek: m.prop(),
+                timeMonth: m.prop(),
+                timeYear: m.prop(),
+                firstTask: m.prop(''),
+                lastTask: m.prop('')
+            };
+
+            return {form: form, vars: vars, filters: filters};
         },
         view: function (ref) {
             var form = ref.form;
             var vars = ref.vars;
+            var filters = ref.filters;
 
             return m('.statistics', [
             
@@ -883,7 +897,37 @@
                 m('.col-sm-5', [
                     source({label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form: form}),
                     textInput({label:'Study', prop: vars.study , form: form}),
-                    textInput({label:'Task', prop: vars.task , form: form})
+                    textInput({label:'Task', prop: vars.task , form: form}),
+                    m('h6', 'Filters:'),
+                    m('.btn-group', [
+                        button(filters.study, 'study'),
+                        button(filters.task, 'Task'),
+                        m('button.btn.btn-success', {class: filters.timeDay() || filters.timeWeek() || filters.timeMonth() || filters.timeYear() ? 'active' : ''}, 'Time'),
+                        m('.info-box', [
+                            m('.card', [
+                                m('.card-header', 'Time filters'),
+                                m('.card-block.c-inputs-stacked', [
+                                    checkbox(filters.timeDay, 'Days'),
+                                    checkbox(filters.timeWeek, 'Weeks'),
+                                    checkbox(filters.timeMonth, 'Months'),
+                                    checkbox(filters.timeYear, 'Years')
+                                ])
+                            ])
+                        ]),
+                        button(filters.group, 'Data Group'),
+                        button(filters.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                    ]),
+                    m('h6', 'Compute completion'),
+                    m('.form-inline', [
+                        m('.form-group', [
+                            m('label', 'From'),
+                            m('input.form-control', {placeholder: 'First task', value: filters.firstTask(), onchange: m.withAttr('value', filters.firstTask)})
+                        ]),
+                        m('.form-group', [
+                            m('label', 'To'),
+                            m('input.form-control', {placeholder: 'Last task', value: filters.lastTask(), onchange: m.withAttr('value', filters.lastTask)})
+                        ])
+                    ])
                 ]),
                 m('.col-sm-7', [
                     dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})
@@ -892,6 +936,26 @@
         ]);
         }
     };
+
+
+    var button = function (prop, text, title) {
+        if ( title === void 0 ) title = '';
+
+        return m('a.btn.btn-success', {
+        class: prop() ? 'active' : '',
+        onclick: function () { return prop(!prop()); },
+        title: title
+    }, text);
+    };
+
+    var checkbox = function (prop, text) { return m('label.c-input.c-checbkox', [
+        m('input.form-control[type=checkbox]', {
+            onclick: m.withAttr('checked', prop),
+            checked: prop()
+        }),
+        m('span.c-indicator'),
+        text
+    ]); };
 
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
@@ -3933,17 +3997,19 @@
                                     m('td', [
                                         study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
                                         m('i.fa.fa-info-circle'),
-                                        m('.card.info-box', [
-                                            m('.card-header', 'Completion Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Target Completions: '), study.targetCompletions
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Started Sessions: '), study.startedSessions
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Completed Sessions: '), study.completedSessions
+                                        m('.info-box', [
+                                            m('.card', [
+                                                m('.card-header', 'Completion Details'),
+                                                m('ul.list-group.list-group-flush',[
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Target Completions: '), study.targetCompletions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Started Sessions: '), study.startedSessions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Completed Sessions: '), study.completedSessions
+                                                    ])
                                                 ])
                                             ])
                                         ])
@@ -4492,17 +4558,19 @@
                                         formatDate(new Date(download.creationDate)),
                                         '  ',
                                         m('i.fa.fa-info-circle'),
-                                        m('.card.info-box', [
-                                            m('.card-header', 'Creation Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                        m('.info-box', [
+                                            m('.card', [
+                                                m('.card-header', 'Creation Details'),
+                                                m('ul.list-group.list-group-flush',[
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                                    ])
                                                 ])
                                             ])
                                         ])
