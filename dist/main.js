@@ -94,10 +94,450 @@
         }
     };
 
+    // import $ from 'jquery';
+    var Pikaday = window.Pikaday;
+
+    var dateRangePicker = function ( args ) { return m.component(pikadayRange, args); };
+
+    var pikaday = {
+        view: function view(ctrl, ref){
+            var prop = ref.prop;
+            var options = ref.options;
+
+            return m('div', {config: pikaday.config(prop, options)});
+        },
+        config: function config(prop, options){
+            return function (element, isInitialized, ctx) {
+                if (!isInitialized){
+                    ctx.picker = new Pikaday(Object.assign({
+                        onSelect: prop,
+                        container: element
+                    },options));
+
+                    element.appendChild(ctx.picker.el);
+                }
+
+                ctx.picker.setDate(prop());
+            };
+        }
+    };
+
+    /**
+     * args = {
+     *  startValue: m.prop,
+     *  endValue: m.prop,
+     *  options: Object // specific daterange plugin options
+     * }
+     */
+
+    var pikadayRange = {
+        view: function(ctrl, args){
+            return m('.date-range',[
+                m('.figure', [
+                    m('strong','Start Date'),
+                    m('br'),
+                    m('.figure', {config:pikadayRange.configStart(args)})
+                ]),
+                m.trust('&nbsp;'),
+                m('.figure', [
+                    m('strong','End Date'),
+                    m('br'),
+                    m('.figure', {config:pikadayRange.configEnd(args)})
+                ])
+            ]);
+        },
+        configStart: function configStart(ref){
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
+
+            return function (element, isInitialized, ctx) {
+                var picker = ctx.picker;
+
+                if (!isInitialized){
+                    picker = ctx.picker = new Pikaday({
+                        maxDate: new Date(),
+                        onSelect: function ( date ) { return startDate(date) && update() || m.redraw(); }
+                    });
+                    element.appendChild(picker.el);
+
+                    ctx.onunload = picker.destroy.bind(picker);
+                    picker.setDate(startDate());
+                }
+
+                // resset picker date only if the date has changed externaly
+                if (!datesEqual(startDate() ,picker.getDate())){
+                    picker.setDate(startDate(),true);
+                    update();
+                }
+
+                function update(){
+                    picker.setStartRange(startDate());
+                    picker.setEndRange(endDate());
+                    picker.setMaxDate(endDate());
+                }
+            };
+        },
+        configEnd: function configEnd(ref){
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
+
+            return function (element, isInitialized, ctx) {
+                var picker = ctx.picker;
+
+                if (!isInitialized){
+                    picker = ctx.picker = new Pikaday({
+                        maxDate: new Date(),
+                        onSelect: function ( date ) { return endDate(date) && update() || m.redraw(); }
+                    });
+                    element.appendChild(picker.el);
+
+                    ctx.onunload = picker.destroy.bind(picker);
+                    picker.setDate(endDate());
+                }
+
+                // resset picker date only if the date has changed externaly
+                if (!datesEqual(endDate() ,picker.getDate())){
+                    picker.setDate(endDate(),true);
+                    update();
+                }
+
+                function update(){
+                    picker.setStartRange(startDate());
+                    picker.setEndRange(endDate());
+                    picker.setMinDate(startDate());
+                }
+            };
+        }
+    };
+
+    var datesEqual = function (date1, date2) { return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime(); };
+
+    var inputWrapper = function (view) { return function (ctrl, args) {
+        var isValid = !ctrl.validity || ctrl.validity();
+        var groupClass;
+        var inputClass;
+        var form = args.form;
+
+        if (!form) throw new Error('Inputs require a form');
+            
+        if (form.showValidation()){
+            groupClass = isValid ? 'has-success' : 'has-danger';
+            inputClass = isValid ? 'form-control-success' : 'form-control-error';
+        }
+
+        return m('.form-group.row', {class: groupClass}, [
+            args.isStack
+            ? [ 
+                m('.col-sm-12', [
+                    args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
+                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
+                    args.help && m('small.text-muted.m-y-0', args.help )
+                ])
+            ]
+            : [
+                m('.col-sm-2', [
+                    m('label.form-control-label', args.label)
+                ]),
+                m('.col-sm-10', [
+                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
+                ]),
+                args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
+            ]
+        ]);
+    }; };
+
+    var textInputComponent  = {
+        controller: function controller(ref) {
+            var prop = ref.prop;
+            var form = ref.form;
+            var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
+
+            var validity = function () { return !required || prop().length; };
+            form.register(validity);
+
+            return {validity: validity};
+        },
+
+        view: inputWrapper(function (ctrl, ref, ref$1) {
+            var prop = ref.prop;
+            var ref_isArea = ref.isArea, isArea = ref_isArea === void 0 ? false : ref_isArea;
+            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
+            var ref_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
+            var help = ref.help;
+            var ref_rows = ref.rows, rows = ref_rows === void 0 ? 3 : ref_rows;
+            var inputClass = ref$1.inputClass;
+
+            return !isArea
+                ? m('input.form-control', {
+                    class: inputClass,
+                    placeholder: placeholder,
+                    value: prop(),
+                    onkeyup: m.withAttr('value', prop),
+                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+                })
+                : m('textarea.form-control', {
+                    class: inputClass,
+                    placeholder: placeholder,
+                    onkeyup: m.withAttr('value', prop),
+                    rows: rows,
+                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+                } , [prop()]);
+        })
+    };
+
+    var  maybeInputComponent = {
+        controller: function controller(ref){
+            var prop = ref.prop;
+            var form = ref.form;
+            var required = ref.required;
+            var dflt = ref.dflt;
+
+            if (!form) throw new Error('Inputs require a form');
+
+            var text = m.prop(typeof prop() == 'boolean' ? dflt || '' : prop());
+            var checked = m.prop(!!prop()); 
+            var validity = function () { return !required || prop(); };
+            form.register(validity);
+
+            return {validity: validity, showValidation: form.showValidation,
+                text: function(value){
+                    if (arguments.length){
+                        text(value);
+                        prop(value || true);
+                    }
+                    return text();
+                },
+                checked: function(value){
+                    if (arguments.length) {
+                        checked(value);
+                        if (checked() && text()) prop(text());
+                        else prop(checked());
+                    }
+                    return checked();
+                }   
+            };
+        },
+        view: inputWrapper(function (ref, args) {
+            var text = ref.text;
+            var checked = ref.checked;
+
+            var placeholder = args.placeholder || '';
+            return m('.input-group', [
+                m('span.input-group-addon', [
+                    m('input', {
+                        type:'checkbox',
+                        onclick: m.withAttr('checked', checked),
+                        checked: checked()
+                    })
+                ]),
+                m('input.form-control', {
+                    placeholder: placeholder,
+                    value: text(),
+                    onkeyup: m.withAttr('value', text),
+                    disabled: !checked()
+                })
+            ]);
+        })
+    };
+
+    var  checkboxInputComponent = {
+        controller: function controller(ref){
+            var prop = ref.prop;
+            var form = ref.form;
+            var required = ref.required;
+
+            var validity = function () { return !required || prop(); };
+            form.register(validity);
+
+            return {validity: validity, showValidation: form.showValidation};
+        },
+        view: inputWrapper(function (ctrl, ref, ref$1) {
+            var prop = ref.prop;
+            var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+            var groupClass = ref$1.groupClass;
+            var inputClass = ref$1.inputClass;
+
+            return m('.checkbox.checkbox-input-group', {class: groupClass}, [
+                m('label.c-input.c-checkbox', {class: inputClass}, [
+                    m('input.form-control', {
+                        type: 'checkbox',
+                        onclick: m.withAttr('checked', prop),
+                        checked: prop()
+                    }),
+                    m('span.c-indicator'),
+                    m.trust('&nbsp;'),
+                    description
+                ])
+            ]);
+        })
+    };
+
+    var selectInputComponent = {
+        controller: function controller(ref){
+            var prop = ref.prop;
+            var form = ref.form;
+            var required = ref.required;
+
+            if (!form) throw new Error('Inputs require a form');
+
+            var validity = function () { return !required || prop(); };
+            form.register(validity);
+
+            return {validity: validity, showValidation: form.showValidation};
+        },
+        view: inputWrapper(function (ctrl, ref, ref$1) {
+            var prop = ref.prop;
+            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
+            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+            var inputClass = ref$1.inputClass;
+
+            return m('.input-group', [
+                m('select.c-select.form-control', {class: inputClass}, {
+                    onchange: function ( e ) { return prop(values[e.target.value]); },
+                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
+                }, Object.keys(values).map(function ( key ) { return m('option',  key); }))
+            ]);
+        })
+    };
+
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
+    var transformProp = function (ref) {
+        var prop = ref.prop;
+        var input = ref.input;
+        var output = ref.output;
+
+        var p = function () {
+            var args = [], len = arguments.length;
+            while ( len-- ) args[ len ] = arguments[ len ];
+
+            if (args.length) prop(input(args[0]));
+            return output(prop());
+        };
+
+        p.toJSON = function () { return output(prop()); };
+
+        return p;
+    };
+
+    var arrayInput$1 = function ( args ) {
+        var identity = function ( arg ) { return arg; };
+        var fixedArgs = Object.assign(args);
+        fixedArgs.prop = transformProp({
+            prop: args.prop,
+            output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
+            input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
+        });
+
+        return m.component(textInputComponent, fixedArgs);
+    };
+
+    var selectInputComponent$1 = {
+        controller: function controller(ref){
+            var prop = ref.prop;
+            var form = ref.form;
+            var required = ref.required;
+
+            if (!form) throw new Error('Inputs require a form');
+
+            var validity = function () { return !required || prop(); };
+            form.register(validity);
+
+            return {validity: validity, showValidation: form.showValidation};
+        },
+        view: inputWrapper(function (ctrl, ref) {
+            var prop = ref.prop;
+            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+
+            return m('.c-inputs-stacked', Object.keys(values)
+                .map(function ( key ) { return m('label.c-input.c-radio', [
+                    m('input', {type:'radio', checked: values[key] === prop(), onchange: prop.bind(null, values[key])}),
+                    m('span.c-indicator'),
+                    key
+                ]); }));
+        })
+    };
+
+    function formFactory(){
+        var validationHash = [];
+        return {
+            register: function register(fn){
+                validationHash.push(fn);
+            },
+            isValid: function isValid() {
+                return validationHash.every(function ( fn ) { return fn.call(); });
+            },
+            showValidation: m.prop(false)
+        };
+    }
+
+    var textInput = function ( args ) { return m.component(textInputComponent, args); };
+    var maybeInput = function ( args ) { return m.component(maybeInputComponent, args); };
+    var checkboxInput = function ( args ) { return m.component(checkboxInputComponent, args); };
+    var selectInput = function ( args ) { return m.component(selectInputComponent, args); };
+    var radioInput = function ( args ) { return m.component(selectInputComponent$1, args); };
+    var arrayInput = arrayInput$1;
+
     var statisticsComponent = {
-        view: function () { return m('.statistics', [
-            'Statistics component'
-        ]); }
+        controller: function controller(){
+            var form = formFactory();
+            var vars = {
+                startDate: m.prop(new Date()),
+                endDate: m.prop(new Date()),
+                study: m.prop(''),
+                task: m.prop(''),
+                studyType: m.prop('Both'),
+                studydb: m.prop('Any')
+            };
+
+            return {form: form, vars: vars};
+        },
+        view: function (ref) {
+            var form = ref.form;
+            var vars = ref.vars;
+
+            return m('.statistics', [
+            
+            m('h3', 'Statistics'),
+            m('.row', [
+                m('.col-sm-5', [
+                    m.component(sourceComponent, {label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form: form}),
+                    textInput({label:'Study', prop: vars.study , form: form}),
+                    textInput({label:'Task', prop: vars.task , form: form}),
+                ]),
+                m('.col-sm-7', [
+                    dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})
+                ])
+            ])
+        ]);
+        }
+    };
+
+    var STUDYTYPES = ['Research', 'Demo', 'Both'];
+    var STUDYDBS = ['Any', 'Current', 'History'];
+    var sourceComponent = {
+        view: inputWrapper(function (ctrl, ref) {
+            var studyType = ref.studyType;
+            var studyDb = ref.studyDb;
+
+            return m('.form-inline', [
+                m('select.c-select', {
+                    onchange: m.withAttr('value', studyType)
+                }, STUDYTYPES.map(function ( key ) { return m('option', {value:key, selected: key === studyType()},key); })),
+                studyType() !== 'Research' 
+                    ? ''
+                    : m('select.c-select', {
+                        onchange: m.withAttr('value', studyDb)
+                    }, STUDYDBS.map(function ( key ) { return m('option', {value:key},key); }))
+            ]);
+        })
     };
 
     var jshintOptions = {
@@ -1410,279 +1850,6 @@
         }
     };
 
-    var inputWrapper = function (view) { return function (ctrl, args) {
-        var isValid = !ctrl.validity || ctrl.validity();
-        var groupClass;
-        var inputClass;
-        var form = args.form;
-
-        if (!form) throw new Error('Inputs require a form');
-            
-        if (form.showValidation()){
-            groupClass = isValid ? 'has-success' : 'has-danger';
-            inputClass = isValid ? 'form-control-success' : 'form-control-error';
-        }
-
-        return m('.form-group.row', {class: groupClass}, [
-            args.isStack
-            ? [ 
-                m('.col-sm-12', [
-                    args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
-                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
-                    args.help && m('small.text-muted.m-y-0', args.help )
-                ])
-            ]
-            : [
-                m('.col-sm-2', [
-                    m('label.form-control-label', args.label)
-                ]),
-                m('.col-sm-10', [
-                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
-                ]),
-                args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-            ]
-        ]);
-    }; };
-
-    var textInputComponent  = {
-        controller: function controller(ref) {
-            var prop = ref.prop;
-            var form = ref.form;
-            var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
-
-            var validity = function () { return !required || prop().length; };
-            form.register(validity);
-
-            return {validity: validity};
-        },
-
-        view: inputWrapper(function (ctrl, ref, ref$1) {
-            var prop = ref.prop;
-            var ref_isArea = ref.isArea, isArea = ref_isArea === void 0 ? false : ref_isArea;
-            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-            var ref_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
-            var help = ref.help;
-            var ref_rows = ref.rows, rows = ref_rows === void 0 ? 3 : ref_rows;
-            var inputClass = ref$1.inputClass;
-
-            return !isArea
-                ? m('input.form-control', {
-                    class: inputClass,
-                    placeholder: placeholder,
-                    value: prop(),
-                    onkeyup: m.withAttr('value', prop),
-                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-                })
-                : m('textarea.form-control', {
-                    class: inputClass,
-                    placeholder: placeholder,
-                    onkeyup: m.withAttr('value', prop),
-                    rows: rows,
-                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-                } , [prop()]);
-        })
-    };
-
-    var  maybeInputComponent = {
-        controller: function controller(ref){
-            var prop = ref.prop;
-            var form = ref.form;
-            var required = ref.required;
-            var dflt = ref.dflt;
-
-            if (!form) throw new Error('Inputs require a form');
-
-            var text = m.prop(typeof prop() == 'boolean' ? dflt || '' : prop());
-            var checked = m.prop(!!prop()); 
-            var validity = function () { return !required || prop(); };
-            form.register(validity);
-
-            return {validity: validity, showValidation: form.showValidation,
-                text: function(value){
-                    if (arguments.length){
-                        text(value);
-                        prop(value || true);
-                    }
-                    return text();
-                },
-                checked: function(value){
-                    if (arguments.length) {
-                        checked(value);
-                        if (checked() && text()) prop(text());
-                        else prop(checked());
-                    }
-                    return checked();
-                }   
-            };
-        },
-        view: inputWrapper(function (ref, args) {
-            var text = ref.text;
-            var checked = ref.checked;
-
-            var placeholder = args.placeholder || '';
-            return m('.input-group', [
-                m('span.input-group-addon', [
-                    m('input', {
-                        type:'checkbox',
-                        onclick: m.withAttr('checked', checked),
-                        checked: checked()
-                    })
-                ]),
-                m('input.form-control', {
-                    placeholder: placeholder,
-                    value: text(),
-                    onkeyup: m.withAttr('value', text),
-                    disabled: !checked()
-                })
-            ]);
-        })
-    };
-
-    var  checkboxInputComponent = {
-        controller: function controller(ref){
-            var prop = ref.prop;
-            var form = ref.form;
-            var required = ref.required;
-
-            var validity = function () { return !required || prop(); };
-            form.register(validity);
-
-            return {validity: validity, showValidation: form.showValidation};
-        },
-        view: inputWrapper(function (ctrl, ref, ref$1) {
-            var prop = ref.prop;
-            var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
-            var groupClass = ref$1.groupClass;
-            var inputClass = ref$1.inputClass;
-
-            return m('.checkbox.checkbox-input-group', {class: groupClass}, [
-                m('label.c-input.c-checkbox', {class: inputClass}, [
-                    m('input.form-control', {
-                        type: 'checkbox',
-                        onclick: m.withAttr('checked', prop),
-                        checked: prop()
-                    }),
-                    m('span.c-indicator'),
-                    m.trust('&nbsp;'),
-                    description
-                ])
-            ]);
-        })
-    };
-
-    var selectInputComponent = {
-        controller: function controller(ref){
-            var prop = ref.prop;
-            var form = ref.form;
-            var required = ref.required;
-
-            if (!form) throw new Error('Inputs require a form');
-
-            var validity = function () { return !required || prop(); };
-            form.register(validity);
-
-            return {validity: validity, showValidation: form.showValidation};
-        },
-        view: inputWrapper(function (ctrl, ref, ref$1) {
-            var prop = ref.prop;
-            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
-            var inputClass = ref$1.inputClass;
-
-            return m('.input-group', [
-                m('select.c-select.form-control', {class: inputClass}, {
-                    onchange: function ( e ) { return prop(values[e.target.value]); },
-                    config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-                }, Object.keys(values).map(function ( key ) { return m('option',  key); }))
-            ]);
-        })
-    };
-
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
-    var transformProp = function (ref) {
-        var prop = ref.prop;
-        var input = ref.input;
-        var output = ref.output;
-
-        var p = function () {
-            var args = [], len = arguments.length;
-            while ( len-- ) args[ len ] = arguments[ len ];
-
-            if (args.length) prop(input(args[0]));
-            return output(prop());
-        };
-
-        p.toJSON = function () { return output(prop()); };
-
-        return p;
-    };
-
-    var arrayInput$1 = function ( args ) {
-        var identity = function ( arg ) { return arg; };
-        var fixedArgs = Object.assign(args);
-        fixedArgs.prop = transformProp({
-            prop: args.prop,
-            output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
-            input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
-        });
-
-        return m.component(textInputComponent, fixedArgs);
-    };
-
-    var selectInputComponent$1 = {
-        controller: function controller(ref){
-            var prop = ref.prop;
-            var form = ref.form;
-            var required = ref.required;
-
-            if (!form) throw new Error('Inputs require a form');
-
-            var validity = function () { return !required || prop(); };
-            form.register(validity);
-
-            return {validity: validity, showValidation: form.showValidation};
-        },
-        view: inputWrapper(function (ctrl, ref) {
-            var prop = ref.prop;
-            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
-
-            return m('.c-inputs-stacked', Object.keys(values)
-                .map(function ( key ) { return m('label.c-input.c-radio', [
-                    m('input', {type:'radio', checked: values[key] === prop(), onchange: prop.bind(null, values[key])}),
-                    m('span.c-indicator'),
-                    key
-                ]); }));
-        })
-    };
-
-    function formFactory$1(){
-        var validationHash = [];
-        return {
-            register: function register(fn){
-                validationHash.push(fn);
-            },
-            isValid: function isValid() {
-                return validationHash.every(function ( fn ) { return fn.call(); });
-            },
-            showValidation: m.prop(false)
-        };
-    }
-
-    var textInput = function ( args ) { return m.component(textInputComponent, args); };
-    var maybeInput = function ( args ) { return m.component(maybeInputComponent, args); };
-    var checkboxInput = function ( args ) { return m.component(checkboxInputComponent, args); };
-    var selectInput = function ( args ) { return m.component(selectInputComponent, args); };
-    var radioInput = function ( args ) { return m.component(selectInputComponent$1, args); };
-    var arrayInput = arrayInput$1;
-
     var inheritInput = function ( args ) { return m.component(inheritInputComponent, args); };
 
     var inheritInputComponent = {
@@ -1747,7 +1914,7 @@
             var output = ref.output;
             var close = ref.close;
 
-            var form = formFactory$1();
+            var form = formFactory();
             
             var type = m.prop('message');
             var common = {
@@ -1868,7 +2035,7 @@
             var output = ref.output;
             var close = ref.close;
 
-            var form = formFactory$1();
+            var form = formFactory();
             var page = {
                 inherit: m.prop(''),
                 header: m.prop(''),
@@ -1909,7 +2076,7 @@
             var output = ref.output;
             var close = ref.close;
 
-            var form = formFactory$1();
+            var form = formFactory();
             var type = m.prop();
             var common = {
                 inherit: m.prop(''),
@@ -2350,7 +2517,7 @@
             var study = ref.study;
 
             var path = m.prop('');
-            var form = formFactory$1();
+            var form = formFactory();
             var submit = function () {
                 form.showValidation(true);
                 if (form.isValid()){
@@ -3642,124 +3809,6 @@
         }
     }
 
-    // import $ from 'jquery';
-    var Pikaday = window.Pikaday;
-
-    var dateRangePicker = function ( args ) { return m.component(pikadayRange, args); };
-
-    var pikaday = {
-        view: function view(ctrl, ref){
-            var prop = ref.prop;
-            var options = ref.options;
-
-            return m('div', {config: pikaday.config(prop, options)});
-        },
-        config: function config(prop, options){
-            return function (element, isInitialized, ctx) {
-                if (!isInitialized){
-                    ctx.picker = new Pikaday(Object.assign({
-                        onSelect: prop,
-                        container: element
-                    },options));
-
-                    element.appendChild(ctx.picker.el);
-                }
-
-                ctx.picker.setDate(prop());
-            };
-        }
-    };
-
-    /**
-     * args = {
-     *  startValue: m.prop,
-     *  endValue: m.prop,
-     *  options: Object // specific daterange plugin options
-     * }
-     */
-
-    var pikadayRange = {
-        view: function(ctrl, args){
-            return m('.date-range',[
-                m('.figure', [
-                    m('strong','Start Date'),
-                    m('br'),
-                    m('.figure', {config:pikadayRange.configStart(args)})
-                ]),
-                m.trust('&nbsp;'),
-                m('.figure', [
-                    m('strong','End Date'),
-                    m('br'),
-                    m('.figure', {config:pikadayRange.configEnd(args)})
-                ])
-            ]);
-        },
-        configStart: function configStart(ref){
-            var startDate = ref.startDate;
-            var endDate = ref.endDate;
-
-            return function (element, isInitialized, ctx) {
-                var picker = ctx.picker;
-
-                if (!isInitialized){
-                    picker = ctx.picker = new Pikaday({
-                        maxDate: new Date(),
-                        onSelect: function ( date ) { return startDate(date) && update() || m.redraw(); }
-                    });
-                    element.appendChild(picker.el);
-
-                    ctx.onunload = picker.destroy.bind(picker);
-                    picker.setDate(startDate());
-                }
-
-                // resset picker date only if the date has changed externaly
-                if (!datesEqual(startDate() ,picker.getDate())){
-                    picker.setDate(startDate(),true);
-                    update();
-                }
-
-                function update(){
-                    picker.setStartRange(startDate());
-                    picker.setEndRange(endDate());
-                    picker.setMaxDate(endDate());
-                }
-            };
-        },
-        configEnd: function configEnd(ref){
-            var startDate = ref.startDate;
-            var endDate = ref.endDate;
-
-            return function (element, isInitialized, ctx) {
-                var picker = ctx.picker;
-
-                if (!isInitialized){
-                    picker = ctx.picker = new Pikaday({
-                        maxDate: new Date(),
-                        onSelect: function ( date ) { return endDate(date) && update() || m.redraw(); }
-                    });
-                    element.appendChild(picker.el);
-
-                    ctx.onunload = picker.destroy.bind(picker);
-                    picker.setDate(endDate());
-                }
-
-                // resset picker date only if the date has changed externaly
-                if (!datesEqual(endDate() ,picker.getDate())){
-                    picker.setDate(endDate(),true);
-                    update();
-                }
-
-                function update(){
-                    picker.setStartRange(startDate());
-                    picker.setEndRange(endDate());
-                    picker.setMinDate(startDate());
-                }
-            };
-        }
-    };
-
-    var datesEqual = function (date1, date2) { return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime(); };
-
     var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
     var poolComponent$1 = {
         controller: function () {
@@ -4672,7 +4721,7 @@
                         .then(messages$1.alert({header:"Grant access completed", content: "Access granted"}))
                             .catch(reportError$2('Grant Access'));
                     }
-                }); 
+                });
     };
         var revoke = function (list) {
             var output = m.prop();
@@ -4687,7 +4736,7 @@
                         .then(messages$1.alert({header:"Revoke access completed", content: "Access revoked"}))
                             .catch(reportError$2('Revoke Access'));
                     }
-                }); 
+                });
     };
     var create$2 = function (list) {
         var output = m.prop();
@@ -4880,7 +4929,6 @@
             return ctrl;
 
             function loginAction(){
-                console.log('va', username(), password())
                 login(username, password)
                     .then(function () {
                         m.route('/');
@@ -4896,50 +4944,49 @@
             return m('.login.centrify', {config:fullHeight},[
                 isLoggedIn()
                 ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'You are already logged in!')
-                ]
-                :
-                m('.card.card-inverse.col-md-4', [
-                    m('.card-block',[
-                        m('h4', 'Please sign in'),
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'You are already logged in!')
+                    ]
+                    :
+                    m('.card.card-inverse.col-md-4', [
+                        m('.card-block',[
+                            m('h4', 'Please sign in'),
 
-                        m('form', {onsubmit:ctrl.login}, [
-                            m('input.form-control', {
-                                type:'username',
-                                placeholder: 'Username / Email',
-                                value: ctrl.username(),
-                                onkeyup: m.withAttr('value', ctrl.username),
-                                onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue(ctrl.username)
-                            }),
-                            m('input.form-control', {
-                                type:'password',
-                                placeholder: 'Password',
-                                value: ctrl.password(),
-                                onkeyup: m.withAttr('value', ctrl.password),
-                                onchange: m.withAttr('value', ctrl.password),
-                                config: getStartValue(ctrl.password)
-                            })
-                        ]),
+                            m('form', {onsubmit:ctrl.login}, [
+                                m('input.form-control', {
+                                    type:'username',
+                                    placeholder: 'Username / Email',
+                                    value: ctrl.username(),
+                                    onkeyup: m.withAttr('value', ctrl.username),
+                                    onchange: m.withAttr('value', ctrl.username),
+                                    config: getStartValue(ctrl.username)
+                                }),
+                                m('input.form-control', {
+                                    type:'password',
+                                    placeholder: 'Password',
+                                    value: ctrl.password(),
+                                    onkeyup: m.withAttr('value', ctrl.password),
+                                    onchange: m.withAttr('value', ctrl.password),
+                                    config: getStartValue(ctrl.password)
+                                })
+                            ]),
 
-                        ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
-                        m('p.text-center',
-                            m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
-                        )
+                            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
+                            m('p.text-center',
+                                m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
+                            )
+                        ])
                     ])
-                ])
             ]);
         }
     };
 
     function getStartValue(prop){
-        console.log('horrible hack to manage chrome pw autocomplete')
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
-        }
+        };
     }
 
     var baseUrl$2 = '/dashboard/dashboard/deploy_list';
@@ -4956,7 +5003,7 @@
         controller: function controller(){
             var ctrl = {
                 list: m.prop(''),
-                sortBy: m.prop('CREATION_DATE'),
+                sortBy: m.prop('CREATION_DATE')
             };
             get_study_list()
                 .then(function ( response ) {ctrl.list(response.requests);
@@ -4983,7 +5030,7 @@
                         m('th', thConfig$4('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
                         m('th', thConfig$4('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
                         m('th', thConfig$4('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
-                        m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments'),
+                        m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -4999,7 +5046,7 @@
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),
                         m('td', study.RULE_FILE),
-                        m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                         m('td', study.RESEARCHER_NAME),
                         m('td', study.TARGET_NUMBER),
                         m('td', study.APPROVED_BY_A_REVIEWER),
@@ -5009,7 +5056,7 @@
                     ]); })
                 ])
             ]);
-         }
+        }
     };
 
     var baseUrl$3 = '/dashboard/dashboard/change_request_list';
@@ -5023,25 +5070,23 @@
     var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
     var changeRequestListComponent = {
         controller: function controller(){
-            var form = formFactory();
-            
+
             var ctrl = {
                 list: m.prop(''),
-                sortBy: m.prop('CREATION_DATE'),
+                sortBy: m.prop('CREATION_DATE')
             };
             get_change_request_list()
               .then(function ( response ) {ctrl.list(response.requests);
-                    sortTable(ctrl.list, ctrl.sortBy);
-                })
+                  sortTable(ctrl.list, ctrl.sortBy);
+              })
                 .catch(function ( error ) {
                     throw error;
                 })
                 .then(m.redraw);
-            return {ctrl: ctrl, form: form};
+            return {ctrl: ctrl};
         },
 
         view: function view(ref){
-            var form = ref.form;
             var ctrl = ref.ctrl;
 
             var list = ctrl.list;
@@ -5056,7 +5101,7 @@
                         m('th', thConfig$5('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
                         m('th', thConfig$5('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
                         m('th', thConfig$5('STATUS',ctrl.sortBy), 'Status'),
-                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments'),
+                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5070,7 +5115,7 @@
                     :
                     ctrl.list().map(function ( study ) { return m('tr', [
                         m('td', study.CREATION_DATE),
-                        m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                         m('td', study.RESEARCHER_NAME),
                         m('td', study.FILE_NAMES),
                         m('td', study.TARGET_SESSIONS),
@@ -5080,7 +5125,7 @@
                     ]); })
                 ])
             ]);
-         }
+        }
     };
 
     var baseUrl$4 = '/dashboard/dashboard/removal_list';
@@ -5096,12 +5141,12 @@
         controller: function controller(){
             var ctrl = {
                 list: m.prop(''),
-                sortBy: m.prop('CREATION_DATE'),
+                sortBy: m.prop('CREATION_DATE')
             };
             get_removal_list()
               .then(function ( response ) {ctrl.list(response.requests);
-                    sortTable(ctrl.list, ctrl.sortBy);
-                })
+                  sortTable(ctrl.list, ctrl.sortBy);
+              })
                 .catch(function ( error ) {
                     throw error;
                 })
@@ -5120,7 +5165,7 @@
                         m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
                         m('th', thConfig$6('STUDY_NAME',ctrl.sortBy), 'Study name'),
                         m('th', thConfig$6('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments'),
+                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5134,7 +5179,7 @@
                     :
                     ctrl.list().map(function ( study ) { return m('tr', [
                         m('td', study.CREATION_DATE),
-                        m('td', m('a', {href:"mailto:"+study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                         m('td', study.RESEARCHER_NAME),
                         m('td', study.STUDY_NAME),
                         m('td', study.COMPLETED_N),
@@ -5142,7 +5187,7 @@
                     ]); })
                 ])
             ]);
-         }
+        }
     };
 
     var baseUrl$5 = '/dashboard/dashboard/studies';
@@ -5236,7 +5281,7 @@
 
     var deployComponent$1 = {
         controller: function controller(){
-            var form = formFactory$1();
+            var form = formFactory();
             var ctrl = {
                 sent:false,
                 folder_location: m.prop(''),
@@ -5381,7 +5426,7 @@
 
     var StudyRemovalComponent = {
         controller: function controller(){
-            var form = formFactory$1();
+            var form = formFactory();
             var ctrl = {
                 sent:false,
                 researcher_name: m.prop(''),
@@ -5390,7 +5435,7 @@
                 study_names: m.prop(''),
                 completed_n: m.prop(''),
                 comments: m.prop('')
-            }
+            };
             get_study_prop(m.route.param('studyId'))
                 .then(function ( response ) {
                     ctrl.researcher_name(response.researcher_name);
@@ -5402,14 +5447,14 @@
                 })
                 .catch(function ( error ) {
                     m.route('/');
+                    throw error;
                 })
                 .then(m.redraw);
-            return {ctrl: ctrl, form: form, submit: submit};
             function submit(){
                 form.showValidation(true);
                 if (!form.isValid())
                 {
-                    messages.alert({header:'Error', content:'not valid'});
+                    messages$1.alert({header:'Error', content:'not valid'});
                     return;
                 }
                 study_removal(m.route.param('studyId'), ctrl)
@@ -5420,7 +5465,8 @@
                         throw error;
                     })
                     .then(m.redraw);
-            };
+            }
+            return {ctrl: ctrl, form: form, submit: submit};
         },
         view: function view(ref){
             var form = ref.form;
@@ -5447,16 +5493,16 @@
                 }),
                 textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
-                m('button.btn.btn-primary', {onclick: submit}, 'Submit'), 
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
             ]);
-         }
+        }
     };
 
     var ASTERIX$2 = m('span.text-danger', '*');
 
     var studyChangeRequestComponent = {
         controller: function controller(){
-            var form = formFactory$1();
+            var form = formFactory();
             var ctrl = {
                 sent:false,
                 user_name: m.prop(''),
@@ -5563,7 +5609,6 @@
             return ctrl;
 
             function addAction(){
-                console.log('va', username(), first_name(), last_name(), email())
                 add(username, first_name , last_name, email, iscu)
                     .then(function () {
                         ctrl.added = true;
@@ -5641,10 +5686,9 @@
     };
 
     function getStartValue$1(prop){
-        console.log('horrible hack to manage chrome pw autocomplete')
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
-        }
+        };
     }
 
     var activation1_url = '/dashboard/dashboard/activation';
@@ -5664,45 +5708,43 @@
     }); };
 
     var body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
-                    m('.card-block',[
-                        m('h4', 'Select new password'),
-                            m('form', [
-                                m('input.form-control', {
-                                    type:'password',
-                                    placeholder: 'Password',
-                                    value: ctrl.password(),
-                                    onkeyup: m.withAttr('value', ctrl.password),
-                                    onchange: m.withAttr('value', ctrl.password),
-                                    config: getStartValue$2(ctrl.password)
-                                }),
+        m('.card-block',[
+            m('h4', 'Select new password'),
+            m('form', [
+                m('input.form-control', {
+                    type:'password',
+                    placeholder: 'Password',
+                    value: ctrl.password(),
+                    onkeyup: m.withAttr('value', ctrl.password),
+                    onchange: m.withAttr('value', ctrl.password),
+                    config: getStartValue$2(ctrl.password)
+                }),
 
-                                m('input.form-control', {
-                                    type:'password',
-                                    placeholder: 'Confirm password',
-                                    value: ctrl.confirm(),
-                                    onkeyup: m.withAttr('value', ctrl.confirm),
-                                    onchange: m.withAttr('value', ctrl.confirm),
-                                    config: getStartValue$2(ctrl.confirm)
-                                }),
-                            ]),
-                            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.set_password},'Update'),
+                m('input.form-control', {
+                    type:'password',
+                    placeholder: 'Confirm password',
+                    value: ctrl.confirm(),
+                    onkeyup: m.withAttr('value', ctrl.confirm),
+                    onchange: m.withAttr('value', ctrl.confirm),
+                    config: getStartValue$2(ctrl.confirm)
+                })
+            ]),
+            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+            m('button.btn.btn-primary.btn-block', {onclick: ctrl.set_password},'Update')
 
-                        ])
-                    ]); };
+        ])
+    ]); };
 
     function getStartValue$2(prop){
-    //  console.log('horrible hack to manage chrome pw autocomplete')
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
-        }
+        };
     }
 
     var activationComponent = {
         controller: function controller(){
             var password = m.prop('');
             var confirm = m.prop('');
-            var iscu = m.prop(false);
             var ctrl = {
                 password: password,
                 confirm: confirm,
@@ -5712,7 +5754,7 @@
             };
            
             is_activation_code(m.route.param('code'))
-            .catch(function ( response ) {
+            .catch(function () {
                 m.route('/');
             })
             .then(function () {
@@ -5726,11 +5768,11 @@
                         ctrl.activated = true;
                     })
                     .catch(function ( response ) {
-                            ctrl.error(response.message);
-                            m.redraw();
+                        ctrl.error(response.message);
+                        m.redraw();
                     })
                     .then(function () {
-                            m.redraw();
+                        m.redraw();
                     });
             }
         },
@@ -5738,10 +5780,10 @@
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.activated
                 ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Password successfully updated!')
-                ]
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Password successfully updated!')
+                    ]
                 :
                 body(ctrl)]);
         }
@@ -5775,9 +5817,9 @@
                 changed:false,
                 set_password: update
             };
-            var code = m.route.param('code')!== undefined ? m.route.param('code') : "";
+            var code = m.route.param('code')!== undefined ? m.route.param('code') : '';
             is_recovery_code(code)
-            .catch(function ( response ) {
+            .catch(function () {
                 m.route('/');
             })
             .then(function () {
@@ -5791,23 +5833,22 @@
                         ctrl.changed = true;
                     })
                     .catch(function ( response ) {
-                            ctrl.error(response.message);
-                            m.redraw();
+                        ctrl.error(response.message);
+                        m.redraw();
                     })
                     .then(function () {
-                            m.redraw();
+                        m.redraw();
                     });
             }
         },
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
-                
-                    ctrl.changed
+                ctrl.changed
                 ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Password successfully updated!')
-                ]
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Password successfully updated!')
+                    ]
                 :
                 body(ctrl)]);
         }
@@ -5843,34 +5884,34 @@
         },
         view: function view(ctrl){
             return  m('.recovery.centrify', {config:fullHeight},[
-                        m('.card.card-inverse.col-md-4', [
-                            m('.card-block',[
-                                m('h4', 'Password Reset Request'),
-                                m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
+                m('.card.card-inverse.col-md-4', [
+                    m('.card-block',[
+                        m('h4', 'Password Reset Request'),
+                        m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                                m('form', {onsubmit:ctrl.recovery}, [
-                                    m('input.form-control', {
-                                        type:'username',
-                                        placeholder: 'Username / Email',
-                                        value: ctrl.username(),
-                                        onkeyup: m.withAttr('value', ctrl.username),
-                                        onchange: m.withAttr('value', ctrl.username),
-                                        config: getStartValue$3(ctrl.username)
-                                    })
-                                ]),
+                        m('form', {onsubmit:ctrl.recovery}, [
+                            m('input.form-control', {
+                                type:'username',
+                                placeholder: 'Username / Email',
+                                value: ctrl.username(),
+                                onkeyup: m.withAttr('value', ctrl.username),
+                                onchange: m.withAttr('value', ctrl.username),
+                                config: getStartValue$3(ctrl.username)
+                            })
+                        ]),
 
-                                ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                                m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
-                            ])
-                        ])
-                    ]);
+                        ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
+                    ])
+                ])
+            ]);
         }
     };
 
     function getStartValue$3(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
-        }
+        };
     }
 
     var routes = { 
