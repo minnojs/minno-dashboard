@@ -498,7 +498,11 @@
                 if (!isInitialized){
                     picker = ctx.picker = new Pikaday({
                         maxDate: new Date(),
-                        onSelect: function ( date ) { return startDate(date) && update() || m.redraw(); }
+                        onSelect: function ( date ) {
+                            startDate(date);
+                            update();
+                            m.redraw();
+                        }
                     });
                     element.appendChild(picker.el);
 
@@ -529,7 +533,11 @@
                 if (!isInitialized){
                     picker = ctx.picker = new Pikaday({
                         maxDate: new Date(),
-                        onSelect: function ( date ) { return endDate(date) && update() || m.redraw(); }
+                        onSelect: function ( date ) {
+                            endDate(date); 
+                            update();
+                            m.redraw();
+                        }
                     });
                     element.appendChild(picker.el);
 
@@ -537,7 +545,7 @@
                     picker.setDate(endDate());
                 }
 
-                // resset picker date only if the date has changed externaly
+                // reset picker date only if the date has changed externaly
                 if (!datesEqual(endDate() ,picker.getDate())){
                     picker.setDate(endDate(),true);
                     update();
@@ -827,6 +835,29 @@
     var radioInput = function ( args ) { return m.component(selectInputComponent$1, args); };
     var arrayInput = arrayInput$1;
 
+    var STUDYTYPES = ['Research', 'Demo', 'Both'];
+    var STUDYDBS = ['Any', 'Current', 'History'];
+
+    var source = function (args) { return m.component(sourceComponent, args); };
+
+    var sourceComponent = {
+        view: inputWrapper(function (ctrl, ref) {
+            var studyType = ref.studyType;
+            var studyDb = ref.studyDb;
+
+            return m('.form-inline', [
+                m('select.c-select', {
+                    onchange: m.withAttr('value', studyType)
+                }, STUDYTYPES.map(function ( key ) { return m('option', {value:key, selected: key === studyType()},key); })),
+                studyType() !== 'Research' 
+                    ? ''
+                    : m('select.c-select', {
+                        onchange: m.withAttr('value', studyDb)
+                    }, STUDYDBS.map(function ( key ) { return m('option', {value:key},key); }))
+            ]);
+        })
+    };
+
     var statisticsComponent = {
         controller: function controller(){
             var form = formFactory();
@@ -850,7 +881,7 @@
             m('h3', 'Statistics'),
             m('.row', [
                 m('.col-sm-5', [
-                    m.component(sourceComponent, {label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form: form}),
+                    source({label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form: form}),
                     textInput({label:'Study', prop: vars.study , form: form}),
                     textInput({label:'Task', prop: vars.task , form: form})
                 ]),
@@ -860,26 +891,6 @@
             ])
         ]);
         }
-    };
-
-    var STUDYTYPES = ['Research', 'Demo', 'Both'];
-    var STUDYDBS = ['Any', 'Current', 'History'];
-    var sourceComponent = {
-        view: inputWrapper(function (ctrl, ref) {
-            var studyType = ref.studyType;
-            var studyDb = ref.studyDb;
-
-            return m('.form-inline', [
-                m('select.c-select', {
-                    onchange: m.withAttr('value', studyType)
-                }, STUDYTYPES.map(function ( key ) { return m('option', {value:key, selected: key === studyType()},key); })),
-                studyType() !== 'Research' 
-                    ? ''
-                    : m('select.c-select', {
-                        onchange: m.withAttr('value', studyDb)
-                    }, STUDYDBS.map(function ( key ) { return m('option', {value:key},key); }))
-            ]);
-        })
     };
 
     var jshintOptions = {

@@ -55,7 +55,11 @@ let pikadayRange = {
             if (!isInitialized){
                 picker = ctx.picker = new Pikaday({
                     maxDate: new Date(),
-                    onSelect: date => startDate(date) && update() || m.redraw()
+                    onSelect: date => {
+                        startDate(date);
+                        update();
+                        m.redraw();
+                    }
                 });
                 element.appendChild(picker.el);
 
@@ -83,7 +87,11 @@ let pikadayRange = {
             if (!isInitialized){
                 picker = ctx.picker = new Pikaday({
                     maxDate: new Date(),
-                    onSelect: date => endDate(date) && update() || m.redraw()
+                    onSelect: date => {
+                        endDate(date); 
+                        update();
+                        m.redraw();
+                    }
                 });
                 element.appendChild(picker.el);
 
@@ -91,7 +99,7 @@ let pikadayRange = {
                 picker.setDate(endDate());
             }
 
-            // resset picker date only if the date has changed externaly
+            // reset picker date only if the date has changed externaly
             if (!datesEqual(endDate() ,picker.getDate())){
                 picker.setDate(endDate(),true);
                 update();
