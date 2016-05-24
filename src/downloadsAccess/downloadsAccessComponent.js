@@ -45,7 +45,7 @@ let downloadsAccessComponent = {
 						
 						m('tr', [m('th.text-xs-left', {colspan:1}, [
 								ctrl.isAdmin()? '' : m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
-									m('i.fa.fa-plus'), '  Request Access'
+									m('i.fa.fa-plus'), '  Request Access From Admin'
 								])
 							]),
 							m('th.text-xs-left', {colspan:1}, [

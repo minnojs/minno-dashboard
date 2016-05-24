@@ -55,7 +55,8 @@ let createComponent = {
 		});
 
 		return m('div',[
-			m('h4', 'Request Download'),
+			m('h4', 'Request Download Access From Admin'),
+			m('p', 'This page will request access to a study from admin.  For studies created by users you should instead email them directly for access.'),
 			m('.card-block', [
 				m('.form-group', {class:groupClasses(validity.studyId)}, [
 					m('label', 'Study Id'),
@@ -66,7 +67,7 @@ let createComponent = {
 						onkeyup: m.withAttr('value', downloadAccess.studyId),
 						class:inputClasses(validity.studyId)
 					}),
-					validationView(validity.studyId, 'The study ID is required in order to request a download.')
+					validationView(validity.studyId, 'The study ID is required in order to request access.')
 				])
 				
 				
