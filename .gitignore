@@ -14,6 +14,7 @@
 # OS or Editor folders
 .tmp
 .DS_Store
+.idea
 ._*
 Thumbs.db
 .cache
@@ -35,3 +36,6 @@ nbproject
 node_modules
 bower_components
 dist/build.txt
+
+# Just for this project - prevent mistakes
+*.sql

@@ -1,58 +1,58 @@
 export let checkStatus = response => {
 
-	if (response.status >= 200 && response.status < 300) {
-		return response;
-	}
+    if (response.status >= 200 && response.status < 300) {
+        return response;
+    }
 
-	let error = new Error(response.statusText);
+    let error = new Error(response.statusText);
 
-	error.response = response;
+    error.response = response;
 
-	throw error;
+    throw error;
 };
 
 export let toJSON = response => response
-	.json()
-	.catch(	);
+    .json()
+    .catch( );
 
 // extract info from status error
 export let catchJSON = err => (err.response ? err.response.json() : Promise.reject())
-	.catch(() => Promise.reject(err))
-	.then(json => Promise.reject(json));
+    .catch(() => Promise.reject(err))
+    .then(json => Promise.reject(json));
 
 
 export function fetchVoid(url, options = {}){
-	let opts = Object.assign({
-		credentials: 'same-origin',
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json'
-		}
-	}, options);
+    let opts = Object.assign({
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }, options);
 
-	opts.body = JSON.stringify(options.body);
-	return fetch(url, opts)
-		.then(checkStatus)
-		.catch(catchJSON);
+    opts.body = JSON.stringify(options.body);
+    return fetch(url, opts)
+        .then(checkStatus)
+        .catch(catchJSON);
 }
 
 export function fetchJson(url, options){
-	return fetchVoid(url, options)
-		.then(toJSON);
+    return fetchVoid(url, options)
+        .then(toJSON);
 }
 
 export function fetchText(url, options){
-	return fetchVoid(url, options)
-		.then(response => response.text());
+    return fetchVoid(url, options)
+        .then(response => response.text());
 }
 
 export function fetchUpload(url, options){
-	let opts = Object.assign({
-		credentials: 'same-origin'
-	}, options);
+    let opts = Object.assign({
+        credentials: 'same-origin'
+    }, options);
 
-	return fetch(url, opts)
-		.then(checkStatus)
-		.then(toJSON)
-		.catch(catchJSON);
+    return fetch(url, opts)
+        .then(checkStatus)
+        .then(toJSON)
+        .catch(catchJSON);
 }

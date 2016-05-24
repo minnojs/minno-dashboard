@@ -67,6 +67,12 @@
   left: 15px;
   top: 24px; }
 
+.c-inputs-stacked.fixed {
+  margin-bottom: -1.5em; }
+
+.checkbox-input-group {
+  padding: .375rem .75rem; }
+
 .loader,
 .loader:before,
 .loader:after {
