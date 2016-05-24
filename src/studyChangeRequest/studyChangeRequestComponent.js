@@ -47,7 +47,7 @@ let studyChangeRequestComponent = {
         return {ctrl, form, submit};
     },
     view({form, ctrl, submit}){
-        let study_showfiles_link = 'http://app-prod-03.implicit.harvard.edu/implicit/showfiles.jsp?user=' + ctrl.user_name() + '&study=' + ctrl.study_name();
+        let study_showfiles_link = document.location.origin + '/implicit/showfiles.jsp?user=' + ctrl.user_name() + '&study=' + ctrl.study_name();
 
         return ctrl.sent
             ?

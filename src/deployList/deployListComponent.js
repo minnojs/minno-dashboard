@@ -1,7 +1,6 @@
 import {get_study_list} from './deployListModel';
 import sortTable from 'utils/sortTable';
 
-const TABLE_WIDTH = 8;
 
 export default deployComponent;
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
@@ -23,7 +22,11 @@ let deployComponent = {
     },
     view({ctrl}){
         let list = ctrl.list;
-        return m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+        return ctrl.list().length === 0
+        ?
+        m('.loader')
+        :
+        m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
             m('thead', [
                 m('tr', [
                     m('th', thConfig('CREATION_DATE',ctrl.sortBy), 'Creation date'),
@@ -39,14 +42,6 @@ let deployComponent = {
                 ])
             ]),
             m('tbody', [
-                ctrl.list().length === 0
-                ?
-                m('tr.table-info',
-                    m('td.text-xs-center', {colspan: TABLE_WIDTH},
-                        m('strong', 'Heads up! '), 'There are no pool requests yet'
-                    )
-                )
-                :
                 ctrl.list().map(study => m('tr', [
                     m('td', study.CREATION_DATE),
                     m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),

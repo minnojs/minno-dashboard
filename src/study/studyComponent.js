@@ -1,5 +1,5 @@
 export default editorLayoutComponent;
-import studyFactory from './studyModel';
+import studyFactory from './fileCollectionModel';
 import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
