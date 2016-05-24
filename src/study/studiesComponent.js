@@ -2,6 +2,7 @@ import {toJSON, checkStatus} from 'utils/modelHelpers';
 export default mainComponent;
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
+import dropdown from 'utils/dropdown';
 
 const TABLE_WIDTH = 8;
 var mainComponent = {
@@ -93,18 +94,21 @@ var mainComponent = {
                         }, study.name)),
                         m('td', m('button.btn.btn-secondary', {onclick:function() {do_delete(study.id);}}, 'Delete')),
                         m('td', m('button.btn.btn-secondary', {onclick:function() {do_rename(study.id);}}, 'Rename')),
-                        m('td', m('a.btn.btn-secondary',{
-                            href: `/deploy/${study.id}`,
-                            config: m.route
-                        }, 'Deploy')),
-                        m('td', m('a.btn.btn-secondary',{
-                            href: `/studyChangeRequest/${study.id}`,
-                            config: m.route
-                        }, 'Change request')),
-                        m('td', m('a.btn.btn-secondary',{
-                            href: `/studyRemoval/${study.id}`,
-                            config: m.route
-                        }, 'Removal'))
+                        dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
+                            m('a.dropdown-item', {
+                                href: `/deploy/${study.id}`,
+                                config: m.route
+                            }, 'Deploy'),
+                            m('a.dropdown-item', {
+                                href: `/studyChangeRequest/${study.id}`,
+                                config: m.route
+                            }, 'Change request'),
+                            m('a.dropdown-item', {
+                                href: `/studyRemoval/${study.id}`,
+                                config: m.route
+                            }, 'Removal')
+                        ]})
+
                     ]))
 
                 ])

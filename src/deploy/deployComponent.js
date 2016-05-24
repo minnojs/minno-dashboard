@@ -73,7 +73,7 @@ let deployComponent = {
         ?
         m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-            m('h5', ['The Deploy form was sent successfully ', m('a', {href:'./deployList'}, 'View Deploy Requests')]),
+            m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
             m('h5', ['Rule File: ', 'editor/', m.route.param('studyId') ,'/file/', ctrl.rule_file()])
         ])
         :
@@ -86,7 +86,7 @@ let deployComponent = {
                 label:m('span', ['Name of experiment file', ASTERIX]),
                 prop: ctrl.experiment_file,
                 values:ctrl.experiment_files(),
-                form, isStack:true
+                form, required:true, isStack:true
             }),
 
             textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form, required:true, isStack:true}),
@@ -125,7 +125,7 @@ let deployComponent = {
                     'No, this study is not for the Project Implicit pool.' : 'No, this study is not for the Project Implicit pool.',
                     'Yes' : 'Yes'
                 },
-                form, isStack:true
+                form, required:true, isStack:true
             }),
 
             radioInput({
@@ -136,7 +136,7 @@ let deployComponent = {
                     'No,this study is mine': 'No,this study is mine',
                     'Yes' : 'Yes'
                 },
-                form, isStack:true
+                form, required:true, isStack:true
             }),
 
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
