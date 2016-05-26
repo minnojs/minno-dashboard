@@ -4949,125 +4949,136 @@
 	var TABLE_WIDTH$3 = 6;
 
 	var downloadsAccessComponent = {
-		controller: function () {
-			var ctrl = {
-				play: play$2,
-				remove: remove$2,
-				create: create$2,
-				grant: grant,
-				revoke: revoke,
-				list: m.prop([]),
-				globalSearch: m.prop(''),
-				sortBy: m.prop(),
-				error: m.prop(''),
-				isAdmin: function () { return getRole() === 'SU'; },
-			};
+	    controller: function () {
+	        var ctrl = {
+	            play: play$2,
+	            remove: remove$2,
+	            create: create$2,
+	            grant: grant,
+	            revoke: revoke,
+	            list: m.prop([]),
+	            globalSearch: m.prop(''),
+	            sortBy: m.prop(),
+	            error: m.prop(''),
+	            isAdmin: function () { return getRole() === 'SU'; }
+	        };
 
-			getAllOpenRequests()
-				.then(ctrl.list)
-				.catch(ctrl.error)
-				.then(m.redraw);
+	        getAllOpenRequests()
+	            .then(ctrl.list)
+	            .catch(ctrl.error)
+	            .then(m.redraw);
 
-			return ctrl;
-		},
-		view: function ( ctrl ) {
-			var list = ctrl.list;
-			return m('.downloadAccess', [
-				m('h2', 'Data Download Access Requests'),
-				ctrl.error()
-					?
-					m('.alert.alert-warning',
-						m('strong', 'Warning!! '), ctrl.error().message
-					)
-					:
-					m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-						m('thead', [
-							
-							m('tr', [m('th.text-xs-left', {colspan:1}, [
-									ctrl.isAdmin()? '' : m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
-										m('i.fa.fa-plus'), '  Request Access From Admin'
-									])
-								]),
-								m('th.text-xs-left', {colspan:1}, [
-																m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
-																	m('i.fa.fa-plus'), '  Grant Access'
-																])
-															])
-								,m('th.text-xs-left', {colspan:1}, [
-									ctrl.isAdmin()? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
-										m('i.fa.fa-plus'), '  Revoke Access'
-									]) : ''
-								]),m('th', {colspan:TABLE_WIDTH$3-2}, [
-									m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
-								]),
-							
-							]),
-							
-							m('tr', [
-								m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
-								m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
-								m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
-								m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
-								m('th','Status'),
-								m('th','Actions')
-							])
-						]),
-						m('tbody', [
-							list().length === 0
-								?
-								m('tr.table-info',
-									m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
-										m('strong', 'Heads up! '), 'There are no requests yet'
-									)
-								)
-								:
-								list().filter(dataRequestFilter(ctrl)).map(function ( dataRequest ) { return m('tr', [
-									// ### ID
-									m('td', dataRequest.studyId),
-									
-									// ### USERNAME
-									m('td', dataRequest.username),
-									
-									// ### EMAIL
-									m('td', dataRequest.email),
+	        return ctrl;
+	    },
+	    view: function ( ctrl ) {
+	        var list = ctrl.list;
+	        return m('.downloadAccess', [
+	            m('h3', 'Data Download Access Requests'),
+	            m('p.col-xs-12.text-muted', [
+	                m('small', [
+	                    ctrl.isAdmin()
+	                        ? 'Approve requests by clicking the Play button; Reject requests by clicking the X button; To grant permission without a request: hit the Grant Access button; For all actions: The user will be notified by email.'
+	                        : 'You will receive an email when your request is approved or rejected; To cancel a request, click the X button next to the request'
+	                ])
+	            ]),
+	            ctrl.error()
+	                ?
+	                m('.alert.alert-warning',
+	                    m('strong', 'Warning!! '), ctrl.error().message
+	                )
+	                :
+	                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+	                    m('thead', [
+	                        m('tr', [ 
+	                            m('th', {colspan: TABLE_WIDTH$3}, [ 
+	                                m('.row', [
+	                                    m('.col-xs-3.text-xs-left', [
+	                                        m('button.btn.btn-secondary', {disabled: ctrl.isAdmin(), onclick:ctrl.isAdmin() || ctrl.create.bind(null, list)}, [
+	                                            m('i.fa.fa-plus'), '  Request Access From Admin'
+	                                        ])
+	                                    ]),
+	                                    m('.col-xs-2.text-xs-left', [
+	                                        m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
+	                                            m('i.fa.fa-plus'), '  Grant Access'
+	                                        ])
+	                                    ])
+	                                    ,m('.col-xs-2.text-xs-left', [
+	                                        ctrl.isAdmin() ? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
+	                                            m('i.fa.fa-plus'), '  Revoke Access'
+	                                        ]) : ''
+	                                    ]),
+	                                    m('.col-xs-5.text-xs-left', [
+	                                        m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+	                                    ])
+	                                ])
+	                            ])
+	                        ]),
 
-									// ### Date
-									m('td', formatDate(new Date(dataRequest.creationDate))),
-									dataRequest.approved=== STATUS_APPROVED
-										?
-										m('td', {style:'color:green'},'access granted')
-										:
-										m('td', {style:'color:red'},'access pending')
+	                        m('tr', [
+	                            m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
+	                            m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
+	                            m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
+	                            m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
+	                            m('th','Status'),
+	                            m('th','Actions')
+	                        ])
+	                    ]),
+	                    m('tbody', [
+	                        list().length === 0
+	                            ?
+	                            m('tr.table-info',
+	                                m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
+	                                    m('strong', 'Heads up! '), 'There are no requests yet'
+	                                )
+	                            )
+	                            :
+	                            list().filter(dataRequestFilter(ctrl)).map(function ( dataRequest ) { return m('tr', [
+	                                // ### ID
+	                                m('td', dataRequest.studyId),
+	                                
+	                                // ### USERNAME
+	                                m('td', dataRequest.username),
+	                                
+	                                // ### EMAIL
+	                                m('td', dataRequest.email),
 
-									// ### Actions
-									,m('td', [
-											m('.btn-group', [
-												dataRequest.canApprove && dataRequest.approved === STATUS_SUBMITTED ? m('button.btn.btn-sm.btn-secondary', {title:'Approve request, and auto email requester',onclick: ctrl.play.bind(null, dataRequest,list)}, [
-													m('i.fa.fa-play')
-												]) : '',
-												dataRequest.canDelete ? m('button.btn.btn-sm.btn-secondary', {title:'Delete request.  If this is a granted request owner will lose access to it',onclick: ctrl.remove.bind(null, dataRequest, list)}, [
-													m('i.fa.fa-close')
-												]) : ''
-											])
-									])
-								]); })
-						])
-					])
-			]);
-		}
+	                                // ### Date
+	                                m('td', formatDate(new Date(dataRequest.creationDate))),
+	                                dataRequest.approved=== STATUS_APPROVED
+	                                    ?
+	                                    m('td', {style:'color:green'},'access granted')
+	                                    :
+	                                    m('td', {style:'color:red'},'access pending'),
+
+	                                // ### Actions
+	                                m('td', [
+	                                    m('.btn-group', [
+	                                        dataRequest.canApprove && dataRequest.approved === STATUS_SUBMITTED ? m('button.btn.btn-sm.btn-secondary', {title:'Approve request, and auto email requester',onclick: ctrl.play.bind(null, dataRequest,list)}, [
+	                                            m('i.fa.fa-play')
+	                                        ]) : '',
+	                                        dataRequest.canDelete ? m('button.btn.btn-sm.btn-secondary', {title:'Delete request.  If this is a granted request owner will lose access to it',onclick: ctrl.remove.bind(null, dataRequest, list)}, [
+	                                            m('i.fa.fa-close')
+	                                        ]) : ''
+	                                    ])
+	                                ])
+	                            ]); })
+	                    ])
+	                ])
+	        ]);
+	    }
 	};
 
 	// @TODO: bad idiom! should change things within the object, not the object itself.
 	var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
 	function dataRequestFilter(ctrl){
-		return function ( dataRequest ) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
-			includes(dataRequest.username, ctrl.globalSearch()) ||
-			includes(dataRequest.email, ctrl.globalSearch()); };
+	    return function ( dataRequest ) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
+	        includes(dataRequest.username, ctrl.globalSearch()) ||
+	        includes(dataRequest.email, ctrl.globalSearch()); };
 
-		function includes(val, search){
-			return typeof val === 'string' && val.includes(search);
-		}
+	    function includes(val, search){
+	        return typeof val === 'string' && val.includes(search);
+	    }
 	}
 
 	var loginComponent = {
