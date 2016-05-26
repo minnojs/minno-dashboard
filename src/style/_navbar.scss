@@ -1,0 +1,16 @@
+$navbar-color: $color-primary-3;
+
+.navbar-dark.navbar {
+    background: $navbar-color;
+    .nav-link {
+        color: mix(white, $navbar-color, 90%);
+        &:hover {color: mix(white, $navbar-color, 50%);}
+
+        &.active {
+            // doesn't work maybe??
+            background: mix(black, $navbar-color, 30%);
+        }
+    }
+    //background: #2882b5;
+    .is-iframe & {display:none}
+}

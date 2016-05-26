@@ -12,22 +12,6 @@ $color-primary-4: #2E76A1;
 
 $navbar-height: 54px;
 
-$navbar-color: $color-primary-3;
-.navbar-dark.navbar {
-    background: $navbar-color;
-    .nav-link {
-        color: mix(white, $navbar-color, 90%);
-        &:hover {color: mix(white, $navbar-color, 50%);}
-
-        &.active {
-            // doesn't work maybe??
-            background: mix(black, $navbar-color, 30%);
-        }
-    }
-    //background: #2882b5;
-    .is-iframe & {display:none}
-}
-
 .main-content {
 	padding-top: $navbar-height;
 	.is-iframe & {margin-top:0}
@@ -42,7 +26,6 @@ h1, h2, h3, h4, h5 {font-weight: 300}
         border-bottom-color: $color-primary-2;
         border-top-color: $color-primary-2;
     }
-    
 }
 
 // utility
@@ -112,6 +95,8 @@ h1, h2, h3, h4, h5 {font-weight: 300}
 
 	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
 }
+
+@import "./navbar";
 @import "./loader";
 @import "./context";
 @import "./files";
