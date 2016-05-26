@@ -280,6 +280,10 @@ adminRouter.route('/logout')
 adminRouter.route('/DownloadsAccess')
     .post((req,res) => res.json([{'creationDate':'2016-04-21T16:31Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.789','canDelete':true,'userId':'201','canApprove':true},{'creationDate':'2016-05-09T14:30Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.123','canDelete':true,'userId':'201','canApprove':true},{'creationDate':'2016-04-21T16:23Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.456','canDelete':true,'userId':'201','canApprove':true}]));
 
+var STATISTICS = `Study,Data Group,Started,Completed,CR%;
+nosekLab.andy.faith.0001,Demo,0,0,0%
+nosekLab.andy.faith.0001,research,6082,3782,62%`;
+
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);

@@ -875,10 +875,7 @@
                 task: m.prop(),
                 group: m.prop(),
                 showEmpty: m.prop(),
-                timeDay: m.prop(),
-                timeWeek: m.prop(),
-                timeMonth: m.prop(),
-                timeYear: m.prop(),
+                time: m.prop('None'),
                 firstTask: m.prop(''),
                 lastTask: m.prop('')
             };
@@ -891,7 +888,6 @@
             var filters = ref.filters;
 
             return m('.statistics', [
-            
             m('h3', 'Statistics'),
             m('.row', [
                 m('.col-sm-5', [
@@ -902,15 +898,16 @@
                     m('.btn-group', [
                         button(filters.study, 'study'),
                         button(filters.task, 'Task'),
-                        m('button.btn.btn-success', {class: filters.timeDay() || filters.timeWeek() || filters.timeMonth() || filters.timeYear() ? 'active' : ''}, 'Time'),
+                        m('button.btn.btn-success', {class: filters.time() !== 'None' ? 'active' : ''}, 'Time'),
                         m('.info-box', [
                             m('.card', [
-                                m('.card-header', 'Time filters'),
+                                m('.card-header', 'Time filter'),
                                 m('.card-block.c-inputs-stacked', [
-                                    checkbox(filters.timeDay, 'Days'),
-                                    checkbox(filters.timeWeek, 'Weeks'),
-                                    checkbox(filters.timeMonth, 'Months'),
-                                    checkbox(filters.timeYear, 'Years')
+                                    radioButton(filters.time, 'None'),
+                                    radioButton(filters.time, 'Days'),
+                                    radioButton(filters.time, 'Weeks'),
+                                    radioButton(filters.time, 'Months'),
+                                    radioButton(filters.time, 'Years')
                                 ])
                             ])
                         ]),
@@ -932,6 +929,30 @@
                 m('.col-sm-7', [
                     dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})
                 ])
+            ]),
+            m('.row', [
+                m('table', [
+                    m('thead', [
+                        m('tr', [
+                            m('th', 'Study'),
+                            m('th', 'Data '),
+                            m('th', 'Group'),
+                            m('th', 'Started'),
+                            m('th', 'Completed'),
+                            m('th', 'CR%')
+                        ])
+                    ]),
+                    m('tbody', [
+                        [].map(function ( task ) { return m('tr', [
+                            m('td', task.study),
+                            m('td', task.data),
+                            m('td', task.group),
+                            m('td', task.started),
+                            m('td', task.completed),
+                            m('td', task.cr)
+                        ]); })
+                    ])
+                ])
             ])
         ]);
         }
@@ -948,10 +969,10 @@
     }, text);
     };
 
-    var checkbox = function (prop, text) { return m('label.c-input.c-checbkox', [
-        m('input.form-control[type=checkbox]', {
-            onclick: m.withAttr('checked', prop),
-            checked: prop()
+    var radioButton = function (prop, text) { return m('label.c-input.c-radio', [
+        m('input.form-control[type=radio]', {
+            onclick: prop.bind(null, text),
+            checked: prop() == text
         }),
         m('span.c-indicator'),
         text
