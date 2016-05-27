@@ -69,50 +69,65 @@ var mainComponent = {
                 ?
                 m('.loader')
                 :
-        m('.container', [
-            m('h3', 'My studies'),
+                m('.container', [
+                    m('h3', 'My studies'),
 
-            m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
-                m('button.btn.btn-secondary', {onclick:do_create}, [
-                    m('i.fa.fa-plus'), '  Add new study'
-                ])
-            ]),
-            m('table', {class:'table table-striped table-hover'}, [
-                m('thead', [
-                    m('tr', [
-                        m('th', 'Study name'),
-                        m('th',  'Delete'),
-                        m('th',  'Rename'),
-                        m('th',  'Actions')
+                    m('table.table.table-striped.table-hover.table-sm', [
+                        m('thead', [
+                            m('tr', [
+                                m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
+                                    m('button.btn.btn-secondary', {onclick:do_create}, [
+                                        m('i.fa.fa-plus'), '  Add new study'
+                                    ])
+                                ])
+                            ]),
+                            m('tr', [
+                                m('th', 'Study name'),
+                                m('th', '')
+                            ])
+                        ]),
+                        m('tbody', [
+                            ctrl.studies().studies.map(study => m('tr', [
+                                m('td', {style: 'vertical-align: middle'}, [
+                                    m('i.fa.fa-edit.m-r-1'), 
+                                    m('a', {href: `/editor/${study.id}`,config:m.route}, [
+                                        m('strong', study.name)
+                                    ])
+                                ]),
+                                m('td', [
+                                    m('.btn-toolbar.pull-right', [
+                                        m('.btn-group.btn-group-sm', [
+                                        ]),
+                                        m('.btn-group.btn-group-sm', [
+                                            m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
+                                                m('i.fa.fa-remove'), ' Delete'
+                                            ]),
+                                            m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
+                                                m('i.fa.fa-exchange'), ' Rename'
+                                            ]),
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
+                                                m('a.dropdown-item', {
+                                                    href: `/deploy/${study.id}`,
+                                                    config: m.route
+                                                }, 'Deploy'),
+                                                m('a.dropdown-item', {
+                                                    href: `/studyChangeRequest/${study.id}`,
+                                                    config: m.route
+                                                }, 'Change request'),
+                                                m('a.dropdown-item', {
+                                                    href: `/studyRemoval/${study.id}`,
+                                                    config: m.route
+                                                }, 'Removal')
+                                            ]})
+                                        ])
+                                    ])
+
+                                ])
+
+                            ]))
+
+                        ])
                     ])
-                ]),
-                m('tbody', [
-                    ctrl.studies().studies.map(study => m('tr', [
-                        m('td', m('a.btn.btn-secondary',{
-                            href: `/editor/${study.id}`,
-                            config: m.route
-                        }, study.name)),
-                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_delete(study.id);}}, 'Delete')),
-                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_rename(study.id);}}, 'Rename')),
-                        dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
-                            m('a.dropdown-item', {
-                                href: `/deploy/${study.id}`,
-                                config: m.route
-                            }, 'Deploy'),
-                            m('a.dropdown-item', {
-                                href: `/studyChangeRequest/${study.id}`,
-                                config: m.route
-                            }, 'Change request'),
-                            m('a.dropdown-item', {
-                                href: `/studyRemoval/${study.id}`,
-                                config: m.route
-                            }, 'Removal')
-                        ]})
-
-                    ]))
-
-                ])
-            ])
-        ]);
+                ]);
     }
 };

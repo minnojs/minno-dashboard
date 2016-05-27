@@ -24,7 +24,7 @@ let statisticsComponent = {
             m('.col-sm-5', [
                 m.component(sourceComponent, {label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form}),
                 textInput({label:'Study', prop: vars.study , form}),
-                textInput({label:'Task', prop: vars.task , form}),
+                textInput({label:'Task', prop: vars.task , form})
             ]),
             m('.col-sm-7', [
                 dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})

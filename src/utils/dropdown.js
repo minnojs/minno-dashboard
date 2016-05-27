@@ -19,8 +19,8 @@ let dropdownComponent = {
     },
 
     view({isOpen}, {toggleSelector, toggleContent, elements}){
-        return m('.dropdown', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
-            m(toggleSelector, {onmousedown: e => {isOpen(!isOpen()); e.stopPropagation();}}, toggleContent), // we need to stopPropagation so that this doesn't trigger the config closer function.
+        return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
+            m(toggleSelector, {onmousedown: () => {isOpen(!isOpen());}}, toggleContent), 
             m('.dropdown-menu', elements)
         ]);
     },

@@ -67,6 +67,16 @@
   left: 15px;
   top: 24px; }
 
+.btn-group > .dropdown-component {
+  display: inline-block; }
+  .btn-group > .dropdown-component:not(:last-child) > .btn:first-child {
+    border-top-right-radius: 0;
+    border-left-right-radius: 0; }
+  .btn-group > .dropdown-component:not(:first-child) > .btn:first-child {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-left-left-radius: 0; }
+
 .c-inputs-stacked.fixed {
   margin-bottom: -1.5em; }
 
