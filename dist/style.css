@@ -620,7 +620,8 @@ th[data-sort-by].active:before {
   display: inline-block; }
 
 .pika-single {
-  height: 237px; }
+  height: 237px;
+  z-index: 900; }
 
 .is-dragover {
   outline: 2px dashed #92b0b3;
