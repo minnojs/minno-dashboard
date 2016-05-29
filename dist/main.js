@@ -289,22 +289,30 @@
         }; }
     };
 
-    var TABLE_WIDTH = 8;
     var mainComponent = {
         controller: function(){
             var ctrl = {
-                studies:m.prop(),
+                studies:m.prop([]),
                 error:m.prop(''),
                 study_name:m.prop(''),
                 loaded:false
             };
+
+            load();
+            return {ctrl: ctrl, do_create: do_create, do_delete: do_delete, do_rename: do_rename};
+
             function load() {
                 fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
                     .then(checkStatus)
                     .then(toJSON)
+                    .then(function ( response ) { return response.studies.sort(sortStudies); })
                     .then(ctrl.studies)
                     .then(function () { return ctrl.loaded = true; })
                     .then(m.redraw);
+
+                function sortStudies(study1, study2){
+                    return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+                }
             }
             function do_delete(study_id){
                 messages.confirm({header:'Delete study', content:'Are you sure?', prop: ctrl.study_name})
@@ -333,6 +341,7 @@
                             }).then(m.redraw);
                     });
             }
+
             function do_rename(study_id){
                 messages.prompt({header:'New Name', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
                     .then(function ( response ) {
@@ -346,8 +355,6 @@
                     });
             }
 
-            load();
-            return {ctrl: ctrl, do_create: do_create, do_delete: do_delete, do_rename: do_rename};
         },
         view: function view(ref){
             var ctrl = ref.ctrl;
@@ -355,72 +362,79 @@
             var do_delete = ref.do_delete;
             var do_rename = ref.do_rename;
 
-            return  !ctrl.loaded
-                    ?
-                    m('.loader')
-                    :
-                    m('.container', [
-                        m('h3', 'My studies'),
-
-                        m('table.table.table-striped.table-hover.table-sm', [
-                            m('thead', [
-                                m('tr', [
-                                    m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
-                                        m('button.btn.btn-secondary', {onclick:do_create}, [
-                                            m('i.fa.fa-plus'), '  Add new study'
-                                        ])
-                                    ])
-                                ]),
-                                m('tr', [
-                                    m('th', 'Study name'),
-                                    m('th', '')
-                                ])
-                            ]),
-                            m('tbody', [
-                                ctrl.studies().studies.map(function ( study ) { return m('tr', [
-                                    m('td', {style: 'vertical-align: middle'}, [
-                                        m('i.fa.fa-edit.m-r-1'), 
-                                        m('a', {href: ("/editor/" + (study.id)),config:m.route}, [
-                                            m('strong', study.name)
-                                        ])
-                                    ]),
-                                    m('td', [
-                                        m('.btn-toolbar.pull-right', [
-                                            m('.btn-group.btn-group-sm', [
-                                            ]),
-                                            m('.btn-group.btn-group-sm', [
-                                                m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
-                                                    m('i.fa.fa-remove'), ' Delete'
-                                                ]),
-                                                m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
-                                                    m('i.fa.fa-exchange'), ' Rename'
-                                                ]),
-                                                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
-                                                    m('a.dropdown-item', {
-                                                        href: ("/deploy/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Deploy'),
-                                                    m('a.dropdown-item', {
-                                                        href: ("/studyChangeRequest/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Change request'),
-                                                    m('a.dropdown-item', {
-                                                        href: ("/studyRemoval/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Removal')
-                                                ]})
-                                            ])
-                                        ])
-
-                                    ])
-
-                                ]); })
-
-                            ])
+            if (!ctrl.loaded) return m('.loader');
+            return m('.container.studies', [
+                m('.row', [
+                    m('.col-sm-6', [
+                        m('h3', 'My Studies')
+                    ]),
+                    m('.col-sm-6', [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
+                            m('i.fa.fa-plus'), '  Add new study'
                         ])
-                    ]);
+                    ])
+                ]),
+                m('.card.studies-card', [
+                    m('.card-block', [
+                        m('.row', [
+                            m('.col-sm-3', [
+                                m('strong','Study Name')
+                            ])
+                        ]),
+                        ctrl.studies().map(function ( study ) { return m('.row.study-row', [
+                            m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+                                m('.col-sm-3', [
+                                    m('.study-text', study.name)
+                                ]),
+                                m('.col-sm-9', [
+                                    m('.btn-toolbar.pull-right', [
+                                        m('.btn-group.btn-group-sm', [
+                                            m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
+                                                m('i.fa.fa-remove'), ' Delete'
+                                            ]),
+                                            m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
+                                                m('i.fa.fa-exchange'), ' Rename'
+                                            ]),
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
+                                                m('a.dropdown-item', {
+                                                    href: ("/deploy/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Deploy'),
+                                                m('a.dropdown-item', {
+                                                    href: ("/studyChangeRequest/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Change request'),
+                                                m('a.dropdown-item', {
+                                                    href: ("/studyRemoval/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Removal')
+                                            ]})
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ]); })
+                    ])
+                ])
+            ]);
         }
     };
+
+    function routeConfig(el, isInit, ctx, vdom) {
+
+        el.href = location.pathname + '?' + vdom.attrs.href;
+
+        if (isInit) el.addEventListener('click', route);
+
+        function route(e){
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+
+            e.preventDefault();
+            if (e.target !== el) return;
+
+            m.route(el.search.slice(1));
+        }
+    }
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -3816,7 +3830,7 @@
     }
 
     var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
-    var TABLE_WIDTH$1 = 8;
+    var TABLE_WIDTH = 8;
 
     var poolComponent = {
         controller: function () {
@@ -3849,7 +3863,7 @@
                     m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                         m('thead', [
                             m('tr', [
-                                m('th', {colspan:TABLE_WIDTH$1 - 1}, [
+                                m('th', {colspan:TABLE_WIDTH - 1}, [
                                     m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
                                 ]),
                                 m('th', [
@@ -3859,7 +3873,7 @@
                                 ])
                             ]),
                             ctrl.canCreate() ? m('tr', [
-                                m('th.text-xs-center', {colspan:TABLE_WIDTH$1}, [
+                                m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
                                     m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
                                         m('i.fa.fa-plus'), '  Add new study'
                                     ])
@@ -3880,7 +3894,7 @@
                             list().length === 0
                                 ?
                                 m('tr.table-info',
-                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$1},
+                                    m('td.text-xs-center', {colspan: TABLE_WIDTH},
                                         m('strong', 'Heads up! '), 'There are no pool studies yet'
                                     )
                                 )
@@ -4370,7 +4384,7 @@
 
     var reportError$1 = function ( header ) { return function ( err ) { return messages.alert({header: header, content: err.message}); }; };
 
-    var TABLE_WIDTH$2 = 7;
+    var TABLE_WIDTH$1 = 7;
     var statusLabelsMap = {}; // defined at the bottom of this file
 
     var downloadsComponent = {
@@ -4409,12 +4423,12 @@
                     m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                         m('thead', [
                             m('tr', [
-                                m('th', {colspan:TABLE_WIDTH$2}, [
+                                m('th', {colspan:TABLE_WIDTH$1}, [
                                     m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
                                 ])
                             ]),
                             m('tr', [
-                                m('th.text-xs-center', {colspan:TABLE_WIDTH$2}, [
+                                m('th.text-xs-center', {colspan:TABLE_WIDTH$1}, [
                                     m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
                                         m('i.fa.fa-plus'), '  Download request'
                                     ])
@@ -4434,7 +4448,7 @@
                             list().length === 0
                                 ?
                                 m('tr.table-info',
-                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
+                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$1},
                                         m('strong', 'Heads up! '), 'There are no downloads running yet'
                                     )
                                 )
@@ -4935,7 +4949,7 @@
         return result;
     }, {}); };
 
-    var TABLE_WIDTH$3 = 6;
+    var TABLE_WIDTH$2 = 6;
 
     var downloadsAccessComponent = {
         controller: function () {
@@ -4979,7 +4993,7 @@
                     m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                         m('thead', [
                             m('tr', [ 
-                                m('th', {colspan: TABLE_WIDTH$3}, [ 
+                                m('th', {colspan: TABLE_WIDTH$2}, [ 
                                     m('.row', [
                                         m('.col-xs-3.text-xs-left', [
                                             m('button.btn.btn-secondary', {disabled: ctrl.isAdmin(), onclick:ctrl.isAdmin() || ctrl.create.bind(null, list)}, [
@@ -5016,7 +5030,7 @@
                             list().length === 0
                                 ?
                                 m('tr.table-info',
-                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
+                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
                                         m('strong', 'Heads up! '), 'There are no requests yet'
                                     )
                                 )
@@ -5217,7 +5231,7 @@
         return fetchJson(baseUrl$4);
     }
 
-    var TABLE_WIDTH$4 = 8;
+    var TABLE_WIDTH$3 = 8;
     var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
     var changeRequestListComponent = {
         controller: function controller(){
@@ -5259,7 +5273,7 @@
                     ctrl.list().length === 0
                     ?
                     m('tr.table-info',
-                        m('td.text-xs-center', {colspan: TABLE_WIDTH$4},
+                        m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
                             m('strong', 'Heads up! '), 'There are no pool studies yet'
                         )
                     )
@@ -5285,7 +5299,7 @@
         return fetchJson(baseUrl$5);
     }
 
-    var TABLE_WIDTH$5 = 8;
+    var TABLE_WIDTH$4 = 8;
     var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var removalListComponent = {
@@ -5323,7 +5337,7 @@
                     ctrl.list().length === 0
                     ?
                     m('tr.table-info',
-                        m('td.text-xs-center', {colspan: TABLE_WIDTH$5},
+                        m('td.text-xs-center', {colspan: TABLE_WIDTH$4},
                             m('strong', 'Heads up! '), 'There are no pool studies yet'
                         )
                     )

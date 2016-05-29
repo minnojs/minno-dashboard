@@ -4,22 +4,30 @@ import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
 import dropdown from 'utils/dropdown';
 
-const TABLE_WIDTH = 8;
 var mainComponent = {
     controller: function(){
         var ctrl = {
-            studies:m.prop(),
+            studies:m.prop([]),
             error:m.prop(''),
             study_name:m.prop(''),
             loaded:false
         };
+
+        load();
+        return {ctrl, do_create, do_delete, do_rename};
+
         function load() {
             fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
                 .then(checkStatus)
                 .then(toJSON)
+                .then(response => response.studies.sort(sortStudies))
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
+
+            function sortStudies(study1, study2){
+                return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+            }
         }
         function do_delete(study_id){
             messages.confirm({header:'Delete study', content:'Are you sure?', prop: ctrl.study_name})
@@ -48,6 +56,7 @@ var mainComponent = {
                         }).then(m.redraw);
                 });
         }
+
         function do_rename(study_id){
             messages.prompt({header:'New Name', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
                 .then(response => {
@@ -61,73 +70,78 @@ var mainComponent = {
                 });
         }
 
-        load();
-        return {ctrl, do_create, do_delete, do_rename};
     },
     view({ctrl, do_create, do_delete, do_rename}){
-        return  !ctrl.loaded
-                ?
-                m('.loader')
-                :
-                m('.container', [
-                    m('h3', 'My studies'),
-
-                    m('table.table.table-striped.table-hover.table-sm', [
-                        m('thead', [
-                            m('tr', [
-                                m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
-                                    m('button.btn.btn-secondary', {onclick:do_create}, [
-                                        m('i.fa.fa-plus'), '  Add new study'
-                                    ])
-                                ])
-                            ]),
-                            m('tr', [
-                                m('th', 'Study name'),
-                                m('th', '')
-                            ])
-                        ]),
-                        m('tbody', [
-                            ctrl.studies().studies.map(study => m('tr', [
-                                m('td', {style: 'vertical-align: middle'}, [
-                                    m('i.fa.fa-edit.m-r-1'), 
-                                    m('a', {href: `/editor/${study.id}`,config:m.route}, [
-                                        m('strong', study.name)
-                                    ])
-                                ]),
-                                m('td', [
-                                    m('.btn-toolbar.pull-right', [
-                                        m('.btn-group.btn-group-sm', [
-                                        ]),
-                                        m('.btn-group.btn-group-sm', [
-                                            m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
-                                                m('i.fa.fa-remove'), ' Delete'
-                                            ]),
-                                            m('button.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
-                                                m('i.fa.fa-exchange'), ' Rename'
-                                            ]),
-                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
-                                                m('a.dropdown-item', {
-                                                    href: `/deploy/${study.id}`,
-                                                    config: m.route
-                                                }, 'Deploy'),
-                                                m('a.dropdown-item', {
-                                                    href: `/studyChangeRequest/${study.id}`,
-                                                    config: m.route
-                                                }, 'Change request'),
-                                                m('a.dropdown-item', {
-                                                    href: `/studyRemoval/${study.id}`,
-                                                    config: m.route
-                                                }, 'Removal')
-                                            ]})
-                                        ])
-                                    ])
-
-                                ])
-
-                            ]))
-
-                        ])
+        if (!ctrl.loaded) return m('.loader');
+        return m('.container.studies', [
+            m('.row', [
+                m('.col-sm-6', [
+                    m('h3', 'My Studies')
+                ]),
+                m('.col-sm-6', [
+                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
+                        m('i.fa.fa-plus'), '  Add new study'
                     ])
-                ]);
+                ])
+            ]),
+            m('.card.studies-card', [
+                m('.card-block', [
+                    m('.row', [
+                        m('.col-sm-3', [
+                            m('strong','Study Name')
+                        ])
+                    ]),
+                    ctrl.studies().map(study => m('.row.study-row', [
+                        m('a', {href: `/editor/${study.id}`,config:routeConfig}, [
+                            m('.col-sm-3', [
+                                m('.study-text', study.name)
+                            ]),
+                            m('.col-sm-9', [
+                                m('.btn-toolbar.pull-right', [
+                                    m('.btn-group.btn-group-sm', [
+                                        m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
+                                            m('i.fa.fa-remove'), ' Delete'
+                                        ]),
+                                        m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
+                                            m('i.fa.fa-exchange'), ' Rename'
+                                        ]),
+                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
+                                            m('a.dropdown-item', {
+                                                href: `/deploy/${study.id}`,
+                                                config: m.route
+                                            }, 'Request Deploy'),
+                                            m('a.dropdown-item', {
+                                                href: `/studyChangeRequest/${study.id}`,
+                                                config: m.route
+                                            }, 'Request Change request'),
+                                            m('a.dropdown-item', {
+                                                href: `/studyRemoval/${study.id}`,
+                                                config: m.route
+                                            }, 'Request Removal')
+                                        ]})
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ]))
+                ])
+            ])
+        ]);
     }
 };
+
+function routeConfig(el, isInit, ctx, vdom) {
+
+    el.href = location.pathname + '?' + vdom.attrs.href;
+
+    if (isInit) el.addEventListener('click', route);
+
+    function route(e){
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+
+        e.preventDefault();
+        if (e.target !== el) return;
+
+        m.route(el.search.slice(1));
+    }
+}
