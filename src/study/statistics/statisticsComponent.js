@@ -99,8 +99,8 @@ let statisticsComponent = {
         m('.row', [
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, 'Toggle help'),
-                m('button.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                m('button.btn.btn-secondary.pull-right.m-r-1', {onclick:submit}, 'Download CSV')
+                m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
@@ -149,3 +149,8 @@ let radioButton = (prop, text) => m('label.c-input.c-radio', [
     m('span.c-indicator'),
     text
 ]);
+
+let downloadFile = (filename, text) => element => {
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+};

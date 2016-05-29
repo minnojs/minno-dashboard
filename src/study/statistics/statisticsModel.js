@@ -7,7 +7,8 @@ export let getStatistics = query => {
         .then(response => {
             let csv = CSVToArray(response);
             return {
-                source: response,
+                study: 'asdfasdfasdf', 
+                file: response,
                 headers: csv.shift(),
                 data: csv,
                 query: Object.assign(query) // clone the query so that we can get back to it in the future

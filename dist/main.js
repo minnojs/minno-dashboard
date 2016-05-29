@@ -865,7 +865,8 @@
             .then(function ( response ) {
                 var csv = CSVToArray(response);
                 return {
-                    source: response,
+                    study: 'asdfasdfasdf', 
+                    file: response,
                     headers: csv.shift(),
                     data: csv,
                     query: Object.assign(query) // clone the query so that we can get back to it in the future
@@ -1087,8 +1088,8 @@
             m('.row', [
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function () { return displayHelp(!displayHelp()); }}, 'Toggle help'),
-                    m('button.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    m('button.btn.btn-secondary.pull-right.m-r-1', {onclick:submit}, 'Download CSV')
+                    m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                    !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(("" + (tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
@@ -1145,6 +1146,11 @@
         m('span.c-indicator'),
         text
     ]); };
+
+    var downloadFile = function (filename, text) { return function ( element ) {
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+    }; };
 
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)

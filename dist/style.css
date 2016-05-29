@@ -90,16 +90,15 @@ h1, h2, h3, h4, h5 {
   height: 300px;
   font-size: 18px; }
 
-.navbar-dark.navbar {
-  background: #4C93BE; }
-  .navbar-dark.navbar .nav-link {
-    color: #edf4f9; }
-    .navbar-dark.navbar .nav-link:hover {
-      color: #a6c9df; }
-    .navbar-dark.navbar .nav-link.active {
-      background: #356785; }
-  .is-iframe .navbar-dark.navbar {
+.navbar {
+  background: #2882b5; }
+  .is-iframe .navbar {
     display: none; }
+
+.main-content {
+  margin-top: 59px; }
+  .is-iframe .main-content {
+    margin-top: 0; }
 
 .loader,
 .loader:before,
@@ -388,7 +387,7 @@ h1, h2, h3, h4, h5 {
   position: fixed;
   width: inherit;
   overflow-y: auto;
-  top: 54px;
+  top: 58px;
   bottom: 0; }
   .study .sidebar h5, .study .sidebar .btn-group {
     margin: 10px; }
