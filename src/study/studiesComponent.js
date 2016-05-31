@@ -11,6 +11,7 @@ var mainComponent = {
             studies:m.prop(),
             error:m.prop(''),
             study_name:m.prop(''),
+            user_name:m.prop(''),
             loaded:false
         };
         function load() {
@@ -44,7 +45,8 @@ var mainComponent = {
                             m.route('/editor/'+response.study_id);
                         })
                         .catch(error => {
-                            ctrl.error(error.message); do_create();
+                            ctrl.error(error.message);
+                            do_create();
                         }).then(m.redraw);
                 });
         }
@@ -56,7 +58,8 @@ var mainComponent = {
                             load();
                         })
                         .catch(error => {
-                            ctrl.error(error.message); do_rename(study_id);
+                            ctrl.error(error.message);
+                            do_rename(study_id);
                         }).then(m.redraw);
                 });
         }
@@ -83,6 +86,7 @@ var mainComponent = {
                         m('th', 'Study name'),
                         m('th',  'Delete'),
                         m('th',  'Rename'),
+                        m('th',  'collaboration'),
                         m('th',  'Actions')
                     ])
                 ]),
@@ -94,6 +98,10 @@ var mainComponent = {
                         }, study.name)),
                         m('td', m('button.btn.btn-secondary', {onclick:function() {do_delete(study.id);}}, 'Delete')),
                         m('td', m('button.btn.btn-secondary', {onclick:function() {do_rename(study.id);}}, 'Rename')),
+                        m('td', m('a.dropdown-item', {
+                            href: `/collaboration/${study.id}`,
+                            config: m.route
+                        }, 'collaboration')),
                         dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
                             m('a.dropdown-item', {
                                 href: `/deploy/${study.id}`,

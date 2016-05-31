@@ -1,4 +1,5 @@
 import studiesComponent from './study/studiesComponent';
+import shared_with_me_component from './study/studiesComponent2';
 import statisticsComponent from './study/statistics/statisticsComponent';
 import studyComponent from './study/studyComponent';
 import poolComponent from './pool/poolComponent';
@@ -16,6 +17,7 @@ import addUserComponent from './addUser/addUserComponent';
 import activationComponent from './activation/activationComponent';
 import changePasswordComponent from './changePassword/changePasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
+import collaborationComponent from './collaboration/collaborationComponent';
 export default routes;
 
 let routes = { 
@@ -33,11 +35,14 @@ let routes = {
     '/login': loginComponent,
     '/studies' : studiesComponent,
     '/studies/statistics' : statisticsComponent,
+    '/studies/shared_with_me' : shared_with_me_component,
+
     '/editor/:studyId': studyComponent,
     '/editor/:studyId/:resource/:fileID': studyComponent,
     '/pool': poolComponent,
     '/pool/history': historyComponent,
     '/downloads': downloadsComponent,
-    '/downloadsAccess': downloadsAccessComponent
+    '/downloadsAccess': downloadsAccessComponent,
+    '/collaboration/:studyId': collaborationComponent
 };
 

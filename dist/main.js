@@ -236,6 +236,7 @@
 	    body: {study_name: ctrl.study_name}
 	}); };
 
+
 	var delete_study = function (study_id) { return fetchJson(get_url(study_id), {
 	    method: 'delete'}); };
 
@@ -296,6 +297,7 @@
 	            studies:m.prop(),
 	            error:m.prop(''),
 	            study_name:m.prop(''),
+	            user_name:m.prop(''),
 	            loaded:false
 	        };
 	        function load() {
@@ -329,7 +331,8 @@
 	                            m.route('/editor/'+response.study_id);
 	                        })
 	                        .catch(function ( error ) {
-	                            ctrl.error(error.message); do_create();
+	                            ctrl.error(error.message);
+	                            do_create();
 	                        }).then(m.redraw);
 	                });
 	        }
@@ -341,7 +344,8 @@
 	                            load();
 	                        })
 	                        .catch(function ( error ) {
-	                            ctrl.error(error.message); do_rename(study_id);
+	                            ctrl.error(error.message);
+	                            do_rename(study_id);
 	                        }).then(m.redraw);
 	                });
 	        }
@@ -373,6 +377,7 @@
 	                        m('th', 'Study name'),
 	                        m('th',  'Delete'),
 	                        m('th',  'Rename'),
+	                        m('th',  'collaboration'),
 	                        m('th',  'Actions')
 	                    ])
 	                ]),
@@ -384,6 +389,10 @@
 	                        }, study.name)),
 	                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_delete(study.id);}}, 'Delete')),
 	                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_rename(study.id);}}, 'Rename')),
+	                        m('td', m('a.dropdown-item', {
+	                            href: ("/collaboration/" + (study.id)),
+	                            config: m.route
+	                        }, 'collaboration')),
 	                        dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
 	                            m('a.dropdown-item', {
 	                                href: ("/deploy/" + (study.id)),
@@ -399,6 +408,97 @@
 	                            }, 'Removal')
 	                        ]})
 
+	                    ]); })
+
+	                ])
+	            ])
+	        ]);
+	    }
+	};
+
+	var TABLE_WIDTH$1 = 8;
+	var mainComponent$1 = {
+	    controller: function(){
+	        var ctrl = {
+	            studies:m.prop(),
+	            error:m.prop(''),
+	            study_name:m.prop(''),
+	            user_name:m.prop(''),
+	            loaded:false
+	        };
+	        function load() {
+	            fetch('/dashboard/dashboard/studies/0/shared_with_me', {credentials: 'same-origin'})
+	                .then(checkStatus)
+	                .then(toJSON)
+	                .then(ctrl.studies)
+	                .then(function () { return ctrl.loaded = true; })
+	                .then(m.redraw);
+	        }
+	        function do_add(){
+	            messages.prompt({header:'New Study', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
+	                .then(function ( response ) {
+	                    if (response) create_study(ctrl)
+	                        .then(function (response){
+	                            m.route('/editor/'+response.study_id);
+	                        })
+	                        .catch(function ( error ) {
+	                            ctrl.error(error.message);
+	                            do_add();
+	                        }).then(m.redraw);
+	                });
+	        }
+
+	        load();
+	        return {ctrl: ctrl, do_add: do_add};
+	    },
+	    view: function view(ref){
+	        var ctrl = ref.ctrl;
+	        var do_add = ref.do_add;
+
+	        return  !ctrl.loaded
+	                ?
+	                m('.loader')
+	                :
+	        m('.container', [
+	            m('h3', 'My studies'),
+
+	            m('th.text-xs-center', {colspan:TABLE_WIDTH$1}, [
+	                m('button.btn.btn-secondary', {onclick:do_add}, [
+	                    m('i.fa.fa-plus'), '  Add new study'
+	                ])
+	            ]),
+	            m('table', {class:'table table-striped table-hover'}, [
+	                m('thead', [
+	                    m('tr', [
+	                        m('th', 'Study name'),
+	                        m('th',  'collaboration'),
+	                        m('th',  'Actions')
+	                    ])
+	                ]),
+	                m('tbody', [
+	                    ctrl.studies().studies.map(function ( study ) { return m('tr', [
+	                        m('td', m('a.btn.btn-secondary',{
+	                            href: ("/editor/" + (study.id)),
+	                            config: m.route
+	                        }, study.name)),
+	                        m('td', m('a.dropdown-item', {
+	                            href: ("/collaboration/" + (study.id)),
+	                            config: m.route
+	                        }, 'collaboration')),
+	                        dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
+	                            m('a.dropdown-item', {
+	                                href: ("/deploy/" + (study.id)),
+	                                config: m.route
+	                            }, 'Deploy'),
+	                            m('a.dropdown-item', {
+	                                href: ("/studyChangeRequest/" + (study.id)),
+	                                config: m.route
+	                            }, 'Change request'),
+	                            m('a.dropdown-item', {
+	                                href: ("/studyRemoval/" + (study.id)),
+	                                config: m.route
+	                            }, 'Removal')
+	                        ]})
 	                    ]); })
 
 	                ])
@@ -3801,7 +3901,7 @@
 	}
 
 	var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
-	var TABLE_WIDTH$1 = 8;
+	var TABLE_WIDTH$2 = 8;
 
 	var poolComponent = {
 	    controller: function () {
@@ -3834,7 +3934,7 @@
 	                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 	                    m('thead', [
 	                        m('tr', [
-	                            m('th', {colspan:TABLE_WIDTH$1 - 1}, [
+	                            m('th', {colspan:TABLE_WIDTH$2 - 1}, [
 	                                m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
 	                            ]),
 	                            m('th', [
@@ -3844,7 +3944,7 @@
 	                            ])
 	                        ]),
 	                        ctrl.canCreate() ? m('tr', [
-	                            m('th.text-xs-center', {colspan:TABLE_WIDTH$1}, [
+	                            m('th.text-xs-center', {colspan:TABLE_WIDTH$2}, [
 	                                m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
 	                                    m('i.fa.fa-plus'), '  Add new study'
 	                                ])
@@ -3865,7 +3965,7 @@
 	                        list().length === 0
 	                            ?
 	                            m('tr.table-info',
-	                                m('td.text-xs-center', {colspan: TABLE_WIDTH$1},
+	                                m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
 	                                    m('strong', 'Heads up! '), 'There are no pool studies yet'
 	                                )
 	                            )
@@ -4355,7 +4455,7 @@
 
 	var reportError$1 = function ( header ) { return function ( err ) { return messages.alert({header: header, content: err.message}); }; };
 
-	var TABLE_WIDTH$2 = 7;
+	var TABLE_WIDTH$3 = 7;
 	var statusLabelsMap = {}; // defined at the bottom of this file
 
 	var downloadsComponent = {
@@ -4394,12 +4494,12 @@
 	                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
 	                    m('thead', [
 	                        m('tr', [
-	                            m('th', {colspan:TABLE_WIDTH$2}, [
+	                            m('th', {colspan:TABLE_WIDTH$3}, [
 	                                m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
 	                            ])
 	                        ]),
 	                        m('tr', [
-	                            m('th.text-xs-center', {colspan:TABLE_WIDTH$2}, [
+	                            m('th.text-xs-center', {colspan:TABLE_WIDTH$3}, [
 	                                m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
 	                                    m('i.fa.fa-plus'), '  Download request'
 	                                ])
@@ -4419,7 +4519,7 @@
 	                        list().length === 0
 	                            ?
 	                            m('tr.table-info',
-	                                m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
+	                                m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
 	                                    m('strong', 'Heads up! '), 'There are no downloads running yet'
 	                                )
 	                            )
@@ -4946,7 +5046,7 @@
 	    return result;
 	}, {}); };
 
-	var TABLE_WIDTH$3 = 6;
+	var TABLE_WIDTH$4 = 6;
 
 	var downloadsAccessComponent = {
 		controller: function () {
@@ -4997,7 +5097,7 @@
 									ctrl.isAdmin()? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
 										m('i.fa.fa-plus'), '  Revoke Access'
 									]) : ''
-								]),m('th', {colspan:TABLE_WIDTH$3-2}, [
+								]),m('th', {colspan:TABLE_WIDTH$4-2}, [
 									m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
 								]),
 							
@@ -5016,7 +5116,7 @@
 							list().length === 0
 								?
 								m('tr.table-info',
-									m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
+									m('td.text-xs-center', {colspan: TABLE_WIDTH$4},
 										m('strong', 'Heads up! '), 'There are no requests yet'
 									)
 								)
@@ -5217,7 +5317,7 @@
 	    return fetchJson(baseUrl$4);
 	}
 
-	var TABLE_WIDTH$4 = 8;
+	var TABLE_WIDTH$5 = 8;
 	var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 	var changeRequestListComponent = {
 	    controller: function controller(){
@@ -5259,7 +5359,7 @@
 	                ctrl.list().length === 0
 	                ?
 	                m('tr.table-info',
-	                    m('td.text-xs-center', {colspan: TABLE_WIDTH$4},
+	                    m('td.text-xs-center', {colspan: TABLE_WIDTH$5},
 	                        m('strong', 'Heads up! '), 'There are no pool studies yet'
 	                    )
 	                )
@@ -5285,7 +5385,7 @@
 	    return fetchJson(baseUrl$5);
 	}
 
-	var TABLE_WIDTH$5 = 8;
+	var TABLE_WIDTH$6 = 8;
 	var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
 	var removalListComponent = {
@@ -5323,7 +5423,7 @@
 	                ctrl.list().length === 0
 	                ?
 	                m('tr.table-info',
-	                    m('td.text-xs-center', {colspan: TABLE_WIDTH$5},
+	                    m('td.text-xs-center', {colspan: TABLE_WIDTH$6},
 	                        m('strong', 'Heads up! '), 'There are no pool studies yet'
 	                    )
 	                )
@@ -6063,6 +6163,102 @@
 	    };
 	}
 
+	var baseUrl$7 = '/dashboard/dashboard/studies';
+
+
+	function collaboration_url(study_id)
+	{   
+	    return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+	}
+
+
+	var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
+	    method: 'get'
+	}); };
+
+	var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url(study_id), {
+	    method: 'delete',
+	    body: {user_id: user_id}
+	}); };
+
+	var add_collaboration$1 = function (study_id, user_name) { return fetchJson(collaboration_url(study_id), {
+	    method: 'post',
+	    body: {user_name: user_name}
+	}); };
+
+	var TABLE_WIDTH$7 = 8;
+
+	var collaborationComponent = {
+	    controller: function controller(){
+	        var ctrl = {
+	            users:m.prop(),
+	            user_name:m.prop(''),
+	            loaded:false,
+	            error:m.prop('')
+	        };
+	        get_collaborations(m.route.param('studyId'))
+	            .then(function ( response ) {ctrl.users(response.users); ctrl.loaded = true;})
+	            .catch(function ( error ) {
+	                throw error;
+	            }).then(m.redraw);
+
+	        function remove(user_id){
+	            remove_collaboration(m.route.param('studyId'), user_id)
+	            .catch(function ( error ) {
+	                ctrl.error(error.message);
+	            }).then(m.redraw);
+	        }
+	        function do_add_collaboration(){
+	            messages.prompt({header:'New collaboration', content:m('p', [m('p', 'Enter user Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+	                .then(function ( response ) {
+	                    if (response) add_collaboration$1(m.route.param('studyId'), ctrl.user_name)
+	                        .then(function () {
+	                        })
+	                        .catch(function ( error ) {
+	                            ctrl.error(error.message);
+	                            do_add_collaboration();
+	                        }).then(m.redraw);
+	                });
+	        }
+	        return {ctrl: ctrl, remove: remove, do_add_collaboration: do_add_collaboration};
+	    },
+	    view: function view(ref){
+	        var ctrl = ref.ctrl;
+	        var remove = ref.remove;
+	        var do_add_collaboration = ref.do_add_collaboration;
+
+	        return  !ctrl.loaded
+	            ?
+	            m('.loader')
+	            :
+	            m('.container', [
+	                m('h3', 'My collaborations'),
+	                m('th.text-xs-center', {colspan:TABLE_WIDTH$7}, [
+	                    m('button.btn.btn-secondary', {onclick:do_add_collaboration}, [
+	                        m('i.fa.fa-plus'), '  Add new collaboration'
+	                    ])
+	                ]),
+	                m('table', {class:'table table-striped table-hover'}, [
+	                    m('thead', [
+	                        m('tr', [
+	                            m('th', 'User name'),
+	                            m('th',  'Permission'),
+	                            m('th',  'Remove')
+	                        ])
+	                    ]),
+	                    m('tbody', [
+	                        ctrl.users().map(function ( user ) { return m('tr', [
+	                            m('td', user.USERNAME),
+	                            m('td', user.PERMISSION),
+	                            m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, user.USER_ID))
+	                        ]); })
+
+	                    ])
+	                ])
+	            ]);
+	    }
+	};
+
 	var routes = { 
 	    '/recovery':  recoveryComponent,
 	    '/activation/:code':  activationComponent,
@@ -6078,12 +6274,15 @@
 	    '/login': loginComponent,
 	    '/studies' : mainComponent,
 	    '/studies/statistics' : statisticsComponent,
+	    '/studies/shared_with_me' : mainComponent$1,
+
 	    '/editor/:studyId': editorLayoutComponent,
 	    '/editor/:studyId/:resource/:fileID': editorLayoutComponent,
 	    '/pool': poolComponent,
 	    '/pool/history': poolComponent$1,
 	    '/downloads': downloadsComponent,
-	    '/downloadsAccess': downloadsAccessComponent
+	    '/downloadsAccess': downloadsAccessComponent,
+	    '/collaboration/:studyId': collaborationComponent
 	};
 
 	var layout = function ( route ) {
