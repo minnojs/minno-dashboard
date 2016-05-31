@@ -87,45 +87,6 @@ var mainComponent = {
                     ])
                 ])
             ]),
-<<<<<<< HEAD
-            m('table', {class:'table table-striped table-hover'}, [
-                m('thead', [
-                    m('tr', [
-                        m('th', 'Study name'),
-                        m('th',  'Delete'),
-                        m('th',  'Rename'),
-                        m('th',  'collaboration'),
-                        m('th',  'Actions')
-                    ])
-                ]),
-                m('tbody', [
-                    ctrl.studies().studies.map(study => m('tr', [
-                        m('td', m('a.btn.btn-secondary',{
-                            href: `/editor/${study.id}`,
-                            config: m.route
-                        }, study.name)),
-                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_delete(study.id);}}, 'Delete')),
-                        m('td', m('button.btn.btn-secondary', {onclick:function() {do_rename(study.id);}}, 'Rename')),
-                        m('td', m('a.dropdown-item', {
-                            href: `/collaboration/${study.id}`,
-                            config: m.route
-                        }, 'collaboration')),
-                        dropdown({toggleSelector:'a.btn.btn-secondary.dropdown-toggle', toggleContent: 'Action', elements: [
-                            m('a.dropdown-item', {
-                                href: `/deploy/${study.id}`,
-                                config: m.route
-                            }, 'Deploy'),
-                            m('a.dropdown-item', {
-                                href: `/studyChangeRequest/${study.id}`,
-                                config: m.route
-                            }, 'Change request'),
-                            m('a.dropdown-item', {
-                                href: `/studyRemoval/${study.id}`,
-                                config: m.route
-                            }, 'Removal')
-                        ]})
-
-=======
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', [
@@ -159,13 +120,16 @@ var mainComponent = {
                                             m('a.dropdown-item', {
                                                 href: `/studyRemoval/${study.id}`,
                                                 config: m.route
-                                            }, 'Request Removal')
+                                            }, 'Request Removal'),
+                                            m('a.dropdown-item', {
+                                                href: `/collaboration/${study.id}`,
+                                                config: m.route
+                                            }, 'Collaborations')
                                         ]})
                                     ])
                                 ])
                             ])
                         ])
->>>>>>> a9e1544c698579bcb57f66580e7cbd666ee91a64
                     ]))
                 ])
             ])

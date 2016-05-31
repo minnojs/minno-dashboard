@@ -12,23 +12,34 @@ let collaborationComponent = {
             loaded:false,
             error:m.prop('')
         };
-        get_collaborations(m.route.param('studyId'))
-            .then(response =>{ctrl.users(response.users); ctrl.loaded = true;})
-            .catch(error => {
-                throw error;
-            }).then(m.redraw);
+        function load() {
+            get_collaborations(m.route.param('studyId'))
+                .then(response =>{ctrl.users(response.users); ctrl.loaded = true;})
+                .catch(error => {
+                    throw error;
+                }).then(m.redraw);
 
+        }
         function remove(user_id){
-            remove_collaboration(m.route.param('studyId'), user_id)
-            .catch(error => {
-                ctrl.error(error.message);
-            }).then(m.redraw);
+            messages.confirm({header:'Delete collaboration', content:'Are you sure?'})
+                .then(response => {
+                    if (response)
+                        remove_collaboration(m.route.param('studyId'), user_id)
+                            .then(()=> {
+                                load();
+                            })
+                            .catch(error => {
+                                ctrl.error(error.message);
+                            })
+                            .then(m.redraw);
+                })
         }
         function do_add_collaboration(){
             messages.prompt({header:'New collaboration', content:m('p', [m('p', 'Enter user Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
                 .then(response => {
                     if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name)
                         .then(()=>{
+                            load();
                         })
                         .catch(error => {
                             ctrl.error(error.message);
@@ -36,6 +47,7 @@ let collaborationComponent = {
                         }).then(m.redraw);
                 });
         }
+        load();
         return {ctrl, remove, do_add_collaboration};
     },
     view({ctrl, remove, do_add_collaboration}){
@@ -62,7 +74,7 @@ let collaborationComponent = {
                         ctrl.users().map(user => m('tr', [
                             m('td', user.USERNAME),
                             m('td', user.PERMISSION),
-                            m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, user.USER_ID))
+                            m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, 'Remove'))
                         ]))
 
                     ])

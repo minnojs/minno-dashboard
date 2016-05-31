@@ -1,5 +1,5 @@
 import studiesComponent from './study/studiesComponent';
-import shared_with_me_component from './study/studiesComponent2';
+import shared_with_me_component from './study/collaborationComponent';
 import statisticsComponent from './study/statistics/statisticsComponent';
 import studyComponent from './study/studyComponent';
 import poolComponent from './pool/poolComponent';
