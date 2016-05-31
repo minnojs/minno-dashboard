@@ -7,17 +7,17 @@ import historyComponent from './pool/historyComponent';
 import downloadsComponent from './downloads/downloadsComponent';
 import downloadsAccessComponent from './downloadsAccess/downloadsAccessComponent';
 import loginComponent from './login/loginComponent';
-import deployListComponent from './deployList/deployListComponent';
-import changeRequestListComponent from './changeRequestList/changeRequestListComponent';
-import removalListComponent from './removalList/removalListComponent';
+import deployListComponent from 'deploy/forms/deployList/deployListComponent';
+import changeRequestListComponent from 'deploy/forms/changeRequestList/changeRequestListComponent';
+import removalListComponent from 'deploy/forms/removalList/removalListComponent';
 import deployComponent from './deploy/deployComponent';
-import studyRemovalComponent from './studyRemoval/studyRemovalComponent';
-import studyChangeRequestComponent from './studyChangeRequest/studyChangeRequestComponent';
+import studyRemovalComponent from './deploy/studyRemovalComponent';
+import studyChangeRequestComponent from './deploy/studyChangeRequestComponent';
 import addUserComponent from './addUser/addUserComponent';
 import activationComponent from './activation/activationComponent';
 import changePasswordComponent from './changePassword/changePasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
-import collaborationComponent from './collaboration/collaborationComponent';
+import collaborationComponent from 'study/collaboration/collaborationComponent';
 export default routes;
 
 let routes = { 
