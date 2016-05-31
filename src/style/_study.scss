@@ -1,39 +1,66 @@
+.studies {
+    margin-top: 10px;
+
+    .studies-card {
+        background: $color-primary-1;
+        border-color: $color-primary-1;
+    }
+
+    .study-row {
+        background: #fff;
+        padding: 6px;
+        margin: 6px 0;
+
+        .study-text {
+            color: #818a91;
+            padding: .25em 0; 
+            display: inline-block;
+        }
+
+        &:hover {
+            .study-text {color:#fff}
+            background: $color-primary-3;
+        }
+    }
+}
+
 .study {
-	.col-md-10, .col-md-2 {
-		padding-left: 0;
-		padding-right: 0;
-	}
+    .col-md-10, .col-md-2 {
+        padding-left: 0;
+        padding-right: 0;
+    }
 
-	.editor {
-	  .editor-menu {
-	    padding-bottom: 4px;
-	  }
+    .editor {
+        .editor-menu {
+            padding: 4px 0;
+        }
 
-	  .file-name {
-	  	font-weight: bold;
-	  	color: #818a91;
-	  	margin: 4px;
-	  	float: left;
-	  }
-	}
+        .file-name {
+            font-weight: bold;
+            margin: 4px;
+            float: left;
+        }
+    }
 
-	.sidebar {
-		position: fixed;
-		width: inherit;
-		overflow-y: auto;
-		top: $navbar-height;
-		bottom: 0;
+    .sidebar {
+        background: $color-primary-1;
+        position: fixed;
+        width: inherit;
+        overflow-y: auto;
+        top: $navbar-height;
+        bottom: 0;
 
 
-		h5, .btn-group {
-			margin: 10px;
-		}
-	}
+        h5, .btn-group {
+            margin: 10px;
+        }
+    }
 
-	.is-iframe & > .col-md-2 {display:none}
-	.is-iframe & > .col-md-10 {width:100%}
+    .is-iframe & > .col-md-2 {display:none}
+    .is-iframe & > .col-md-10 {width:100%}
 }
 
 .ace_search {
 	input,button {color: initial; font-size:12px;font-family:initial;}
 }
+

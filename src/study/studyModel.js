@@ -32,6 +32,7 @@ export let rename_study = (study_id, ctrl) => fetchJson(get_url(study_id), {
 export let delete_study = (study_id) => fetchJson(get_url(study_id), {
     method: 'delete'});
 
+<<<<<<< HEAD
 /*collaboration*/
 export let add_collaboration = (study_id, ctrl) => fetchJson(get_collaborate_url(study_id), {
     method: 'post',
@@ -43,3 +44,8 @@ export let add_collaboration = (study_id, ctrl) => fetchJson(get_collaborate_url
 export let get_collaboration= (study_id) => fetchJson(get_collaborate_url(study_id), {
     method: 'get'
 });
+=======
+export let load = () => {
+    fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'});
+};
+>>>>>>> a9e1544c698579bcb57f66580e7cbd666ee91a64

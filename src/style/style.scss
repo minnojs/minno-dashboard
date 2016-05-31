@@ -1,26 +1,48 @@
-$navbar-height:    58px;
+// SASS style sheet */
+// Palette color codes */
+// Palette URL: http://paletton.com/#uid=13u0u0kqpBpg5MVlwGpzhxMzuos */
 
-.navbar {
-  background: #2882b5;
-  .is-iframe & {display:none}
+// Feel free to copy&paste color codes to your application */
+
+$color-primary-0: #71B0D6;	// Main Primary color */
+$color-primary-1: #D2EAF9;
+$color-primary-2: #9DCEEA;
+$color-primary-3: #4C93BE;
+$color-primary-4: #2E76A1;
+
+$navbar-height: 54px;
+
+$navbar-color: $color-primary-3;
+.navbar-dark.navbar {
+    background: $navbar-color;
+    .nav-link {
+        color: mix(white, $navbar-color, 90%);
+        &:hover {color: mix(white, $navbar-color, 50%);}
+
+        &.active {
+            // doesn't work maybe??
+            background: mix(black, $navbar-color, 30%);
+        }
+    }
+    //background: #2882b5;
+    .is-iframe & {display:none}
 }
 
 .main-content {
-	margin-top: $navbar-height + 1;
+	padding-top: $navbar-height;
 	.is-iframe & {margin-top:0}
 }
 
+body {background: $color-primary-2;}
+h1, h2, h3, h4, h5 {font-weight: 300}
 
-// used within the validator
-.stringified {
-	.pre {text-decoration: none;white-space: pre;}
-	.string { color: green; }
-	.number { color: darkorange; }
-	.boolean { color: blue; }
-	.null { color: magenta; }
-	.key { color: red; }
-
-	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
+.table {
+    background: $color-primary-1;
+    tbody td, thead th, {
+        border-bottom-color: $color-primary-2;
+        border-top-color: $color-primary-2;
+    }
+    
 }
 
 // utility
@@ -61,9 +83,35 @@ $navbar-height:    58px;
     top: 24px;
 }
 
+.btn-group > .dropdown-component {
+    display: inline-block;
+
+    &:not(:last-child) > .btn:first-child {
+        border-top-right-radius: 0;
+        border-left-right-radius: 0;
+    }
+
+    &:not(:first-child) > .btn:first-child {
+        margin-left:-1px;
+        border-top-left-radius: 0;
+        border-left-left-radius: 0;
+    }
+}
+
 .c-inputs-stacked.fixed {margin-bottom: -1.5em}
 .checkbox-input-group {padding: .375rem .75rem}
 
+// used within the validator
+.stringified {
+	.pre {text-decoration: none;white-space: pre;}
+	.string { color: green; }
+	.number { color: darkorange; }
+	.boolean { color: blue; }
+	.null { color: magenta; }
+	.key { color: red; }
+
+	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
+}
 @import "./loader";
 @import "./context";
 @import "./files";
