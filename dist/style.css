@@ -15,17 +15,8 @@
   .is-iframe .main-content {
     margin-top: 0; }
 
-body {
-  background: #9DCEEA; }
-
 h1, h2, h3, h4, h5 {
   font-weight: 300; }
-
-.table {
-  background: #D2EAF9; }
-  .table tbody td, .table thead th {
-    border-bottom-color: #9DCEEA;
-    border-top-color: #9DCEEA; }
 
 .centrify {
   display: flex;
@@ -355,6 +346,14 @@ h1, h2, h3, h4, h5 {
 
 .studies {
   margin-top: 10px; }
+  .studies::after {
+    background: #9DCEEA;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -1000; }
   .studies .studies-card {
     background: #D2EAF9;
     border-color: #D2EAF9; }
