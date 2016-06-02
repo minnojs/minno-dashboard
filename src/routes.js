@@ -1,5 +1,4 @@
 import studiesComponent from './study/studiesComponent';
-import shared_with_me_component from './study/collaborationComponent';
 import statisticsComponent from './study/statistics/statisticsComponent';
 import studyComponent from './study/studyComponent';
 import poolComponent from './pool/poolComponent';
@@ -35,8 +34,6 @@ let routes = {
     '/login': loginComponent,
     '/studies' : studiesComponent,
     '/studies/statistics' : statisticsComponent,
-    '/studies/shared_with_me' : shared_with_me_component,
-
     '/editor/:studyId': studyComponent,
     '/editor/:studyId/:resource/:fileID': studyComponent,
     '/pool': poolComponent,

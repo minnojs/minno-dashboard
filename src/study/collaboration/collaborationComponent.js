@@ -32,7 +32,7 @@ let collaborationComponent = {
                                 ctrl.error(error.message);
                             })
                             .then(m.redraw);
-                })
+                });
         }
         function do_add_collaboration(){
             messages.prompt({header:'New collaboration', content:m('p', [m('p', 'Enter user Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
