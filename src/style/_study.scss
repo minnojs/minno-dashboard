@@ -38,6 +38,7 @@
         }
 
         .file-name {
+            color: #818a91;
             font-weight: bold;
             margin: 4px;
             float: left;
@@ -45,7 +46,6 @@
     }
 
     .sidebar {
-        background: $color-primary-1;
         position: fixed;
         width: inherit;
         overflow-y: auto;

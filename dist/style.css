@@ -378,12 +378,12 @@ h1, h2, h3, h4, h5 {
   padding: 4px 0; }
 
 .study .editor .file-name {
+  color: #818a91;
   font-weight: bold;
   margin: 4px;
   float: left; }
 
 .study .sidebar {
-  background: #D2EAF9;
   position: fixed;
   width: inherit;
   overflow-y: auto;
