@@ -3,17 +3,55 @@ import {fetchText} from 'utils/modelHelpers';
 const STATISTICS_URL = '/implicit/PITracking';
 
 export let getStatistics = query => {
-    return fetchText(STATISTICS_URL, {method:'post', body: query})
+    return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
         .then(response => {
             let csv = CSVToArray(response);
             return {
-                study: 'asdfasdfasdf', 
+                study: query.study(),
                 file: response,
                 headers: csv.shift(),
                 data: csv,
                 query: Object.assign(query) // clone the query so that we can get back to it in the future
             };
         });
+
+    /**
+     * Parses the query as we build it locally and creates an appropriate post for the server
+     **/
+    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty}){
+        let baseUrl = `${location.origin}/implicit`;
+        let post = {
+            db: source().match(/^(.*?):/)[1], // before colon
+            current: source().match(/:(.*?)$/)[1], // after colon
+            testDB:'newwarehouse',
+            study: study(),
+            task: task(),
+            since:'5/01/2016',
+            until:'6/2/2016',
+            refresh:'no',
+            endTask:'',
+            filter:'',
+            studyc:sortstudy(),
+            taskc:sorttask(),
+            datac:sortgroup(),
+            timec:sorttime() !== 'None',
+            dayc:sorttime() === 'Days',
+            weekc:sorttime() === 'Weeks',
+            monthc:sorttime() === 'Months',
+            yearc:sorttime() === 'Years',
+            method:'3',
+            cpath:'',
+            hpath:'',
+            tasksM:'3',
+            threads:'yes',
+            threadsNum:'1',
+            zero: showEmpty(),
+            curl:`${baseUrl}/research/library/randomStudiesConfig/RandomStudiesConfig.xml`,
+            hurl:`${baseUrl}/research/library/randomStudiesConfig/HistoryRand.xml`,
+            baseURL:baseUrl
+        };
+        return post;
+    } 
 };
 
 
