@@ -136,7 +136,7 @@ var mainComponent = {
                                             ])
                                             :
                                             '',
-                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
+                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                             m('a.dropdown-item', {
                                                 href: `/deploy/${study.id}`,
                                                 config: m.route
@@ -152,7 +152,7 @@ var mainComponent = {
                                             m('a.dropdown-item', {
                                                 href: `/collaboration/${study.id}`,
                                                 config: m.route
-                                            }, 'Collaborations')
+                                            }, 'Add a Collaborator')
                                         ]})
                                     ])
                                 ])

@@ -428,7 +428,7 @@
                                                 ])
                                                 :
                                                 '',
-                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'More', elements: [
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 m('a.dropdown-item', {
                                                     href: ("/deploy/" + (study.id)),
                                                     config: m.route
@@ -444,7 +444,7 @@
                                                 m('a.dropdown-item', {
                                                     href: ("/collaboration/" + (study.id)),
                                                     config: m.route
-                                                }, 'Collaborations')
+                                                }, 'Add a Collaborator')
                                             ]})
                                         ])
                                     ])
@@ -458,99 +458,6 @@
     };
 
     function routeConfig(el, isInit, ctx, vdom) {
-
-        el.href = location.pathname + '?' + vdom.attrs.href;
-
-        if (isInit) el.addEventListener('click', route);
-
-        function route(e){
-            if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
-
-            e.preventDefault();
-            if (e.target !== el) return;
-
-            m.route(el.search.slice(1));
-        }
-    }
-
-    var mainComponent$1 = {
-        controller: function(){
-            var ctrl = {
-                studies:m.prop([]),
-                error:m.prop(''),
-                study_name:m.prop(''),
-                user_name:m.prop(''),
-                loaded:false
-            };
-            load();
-            return {ctrl: ctrl};
-            function load() {
-                fetch('/dashboard/dashboard/studies/0/shared_with_me', {credentials: 'same-origin'})
-                    .then(checkStatus)
-                    .then(toJSON)
-                    .then(function ( response ) { return response.studies.sort(sortStudies); })
-                    .then(ctrl.studies)
-                    .then(function () { return ctrl.loaded = true; })
-                    .then(m.redraw);
-
-                function sortStudies(study1, study2){
-                    return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
-                }
-            }
-        },
-        view: function view(ref){
-            var ctrl = ref.ctrl;
-
-            if (!ctrl.loaded) return m('.loader');
-            return m('.container.studies', [
-                m('.row', [
-                    m('.col-sm-6', [
-                        m('h3', 'Shared with me')
-                    ]),
-
-                ]),
-                m('.card.studies-card', [
-                    m('.card-block', [
-                        m('.row', [
-                            m('.col-sm-3', [
-                                m('strong','Study Name')
-                            ])
-                        ]),
-                        ctrl.studies().map(function ( study ) { return m('.row.study-row', [
-                            m('a', {href: ("/editor/" + (study.id)),config:routeConfig$1}, [
-                                m('.col-sm-3', [
-                                    m('.study-text', study.name)
-                                ]),
-                                m('.col-sm-9', [
-                                    m('.btn-toolbar.pull-right', [
-                                        m('.btn-group.btn-group-sm', [
-
-                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                m('a.dropdown-item', {
-                                                    href: ("/deploy/" + (study.id)),
-                                                    config: m.route
-                                                }, 'Request Deploy'),
-                                                m('a.dropdown-item', {
-                                                    href: ("/studyChangeRequest/" + (study.id)),
-                                                    config: m.route
-                                                }, 'Request Change request'),
-                                                m('a.dropdown-item', {
-                                                    href: ("/studyRemoval/" + (study.id)),
-                                                    config: m.route
-                                                }, 'Request Removal')
-                                            ]})
-                                        ])
-                                    ])
-                                ])
-                            ])
-                        ]); })
-                    ])
-                ])
-            ]);
-        }
-    };
-
-    function routeConfig$1(el, isInit, ctx, vdom) {
 
         el.href = location.pathname + '?' + vdom.attrs.href;
 
@@ -6260,10 +6167,10 @@
                                     ctrl.error(error.message);
                                 })
                                 .then(m.redraw);
-                    })
+                    });
             }
             function do_add_collaboration(){
-                messages.prompt({header:'New collaboration', content:m('p', [m('p', 'Enter user Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+                messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
                     .then(function ( response ) {
                         if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name)
                             .then(function () {
@@ -6330,8 +6237,6 @@
         '/login': loginComponent,
         '/studies' : mainComponent,
         '/studies/statistics' : statisticsComponent,
-        '/studies/shared_with_me' : mainComponent$1,
-
         '/editor/:studyId': editorLayoutComponent,
         '/editor/:studyId/:resource/:fileID': editorLayoutComponent,
         '/pool': poolComponent,

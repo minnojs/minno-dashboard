@@ -35,7 +35,7 @@ let collaborationComponent = {
                 });
         }
         function do_add_collaboration(){
-            messages.prompt({header:'New collaboration', content:m('p', [m('p', 'Enter user Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+            messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
                 .then(response => {
                     if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name)
                         .then(()=>{
