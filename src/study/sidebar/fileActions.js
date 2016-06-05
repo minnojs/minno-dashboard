@@ -79,9 +79,9 @@ export let save = file => () => {
         }));
 };
 
-export let copyUrl = file => () => {
+export let copyUrl = url => () => {
     let input = document.createElement('input');
-    input.value = file.url;
+    input.value = url;
     document.body.appendChild(input);
     input.select();
     if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
@@ -92,7 +92,7 @@ export let copyUrl = file => () => {
                     m('label', 'Copy Url by clicking Ctrl + C'),
                     m('input.form-control', {
                         config: el => el.select(),
-                        value: file.url
+                        value: url
                     })
                 ])
             ])

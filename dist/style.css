@@ -209,6 +209,7 @@ h1, h2, h3, h4, h5 {
   transform: translateY(-50%); }
 
 .context-menu-item:hover > .context-menu-btn {
+  text-decoration: none;
   color: #fff;
   outline: none;
   background-color: #2E3940;

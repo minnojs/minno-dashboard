@@ -1380,9 +1380,9 @@
             }); });
     }; };
 
-    var copyUrl = function ( file ) { return function () {
+    var copyUrl = function ( url ) { return function () {
         var input = document.createElement('input');
-        input.value = file.url;
+        input.value = url;
         document.body.appendChild(input);
         input.select();
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
@@ -1393,7 +1393,7 @@
                         m('label', 'Copy Url by clicking Ctrl + C'),
                         m('input.form-control', {
                             config: function ( el ) { return el.select(); },
-                            value: file.url
+                            value: url
                         })
                     ])
                 ])
@@ -2929,15 +2929,25 @@
     };
 
     var menuNode = function (node, key) {
-        return node.separator
-            ? m('.context-menu-separator', {key:key})
-            : m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu, key: key})}, [
-                m('button.context-menu-btn',{onmousedown: node.disabled || node.action}, [
-                    m('i.fa', {class:node.icon}),
-                    m('span.context-menu-text', node.text)
-                ]),
-                node.menu ? m('.context-menu', node.menu.map(menuNode)) : ''
-            ]);
+        if (!node) return '';
+        if (node.separator) return m('.context-menu-separator', {key:key});
+
+        var action = node.action;
+        if (node.href && !action) action = openTab;
+        if (node.disabled) action = null;
+        
+        return m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu, key: key})}, [
+            m('button.context-menu-btn',{onmousedown: action}, [
+                m('i.fa', {class:node.icon}),
+                m('span.context-menu-text', node.text)
+            ]),
+            node.menu ? m('.context-menu', node.menu.map(menuNode)) : ''
+        ]);
+
+        function openTab(){
+            var win = window.open(node.href, '_blank');
+            win.focus();
+        }
     };
 
     // add trailing slash if needed, and then remove proceeding slash
@@ -3018,6 +3028,7 @@
 
     var fileContext = function (file, study) {
         var path = file.isDir ? file.path : file.basePath;
+        var isExpt = /\.expt\.xml$/.test(file.name);
         var menu = [
             // {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
@@ -3030,8 +3041,9 @@
             {separator:true},
             {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
             {icon:'fa-download', text:'Download', action: downloadFile},
-            {icon:'fa-link', text: 'Copy URL', action: copyUrl(file)},
-
+            {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
+            isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit\//, ''))), text:'Play this task'} : '',
+            isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit\//, ''))))} : '',
             {icon:'fa-close', text:'Delete', action: deleteFile},
             {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
         ];

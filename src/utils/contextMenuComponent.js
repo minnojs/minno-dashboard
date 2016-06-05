@@ -54,13 +54,23 @@ let contextMenuComponent = {
 };
 
 let menuNode = (node, key) => {
-    return node.separator
-        ? m('.context-menu-separator', {key:key})
-        : m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu, key: key})}, [
-            m('button.context-menu-btn',{onmousedown: node.disabled || node.action}, [
-                m('i.fa', {class:node.icon}),
-                m('span.context-menu-text', node.text)
-            ]),
-            node.menu ? m('.context-menu', node.menu.map(menuNode)) : ''
-        ]);
+    if (!node) return '';
+    if (node.separator) return m('.context-menu-separator', {key:key});
+
+    let action = node.action;
+    if (node.href && !action) action = openTab;
+    if (node.disabled) action = null;
+    
+    return m('.context-menu-item', {class: classNames({disabled: node.disabled, submenu:node.menu, key: key})}, [
+        m('button.context-menu-btn',{onmousedown: action}, [
+            m('i.fa', {class:node.icon}),
+            m('span.context-menu-text', node.text)
+        ]),
+        node.menu ? m('.context-menu', node.menu.map(menuNode)) : ''
+    ]);
+
+    function openTab(){
+        let win = window.open(node.href, '_blank');
+        win.focus();
+    }
 };

@@ -55,6 +55,7 @@
 }
 
 .context-menu-text { margin-left: 25px; }
+  
 
 .context-menu-btn .fa {
   position: absolute;
@@ -65,6 +66,7 @@
 }
 
 .context-menu-item:hover > .context-menu-btn {
+  text-decoration:none;
   color: #fff;
   outline: none;
   background-color: #2E3940;
