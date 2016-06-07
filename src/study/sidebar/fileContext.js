@@ -10,6 +10,7 @@ let downloadSupport = !window.externalHost && 'download' in document.createEleme
 
 let fileContext = (file, study) => {
     let path = file.isDir ? file.path : file.basePath;
+    let isExpt = /\.expt\.xml$/.test(file.name);
     let menu = [
         // {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
 
@@ -22,8 +23,9 @@ let fileContext = (file, study) => {
         {separator:true},
         {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
         {icon:'fa-download', text:'Download', action: downloadFile},
-        {icon:'fa-link', text: 'Copy URL', action: copyUrl(file)},
-
+        {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
+        isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`, text:'Play this task'} : '',
+        isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`)} : '',
         {icon:'fa-close', text:'Delete', action: deleteFile},
         {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
     ];
@@ -84,4 +86,3 @@ let fileContext = (file, study) => {
         });
     } // end delete file
 };
-

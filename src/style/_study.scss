@@ -1,6 +1,8 @@
 .studies {
     margin-top: 10px;
 
+    &::after {background: $color-primary-2;position:fixed; left:0; top:0; height:100%; width:100%;z-index:-1000;}
+
     .studies-card {
         background: $color-primary-1;
         border-color: $color-primary-1;
@@ -36,6 +38,7 @@
         }
 
         .file-name {
+            color: #818a91;
             font-weight: bold;
             margin: 4px;
             float: left;
@@ -43,7 +46,6 @@
     }
 
     .sidebar {
-        background: $color-primary-1;
         position: fixed;
         width: inherit;
         overflow-y: auto;

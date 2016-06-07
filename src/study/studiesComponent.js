@@ -99,11 +99,9 @@ var mainComponent = {
                 m('.col-sm-6', [
                     m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
                         m('i.fa.fa-plus'), '  Add new study'
-                    ])
-                ]),
-                m('.col-sm-6', [
+                    ]),
 
-                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Show me...', elements: [
+                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Show me...', elements: [
                         m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                         m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
                         m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me')
