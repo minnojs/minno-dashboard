@@ -16,7 +16,7 @@ import addUserComponent from './addUser/addUserComponent';
 import activationComponent from './activation/activationComponent';
 import changePasswordComponent from './changePassword/changePasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
-import collaborationComponent from 'study/collaboration/collaborationComponent';
+import sharingComponent from 'study/sharing/sharingComponent';
 export default routes;
 
 let routes = { 
@@ -40,6 +40,6 @@ let routes = {
     '/pool/history': historyComponent,
     '/downloads': downloadsComponent,
     '/downloadsAccess': downloadsAccessComponent,
-    '/collaboration/:studyId': collaborationComponent
+    '/sharing/:studyId': sharingComponent
 };
 

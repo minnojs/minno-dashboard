@@ -323,7 +323,11 @@
                     ctrl.filtered_studies(ctrl.studies());
                     return;
                 }
-                ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission ===permission; }));
+                if(permission === 'collaboration') {
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission !== 'owner'; }));
+                    return;
+                }
+                ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission === permission; }));
             }
 
             function do_delete(study_id){
@@ -394,7 +398,7 @@
                         dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Show me...', elements: [
                             m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                             m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
-                            m('a.dropdown-item', {onclick:function() {filter_by('collaborate');}}, 'Show only studies shared with me')
+                            m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me')
                         ]})
                     ])
                 ]),
@@ -442,9 +446,9 @@
                                                     config: m.route
                                                 }, 'Request Removal'),
                                                 m('a.dropdown-item', {
-                                                    href: ("/collaboration/" + (study.id)),
+                                                    href: ("/sharing/" + (study.id)),
                                                     config: m.route
-                                                }, 'Add a Collaborator')
+                                                }, 'Sharing')
                                             ]})
                                         ])
                                     ])
@@ -6132,9 +6136,9 @@
         body: {user_id: user_id}
     }); };
 
-    var add_collaboration = function (study_id, user_name) { return fetchJson(collaboration_url(study_id), {
+    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url(study_id), {
         method: 'post',
-        body: {user_name: user_name}
+        body: {user_name: user_name, permission: permission}
     }); };
 
     var TABLE_WIDTH$5 = 8;
@@ -6144,6 +6148,7 @@
             var ctrl = {
                 users:m.prop(),
                 user_name:m.prop(''),
+                permission:m.prop(''),
                 loaded:false,
                 error:m.prop('')
             };
@@ -6170,9 +6175,15 @@
                     });
             }
             function do_add_collaboration(){
-                messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+                messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
+
+                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
+                        m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
+                        m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
+                    ]}),
+                    m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
                     .then(function ( response ) {
-                        if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name)
+                        if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
                             .then(function () {
                                 load();
                             })
@@ -6243,7 +6254,7 @@
         '/pool/history': poolComponent$1,
         '/downloads': downloadsComponent,
         '/downloadsAccess': downloadsAccessComponent,
-        '/collaboration/:studyId': collaborationComponent
+        '/sharing/:studyId': collaborationComponent
     };
 
     var layout = function ( route ) {

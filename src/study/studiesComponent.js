@@ -37,7 +37,11 @@ var mainComponent = {
                 ctrl.filtered_studies(ctrl.studies());
                 return;
             }
-            ctrl.filtered_studies(ctrl.studies().filter(study => study.permission ===permission));
+            if(permission === 'collaboration') {
+                ctrl.filtered_studies(ctrl.studies().filter(study => study.permission !== 'owner'));
+                return;
+            }
+            ctrl.filtered_studies(ctrl.studies().filter(study => study.permission === permission));
         }
 
         function do_delete(study_id){
@@ -102,7 +106,7 @@ var mainComponent = {
                     dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Show me...', elements: [
                         m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                         m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
-                        m('a.dropdown-item', {onclick:function() {filter_by('collaborate');}}, 'Show only studies shared with me')
+                        m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me')
                     ]})
                 ])
             ]),
@@ -150,9 +154,9 @@ var mainComponent = {
                                                 config: m.route
                                             }, 'Request Removal'),
                                             m('a.dropdown-item', {
-                                                href: `/collaboration/${study.id}`,
+                                                href: `/sharing/${study.id}`,
                                                 config: m.route
-                                            }, 'Add a Collaborator')
+                                            }, 'Sharing')
                                         ]})
                                     ])
                                 ])

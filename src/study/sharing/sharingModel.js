@@ -17,7 +17,7 @@ export let remove_collaboration = (study_id, user_id) => fetchJson(collaboration
     body: {user_id: user_id}
 });
 
-export let add_collaboration = (study_id, user_name) => fetchJson(collaboration_url(study_id), {
+export let add_collaboration = (study_id, user_name, permission) => fetchJson(collaboration_url(study_id), {
     method: 'post',
-    body: {user_name}
+    body: {user_name, permission}
 });

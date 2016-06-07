@@ -1,5 +1,6 @@
-import {get_collaborations, remove_collaboration, add_collaboration} from './collaborationModel';
+import {get_collaborations, remove_collaboration, add_collaboration} from './sharingModel';
 import messages from 'utils/messagesComponent';
+import dropdown from 'utils/dropdown';
 
 export default collaborationComponent;
 const TABLE_WIDTH = 8;
@@ -9,6 +10,7 @@ let collaborationComponent = {
         let ctrl = {
             users:m.prop(),
             user_name:m.prop(''),
+            permission:m.prop(''),
             loaded:false,
             error:m.prop('')
         };
@@ -35,9 +37,15 @@ let collaborationComponent = {
                 });
         }
         function do_add_collaboration(){
-            messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+            messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
+
+                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
+                    m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
+                    m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
+                ]}),
+                m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
                 .then(response => {
-                    if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name)
+                    if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
                         .then(()=>{
                             load();
                         })
