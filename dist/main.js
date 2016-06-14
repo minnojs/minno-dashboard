@@ -320,11 +320,16 @@
             }
             function filter_by(permission){
                 if(permission === 'all') {
-                    ctrl.filtered_studies(ctrl.studies());
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return !study.is_public; }));
                     return;
                 }
+                if(permission === 'public') {
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.is_public; }));
+                    return;
+                }
+
                 if(permission === 'collaboration') {
-                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission !== 'owner'; }));
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission !== 'owner'; }).filter(function ( study ) { return !study.is_public; }));
                     return;
                 }
                 ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission === permission; }));
@@ -396,7 +401,8 @@
                         dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Show me...', elements: [
                             m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                             m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
-                            m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me')
+                            m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
+                            m('a.dropdown-item', {onclick:function() {filter_by('public');}}, 'Show only public studies')
                         ]})
                     ])
                 ]),
@@ -430,6 +436,8 @@
                                                 ])
                                                 :
                                                 '',
+                                            study.permission !=='read only' && !study.is_public
+                                            ?
                                             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 m('a.dropdown-item', {
                                                     href: ("/deploy/" + (study.id)),
@@ -448,6 +456,8 @@
                                                     config: m.route
                                                 }, 'Sharing')
                                             ]})
+                                            :
+                                            ''
                                         ])
                                     ])
                                 ])
@@ -6178,8 +6188,8 @@
             function load() {
                 get_collaborations(m.route.param('studyId'))
                     .then(function ( response ) {ctrl.users(response.users);
-                                      ctrl.is_public(response.is_public);
-                                      ctrl.loaded = true;})
+                        ctrl.is_public(response.is_public);
+                        ctrl.loaded = true;})
                     .catch(function ( error ) {
                         throw error;
                     }).then(m.redraw);

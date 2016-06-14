@@ -34,11 +34,16 @@ var mainComponent = {
         }
         function filter_by(permission){
             if(permission === 'all') {
-                ctrl.filtered_studies(ctrl.studies());
+                ctrl.filtered_studies(ctrl.studies().filter(study => !study.is_public));
                 return;
             }
+            if(permission === 'public') {
+                ctrl.filtered_studies(ctrl.studies().filter(study => study.is_public));
+                return;
+            }
+
             if(permission === 'collaboration') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => study.permission !== 'owner'));
+                ctrl.filtered_studies(ctrl.studies().filter(study => study.permission !== 'owner').filter(study => !study.is_public));
                 return;
             }
             ctrl.filtered_studies(ctrl.studies().filter(study => study.permission === permission));
@@ -104,7 +109,8 @@ var mainComponent = {
                     dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Show me...', elements: [
                         m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                         m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
-                        m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me')
+                        m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
+                        m('a.dropdown-item', {onclick:function() {filter_by('public');}}, 'Show only public studies')
                     ]})
                 ])
             ]),
@@ -138,6 +144,8 @@ var mainComponent = {
                                             ])
                                             :
                                             '',
+                                        study.permission !=='read only' && !study.is_public
+                                        ?
                                         dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                             m('a.dropdown-item', {
                                                 href: `/deploy/${study.id}`,
@@ -156,6 +164,8 @@ var mainComponent = {
                                                 config: m.route
                                             }, 'Sharing')
                                         ]})
+                                        :
+                                        ''
                                     ])
                                 ])
                             ])
