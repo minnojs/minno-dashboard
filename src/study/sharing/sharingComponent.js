@@ -1,6 +1,5 @@
 import {get_collaborations, remove_collaboration, add_collaboration, make_pulic} from './sharingModel';
 import messages from 'utils/messagesComponent';
-import dropdown from 'utils/dropdown';
 
 export default collaborationComponent;
 const TABLE_WIDTH = 8;

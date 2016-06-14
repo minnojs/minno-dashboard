@@ -413,8 +413,9 @@
                                 m('strong','Study Name')
                             ])
                         ]),
-                        ctrl.filtered_studies().map(function ( study ) { return m('.row.study-row', [
-                            m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+
+                        ctrl.filtered_studies().map(function ( study ) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+                            m('.row.study-row', [
                                 m('.col-sm-3', [
                                     m('.study-text', study.name)
                                 ]),
