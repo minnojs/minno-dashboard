@@ -184,11 +184,13 @@ function routeConfig(el, isInit, ctx, vdom) {
     if (isInit) el.addEventListener('click', route);
 
     function route(e){
+        let el = e.currentTarget;
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
 
         e.preventDefault();
-        if (e.target !== el) return;
+        if (e.target.tagName === 'A' && e.target !== el) return;
 
         m.route(el.search.slice(1));
     }
 }
+
