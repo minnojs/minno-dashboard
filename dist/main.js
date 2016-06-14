@@ -6132,10 +6132,15 @@
 
 
     function collaboration_url(study_id)
-    {   
+    {
         return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
+
+    function public_url(study_id)
+    {
+        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
+    }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
         method: 'get'
@@ -6146,9 +6151,16 @@
         body: {user_id: user_id}
     }); };
 
+
     var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url(study_id), {
         method: 'post',
         body: {user_name: user_name, permission: permission}
+    }); };
+
+
+    var make_pulic = function (study_id, is_public) { return fetchJson(public_url(study_id), {
+        method: 'post',
+        body: {is_public: is_public}
     }); };
 
     var TABLE_WIDTH$5 = 8;
@@ -6157,6 +6169,7 @@
         controller: function controller(){
             var ctrl = {
                 users:m.prop(),
+                is_public:m.prop(),
                 user_name:m.prop(''),
                 permission:m.prop(''),
                 loaded:false,
@@ -6164,7 +6177,9 @@
             };
             function load() {
                 get_collaborations(m.route.param('studyId'))
-                    .then(function ( response ) {ctrl.users(response.users); ctrl.loaded = true;})
+                    .then(function ( response ) {ctrl.users(response.users);
+                                      ctrl.is_public(response.is_public);
+                                      ctrl.loaded = true;})
                     .catch(function ( error ) {
                         throw error;
                     }).then(m.redraw);
@@ -6203,19 +6218,42 @@
                             }).then(m.redraw);
                     });
             }
+            function do_make_public(is_public){
+                messages.confirm({header:'Are you sure?', content:m('p', [m('p', is_public
+                                                                                    ?
+                                                                                    'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+                                                                                    :
+                                                                                    'Making the study private will hide its files from everyone but you.'),
+                    m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())])})
+                    .then(function ( response ) {
+                        if (response) make_pulic(m.route.param('studyId'), is_public)
+                            .then(function () {
+                                load();
+                            })
+                            .catch(function ( error ) {
+                                ctrl.error(error.message);
+                                do_make_public(is_public);
+                            }).then(m.redraw);
+                    });
+
+            }
             load();
-            return {ctrl: ctrl, remove: remove, do_add_collaboration: do_add_collaboration};
+            return {ctrl: ctrl, remove: remove, do_add_collaboration: do_add_collaboration, do_make_public: do_make_public};
         },
         view: function view(ref){
             var ctrl = ref.ctrl;
             var remove = ref.remove;
             var do_add_collaboration = ref.do_add_collaboration;
+            var do_make_public = ref.do_make_public;
 
             return  !ctrl.loaded
                 ?
                 m('.loader')
                 :
                 m('.container', [
+                    m('div', ['This study is: ', ctrl.is_public() ? 'public' : 'private', ' ',
+                             m('button.btn.btn-secondary', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                    ]),
                     m('h3', 'My collaborations'),
                     m('th.text-xs-center', {colspan:TABLE_WIDTH$5}, [
                         m('button.btn.btn-secondary', {onclick:do_add_collaboration}, [

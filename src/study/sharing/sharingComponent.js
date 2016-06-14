@@ -1,4 +1,4 @@
-import {get_collaborations, remove_collaboration, add_collaboration} from './sharingModel';
+import {get_collaborations, remove_collaboration, add_collaboration, make_pulic} from './sharingModel';
 import messages from 'utils/messagesComponent';
 import dropdown from 'utils/dropdown';
 
@@ -9,6 +9,7 @@ let collaborationComponent = {
     controller(){
         let ctrl = {
             users:m.prop(),
+            is_public:m.prop(),
             user_name:m.prop(''),
             permission:m.prop(''),
             loaded:false,
@@ -16,7 +17,9 @@ let collaborationComponent = {
         };
         function load() {
             get_collaborations(m.route.param('studyId'))
-                .then(response =>{ctrl.users(response.users); ctrl.loaded = true;})
+                .then(response =>{ctrl.users(response.users);
+                    ctrl.is_public(response.is_public);
+                    ctrl.loaded = true;})
                 .catch(error => {
                     throw error;
                 }).then(m.redraw);
@@ -55,15 +58,37 @@ let collaborationComponent = {
                         }).then(m.redraw);
                 });
         }
+        function do_make_public(is_public){
+            messages.confirm({header:'Are you sure?', content:m('p', [m('p', is_public
+                                                                                ?
+                                                                                'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+                                                                                :
+                                                                                'Making the study private will hide its files from everyone but you.'),
+                m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())])})
+                .then(response => {
+                    if (response) make_pulic(m.route.param('studyId'), is_public)
+                        .then(()=>{
+                            load();
+                        })
+                        .catch(error => {
+                            ctrl.error(error.message);
+                            do_make_public(is_public);
+                        }).then(m.redraw);
+                });
+
+        }
         load();
-        return {ctrl, remove, do_add_collaboration};
+        return {ctrl, remove, do_add_collaboration, do_make_public};
     },
-    view({ctrl, remove, do_add_collaboration}){
+    view({ctrl, remove, do_add_collaboration, do_make_public}){
         return  !ctrl.loaded
             ?
             m('.loader')
             :
             m('.container', [
+                m('div', ['This study is: ', ctrl.is_public() ? 'public' : 'private', ' ',
+                         m('button.btn.btn-secondary', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                ]),
                 m('h3', 'My collaborations'),
                 m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
                     m('button.btn.btn-secondary', {onclick:do_add_collaboration}, [
