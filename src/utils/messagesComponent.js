@@ -88,7 +88,7 @@ let messages = {
                 m('h4', opts.header),
                 m('p.card-text', opts.content),
                 m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
+                    m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
                     m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
                 ])
             ];

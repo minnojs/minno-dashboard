@@ -160,7 +160,7 @@
                     m('h4', opts.header),
                     m('p.card-text', opts.content),
                     m('.text-xs-right.btn-toolbar',[
-                        m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
+                        m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
                         m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
                     ])
                 ];
@@ -6183,7 +6183,8 @@
                 user_name:m.prop(''),
                 permission:m.prop(''),
                 loaded:false,
-                error:m.prop('')
+                col_error:m.prop(''),
+                pub_error:m.prop('')
             };
             function load() {
                 get_collaborations(m.route.param('studyId'))
@@ -6204,44 +6205,55 @@
                                     load();
                                 })
                                 .catch(function ( error ) {
-                                    ctrl.error(error.message);
+                                    ctrl.col_error(error.message);
                                 })
                                 .then(m.redraw);
                     });
             }
             function do_add_collaboration(){
-                messages.prompt({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
+                messages.confirm({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
+                    //
+                    // dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
+                    //     m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
+                    //     m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
+                    // ]}),
+                    m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
 
-                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
-                        m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
-                        m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
-                    ]}),
-                    m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.user_name})
+                    m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
+                        m('option',{disabled: true}, 'Permission'),
+                        m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
+                        m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
+                    ]),
+
+                    m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())]), prop: ctrl.user_name})
                     .then(function ( response ) {
-                        if (response) add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
+                        if (response)
+                            add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
                             .then(function () {
+                                ctrl.col_error('');
                                 load();
                             })
                             .catch(function ( error ) {
-                                ctrl.error(error.message);
+                                ctrl.col_error(error.message);
                                 do_add_collaboration();
                             }).then(m.redraw);
                     });
             }
             function do_make_public(is_public){
-                messages.confirm({header:'Are you sure?', content:m('p', [m('p', is_public
+                messages.confirm({okText: ['Yes, Make ', is_public ? 'Public' : 'Private'], cancelText: ['No, keap ', is_public ? 'Private' : 'Public' ], header:'Are you sure?', content:m('p', [m('p', is_public
                                                                                     ?
                                                                                     'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
                                                                                     :
                                                                                     'Making the study private will hide its files from everyone but you.'),
-                    m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())])})
+                    m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
                     .then(function ( response ) {
                         if (response) make_pulic(m.route.param('studyId'), is_public)
                             .then(function () {
+                                ctrl.pub_error('');
                                 load();
                             })
                             .catch(function ( error ) {
-                                ctrl.error(error.message);
+                                ctrl.pub_error(error.message);
                                 do_make_public(is_public);
                             }).then(m.redraw);
                     });
@@ -6261,14 +6273,15 @@
                 m('.loader')
                 :
                 m('.container', [
-                    m('div', ['This study is: ', ctrl.is_public() ? 'public' : 'private', ' ',
-                             m('button.btn.btn-secondary', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
-                    ]),
+
                     m('h3', 'My collaborations'),
-                    m('th.text-xs-center', {colspan:TABLE_WIDTH$5}, [
-                        m('button.btn.btn-secondary', {onclick:do_add_collaboration}, [
+                    m('th.row', {colspan:TABLE_WIDTH$5}, [
+                        m('button.btn.btn-secondary.col-sm-7', {onclick:do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add new collaboration'
-                        ])
+                        ]),
+                        m('button.btn.btn-secondary.col-sm-5', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+
+
                     ]),
                     m('table', {class:'table table-striped table-hover'}, [
                         m('thead', [
