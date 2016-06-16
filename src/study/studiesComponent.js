@@ -182,10 +182,11 @@ function routeConfig(el, isInit, ctx, vdom) {
 
     el.href = location.pathname + '?' + vdom.attrs.href;
 
-    if (isInit) el.addEventListener('click', route);
+    if (!isInit) el.addEventListener('click', route);
 
     function route(e){
         let el = e.currentTarget;
+
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
 
         e.preventDefault();
