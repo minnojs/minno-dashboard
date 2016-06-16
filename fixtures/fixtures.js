@@ -21,6 +21,8 @@ var port = process.env.PORT || 8080;        // set our port
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
+var adminRouter = express.Router();
+var implicitRouter = express.Router();      // get an instance of the express Router
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
@@ -165,13 +167,12 @@ router.route('/files/:studyId/file/:id/move')
         res.json({id:req.body.path, url: req.body.url});
     });
 
-var adminRouter = express.Router();
 adminRouter.route('/studyData')
     .post((req,res)=> {
-        var i, data = [];
         switch (req.body.action) {
             case 'getAllPoolStudies':
-                for (i=0; i<10; i++){
+                var data = [];
+                for (var i=0; i<10; i++){
                     data.push({
                         studyId:(0|Math.random()*9e6).toString(36),
                         studyUrl:(0|Math.random()*9e6).toString(36),
@@ -192,7 +193,8 @@ adminRouter.route('/studyData')
                 res.json(data);
                 break;
             case 'getLast100PoolUpdates':
-                for (i=0; i<100; i++){
+                var data = [];
+                for (var i=0; i<100; i++){
                     data.push({
                         studyId:(0|Math.random()*9e6).toString(36),
                         newStatus: ['R','P','S'][Math.floor(Math.random()*3)],
@@ -277,13 +279,33 @@ adminRouter.route('/logout')
         res.json(null);
     });
 
-adminRouter.route('/DownloadsAccess')
-    .post((req,res) => res.json([{'creationDate':'2016-04-21T16:31Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.789','canDelete':true,'userId':'201','canApprove':true},{'creationDate':'2016-05-09T14:30Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.123','canDelete':true,'userId':'201','canApprove':true},{'creationDate':'2016-04-21T16:23Z','approved':false,'username':'nonadmin','email':'andydzik@gmail.com','studyId':'test.456','canDelete':true,'userId':'201','canApprove':true}]));
+implicitRouter.route('/PITracking')
+    .post(function(req, res){
+        var firstRow = [];
+        var data = [firstRow];
+        for (var i=0; i<Math.random() * 10 + 1; i++){
+            firstRow.push((0|Math.random()*9e6).toString(36));
+        }
+
+        for (i=0; i<Math.random() * 1000; i++){
+            data.push(firstRow.map(function(){
+                return (0|Math.random()*9e6).toString(36);
+            }));
+        }
+
+        var STATISTICS = data.map(function(row){return row.join(',');}).join('\n');
+        res.send(STATISTICS);
+    });
+
+
+
+
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
+app.use('/implicit', implicitRouter);
 app.use('/implicit/user/yba/wizards', express.static('fixtures/wizards'));
 app.use('/implicit/common/all/js/pip/0.3', express.static('../pip'));
 app.use('/implicit/common/all/js/quest/0.0', express.static('../quest'));

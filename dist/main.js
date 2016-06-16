@@ -487,6 +487,160 @@
         }
     }
 
+    var STATISTICS_URL = '/implicit/PITracking';
+
+    var getStatistics = function ( query ) {
+        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+            .then(function ( response ) {
+                var csv = CSVToArray(response);
+                return {
+                    study: query.study(),
+                    file: response,
+                    headers: csv.shift(),
+                    data: csv,
+                    query: Object.assign(query) // clone the query so that we can get back to it in the future
+                };
+            });
+
+        /**
+         * Parses the query as we build it locally and creates an appropriate post for the server
+         **/
+        function parseQuery(ref){
+            var source = ref.source;
+            var study = ref.study;
+            var task = ref.task;
+            var sortstudy = ref.sortstudy;
+            var sorttask = ref.sorttask;
+            var sortgroup = ref.sortgroup;
+            var sorttime = ref.sorttime;
+            var showEmpty = ref.showEmpty;
+
+            var baseUrl = "" + (location.origin) + "/implicit";
+            var post = {
+                db: source().match(/^(.*?):/)[1], // before colon
+                current: source().match(/:(.*?)$/)[1], // after colon
+                testDB:'newwarehouse',
+                study: study(),
+                task: task(),
+                since:'5/01/2016',
+                until:'6/2/2016',
+                refresh:'no',
+                endTask:'',
+                filter:'',
+                studyc:sortstudy(),
+                taskc:sorttask(),
+                datac:sortgroup(),
+                timec:sorttime() !== 'None',
+                dayc:sorttime() === 'Days',
+                weekc:sorttime() === 'Weeks',
+                monthc:sorttime() === 'Months',
+                yearc:sorttime() === 'Years',
+                method:'3',
+                cpath:'',
+                hpath:'',
+                tasksM:'3',
+                threads:'yes',
+                threadsNum:'1',
+                zero: showEmpty(),
+                curl:("" + baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
+                hurl:("" + baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
+                baseURL:baseUrl
+            };
+            return post;
+        } 
+    };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    function CSVToArray( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+            );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+                ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+
+            }
+
+            var strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                    );
+
+            } else {
+
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    }
+    /* eslint-enable */
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -525,85 +679,74 @@
 
     var pikadayRange = {
         view: function(ctrl, args){
-            return m('.date-range',[
+            return m('.date-range', {config: pikadayRange.config(args)}, [
                 m('.figure', [
                     m('strong','Start Date'),
                     m('br'),
-                    m('.figure', {config:pikadayRange.configStart(args)})
+                    m('.figure')
                 ]),
                 m.trust('&nbsp;'),
                 m('.figure', [
                     m('strong','End Date'),
                     m('br'),
-                    m('.figure', {config:pikadayRange.configEnd(args)})
+                    m('.figure')
                 ])
             ]);
         },
-        configStart: function configStart(ref){
+        config: function config$1(ref){
             var startDate = ref.startDate;
             var endDate = ref.endDate;
 
             return function (element, isInitialized, ctx) {
-                var picker = ctx.picker;
+                var startPicker = ctx.startPicker;
+                var endPicker = ctx.endPicker;
 
-                if (!isInitialized){
-                    picker = ctx.picker = new Pikaday({
-                        maxDate: new Date(),
-                        onSelect: function ( date ) { return startDate(date) && update() || m.redraw(); }
+                if (!isInitialized) setup();
+
+                function setup(){
+                    startPicker = ctx.startPicker = new Pikaday({
+                        onSelect: onSelect(startDate)
                     });
-                    element.appendChild(picker.el);
 
-                    ctx.onunload = picker.destroy.bind(picker);
-                    picker.setDate(startDate());
-                }
-
-                // resset picker date only if the date has changed externaly
-                if (!datesEqual(startDate() ,picker.getDate())){
-                    picker.setDate(startDate(),true);
-                    update();
-                }
-
-                function update(){
-                    picker.setStartRange(startDate());
-                    picker.setEndRange(endDate());
-                    picker.setMaxDate(endDate());
-                }
-            };
-        },
-        configEnd: function configEnd(ref){
-            var startDate = ref.startDate;
-            var endDate = ref.endDate;
-
-            return function (element, isInitialized, ctx) {
-                var picker = ctx.picker;
-
-                if (!isInitialized){
-                    picker = ctx.picker = new Pikaday({
-                        maxDate: new Date(),
-                        onSelect: function ( date ) { return endDate(date) && update() || m.redraw(); }
+                    endPicker = ctx.endPicker = new Pikaday({
+                        onSelect: onSelect(endDate)
                     });
-                    element.appendChild(picker.el);
 
-                    ctx.onunload = picker.destroy.bind(picker);
-                    picker.setDate(endDate());
+                    startPicker.setDate(startDate());
+                    endPicker.setDate(endDate());
+
+                    element.children[0].children[2].appendChild(startPicker.el);
+                    element.children[1].children[2].appendChild(endPicker.el);
+
+                    ctx.onunload = function () {
+                        startPicker.destroy();
+                        endPicker.destroy();
+                    };
                 }
 
-                // resset picker date only if the date has changed externaly
-                if (!datesEqual(endDate() ,picker.getDate())){
-                    picker.setDate(endDate(),true);
-                    update();
-                }
+                function onSelect(prop){
+                    return function ( date ) {
+                        prop(date); // update start/end
 
-                function update(){
-                    picker.setStartRange(startDate());
-                    picker.setEndRange(endDate());
-                    picker.setMinDate(startDate());
+                        startPicker.setDate(startDate(),true);
+                        endPicker.setDate(endDate(),true);
+                        update();
+
+                        m.redraw();
+
+                        function update(){
+                            startPicker.setStartRange(startDate());
+                            startPicker.setEndRange(endDate());
+                            endPicker.setStartRange(startDate());
+                            endPicker.setEndRange(endDate());
+                            startPicker.setMaxDate(endDate());
+                            endPicker.setMinDate(startDate());
+                        }
+                    };
                 }
             };
         }
     };
-
-    var datesEqual = function (date1, date2) { return date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime(); };
 
     var inputWrapper = function (view) { return function (ctrl, args) {
         var isValid = !ctrl.validity || ctrl.validity();
@@ -878,60 +1021,213 @@
     var radioInput = function ( args ) { return m.component(selectInputComponent$1, args); };
     var arrayInput = arrayInput$1;
 
-    var statisticsComponent = {
+    var statisticsForm = function ( args ) { return m.component(statisticsFormComponent, args); };
+    var SOURCES = {
+        'Research pool - Current studies'   : 'Research:Current',
+        'Research pool - Past studies'      : 'Research:History',
+        'Research pool - All studies'       : 'Research:Any',
+        'Demo studies'                      : 'Demo:Any',
+        'All studies'                       : 'Both:Any'
+    };
+
+    var statisticsFormComponent = {
         controller: function controller(){
             var form = formFactory();
-            var vars = {
+
+            return {form: form};
+        },
+        view: function view(ref, ref$1){
+            var form = ref.form;
+            var query = ref$1.query;
+
+            return m('.row', [
+                m('.col-sm-6', [
+                    //sourceComponent({label:'Source', studyType: query.studyType, studyDb: query.studyDb, form}),
+                    selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form}),
+                    textInput({label:'Study', prop: query.study , form: form}),
+                    textInput({label:'Task', prop: query.task , form: form}),
+                    m('.form-group.row', [
+                        m('.col-sm-2', [
+                            m('label.form-control-label', 'Categories')
+                        ]),
+                        m('.col-sm-10.pull-right', [
+                            m('.btn-group.btn-group-sm', [
+                                button(query.sortstudy, 'Study'),
+                                button(query.sorttask, 'Task'),
+                                m('button.btn.btn-secondary', {class: query.sorttime() !== 'None' ? 'active' : ''}, 'Time'),
+                                m('.info-box', [
+                                    m('.card', [
+                                        m('.card-header', 'Time filter'),
+                                        m('.card-block.c-inputs-stacked', [
+                                            radioButton(query.sorttime, 'None'),
+                                            radioButton(query.sorttime, 'Days'),
+                                            radioButton(query.sorttime, 'Weeks'),
+                                            radioButton(query.sorttime, 'Months'),
+                                            radioButton(query.sorttime, 'Years')
+                                        ])
+                                    ])
+                                ]),
+                                button(query.sortgroup, 'Data Group'),
+                                button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                            ])
+                        ])
+                    ]),
+                    m('.form-group.row', [
+                        m('.col-sm-2', [
+                            m('label.form-control-label', 'Compute completions')
+                        ]),
+                        m('.col-sm-10.pull-right', [
+                            m('.btn-group.btn-group-sm', [
+                                m('.form-inline', [
+                                    m('.form-group', [
+                                        m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)}),
+                                        m('label', 'to'),
+                                        m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ])
+                ]),
+                m('.col-sm-6', [
+                    dateRangePicker({startDate:query.startDate, endDate: query.endDate})
+                ])
+            ]);
+        
+        
+        }
+    };
+
+    var button = function (prop, text, title) {
+        if ( title === void 0 ) title = '';
+
+        return m('a.btn.btn-secondary', {
+        class: prop() ? 'active' : '',
+        onclick: function () { return prop(!prop()); },
+        title: title
+    }, text);
+    };
+
+    var radioButton = function (prop, text) { return m('label.c-input.c-radio', [
+        m('input.form-control[type=radio]', {
+            onclick: prop.bind(null, text),
+            checked: prop() == text
+        }),
+        m('span.c-indicator'),
+        text
+    ]); };
+
+    function sortTable(listProp, sortByProp) {
+        return function(e) {
+            var prop = e.target.getAttribute('data-sort-by');
+            var list = listProp();
+            if (prop) {
+                if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
+                var first = list[0];
+                list.sort(function(a, b) {
+                    return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
+                });
+                if (first === list[0]) list.reverse();
+            }
+        };
+    }
+
+    var statisticsTable = function ( args ) { return m.component(statisticsTableComponent, args); };
+
+    var statisticsTableComponent = {
+        controller: function controller(){
+            return {sortBy: m.prop()};
+        },
+        view: function view(ref, ref$1){
+            var sortBy = ref.sortBy;
+            var tableContent = ref$1.tableContent;
+
+            var content = tableContent();
+            if (!content) return m('.row'); 
+
+            var list = m.prop(content.data);
+            
+            return m('.row.m-t-1', [
+                m('.col-sm-12', [
+                    m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
+                        m('thead', [
+                            m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
+                        ]),
+                        m('tbody', tableContent().data.map(function ( row ) { return m('tr', row.map(function ( column ) { return m('td', column); })); }))
+                    ])
+                ])
+            ]);
+        }
+    };
+
+    var statisticsInstructions = function () { return m('.text-muted', [
+        m('p', 'Choose whether you want participation data from the demo site, the research site, or both. You can also choose "current" (to get participation data from those studies that are in the pool right now), "history" (to get data from studies that have ever been in the research pool), or "any" (to get data from all research studies, regardless of whether or not they have ever been in the pool).'),
+        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies within your specified time period.'),
+        m('p', 'You can also enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks. You can also choose how you want the data displayed. If you click "Study", you will see data from any study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated out by task. The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.'),
+        m('p', 'You can define how completion rate is calculated by setting "start" and "completed". Only studies that visited those tasks would be used in the calculation.')
+    ]); };
+
+    var statisticsComponent = {
+        controller: function controller(){
+            var displayHelp = m.prop(false);
+            var tableContent = m.prop();
+            var query = {
+                source: m.prop('Research:Current'),
                 startDate: m.prop(new Date()),
                 endDate: m.prop(new Date()),
                 study: m.prop(''),
                 task: m.prop(''),
                 studyType: m.prop('Both'),
-                studydb: m.prop('Any')
+                studydb: m.prop('Any'),
+                sortstudy: m.prop(false),
+                sorttask: m.prop(false),
+                sortgroup: m.prop(false),
+                sorttime: m.prop('None'),
+                showEmpty: m.prop(false),
+                firstTask: m.prop(''),
+                lastTask: m.prop('')
             };
 
-            return {form: form, vars: vars};
+            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent};
+
+            function submit(){
+                getStatistics(query)
+                    .then(tableContent)
+                    .then(m.redraw);
+            }
         },
         view: function (ref) {
-            var form = ref.form;
-            var vars = ref.vars;
+            var query = ref.query;
+            var tableContent = ref.tableContent;
+            var submit = ref.submit;
+            var displayHelp = ref.displayHelp;
 
-            return m('.statistics', [
-            
+            return m('.container.statistics', [
             m('h3', 'Statistics'),
             m('.row', [
-                m('.col-sm-5', [
-                    m.component(sourceComponent, {label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form: form}),
-                    textInput({label:'Study', prop: vars.study , form: form}),
-                    textInput({label:'Task', prop: vars.task , form: form})
-                ]),
-                m('.col-sm-7', [
-                    dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})
+                statisticsForm({query: query})
+            ]),
+            m('.row', [
+                m('.col-sm-12',[
+                    m('button.btn.btn-secondary.btn-sm', {onclick: function () { return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
+                    m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                    !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(("" + (tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
                 ])
+            ]),
+            !displayHelp() ? '' : m('.row', [
+                m('.col-sm-12.p-a-2', statisticsInstructions())
+            ]),
+            m('.row', [
+                statisticsTable({tableContent: tableContent})
             ])
         ]);
         }
     };
 
-    var STUDYTYPES = ['Research', 'Demo', 'Both'];
-    var STUDYDBS = ['Any', 'Current', 'History'];
-    var sourceComponent = {
-        view: inputWrapper(function (ctrl, ref) {
-            var studyType = ref.studyType;
-            var studyDb = ref.studyDb;
-
-            return m('.form-inline', [
-                m('select.c-select', {
-                    onchange: m.withAttr('value', studyType)
-                }, STUDYTYPES.map(function ( key ) { return m('option', {value:key, selected: key === studyType()},key); })),
-                studyType() !== 'Research' 
-                    ? ''
-                    : m('select.c-select', {
-                        onchange: m.withAttr('value', studyDb)
-                    }, STUDYDBS.map(function ( key ) { return m('option', {value:key},key); }))
-            ]);
-        })
-    };
+    var downloadFile = function (filename, text) { return function ( element ) {
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+    }; };
 
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
@@ -3872,21 +4168,6 @@
         }
     }
 
-    function sortTable(listProp, sortByProp) {
-        return function(e) {
-            var prop = e.target.getAttribute('data-sort-by');
-            var list = listProp();
-            if (prop) {
-                if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
-                var first = list[0];
-                list.sort(function(a, b) {
-                    return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
-                });
-                if (first === list[0]) list.reverse();
-            }
-        };
-    }
-
     function formatDate(date){
         var pad = function ( num ) { return num < 10 ? '0' + num : num; };
         return ("" + (pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
@@ -3985,17 +4266,19 @@
                                     m('td', [
                                         study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
                                         m('i.fa.fa-info-circle'),
-                                        m('.card.info-box', [
-                                            m('.card-header', 'Completion Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Target Completions: '), study.targetCompletions
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Started Sessions: '), study.startedSessions
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Completed Sessions: '), study.completedSessions
+                                        m('.info-box', [
+                                            m('.card', [
+                                                m('.card-header', 'Completion Details'),
+                                                m('ul.list-group.list-group-flush',[
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Target Completions: '), study.targetCompletions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Started Sessions: '), study.startedSessions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Completed Sessions: '), study.completedSessions
+                                                    ])
                                                 ])
                                             ])
                                         ])
@@ -4544,17 +4827,19 @@
                                         formatDate(new Date(download.creationDate)),
                                         '  ',
                                         m('i.fa.fa-info-circle'),
-                                        m('.card.info-box', [
-                                            m('.card-header', 'Creation Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                        m('.info-box', [
+                                            m('.card', [
+                                                m('.card-header', 'Creation Details'),
+                                                m('ul.list-group.list-group-flush',[
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                                    ])
                                                 ])
                                             ])
                                         ])

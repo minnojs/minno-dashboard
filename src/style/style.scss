@@ -12,22 +12,6 @@ $color-primary-4: #2E76A1;
 
 $navbar-height: 54px;
 
-$navbar-color: $color-primary-3;
-.navbar-dark.navbar {
-    background: $navbar-color;
-    .nav-link {
-        color: mix(white, $navbar-color, 90%);
-        &:hover {color: mix(white, $navbar-color, 50%);}
-
-        &.active {
-            // doesn't work maybe??
-            background: mix(black, $navbar-color, 30%);
-        }
-    }
-    //background: #2882b5;
-    .is-iframe & {display:none}
-}
-
 .main-content {
 	padding-top: $navbar-height;
 	.is-iframe & {margin-top:0}
@@ -47,14 +31,14 @@ h1, h2, h3, h4, h5 {font-weight: 300}
 
 .info-box {
 	display: none;
+	position: absolute;
 	border-color: #818A91;
+	padding-left: 10px; // using margin here does not allow hover to continue into the info-box
+	z-index: 5;
 }
 
-*:hover + .info-box {
-	position: absolute;
+*:hover + .info-box, .info-box:hover {
 	display: inline-block;
-	margin-left: 10px;
-	z-index: 5;
 }
 
 .pool {
@@ -102,6 +86,8 @@ h1, h2, h3, h4, h5 {font-weight: 300}
 
 	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
 }
+
+@import "./navbar";
 @import "./loader";
 @import "./context";
 @import "./files";

@@ -101,17 +101,19 @@ const downloadsComponent = {
                                     formatDate(new Date(download.creationDate)),
                                     '  ',
                                     m('i.fa.fa-info-circle'),
-                                    m('.card.info-box', [
-                                        m('.card-header', 'Creation Details'),
-                                        m('ul.list-group.list-group-flush',[
-                                            m('li.list-group-item', [
-                                                m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
-                                            ]),
-                                            m('li.list-group-item', [
-                                                m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
-                                            ]),
-                                            m('li.list-group-item', [
-                                                m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                    m('.info-box', [
+                                        m('.card', [
+                                            m('.card-header', 'Creation Details'),
+                                            m('ul.list-group.list-group-flush',[
+                                                m('li.list-group-item', [
+                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
+                                                ]),
+                                                m('li.list-group-item', [
+                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
+                                                ]),
+                                                m('li.list-group-item', [
+                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                                ])
                                             ])
                                         ])
                                     ])

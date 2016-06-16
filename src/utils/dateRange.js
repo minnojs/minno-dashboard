@@ -34,76 +34,68 @@ let pikaday = {
 
 let pikadayRange = {
     view: function(ctrl, args){
-        return m('.date-range',[
+        return m('.date-range', {config: pikadayRange.config(args)}, [
             m('.figure', [
                 m('strong','Start Date'),
                 m('br'),
-                m('.figure', {config:pikadayRange.configStart(args)})
+                m('.figure')
             ]),
             m.trust('&nbsp;'),
             m('.figure', [
                 m('strong','End Date'),
                 m('br'),
-                m('.figure', {config:pikadayRange.configEnd(args)})
+                m('.figure')
             ])
         ]);
     },
-    configStart({startDate, endDate}){
+    config({startDate, endDate}){
         return (element, isInitialized, ctx) => {
-            let picker = ctx.picker;
+            let startPicker = ctx.startPicker;
+            let endPicker = ctx.endPicker;
 
-            if (!isInitialized){
-                picker = ctx.picker = new Pikaday({
-                    maxDate: new Date(),
-                    onSelect: date => startDate(date) && update() || m.redraw()
+            if (!isInitialized) setup();
+
+            function setup(){
+                startPicker = ctx.startPicker = new Pikaday({
+                    onSelect: onSelect(startDate)
                 });
-                element.appendChild(picker.el);
 
-                ctx.onunload = picker.destroy.bind(picker);
-                picker.setDate(startDate());
-            }
-
-            // resset picker date only if the date has changed externaly
-            if (!datesEqual(startDate() ,picker.getDate())){
-                picker.setDate(startDate(),true);
-                update();
-            }
-
-            function update(){
-                picker.setStartRange(startDate());
-                picker.setEndRange(endDate());
-                picker.setMaxDate(endDate());
-            }
-        };
-    },
-    configEnd({startDate, endDate}){
-        return (element, isInitialized, ctx) => {
-            let picker = ctx.picker;
-
-            if (!isInitialized){
-                picker = ctx.picker = new Pikaday({
-                    maxDate: new Date(),
-                    onSelect: date => endDate(date) && update() || m.redraw()
+                endPicker = ctx.endPicker = new Pikaday({
+                    onSelect: onSelect(endDate)
                 });
-                element.appendChild(picker.el);
 
-                ctx.onunload = picker.destroy.bind(picker);
-                picker.setDate(endDate());
+                startPicker.setDate(startDate());
+                endPicker.setDate(endDate());
+
+                element.children[0].children[2].appendChild(startPicker.el);
+                element.children[1].children[2].appendChild(endPicker.el);
+
+                ctx.onunload = () => {
+                    startPicker.destroy();
+                    endPicker.destroy();
+                };
             }
 
-            // resset picker date only if the date has changed externaly
-            if (!datesEqual(endDate() ,picker.getDate())){
-                picker.setDate(endDate(),true);
-                update();
-            }
+            function onSelect(prop){
+                return date => {
+                    prop(date); // update start/end
 
-            function update(){
-                picker.setStartRange(startDate());
-                picker.setEndRange(endDate());
-                picker.setMinDate(startDate());
+                    startPicker.setDate(startDate(),true);
+                    endPicker.setDate(endDate(),true);
+                    update();
+
+                    m.redraw();
+
+                    function update(){
+                        startPicker.setStartRange(startDate());
+                        startPicker.setEndRange(endDate());
+                        endPicker.setStartRange(startDate());
+                        endPicker.setEndRange(endDate());
+                        startPicker.setMaxDate(endDate());
+                        endPicker.setMinDate(startDate());
+                    }
+                };
             }
         };
     }
 };
-
-let datesEqual = (date1, date2) => date1 instanceof Date && date2 instanceof Date && date1.getTime() === date2.getTime();

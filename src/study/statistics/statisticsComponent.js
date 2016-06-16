@@ -1,51 +1,60 @@
-import {dateRangePicker} from 'utils/dateRange';
-import {formFactory, textInput} from 'utils/formHelpers';
-import inputWrapper from 'utils/forms/inputWrapper';
+import {getStatistics} from './statisticsModel';
+import statisticsForm from './statisticsFormComponent';
+import statisticsTable from './statisticsTableComponent';
+import statisticsInstructions from './instructions';
 export default statisticsComponent;
 
 let statisticsComponent = {
     controller(){
-        let form = formFactory();
-        let vars = {
+        let displayHelp = m.prop(false);
+        let tableContent = m.prop();
+        let query = {
+            source: m.prop('Research:Current'),
             startDate: m.prop(new Date()),
             endDate: m.prop(new Date()),
             study: m.prop(''),
             task: m.prop(''),
             studyType: m.prop('Both'),
-            studydb: m.prop('Any')
+            studydb: m.prop('Any'),
+            sortstudy: m.prop(false),
+            sorttask: m.prop(false),
+            sortgroup: m.prop(false),
+            sorttime: m.prop('None'),
+            showEmpty: m.prop(false),
+            firstTask: m.prop(''),
+            lastTask: m.prop('')
         };
 
-        return {form, vars};
+        return {query, submit, displayHelp, tableContent};
+
+        function submit(){
+            getStatistics(query)
+                .then(tableContent)
+                .then(m.redraw);
+        }
     },
-    view: ({form, vars}) => m('.statistics', [
-        
+    view: ({query, tableContent, submit, displayHelp}) => m('.container.statistics', [
         m('h3', 'Statistics'),
         m('.row', [
-            m('.col-sm-5', [
-                m.component(sourceComponent, {label:'Source', studyType: vars.studyType, studyDb: vars.studyDb, form}),
-                textInput({label:'Study', prop: vars.study , form}),
-                textInput({label:'Task', prop: vars.task , form})
-            ]),
-            m('.col-sm-7', [
-                dateRangePicker({startDate:vars.startDate, endDate: vars.endDate})
+            statisticsForm({query})
+        ]),
+        m('.row', [
+            m('.col-sm-12',[
+                m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
+                m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
             ])
+        ]),
+        !displayHelp() ? '' : m('.row', [
+            m('.col-sm-12.p-a-2', statisticsInstructions())
+        ]),
+        m('.row', [
+            statisticsTable({tableContent})
         ])
     ])
 };
 
-const STUDYTYPES = ['Research', 'Demo', 'Both'];
-const STUDYDBS = ['Any', 'Current', 'History'];
-let sourceComponent = {
-    view: inputWrapper((ctrl, {studyType, studyDb}) => {
-        return m('.form-inline', [
-            m('select.c-select', {
-                onchange: m.withAttr('value', studyType)
-            }, STUDYTYPES.map(key => m('option', {value:key, selected: key === studyType()},key))),
-            studyType() !== 'Research' 
-                ? ''
-                : m('select.c-select', {
-                    onchange: m.withAttr('value', studyDb)
-                }, STUDYDBS.map(key => m('option', {value:key},key)))
-        ]);
-    })
+let downloadFile = (filename, text) => element => {
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
 };
