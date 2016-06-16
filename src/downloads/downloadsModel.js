@@ -1,5 +1,5 @@
 import {fetchJson, fetchVoid} from 'utils/modelHelpers';
-const url = '/dashboard/DashboardData';
+import {downloadsUrl as url} from 'modelUrls';
 
 export const STATUS_RUNNING = 'R';
 export const STATUS_COMPLETE = 'C';

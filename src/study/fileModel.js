@@ -1,7 +1,7 @@
 import jshintOptions from './editors/jshintOptions';
 import {fetchVoid, fetchJson} from 'utils/modelHelpers';
+import {fileUrl as baseUrl} from 'modelUrls';
 export default fileFactory;
-let baseUrl = '/dashboard/dashboard';
 
 let filePrototype = {
     apiUrl(){

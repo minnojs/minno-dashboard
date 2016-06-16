@@ -1,6 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
-const baseUrl = '/dashboard/dashboard/studies';
-
+import {studyUrl as baseUrl} from 'modelUrls';
 
 function deploy_url(study_id)
 {   

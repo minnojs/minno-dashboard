@@ -219,7 +219,14 @@
 
     };
 
-    var baseUrl = '/dashboard/dashboard/studies';
+    var urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; // first pathname section with slashes
+
+    var baseUrl   = "" + urlPrefix + "dashboard/studies";
+    var url    = "" + urlPrefix + "StudyData";
+    var baseUrl$1    = "" + urlPrefix + "dashboard";
+    var STATISTICS_URL    = "" + urlPrefix + "PITracking";
+    var url$1    = "" + urlPrefix + "DashboardData";
+    var activation1_url    = "" + urlPrefix + "dashboard/activation";
 
     function get_url(study_id)
     {
@@ -486,8 +493,6 @@
             m.route(el.search.slice(1));
         }
     }
-
-    var STATISTICS_URL = '/implicit/PITracking';
 
     var getStatistics = function ( query ) {
         return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
@@ -1248,11 +1253,9 @@
         predef: ['piGlobal','define','require','requirejs','angular']
     };
 
-    var baseUrl$2 = '/dashboard/dashboard';
-
     var filePrototype = {
         apiUrl: function apiUrl(){
-            return ("" + baseUrl$2 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
+            return ("" + baseUrl$1 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
         get: function get(){
@@ -1419,13 +1422,13 @@
         }
     };
 
-    var baseUrl$1 = '/dashboard/dashboard';
+    var baseUrl$2 = '/dashboard/dashboard';
 
     var studyPrototype = {
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
 
-            return ("" + baseUrl$1 + "/files/" + (encodeURIComponent(this.id)) + "" + path);
+            return ("" + baseUrl$2 + "/files/" + (encodeURIComponent(this.id)) + "" + path);
         },
 
         get: function get(){
@@ -3681,8 +3684,6 @@
         };
     };
 
-    var url = '/dashboard/StudyData';
-
     var STATUS_RUNNING = 'R';
     var STATUS_PAUSED = 'P';
     var STATUS_STOP = 'S';
@@ -4482,8 +4483,6 @@
         ctrl.startDate(d);
         ctrl.endDate(new Date());
     }}, name); };
-
-    var url$1 = '/dashboard/DashboardData';
 
     var STATUS_RUNNING$1 = 'R';
     var STATUS_COMPLETE = 'C';
@@ -5703,12 +5702,9 @@
         }
     };
 
-    var baseUrl$6 = '/dashboard/dashboard/studies';
-
-
     function deploy_url(study_id)
     {   
-        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return ("" + baseUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
 
@@ -6202,8 +6198,6 @@
         };
     }
 
-    var activation1_url = '/dashboard/dashboard/activation';
-
     function apiURL(code)
     {   
         return ("" + activation1_url + "/" + (encodeURIComponent(code)));
@@ -6425,18 +6419,18 @@
         };
     }
 
-    var baseUrl$7 = '/dashboard/dashboard/studies';
+    var baseUrl$6 = '/dashboard/dashboard/studies';
 
 
     function collaboration_url(study_id)
     {
-        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
 
     function public_url(study_id)
     {
-        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
+        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {

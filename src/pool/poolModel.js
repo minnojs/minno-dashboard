@@ -1,5 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
-const url = '/dashboard/StudyData';
+import {poolUrl as url} from 'modelUrls';
 
 export const STATUS_RUNNING = 'R';
 export const STATUS_PAUSED = 'P';

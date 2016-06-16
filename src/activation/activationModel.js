@@ -1,6 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
-
-const activation1_url = '/dashboard/dashboard/activation';
+import {activationUrl as activation1_url} from 'modelUrls';
 
 function apiURL(code)
 {   

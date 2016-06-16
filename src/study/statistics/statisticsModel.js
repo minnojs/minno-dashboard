@@ -1,6 +1,5 @@
 import {fetchText} from 'utils/modelHelpers';
-
-const STATISTICS_URL = '/implicit/PITracking';
+import {statisticsUrl as STATISTICS_URL} from 'modelUrls';
 
 export let getStatistics = query => {
     return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
