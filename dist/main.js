@@ -219,18 +219,13 @@
 
     };
 
-    var urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; // first pathname section with slashes
+    // import {studyUrl as baseUrl} from 'modelUrls';
 
-    var baseUrl   = "" + urlPrefix + "dashboard/studies";
-    var url    = "" + urlPrefix + "StudyData";
-    var baseUrl$1    = "" + urlPrefix + "dashboard";
-    var STATISTICS_URL    = "" + urlPrefix + "PITracking";
-    var url$1    = "" + urlPrefix + "DashboardData";
-    var activation1_url    = "" + urlPrefix + "dashboard/activation";
+    var baseUrl = '/dashboard/dashboard/studies';
 
     function get_url(study_id)
     {
-        return ("" + baseUrl + "/" + (encodeURIComponent(study_id)));
+        return ("/dashboard/dashboard/" + (encodeURIComponent(study_id)));
     }
 
     var create_study = function (ctrl) { return fetchJson(baseUrl, {
@@ -405,7 +400,7 @@
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
-                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Show me...', elements: [
+                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Filter studies', elements: [
                             m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                             m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
                             m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
@@ -429,24 +424,18 @@
                                 m('.col-sm-9', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
-
-                                            study.permission==='owner'
-                                                ?
-                                                m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
-                                                    m('i.fa.fa-remove'), ' Delete'
-                                                ])
-                                                :
-                                                '',
-                                            study.permission==='owner'
-                                                ?
-                                                m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
-                                                    m('i.fa.fa-exchange'), ' Rename'
-                                                ])
-                                                :
-                                                '',
                                             study.permission !=='read only' && !study.is_public
                                             ?
                                             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                study.permission==='owner'
+                                                ?
+                                                [m('a.dropdown-item',
+                                                    {onclick:function() {do_delete(study.id);}},
+                                                    [m('i.fa.fa-remove'), ' Delete']),
+                                                m('a.dropdown-item',
+                                                    {onclick:function() {do_rename(study.id);}},
+                                                        [m('i.fa.fa-exchange'), ' Rename'])]
+                                                :'',
                                                 m('a.dropdown-item', {
                                                     href: ("/deploy/" + (study.id)),
                                                     config: m.route
@@ -454,7 +443,7 @@
                                                 m('a.dropdown-item', {
                                                     href: ("/studyChangeRequest/" + (study.id)),
                                                     config: m.route
-                                                }, 'Request Change request'),
+                                                }, 'Request Change'),
                                                 m('a.dropdown-item', {
                                                     href: ("/studyRemoval/" + (study.id)),
                                                     config: m.route
@@ -462,7 +451,7 @@
                                                 m('a.dropdown-item', {
                                                     href: ("/sharing/" + (study.id)),
                                                     config: m.route
-                                                }, 'Sharing')
+                                                }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                             ]})
                                             :
                                             ''
@@ -494,8 +483,14 @@
         }
     }
 
+    var urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; var url    = "" + urlPrefix + "StudyData";
+    var baseUrl$1    = "" + urlPrefix + "dashboard";
+    var statisticsUrl    = "" + urlPrefix + "PITracking";
+    var url$1    = "" + urlPrefix + "DashboardData";
+    var activation1_url    = "" + urlPrefix + "dashboard/activation";
+
     var getStatistics = function ( query ) {
-        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+        return fetchText(statisticsUrl, {method:'post', body: parseQuery(query)})
             .then(function ( response ) {
                 var csv = CSVToArray(response);
                 return {
@@ -4186,7 +4181,7 @@
                 globalSearch: m.prop(''),
                 sortBy: m.prop(),
                 error: m.prop('')
-            };
+            };f
 
             getAllPoolStudies()
                 .then(ctrl.list)
@@ -5702,9 +5697,12 @@
         }
     };
 
+    // import {studyUrl as baseUrl} from 'modelUrls';
+
+    var baseUrl$6 = '/dashboard/dashboard/studies';
     function deploy_url(study_id)
     {   
-        return ("" + baseUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
 
@@ -5770,9 +5768,8 @@
                 ]),
                 m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                     m('.card-block', visual())
-                ]),
-                m('small.text-muted', (" Consider whether it makes sense for just any person from any country of any age to complete your study. If you want to create restrictions, use the Rules editor"))
-            ]); 
+                ])
+            ]);
         }
     };
 
@@ -5871,13 +5868,13 @@
                     form: form, required:true, isStack:true
                 }),
 
-                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form: form, required:true, isStack:true}),
+                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form: form, required:true}),
 
                 m('h4', 'Participant restrictions'),
                 rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
 
                 m('h4', 'Acceptance checklist'),
-                checkboxInput({description: ['Did you make sure your study-id starts with your user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
+                checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
                 checkboxInput({
                     description: m('span', [ 'This study has been approved by the appropriate IRB ', m('span.text-danger', '*') ]),
                     prop: ctrl.approved_by_irb,
@@ -5886,7 +5883,7 @@
                 }),
                 checkboxInput({
                     description: m('span', [ 'All items on "Study Testing" and "Study Approval" from Project Implicit Study Development Checklist completed (items 9 - 17) ', ASTERIX]),
-                    help: m('span', ['The checklist is available at ', m('a', {href:'http://peoplescience.org/node/105'}, 'http://peoplescience.org/node/105')]),
+                    help: m('span', ['The checklist is available at ', m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'http://peoplescience.org/node/105')]),
                     prop: ctrl.completed_checklist,
                     form: form, isStack:true,
                     required:true
@@ -5898,7 +5895,7 @@
                     required:true,
                     form: form, isStack:true
                 }),
-                checkboxInput({description: ['Did you use a realstart and lastpage task?', ASTERIX], prop: ctrl.realstart, form: form, required:true, isStack:true}),
+                checkboxInput({description: ['I used a realstart and lastpage tasks', ASTERIX], prop: ctrl.realstart, form: form, required:true, isStack:true}),
 
                 radioInput({
                     label:m('span', ['Study approved by a *User Experience* Reviewer (Calvin Lai):', ASTERIX]),
@@ -5911,8 +5908,7 @@
                 }),
 
                 radioInput({
-                    label: m('span', ['Has this study been confirmed for launch?', ASTERIX]),
-                    help: m('span', ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched? The standard email can be found ', m('a', {href:'http://peoplescience.org/node/135'}, 'here'), '.']),
+                    label: m('span', ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched?', ASTERIX]),
                     prop: ctrl.launch_confirmation,
                     values: {
                         'No,this study is mine': 'No,this study is mine',
@@ -6419,18 +6415,18 @@
         };
     }
 
-    var baseUrl$6 = '/dashboard/dashboard/studies';
+    var baseUrl$7 = '/dashboard/dashboard/studies';
 
 
     function collaboration_url(study_id)
     {
-        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
 
     function public_url(study_id)
     {
-        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/public");
+        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
@@ -6461,6 +6457,7 @@
             var ctrl = {
                 users:m.prop(),
                 is_public:m.prop(),
+                study_name:m.prop(),
                 user_name:m.prop(''),
                 permission:m.prop(''),
                 loaded:false,
@@ -6471,6 +6468,7 @@
                 get_collaborations(m.route.param('studyId'))
                     .then(function ( response ) {ctrl.users(response.users);
                         ctrl.is_public(response.is_public);
+                        ctrl.study_name(response.study_name);
                         ctrl.loaded = true;})
                     .catch(function ( error ) {
                         throw error;
@@ -6555,8 +6553,8 @@
                 :
                 m('.container', [
 
-                    m('h3', 'My collaborations'),
-                    m('th.row', {colspan:TABLE_WIDTH$5}, [
+                    m('h3', [ctrl.study_name(), ': Sharing']),
+                    m('th.row.-left', {colspan:TABLE_WIDTH$5}, [
                         m('button.btn.btn-secondary.col-sm-7', {onclick:do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add new collaboration'
                         ]),

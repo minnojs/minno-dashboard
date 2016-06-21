@@ -89,13 +89,13 @@ let deployComponent = {
                 form, required:true, isStack:true
             }),
 
-            textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form, required:true, isStack:true}),
+            textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form, required:true}),
 
             m('h4', 'Participant restrictions'),
             rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
 
             m('h4', 'Acceptance checklist'),
-            checkboxInput({description: ['Did you make sure your study-id starts with your user name', ASTERIX], prop: ctrl.valid_study_name, form, required:true, isStack:true}),
+            checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form, required:true, isStack:true}),
             checkboxInput({
                 description: m('span', [ 'This study has been approved by the appropriate IRB ', m('span.text-danger', '*') ]),
                 prop: ctrl.approved_by_irb,
@@ -104,7 +104,7 @@ let deployComponent = {
             }),
             checkboxInput({
                 description: m('span', [ 'All items on "Study Testing" and "Study Approval" from Project Implicit Study Development Checklist completed (items 9 - 17) ', ASTERIX]),
-                help: m('span', ['The checklist is available at ', m('a', {href:'http://peoplescience.org/node/105'}, 'http://peoplescience.org/node/105')]),
+                help: m('span', ['The checklist is available at ', m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'http://peoplescience.org/node/105')]),
                 prop: ctrl.completed_checklist,
                 form, isStack:true,
                 required:true
@@ -116,7 +116,7 @@ let deployComponent = {
                 required:true,
                 form, isStack:true
             }),
-            checkboxInput({description: ['Did you use a realstart and lastpage task?', ASTERIX], prop: ctrl.realstart, form, required:true, isStack:true}),
+            checkboxInput({description: ['I used a realstart and lastpage tasks', ASTERIX], prop: ctrl.realstart, form, required:true, isStack:true}),
 
             radioInput({
                 label:m('span', ['Study approved by a *User Experience* Reviewer (Calvin Lai):', ASTERIX]),
@@ -129,8 +129,7 @@ let deployComponent = {
             }),
 
             radioInput({
-                label: m('span', ['Has this study been confirmed for launch?', ASTERIX]),
-                help: m('span', ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched? The standard email can be found ', m('a', {href:'http://peoplescience.org/node/135'}, 'here'), '.']),
+                label: m('span', ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched?', ASTERIX]),
                 prop: ctrl.launch_confirmation,
                 values: {
                     'No,this study is mine': 'No,this study is mine',

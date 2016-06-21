@@ -106,7 +106,7 @@ var mainComponent = {
                         m('i.fa.fa-plus'), '  Add new study'
                     ]),
 
-                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Show me...', elements: [
+                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Filter studies', elements: [
                         m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                         m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
                         m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
@@ -130,24 +130,18 @@ var mainComponent = {
                             m('.col-sm-9', [
                                 m('.btn-toolbar.pull-right', [
                                     m('.btn-group.btn-group-sm', [
-
-                                        study.permission==='owner'
-                                            ?
-                                            m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_delete(study.id);}}, [
-                                                m('i.fa.fa-remove'), ' Delete'
-                                            ])
-                                            :
-                                            '',
-                                        study.permission==='owner'
-                                            ?
-                                            m('a.btn.btn-sm.btn-secondary', {onclick:function() {do_rename(study.id);}}, [
-                                                m('i.fa.fa-exchange'), ' Rename'
-                                            ])
-                                            :
-                                            '',
                                         study.permission !=='read only' && !study.is_public
                                         ?
                                         dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                            study.permission==='owner'
+                                            ?
+                                            [m('a.dropdown-item',
+                                                {onclick:function() {do_delete(study.id);}},
+                                                [m('i.fa.fa-remove'), ' Delete']),
+                                            m('a.dropdown-item',
+                                                {onclick:function() {do_rename(study.id);}},
+                                                    [m('i.fa.fa-exchange'), ' Rename'])]
+                                            :'',
                                             m('a.dropdown-item', {
                                                 href: `/deploy/${study.id}`,
                                                 config: m.route
@@ -155,7 +149,7 @@ var mainComponent = {
                                             m('a.dropdown-item', {
                                                 href: `/studyChangeRequest/${study.id}`,
                                                 config: m.route
-                                            }, 'Request Change request'),
+                                            }, 'Request Change'),
                                             m('a.dropdown-item', {
                                                 href: `/studyRemoval/${study.id}`,
                                                 config: m.route
@@ -163,7 +157,7 @@ var mainComponent = {
                                             m('a.dropdown-item', {
                                                 href: `/sharing/${study.id}`,
                                                 config: m.route
-                                            }, 'Sharing')
+                                            }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                         ]})
                                         :
                                         ''

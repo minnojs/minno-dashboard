@@ -33,9 +33,8 @@ let rulesComponent = {
             ]),
             m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                 m('.card-block', visual())
-            ]),
-            m('small.text-muted', ` Consider whether it makes sense for just any person from any country of any age to complete your study. If you want to create restrictions, use the Rules editor`)
-        ]); 
+            ])
+        ]);
     }
 };
 

@@ -17,7 +17,7 @@ let poolComponent = {
             globalSearch: m.prop(''),
             sortBy: m.prop(),
             error: m.prop('')
-        };
+        };f
 
         getAllPoolStudies()
             .then(ctrl.list)

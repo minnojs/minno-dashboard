@@ -9,6 +9,7 @@ let collaborationComponent = {
         let ctrl = {
             users:m.prop(),
             is_public:m.prop(),
+            study_name:m.prop(),
             user_name:m.prop(''),
             permission:m.prop(''),
             loaded:false,
@@ -19,6 +20,7 @@ let collaborationComponent = {
             get_collaborations(m.route.param('studyId'))
                 .then(response =>{ctrl.users(response.users);
                     ctrl.is_public(response.is_public);
+                    ctrl.study_name(response.study_name);
                     ctrl.loaded = true;})
                 .catch(error => {
                     throw error;
@@ -98,8 +100,8 @@ let collaborationComponent = {
             :
             m('.container', [
 
-                m('h3', 'My collaborations'),
-                m('th.row', {colspan:TABLE_WIDTH}, [
+                m('h3', [ctrl.study_name(), ': Sharing']),
+                m('th.row.-left', {colspan:TABLE_WIDTH}, [
                     m('button.btn.btn-secondary.col-sm-7', {onclick:do_add_collaboration}, [
                         m('i.fa.fa-plus'), '  Add new collaboration'
                     ]),
