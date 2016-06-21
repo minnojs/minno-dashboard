@@ -37,6 +37,9 @@ h1, h2, h3, h4, h5 {
   left: 15px;
   top: 24px; }
 
+.dropdown-component {
+  display: inline-block; }
+
 .btn-group > .dropdown-component {
   display: inline-block; }
   .btn-group > .dropdown-component:not(:last-child) > .btn:first-child {
