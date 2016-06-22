@@ -36,6 +36,19 @@ router.get('/studies', (req,res)=>{
     ]});
 });
 
+router.get('/studies/:studyId/collaboration', (req,res)=>{
+    res.json({
+        study_name: 'mystudy',
+        is_public: Math.random() > 0.5,
+        users: [
+            {USERNAME:'asd1', PERMISSION:'owner',USER_ID:1234},
+            {USERNAME:'asd2', PERMISSION:'owner',USER_ID:12},
+            {USERNAME:'qwe2', PERMISSION:'readonly',USER_ID:12342}
+        ]
+    });
+});
+
+
 var files = isMac
     ? [
         {
