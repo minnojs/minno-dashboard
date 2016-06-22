@@ -53,6 +53,10 @@ h1, h2, h3, h4, h5 {
 .checkbox-input-group {
   padding: .375rem .75rem; }
 
+.form-control-sm {
+  padding-top: 4px;
+  padding-bottom: 4px; }
+
 .stringified .pre {
   text-decoration: none;
   white-space: pre; }

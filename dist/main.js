@@ -400,12 +400,22 @@
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
+<<<<<<< HEAD
                         dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Filter studies', elements: [
                             m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
                             m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
                             m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
                             m('a.dropdown-item', {onclick:function() {filter_by('public');}}, 'Show only public studies')
                         ]})
+=======
+                        m('.input-group.pull-right.m-r-1', [
+                            m('select.c-select.form-control.form-control-sm', {onchange: function ( e ) { return filter_by(e.target.value); }}, [
+                                m('option', {value:'all'}, 'Show all my studies'),
+                                m('option', {value:'owner'}, 'Show only studies I created'),
+                                m('option', {value:'collaborate'}, 'Show only studies shared with me')
+                            ])
+                        ])
+>>>>>>> 6f7edf1... fix(studies): use select for filtering studies
                     ])
                 ]),
                 m('.card.studies-card', [

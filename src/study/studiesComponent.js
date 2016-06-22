@@ -34,19 +34,10 @@ var mainComponent = {
         }
         function filter_by(permission){
             if(permission === 'all') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => !study.is_public));
+                ctrl.filtered_studies(ctrl.studies());
                 return;
             }
-            if(permission === 'public') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => study.is_public));
-                return;
-            }
-
-            if(permission === 'collaboration') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => study.permission !== 'owner').filter(study => !study.is_public));
-                return;
-            }
-            ctrl.filtered_studies(ctrl.studies().filter(study => study.permission === permission));
+            ctrl.filtered_studies(ctrl.studies().filter(study => study.permission ===permission));
         }
 
         function do_delete(study_id){
@@ -106,12 +97,13 @@ var mainComponent = {
                         m('i.fa.fa-plus'), '  Add new study'
                     ]),
 
-                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle.pull-right.m-r-1', toggleContent: 'Filter studies', elements: [
-                        m('a.dropdown-item', {onclick:function() {filter_by('all');}}, 'Show all my studies'),
-                        m('a.dropdown-item', {onclick:function() {filter_by('owner');}}, 'Show only studies I created'),
-                        m('a.dropdown-item', {onclick:function() {filter_by('collaboration');}}, 'Show only studies shared with me'),
-                        m('a.dropdown-item', {onclick:function() {filter_by('public');}}, 'Show only public studies')
-                    ]})
+                    m('.input-group.pull-right.m-r-1', [
+                        m('select.c-select.form-control.form-control-sm', {onchange: e => filter_by(e.target.value)}, [
+                            m('option', {value:'all'}, 'Show all my studies'),
+                            m('option', {value:'owner'}, 'Show only studies I created'),
+                            m('option', {value:'collaborate'}, 'Show only studies shared with me')
+                        ])
+                    ])
                 ])
             ]),
             m('.card.studies-card', [
@@ -121,47 +113,43 @@ var mainComponent = {
                             m('strong','Study Name')
                         ])
                     ]),
-
-                    ctrl.filtered_studies().map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig}, [
-                        m('.row.study-row', [
+                    ctrl.filtered_studies().map(study => m('.row.study-row', [
+                        m('a', {href: `/editor/${study.id}`,config:routeConfig}, [
                             m('.col-sm-3', [
                                 m('.study-text', study.name)
                             ]),
                             m('.col-sm-9', [
-                                m('.btn-toolbar.pull-right', [
-                                    m('.btn-group.btn-group-sm', [
-                                        study.permission !=='read only' && !study.is_public
+                                m('.pull-right', [
+                                    study.permission === 'owner'
                                         ?
-                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                            study.permission==='owner'
-                                            ?
-                                            [m('a.dropdown-item',
-                                                {onclick:function() {do_delete(study.id);}},
-                                                [m('i.fa.fa-remove'), ' Delete']),
-                                            m('a.dropdown-item',
-                                                {onclick:function() {do_rename(study.id);}},
-                                                    [m('i.fa.fa-exchange'), ' Rename'])]
-                                            :'',
-                                            m('a.dropdown-item', {
-                                                href: `/deploy/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Deploy'),
-                                            m('a.dropdown-item', {
-                                                href: `/studyChangeRequest/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Change'),
-                                            m('a.dropdown-item', {
-                                                href: `/studyRemoval/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Removal'),
-                                            m('a.dropdown-item', {
-                                                href: `/sharing/${study.id}`,
-                                                config: m.route
-                                            }, [m('i.fa.fa-user-plus'), ' Sharing'])
-                                        ]})
+                                        [
+                                            m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_delete(study.id);}}, [
+                                                m('i.fa.fa-remove'), ' Delete'
+                                            ]),
+                                            m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_rename(study.id);}}, [
+                                                m('i.fa.fa-exchange'), ' Rename'
+                                            ])
+                                        ]
                                         :
-                                        ''
-                                    ])
+                                        '',
+                                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                        m('a.dropdown-item', {
+                                            href: `/deploy/${study.id}`,
+                                            config: m.route
+                                        }, 'Request Deploy'),
+                                        m('a.dropdown-item', {
+                                            href: `/studyChangeRequest/${study.id}`,
+                                            config: m.route
+                                        }, 'Request Change request'),
+                                        m('a.dropdown-item', {
+                                            href: `/studyRemoval/${study.id}`,
+                                            config: m.route
+                                        }, 'Request Removal'),
+                                        m('a.dropdown-item', {
+                                            href: `/collaboration/${study.id}`,
+                                            config: m.route
+                                        }, 'Add a Collaborator')
+                                    ]})
                                 ])
                             ])
                         ])
@@ -176,17 +164,14 @@ function routeConfig(el, isInit, ctx, vdom) {
 
     el.href = location.pathname + '?' + vdom.attrs.href;
 
-    if (!isInit) el.addEventListener('click', route);
+    if (isInit) el.addEventListener('click', route);
 
     function route(e){
-        let el = e.currentTarget;
-
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
 
         e.preventDefault();
-        if (e.target.tagName === 'A' && e.target !== el) return;
+        if (e.target !== el) return;
 
         m.route(el.search.slice(1));
     }
 }
-
