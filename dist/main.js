@@ -470,7 +470,7 @@
         }
     }
 
-    var urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; var url    = "" + urlPrefix + "StudyData";
+    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; var url    = "" + urlPrefix + "StudyData";
     var baseUrl$1    = "" + urlPrefix + "dashboard";
     var statisticsUrl    = "" + urlPrefix + "PITracking";
     var url$1    = "" + urlPrefix + "DashboardData";
