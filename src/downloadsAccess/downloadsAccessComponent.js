@@ -1,6 +1,6 @@
 import {getAllOpenRequests, STATUS_APPROVED, STATUS_SUBMITTED} from './downloadsAccessModel';
 import {play, remove, create, grant, revoke} from './downloadsAccessActions';
-import {getRole} from 'login/authModel';
+import {getAuth} from 'login/authModel';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default downloadsAccessComponent;
@@ -19,8 +19,9 @@ let downloadsAccessComponent = {
             globalSearch: m.prop(''),
             sortBy: m.prop(),
             error: m.prop(''),
-            isAdmin: () => getRole() === 'SU'
+            isAdmin: false
         };
+        getAuth().then((response) => {ctrl.isAdmin = response.role === 'SU';});
 
         getAllOpenRequests()
             .then(ctrl.list)

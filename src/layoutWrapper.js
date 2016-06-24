@@ -1,20 +1,58 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
-import {authorize, isLoggedIn, logout} from 'login/authModel';
+import {getAuth, logout} from 'login/authModel';
 export default layout;
+let timer = 0;
+let countdown = 0;
 
 let layout = route => {
     return {
         controller(){
-            authorize();
+            const ctrl = {
+                isloggedin: false,
+                doLogout,
+                timer:m.prop(0)
+            };
 
-            if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')) 
-                m.route('/login');
+            is_loggedin();
 
-            return {doLogout};
+            function is_loggedin(){
+                getAuth().then((response) => {
+                    ctrl.isloggedin = response.isloggedin;
+                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
+                        m.route('/login');
+
+                    timer = response.timeoutInSeconds;
+                    run_countdown();
+                    m.redraw();
+                });
+            }
+
+            function run_countdown(){
+                clearInterval(countdown);
+                countdown = setInterval(function () {
+                    if(timer<=0)
+                        return;
+                    if(timer<10) {
+                        messages.close();
+                        doLogout();
+                    }
+                    // console.log(timer);
+                    if(timer==70)
+                        messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
+                            .then(response => {
+                                if (!response)
+                                    return doLogout();
+                                return is_loggedin();
+                            });
+                    timer--;
+                }, 1000);
+            }
+            return ctrl;
 
             function doLogout(){
+                clearInterval(countdown);
                 logout().then(() => m.route('/login'));
             }
         },
@@ -48,7 +86,7 @@ let layout = route => {
                             m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                         ]),
                         m('li.nav-item.pull-xs-right',[
-                            isLoggedIn()
+                            ctrl.isloggedin
                                 ?
                                 [
                                     m('button.btn.btn-info', {onclick:ctrl.doLogout}, [

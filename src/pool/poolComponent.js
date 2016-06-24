@@ -1,6 +1,6 @@
 import {getAllPoolStudies, STATUS_PAUSED, STATUS_RUNNING} from './poolModel';
 import {play, pause, remove, edit, create, reset} from './poolActions';
-import {getRole} from 'login/authModel';
+import {getAuth} from 'login/authModel';
 import sortTable from 'utils/sortTable';
 import formatDate from 'utils/formatDate';
 export default poolComponent;
@@ -12,18 +12,18 @@ let poolComponent = {
     controller: () => {
         const ctrl = {
             play, pause, remove, edit, reset, create,
-            canCreate: () => getRole() === 'SU',
+            canCreate: false,
             list: m.prop([]),
             globalSearch: m.prop(''),
             sortBy: m.prop(),
             error: m.prop('')
-        };f
+        };
 
+        getAuth().then((response) => {ctrl.canCreate = response.role === 'SU';});
         getAllPoolStudies()
             .then(ctrl.list)
             .catch(ctrl.error)
             .then(m.redraw);
-
         return ctrl;
     },
     view: ctrl => {
@@ -48,7 +48,7 @@ let poolComponent = {
                                 ])
                             ])
                         ]),
-                        ctrl.canCreate() ? m('tr', [
+                        ctrl.canCreate ? m('tr', [
                             m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
                                 m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
                                     m('i.fa.fa-plus'), '  Add new study'

@@ -1,16 +1,9 @@
 import {fetchJson,fetchVoid} from 'utils/modelHelpers';
 
-const loginUrl = '/dashboard/dashboard/connect';
-const logoutUrl = '/dashboard/dashboard/logout';
+const loginUrl      = '/dashboard/dashboard/connect';
+const logoutUrl     = '/dashboard/dashboard/logout';
+const is_logedinUrl = '/dashboard/dashboard/is_loggedin';
 
-let authorizeState = {};
-
-export let isLoggedIn = () => !!authorizeState.isLoggedin;
-export let getRole = () => authorizeState.role;
-
-export function authorize(){
-    authorizeState = getAuth();
-}
 
 export let login = (username, password) => fetchJson(loginUrl, {
     method: 'post',
@@ -19,12 +12,6 @@ export let login = (username, password) => fetchJson(loginUrl, {
 
 export let logout = () => fetchVoid(logoutUrl, {method:'post'}).then(getAuth);
 
-function getAuth(){
-    var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
-    try {
-        return cookieValue ? JSON.parse(cookieValue) : {};
-    } catch (e) {
-        setTimeout(()=>{throw e;});
-        return {};
-    }
-}
+export let getAuth = () => fetchJson(is_logedinUrl, {
+    method: 'get'
+});

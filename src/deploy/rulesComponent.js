@@ -2,8 +2,8 @@ import messages from 'utils/messagesComponent';
 export default args => m.component(rulesComponent, args);
 
 let rulesComponent = {
-    controller({visual, value, comments}){
-        return {visual, value, edit, remove, addcomments};
+    controller({visual, value, comments, exist_rule_file}){
+        return {visual, value, edit, remove, addcomments, exist_rule_file};
 
         function edit(){
             window.open('../ruletable.html');
@@ -21,7 +21,7 @@ let rulesComponent = {
             });
         }
     },
-    view: ({visual, value, edit, remove}) => {
+    view: ({visual, value, edit, remove, exist_rule_file}) => {
         return m('div', [
             m('btn-toolbar', [
                 m('.btn.btn-secondary.btn-sm', {onclick: edit},  [
@@ -33,7 +33,8 @@ let rulesComponent = {
             ]),
             m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                 m('.card-block', visual())
-            ])
+            ]),
+            exist_rule_file() ? m('small.text-muted', ['You already have rule file with the name ',exist_rule_file(), ', it will overridden by creating a new one by the rule editor.']) : ''
         ]);
     }
 };

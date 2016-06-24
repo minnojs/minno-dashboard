@@ -1,12 +1,10 @@
 import {fetchJson} from 'utils/modelHelpers';
-// import {studyUrl as baseUrl} from 'modelUrls';
+import {studyUrl as baseUrl} from 'modelUrls';
 
-const baseUrl = '/dashboard/dashboard/studies';
 function deploy_url(study_id)
-{   
+{
     return `${baseUrl}/${encodeURIComponent(study_id)}/deploy`;
 }
-
 
 export let get_study_prop = (study_id) => fetchJson(deploy_url(study_id), {
     method: 'get'

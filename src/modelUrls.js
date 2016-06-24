@@ -1,4 +1,4 @@
-const urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; // first pathname section with slashes
+const urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
 export const studyUrl   = `${urlPrefix}dashboard/studies`;
 export const poolUrl    = `${urlPrefix}StudyData`;

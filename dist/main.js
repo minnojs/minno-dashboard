@@ -322,10 +322,19 @@
             }
             function filter_by(permission){
                 if(permission === 'all') {
-                    ctrl.filtered_studies(ctrl.studies());
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return !study.is_public; }));
                     return;
                 }
-                ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission ===permission; }));
+                if(permission === 'public') {
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.is_public; }));
+                    return;
+                }
+
+                if(permission === 'collaboration') {
+                    ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission !== 'owner'; }).filter(function ( study ) { return !study.is_public; }));
+                    return;
+                }
+                ctrl.filtered_studies(ctrl.studies().filter(function ( study ) { return study.permission === permission; }));
             }
 
             function do_delete(study_id){
@@ -392,10 +401,12 @@
                         ]),
 
                         m('.input-group.pull-right.m-r-1', [
-                            m('select.c-select.form-control.form-control-sm', {onchange: function ( e ) { return filter_by(e.target.value); }}, [
+                            m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function ( e ) { return filter_by(e.target.value); }}, [
+                                m('option',{disabled: true}, 'Filter studies'),
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
-                                m('option', {value:'collaborate'}, 'Show only studies shared with me')
+                                m('option', {value:'collaborate'}, 'Show only studies that shared with me'),
+                                m('option', {value:'public'}, 'Show only public studies')
                             ])
                         ])
                     ])
@@ -407,43 +418,47 @@
                                 m('strong','Study Name')
                             ])
                         ]),
-                        ctrl.filtered_studies().map(function ( study ) { return m('.row.study-row', [
-                            m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+
+                        ctrl.filtered_studies().map(function ( study ) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+                            m('.row.study-row', [
                                 m('.col-sm-3', [
                                     m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-9', [
-                                    m('.pull-right', [
-                                        study.permission === 'owner'
+                                    m('.btn-toolbar.pull-right', [
+                                        m('.btn-group.btn-group-sm', [
+                                            study.permission !=='read only' && !study.is_public
                                             ?
-                                            [
-                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_delete(study.id);}}, [
-                                                    m('i.fa.fa-remove'), ' Delete'
-                                                ]),
-                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_rename(study.id);}}, [
-                                                    m('i.fa.fa-exchange'), ' Rename'
-                                                ])
-                                            ]
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                study.permission==='owner'
+                                                ?
+                                                [m('a.dropdown-item',
+                                                    {onclick:function() {do_delete(study.id);}},
+                                                    [m('i.fa.fa-remove'), ' Delete']),
+                                                m('a.dropdown-item',
+                                                    {onclick:function() {do_rename(study.id);}},
+                                                        [m('i.fa.fa-exchange'), ' Rename'])]
+                                                :'',
+                                                m('a.dropdown-item', {
+                                                    href: ("/deploy/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Deploy'),
+                                                m('a.dropdown-item', {
+                                                    href: ("/studyChangeRequest/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Change'),
+                                                m('a.dropdown-item', {
+                                                    href: ("/studyRemoval/" + (study.id)),
+                                                    config: m.route
+                                                }, 'Request Removal'),
+                                                m('a.dropdown-item', {
+                                                    href: ("/sharing/" + (study.id)),
+                                                    config: m.route
+                                                }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                            ]})
                                             :
-                                            '',
-                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                            m('a.dropdown-item', {
-                                                href: ("/deploy/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Deploy'),
-                                            m('a.dropdown-item', {
-                                                href: ("/studyChangeRequest/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Change request'),
-                                            m('a.dropdown-item', {
-                                                href: ("/studyRemoval/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Removal'),
-                                            m('a.dropdown-item', {
-                                                href: ("/collaboration/" + (study.id)),
-                                                config: m.route
-                                            }, 'Add a Collaborator')
-                                        ]})
+                                            ''
+                                        ])
                                     ])
                                 ])
                             ])
@@ -461,17 +476,22 @@
         if (isInit) el.addEventListener('click', route);
 
         function route(e){
+            var el = e.currentTarget;
+
             if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
 
             e.preventDefault();
-            if (e.target !== el) return;
+            if (e.target.tagName === 'A' && e.target !== el) return;
 
             m.route(el.search.slice(1));
         }
     }
 
-    var urlPrefix = location.pathname.match(/^(?=\/)(.*\/|$)/)[1]; var url    = "" + urlPrefix + "StudyData";
-    var baseUrl$1    = "" + urlPrefix + "dashboard";
+    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+
+    var baseUrl$1   = "" + urlPrefix + "dashboard/studies";
+    var url    = "" + urlPrefix + "StudyData";
+    var baseUrl$2    = "" + urlPrefix + "dashboard";
     var statisticsUrl    = "" + urlPrefix + "PITracking";
     var url$1    = "" + urlPrefix + "DashboardData";
     var activation1_url    = "" + urlPrefix + "dashboard/activation";
@@ -1237,7 +1257,7 @@
 
     var filePrototype = {
         apiUrl: function apiUrl(){
-            return ("" + baseUrl$1 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
+            return ("" + baseUrl$2 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
         get: function get(){
@@ -1404,13 +1424,13 @@
         }
     };
 
-    var baseUrl$2 = '/dashboard/dashboard';
+    var baseUrl$3 = '/dashboard/dashboard';
 
     var studyPrototype = {
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
 
-            return ("" + baseUrl$2 + "/files/" + (encodeURIComponent(this.id)) + "" + path);
+            return ("" + baseUrl$3 + "/files/" + (encodeURIComponent(this.id)) + "" + path);
         },
 
         get: function get(){
@@ -4122,17 +4142,10 @@
         return result;
     }, {}); };
 
-    var loginUrl = '/dashboard/dashboard/connect';
-    var logoutUrl = '/dashboard/dashboard/logout';
+    var loginUrl      = '/dashboard/dashboard/connect';
+    var logoutUrl     = '/dashboard/dashboard/logout';
+    var is_logedinUrl = '/dashboard/dashboard/is_loggedin';
 
-    var authorizeState = {};
-
-    var isLoggedIn = function () { return !!authorizeState.isLoggedin; };
-    var getRole = function () { return authorizeState.role; };
-
-    function authorize(){
-        authorizeState = getAuth();
-    }
 
     var login = function (username, password) { return fetchJson(loginUrl, {
         method: 'post',
@@ -4141,15 +4154,9 @@
 
     var logout = function () { return fetchVoid(logoutUrl, {method:'post'}).then(getAuth); };
 
-    function getAuth(){
-        var cookieValue = decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)PiLogin\s*\=\s*([^;]*).*$)|^.*$/, '$1'));
-        try {
-            return cookieValue ? JSON.parse(cookieValue) : {};
-        } catch (e) {
-            setTimeout(function () {throw e;});
-            return {};
-        }
-    }
+    var getAuth = function () { return fetchJson(is_logedinUrl, {
+        method: 'get'
+    }); };
 
     function formatDate(date){
         var pad = function ( num ) { return num < 10 ? '0' + num : num; };
@@ -4163,18 +4170,18 @@
         controller: function () {
             var ctrl = {
                 play: play$1, pause: pause, remove: remove, edit: edit, reset: reset, create: create,
-                canCreate: function () { return getRole() === 'SU'; },
+                canCreate: false,
                 list: m.prop([]),
                 globalSearch: m.prop(''),
                 sortBy: m.prop(),
                 error: m.prop('')
-            };f
+            };
 
+            getAuth().then(function (response) {ctrl.canCreate = response.role === 'SU';});
             getAllPoolStudies()
                 .then(ctrl.list)
                 .catch(ctrl.error)
                 .then(m.redraw);
-
             return ctrl;
         },
         view: function ( ctrl ) {
@@ -4199,7 +4206,7 @@
                                     ])
                                 ])
                             ]),
-                            ctrl.canCreate() ? m('tr', [
+                            ctrl.canCreate ? m('tr', [
                                 m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
                                     m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
                                         m('i.fa.fa-plus'), '  Add new study'
@@ -5292,8 +5299,9 @@
                 globalSearch: m.prop(''),
                 sortBy: m.prop(),
                 error: m.prop(''),
-                isAdmin: function () { return getRole() === 'SU'; }
+                isAdmin: false
             };
+            getAuth().then(function (response) {ctrl.isAdmin = response.role === 'SU';});
 
             getAllOpenRequests()
                 .then(ctrl.list)
@@ -5415,21 +5423,20 @@
 
     var loginComponent = {
         controller: function controller(){
-            var username = m.prop('');
-            var password = m.prop('');
             var ctrl = {
-                username: username,
-                password: password,
-                isLoggedIn: isLoggedIn,
-                error: m.prop(''),
-                login: loginAction
+                username:m.prop(''),
+                password:m.prop(''),
+                isloggedin: false,
+                loginAction: loginAction,
+                error: m.prop('')
             };
-            
+
+            is_loggedin();
 
             return ctrl;
 
             function loginAction(){
-                login(username, password)
+                login(ctrl.username, ctrl.password)
                     .then(function () {
                         m.route('/');
                     })
@@ -5437,12 +5444,19 @@
                         ctrl.error(response.message);
                         m.redraw();
                     })
-                                    ;
+                ;
+            }
+
+            function is_loggedin(){
+                getAuth().then(function (response) {
+                    ctrl.isloggedin = response.isloggedin;
+                    m.redraw();
+                });
             }
         },
         view: function view(ctrl){
             return m('.login.centrify', {config:fullHeight},[
-                isLoggedIn()
+                ctrl.isloggedin
                 ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -5473,7 +5487,7 @@
                             ]),
 
                             ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
+                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
                             m('p.text-center',
                                 m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
                             )
@@ -5489,10 +5503,10 @@
         };
     }
 
-    var baseUrl$3 = '/dashboard/dashboard/deploy_list';
+    var baseUrl$4 = '/dashboard/dashboard/deploy_list';
 
     function get_study_list(){
-        return fetchJson(baseUrl$3);
+        return fetchJson(baseUrl$4);
     }
 
     var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
@@ -5553,11 +5567,11 @@
         }
     };
 
-    var baseUrl$4 = '/dashboard/dashboard/change_request_list';
+    var baseUrl$5 = '/dashboard/dashboard/change_request_list';
 
 
     function get_change_request_list(){
-        return fetchJson(baseUrl$4);
+        return fetchJson(baseUrl$5);
     }
 
     var TABLE_WIDTH$3 = 8;
@@ -5622,10 +5636,10 @@
         }
     };
 
-    var baseUrl$5 = '/dashboard/dashboard/removal_list';
+    var baseUrl$6 = '/dashboard/dashboard/removal_list';
 
     function get_removal_list(){
-        return fetchJson(baseUrl$5);
+        return fetchJson(baseUrl$6);
     }
 
     var TABLE_WIDTH$4 = 8;
@@ -5684,14 +5698,10 @@
         }
     };
 
-    // import {studyUrl as baseUrl} from 'modelUrls';
-
-    var baseUrl$6 = '/dashboard/dashboard/studies';
     function deploy_url(study_id)
-    {   
-        return ("" + baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/deploy");
+    {
+        return ("" + baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
-
 
     var get_study_prop = function (study_id) { return fetchJson(deploy_url(study_id), {
         method: 'get'
@@ -5719,8 +5729,9 @@
             var visual = ref.visual;
             var value = ref.value;
             var comments = ref.comments;
+            var exist_rule_file = ref.exist_rule_file;
 
-            return {visual: visual, value: value, edit: edit, remove: remove, addcomments: addcomments};
+            return {visual: visual, value: value, edit: edit, remove: remove, addcomments: addcomments, exist_rule_file: exist_rule_file};
 
             function edit(){
                 window.open('../ruletable.html');
@@ -5743,6 +5754,7 @@
             var value = ref.value;
             var edit = ref.edit;
             var remove = ref.remove;
+            var exist_rule_file = ref.exist_rule_file;
 
             return m('div', [
                 m('btn-toolbar', [
@@ -5755,7 +5767,8 @@
                 ]),
                 m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
                     m('.card-block', visual())
-                ])
+                ]),
+                exist_rule_file() ? m('small.text-muted', ['You already have rule file with the name ',exist_rule_file(), ', it will overridden by creating a new one by the rule editor.']) : ''
             ]);
         }
     };
@@ -5782,6 +5795,7 @@
                 rulesVisual: m.prop('None'),
                 rulesComments: m.prop(''),
                 rule_file: m.prop(''),
+                exist_rule_file: m.prop(''),
 
                 approved_by_a_reviewer: m.prop(''),
                 zero_unnecessary_files: m.prop(''),
@@ -5800,6 +5814,7 @@
             };
             get_study_prop(m.route.param('studyId'))
                 .then(function ( response ) {
+                    ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
                     ctrl.folder_location(response.folder);
@@ -5858,8 +5873,7 @@
                 textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form: form, required:true}),
 
                 m('h4', 'Participant restrictions'),
-                rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
-
+                rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments, exist_rule_file: ctrl.exist_rule_file}),
                 m('h4', 'Acceptance checklist'),
                 checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
                 checkboxInput({
@@ -6437,8 +6451,6 @@
         body: {is_public: is_public}
     }); };
 
-    var TABLE_WIDTH$5 = 8;
-
     var collaborationComponent = {
         controller: function controller(){
             var ctrl = {
@@ -6477,21 +6489,19 @@
                     });
             }
             function do_add_collaboration(){
-                messages.confirm({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
-                    //
-                    // dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
-                    //     m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
-                    //     m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
-                    // ]}),
-                    m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
-
-                    m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
-                        m('option',{disabled: true}, 'Permission'),
-                        m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
-                        m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
-                    ]),
-
-                    m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())]), prop: ctrl.user_name})
+                messages.confirm({
+                    header:'Add a Collaborator',
+                    content: m.component({view: function () { return m('p', [
+                        m('p', 'Enter collaborator\'s user name:'),
+                        m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
+                        m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
+                            m('option',{disabled: true}, 'Permission'),
+                            m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
+                            m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
+                        ]),
+                        m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
+                    ]); }
+                    })})
                     .then(function ( response ) {
                         if (response)
                             add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
@@ -6540,15 +6550,18 @@
                 :
                 m('.container', [
 
-                    m('h3', [ctrl.study_name(), ': Sharing']),
-                    m('th.row.-left', {colspan:TABLE_WIDTH$5}, [
-                        m('button.btn.btn-secondary.col-sm-7', {onclick:do_add_collaboration}, [
-                            m('i.fa.fa-plus'), '  Add new collaboration'
+                    m('.row',[
+                        m('.col-sm-7', [
+                            m('h3', [ctrl.study_name(), ': Sharing'])
                         ]),
-                        m('button.btn.btn-secondary.col-sm-5', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
-
-
+                        m('.col-sm-5', [
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
+                                m('i.fa.fa-plus'), '  Add new collaboration'
+                            ]),
+                            m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                        ])
                     ]),
+                    
                     m('table', {class:'table table-striped table-hover'}, [
                         m('thead', [
                             m('tr', [
@@ -6594,17 +6607,56 @@
         '/sharing/:studyId': collaborationComponent
     };
 
+    var timer = 0;
+    var countdown = 0;
+
     var layout = function ( route ) {
         return {
             controller: function controller(){
-                authorize();
+                var ctrl = {
+                    isloggedin: false,
+                    doLogout: doLogout,
+                    timer:m.prop(0)
+                };
 
-                if (!isLoggedIn() && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')) 
-                    m.route('/login');
+                is_loggedin();
 
-                return {doLogout: doLogout};
+                function is_loggedin(){
+                    getAuth().then(function (response) {
+                        ctrl.isloggedin = response.isloggedin;
+                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
+                            m.route('/login');
+
+                        timer = response.timeoutInSeconds;
+                        run_countdown();
+                        m.redraw();
+                    });
+                }
+
+                function run_countdown(){
+                    clearInterval(countdown);
+                    countdown = setInterval(function () {
+                        if(timer<=0)
+                            return;
+                        if(timer<10) {
+                            messages.close();
+                            doLogout();
+                        }
+                        // console.log(timer);
+                        if(timer==70)
+                            messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
+                                .then(function ( response ) {
+                                    if (!response)
+                                        return doLogout();
+                                    return is_loggedin();
+                                });
+                        timer--;
+                    }, 1000);
+                }
+                return ctrl;
 
                 function doLogout(){
+                    clearInterval(countdown);
                     logout().then(function () { return m.route('/login'); });
                 }
             },
@@ -6638,7 +6690,7 @@
                                 m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                             ]),
                             m('li.nav-item.pull-xs-right',[
-                                isLoggedIn()
+                                ctrl.isloggedin
                                     ?
                                     [
                                         m('button.btn.btn-info', {onclick:ctrl.doLogout}, [

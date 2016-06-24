@@ -1,24 +1,23 @@
-import {login, isLoggedIn} from './authModel';
+import {login, getAuth} from './authModel';
 import fullHeight from 'utils/fullHeight';
 export default loginComponent;
 
 let loginComponent = {
     controller(){
-        const username = m.prop('');
-        const password = m.prop('');
         const ctrl = {
-            username,
-            password,
-            isLoggedIn,
-            error: m.prop(''),
-            login: loginAction
+            username:m.prop(''),
+            password:m.prop(''),
+            isloggedin: false,
+            loginAction,
+            error: m.prop('')
         };
-        
+
+        is_loggedin();
 
         return ctrl;
 
         function loginAction(){
-            login(username, password)
+            login(ctrl.username, ctrl.password)
                 .then(() => {
                     m.route('/');
                 })
@@ -26,12 +25,19 @@ let loginComponent = {
                     ctrl.error(response.message);
                     m.redraw();
                 })
-                                ;
+            ;
+        }
+
+        function is_loggedin(){
+            getAuth().then((response) => {
+                ctrl.isloggedin = response.isloggedin;
+                m.redraw();
+            });
         }
     },
     view(ctrl){
         return m('.login.centrify', {config:fullHeight},[
-            isLoggedIn()
+            ctrl.isloggedin
             ?
                 [
                     m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -62,7 +68,7 @@ let loginComponent = {
                         ]),
 
                         ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
-                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.login},'Sign in'),
+                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
                         m('p.text-center',
                             m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
                         )

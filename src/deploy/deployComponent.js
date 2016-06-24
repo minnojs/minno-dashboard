@@ -20,6 +20,7 @@ let deployComponent = {
             rulesVisual: m.prop('None'),
             rulesComments: m.prop(''),
             rule_file: m.prop(''),
+            exist_rule_file: m.prop(''),
 
             approved_by_a_reviewer: m.prop(''),
             zero_unnecessary_files: m.prop(''),
@@ -38,6 +39,7 @@ let deployComponent = {
         };
         get_study_prop(m.route.param('studyId'))
             .then(response =>{
+                ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
                 ctrl.researcher_name(response.researcher_name);
                 ctrl.researcher_email(response.researcher_email);
                 ctrl.folder_location(response.folder);
@@ -92,8 +94,7 @@ let deployComponent = {
             textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form, required:true}),
 
             m('h4', 'Participant restrictions'),
-            rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments}),
-
+            rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments, exist_rule_file: ctrl.exist_rule_file}),
             m('h4', 'Acceptance checklist'),
             checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form, required:true, isStack:true}),
             checkboxInput({

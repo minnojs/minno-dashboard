@@ -2,7 +2,6 @@ import {get_collaborations, remove_collaboration, add_collaboration, make_pulic}
 import messages from 'utils/messagesComponent';
 
 export default collaborationComponent;
-const TABLE_WIDTH = 8;
 
 let collaborationComponent = {
     controller(){
@@ -42,21 +41,19 @@ let collaborationComponent = {
                 });
         }
         function do_add_collaboration(){
-            messages.confirm({header:'Add a Collaborator', content:m('p', [m('p', 'Enter collaborator\'s user name:'),
-                //
-                // dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Permission', elements: [
-                //     m('a.dropdown-item', {onclick:function() {ctrl.permission('read only');}}, 'Read only'),
-                //     m('a.dropdown-item', {onclick:function() {ctrl.permission('can edit');}}, 'Can edit')
-                // ]}),
-                m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
-
-                m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
-                    m('option',{disabled: true}, 'Permission'),
-                    m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
-                    m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
-                ]),
-
-                m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())]), prop: ctrl.user_name})
+            messages.confirm({
+                header:'Add a Collaborator',
+                content: m.component({view: () => m('p', [
+                    m('p', 'Enter collaborator\'s user name:'),
+                    m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
+                    m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
+                        m('option',{disabled: true}, 'Permission'),
+                        m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
+                        m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
+                    ]),
+                    m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
+                ])
+                })})
                 .then(response => {
                     if (response)
                         add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
@@ -100,15 +97,18 @@ let collaborationComponent = {
             :
             m('.container', [
 
-                m('h3', [ctrl.study_name(), ': Sharing']),
-                m('th.row.-left', {colspan:TABLE_WIDTH}, [
-                    m('button.btn.btn-secondary.col-sm-7', {onclick:do_add_collaboration}, [
-                        m('i.fa.fa-plus'), '  Add new collaboration'
+                m('.row',[
+                    m('.col-sm-7', [
+                        m('h3', [ctrl.study_name(), ': Sharing'])
                     ]),
-                    m('button.btn.btn-secondary.col-sm-5', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
-
-
+                    m('.col-sm-5', [
+                        m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
+                            m('i.fa.fa-plus'), '  Add new collaboration'
+                        ]),
+                        m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                    ])
                 ]),
+                
                 m('table', {class:'table table-striped table-hover'}, [
                     m('thead', [
                         m('tr', [
