@@ -5855,7 +5855,7 @@
             m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                 m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-                m('h5', ['Rule File: ', 'editor/', m.route.param('studyId') ,'/file/', ctrl.rule_file()])
+                ctrl.rule_file() !='None' ? m('h5', ['Rule File: ', 'editor/', m.route.param('studyId') ,'/file/', ctrl.rule_file()]) : ''
             ])
             :
             m('.deploy.container', [
