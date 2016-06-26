@@ -2007,7 +2007,7 @@
         return {level:'warn', message: message, test:test};
     }
 
-    function error(message, test){
+    function error$1(message, test){
         return {level:'error', message: message, test:test};
     }
 
@@ -2145,16 +2145,16 @@
             if (!interactions) {return;}
 
             if (!Array.isArray(interactions)){
-                return [error('Interactions must be an array.', true)];
+                return [error$1('Interactions must be an array.', true)];
             }
 
             return  interactions.map(function (interaction, index) {
                 return [
-                    !interaction.conditions ? error(("Interaction [" + index + "] must have conditions"), true) : [
-                        error(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function ( c) { return !c.type; }))
+                    !interaction.conditions ? error$1(("Interaction [" + index + "] must have conditions"), true) : [
+                        error$1(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function ( c) { return !c.type; }))
                     ],
-                    !interaction.actions ? error(("Interaction [" + index + "] must have actions"), true) : [
-                        error(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function ( a) { return !a.type; }))
+                    !interaction.actions ? error$1(("Interaction [" + index + "] must have actions"), true) : [
+                        error$1(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function ( a) { return !a.type; }))
                     ]
                 ];
             });
@@ -2170,12 +2170,12 @@
             if (!input) {return;}
 
             if (!Array.isArray(trial.input)){
-                return [error('Input must be an Array', true)];
+                return [error$1('Input must be an Array', true)];
             }
 
             return [
-                error('Input must always have a handle', input.some(function ( i) { return !i.handle; })),
-                error('Input must always have an on attribute', input.some(function ( i) { return !i.on; }))
+                error$1('Input must always have a handle', input.some(function ( i) { return !i.handle; })),
+                error$1('Input must always have an on attribute', input.some(function ( i) { return !i.on; }))
             ];
         }
     }
@@ -5786,6 +5786,7 @@
             var form = formFactory();
             var ctrl = {
                 sent:false,
+                error: m.prop(''),
                 folder_location: m.prop(''),
                 researcher_email: m.prop(''),
                 researcher_name: m.prop(''),
@@ -5831,7 +5832,7 @@
                 form.showValidation(true);
                 if (!form.isValid())
                 {
-                    messages.alert({header:'Error', content:'not valid'});
+                    ctrl.error('Missing parameters');
                     return;
                 }
                 deploy(m.route.param('studyId'), ctrl)
@@ -5839,7 +5840,7 @@
                     ctrl.rule_file(response.rule_file);
                     ctrl.sent = true;
                 })
-                .catch(function ( error ) {
+                .catch(function ( response ) {
                     throw error;
                 })
                 .then(m.redraw);
@@ -5855,7 +5856,7 @@
             m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                 m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-                ctrl.rule_file() !='None' ? m('h5', ['Rule File: ', 'editor/', m.route.param('studyId') ,'/file/', ctrl.rule_file()]) : ''
+                ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: ("/editor/" + (m.route.param('studyId')) + "/file/" + (ctrl.rule_file()) + ".xml"), config: m.route}, ctrl.rule_file())]) : ''
             ])
             :
             m('.deploy.container', [
@@ -5919,6 +5920,7 @@
                 }),
 
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
+                ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
                 m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
             ]);
         }

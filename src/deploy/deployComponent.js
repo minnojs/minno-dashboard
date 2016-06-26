@@ -11,6 +11,7 @@ let deployComponent = {
         let form = formFactory();
         let ctrl = {
             sent:false,
+            error: m.prop(''),
             folder_location: m.prop(''),
             researcher_email: m.prop(''),
             researcher_name: m.prop(''),
@@ -56,7 +57,7 @@ let deployComponent = {
             form.showValidation(true);
             if (!form.isValid())
             {
-                messages.alert({header:'Error', content:'not valid'});
+                ctrl.error('Missing parameters');
                 return;
             }
             deploy(m.route.param('studyId'), ctrl)
@@ -64,7 +65,7 @@ let deployComponent = {
                 ctrl.rule_file(response.rule_file);
                 ctrl.sent = true;
             })
-            .catch(error => {
+            .catch(response => {
                 throw error;
             })
             .then(m.redraw);
@@ -76,7 +77,7 @@ let deployComponent = {
         m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
             m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-            ctrl.rule_file() !='None' ? m('h5', ['Rule File: ', 'editor/', m.route.param('studyId') ,'/file/', ctrl.rule_file()]) : ''
+            ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : ''
         ])
         :
         m('.deploy.container', [
@@ -140,6 +141,7 @@ let deployComponent = {
             }),
 
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
+            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
             m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
         ]);
     }
