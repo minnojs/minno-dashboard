@@ -401,19 +401,12 @@
                         ]),
 
                         m('.input-group.pull-right.m-r-1', [
-<<<<<<< HEAD
                             m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function ( e ) { return filter_by(e.target.value); }}, [
                                 m('option',{disabled: true}, 'Filter studies'),
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
                                 m('option', {value:'collaborate'}, 'Show only studies that shared with me'),
                                 m('option', {value:'public'}, 'Show only public studies')
-=======
-                            m('select.c-select.form-control.form-control-sm', {onchange: function ( e ) { return filter_by(e.target.value); }}, [
-                                m('option', {value:'all'}, 'Show all my studies'),
-                                m('option', {value:'owner'}, 'Show only studies I created'),
-                                m('option', {value:'collaborate'}, 'Show only studies shared with me')
->>>>>>> study
                             ])
                         ])
                     ])
@@ -432,7 +425,6 @@
                                     m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-9', [
-<<<<<<< HEAD
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission !=='read only' && !study.is_public
@@ -467,39 +459,6 @@
                                             :
                                             ''
                                         ])
-=======
-                                    m('.pull-right', [
-                                        study.permission === 'owner'
-                                            ?
-                                            [
-                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_delete(study.id);}}, [
-                                                    m('i.fa.fa-remove'), ' Delete'
-                                                ]),
-                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_rename(study.id);}}, [
-                                                    m('i.fa.fa-exchange'), ' Rename'
-                                                ])
-                                            ]
-                                            :
-                                            '',
-                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                            m('a.dropdown-item', {
-                                                href: ("/deploy/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Deploy'),
-                                            m('a.dropdown-item', {
-                                                href: ("/studyChangeRequest/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Change request'),
-                                            m('a.dropdown-item', {
-                                                href: ("/studyRemoval/" + (study.id)),
-                                                config: m.route
-                                            }, 'Request Removal'),
-                                            m('a.dropdown-item', {
-                                                href: ("/collaboration/" + (study.id)),
-                                                config: m.route
-                                            }, 'Add a Collaborator')
-                                        ]})
->>>>>>> study
                                     ])
                                 ])
                             ])
@@ -1465,9 +1424,6 @@
         }
     };
 
-<<<<<<< HEAD
-    var baseUrl$3 = '/dashboard/dashboard';
-=======
     // download support according to modernizer
     var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
@@ -1486,8 +1442,7 @@
         }
     };
 
-    var baseUrl$1 = '/dashboard/dashboard';
->>>>>>> study
+    var baseUrl$3 = '/dashboard/dashboard';
 
     var studyPrototype = {
         apiURL: function apiURL(path){
@@ -1628,7 +1583,7 @@
             var this$1 = this;
 
             return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
-                .then(function ( response ) { return downloadLink(("" + baseUrl$1 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+                .then(function ( response ) { return downloadLink(("" + baseUrl$3 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
         },
 
         delFiles: function delFiles(files){
@@ -3890,22 +3845,6 @@
             ]);
         }
     };
-
-<<<<<<< HEAD
-    // http://lhorie.github.io/mithril-blog/mapping-view-models.html
-    var viewModelMap = function(signature) {
-        var map = {};
-        return function(key) {
-            if (!map[key]) {
-                map[key] = {};
-                for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
-            }
-            return map[key];
-        };
-    };
-=======
-    var url = '/dashboard/StudyData';
->>>>>>> study
 
     var STATUS_RUNNING = 'R';
     var STATUS_PAUSED = 'P';
