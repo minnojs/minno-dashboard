@@ -8,6 +8,8 @@ export default fileEditorComponent;
 
 let editors = {
     js: textEditor,
+    jsp: textEditor,
+    json: textEditor,
     html: textEditor,
     htm: textEditor,
     jst: textEditor,

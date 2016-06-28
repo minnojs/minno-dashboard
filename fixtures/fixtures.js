@@ -1,4 +1,5 @@
 /* eslint-env node */
+/* eslint no-console: "off"*/
 
 // BASE SETUP
 // =============================================================================
@@ -125,6 +126,8 @@ router.route('/files/:studyId')
     .get((req,res)=>{
         setTimeout(function(){
             res.json({
+                is_readonly: Math.random() < 0.1,
+                study_name: 'Cool name',
                 files: files
             });
         }, 0);
@@ -178,6 +181,12 @@ router.route('/files/:studyId/file/:id/move')
     .put((req, res) => {
         res.json({id:req.body.path, url: req.body.url});
     });
+
+router.route('/files/:studyId/download')
+    .post((req, res)=> res.json({url: '/test/iatSound.js'}));
+
+router.route('/files/:studyId/delete')
+    .delete((req, res) => res.end())
 
 adminRouter.route('/studyData')
     .post((req,res)=> {

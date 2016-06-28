@@ -186,7 +186,7 @@
                             value: prop(),
                             onchange: m.withAttr('value', prop),
                             config: function (element, isInitialized) {
-                                if (!isInitialized) element.focus();
+                                if (!isInitialized) setTimeout(function () { return element.focus(); });
                             }
                         })
                     ]),
@@ -401,12 +401,19 @@
                         ]),
 
                         m('.input-group.pull-right.m-r-1', [
+<<<<<<< HEAD
                             m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function ( e ) { return filter_by(e.target.value); }}, [
                                 m('option',{disabled: true}, 'Filter studies'),
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
                                 m('option', {value:'collaborate'}, 'Show only studies that shared with me'),
                                 m('option', {value:'public'}, 'Show only public studies')
+=======
+                            m('select.c-select.form-control.form-control-sm', {onchange: function ( e ) { return filter_by(e.target.value); }}, [
+                                m('option', {value:'all'}, 'Show all my studies'),
+                                m('option', {value:'owner'}, 'Show only studies I created'),
+                                m('option', {value:'collaborate'}, 'Show only studies shared with me')
+>>>>>>> study
                             ])
                         ])
                     ])
@@ -425,6 +432,7 @@
                                     m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-9', [
+<<<<<<< HEAD
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission !=='read only' && !study.is_public
@@ -459,6 +467,39 @@
                                             :
                                             ''
                                         ])
+=======
+                                    m('.pull-right', [
+                                        study.permission === 'owner'
+                                            ?
+                                            [
+                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_delete(study.id);}}, [
+                                                    m('i.fa.fa-remove'), ' Delete'
+                                                ]),
+                                                m('a.btn.btn-sm.btn-secondary.m-r-1', {onclick:function() {do_rename(study.id);}}, [
+                                                    m('i.fa.fa-exchange'), ' Rename'
+                                                ])
+                                            ]
+                                            :
+                                            '',
+                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                            m('a.dropdown-item', {
+                                                href: ("/deploy/" + (study.id)),
+                                                config: m.route
+                                            }, 'Request Deploy'),
+                                            m('a.dropdown-item', {
+                                                href: ("/studyChangeRequest/" + (study.id)),
+                                                config: m.route
+                                            }, 'Request Change request'),
+                                            m('a.dropdown-item', {
+                                                href: ("/studyRemoval/" + (study.id)),
+                                                config: m.route
+                                            }, 'Request Removal'),
+                                            m('a.dropdown-item', {
+                                                href: ("/collaboration/" + (study.id)),
+                                                config: m.route
+                                            }, 'Add a Collaborator')
+                                        ]})
+>>>>>>> study
                                     ])
                                 ])
                             ])
@@ -1306,7 +1347,7 @@
 
             return fetchJson(this.apiUrl() + "/move/", {
                 method:'put',
-                body: {path: path}
+                body: {path: path, url:this.url}
             })
                 .then(function ( response ) {
                     this$1.id = response.id;
@@ -1424,7 +1465,29 @@
         }
     };
 
+<<<<<<< HEAD
     var baseUrl$3 = '/dashboard/dashboard';
+=======
+    // download support according to modernizer
+    var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
+
+    var downloadLink = function (url, name) {
+        if (downloadSupport){
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            var win = window.open(url, '_blank');
+            win.focus();
+        }
+    };
+
+    var baseUrl$1 = '/dashboard/dashboard';
+>>>>>>> study
 
     var studyPrototype = {
         apiURL: function apiURL(path){
@@ -1439,6 +1502,8 @@
             return fetchJson(this.apiURL())
                 .then(function ( study ) {
                     this$1.loaded = true;
+                    this$1.isReadonly = study.is_readonly;
+                    this$1.name = study.study_name;
                     var files = flattenFiles(study.files)
                         .map(assignStudyId(this$1.id))
                         .map(fileFactory);
@@ -1462,6 +1527,7 @@
                 return function ( f ) { return Object.assign(f, {studyId: id}); };
             }
 
+            // create an array including file and all its children
             function spreadFile(file){
                 return [file].concat(flattenFiles(file.files));
             }
@@ -1471,6 +1537,12 @@
 
         getFile: function getFile(id){
             return this.files().find(function ( f ) { return f.id === id; });
+        },
+
+        getChosenFiles: function getChosenFiles(){
+            var this$1 = this;
+
+            return this.files().filter(function ( file ) { return this$1.vm(file.id).isChosen() === 1; }); // do not include half chosen dirs
         },
 
         createFile: function createFile(ref){
@@ -1552,6 +1624,25 @@
             }
         },
 
+        downloadFiles: function downloadFiles(files){
+            var this$1 = this;
+
+            return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
+                .then(function ( response ) { return downloadLink(("" + baseUrl$1 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+        },
+
+        delFiles: function delFiles(files){
+            var this$1 = this;
+
+            return fetchVoid(this.apiURL(), {method: 'delete', body: {files: files}})
+                .then(function () {
+                    var filesList = this$1.files()
+                        .filter(function ( f ) { return files.indexOf(f.path) === -1; }); // only exact matches here, the choice mechanism takes care of nested folders
+
+                    this$1.files(filesList);
+                });
+        },
+
         del: function del(fileId){
             var this$1 = this;
 
@@ -1562,6 +1653,22 @@
                         .filter(function ( f ) { return f.path.indexOf(file.path) !== 0; }); // all paths that start with the same path are deleted
                     this$1.files(files);
                 });
+        },
+
+        getParents: function getParents(file){
+            return this.files().filter(function ( f ) { return f.isDir && file.basePath.indexOf(f.path) === 0; });
+        },
+
+        // returns array of children for this file, including itself
+        getChildren: function getChildren(file){
+            return children(file);
+           
+            function children(file){
+                if (!file.files) return [file];
+                return file.files
+                    .map(children) // harvest children
+                    .reduce(function (result, files) { return result.concat(files); }, [file]); // flatten
+            }
         }
     };
 
@@ -1571,10 +1678,27 @@
             id      : id,
             files   : m.prop([]),
             loaded  : false,
-            error   :false
+            error   :false,
+            vm      : viewModelMap({
+                isOpen: m.prop(false),
+                isChanged: m.prop(false),
+                isChosen: m.prop(0)
+            })
         });
 
         return study;
+    };
+
+    // http://lhorie.github.io/mithril-blog/mapping-view-models.html
+    var viewModelMap = function(signature) {
+        var map = {};
+        return function(key) {
+            if (!map[key]) {
+                map[key] = {};
+                for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
+            }
+            return map[key];
+        };
     };
 
     var fullHeight = function (element, isInitialized, ctx) {
@@ -1785,6 +1909,51 @@
     };
     };
 
+    var deleteFiles = function ( study ) { return function () {
+        var chosenFiles = study.getChosenFiles().map(function ( f) { return f.name; });
+        if (!chosenFiles.length) {
+            messages.alert({
+                header:'Remve Files',
+                content: 'There are no files selected'
+            });
+            return;
+        }
+
+        messages.confirm({
+            header: 'Remove Files',
+            content: 'Are you sure you want to remove all checked files? This is a permanent change.'
+        })
+            .then(function ( response ) {
+                if (response) doDelete();
+            });
+
+        function doDelete(){
+            study.delFiles(chosenFiles)
+                .then(m.redraw)
+                .catch(function ( err ) { return messages.alert({
+                    header: 'Failed to delete files:',
+                    content: err.message
+                }); });
+        }
+    }; };
+
+    var downloadFiles = function (study) { return function () {
+        var chosenFiles = study.getChosenFiles().map(function ( f) { return f.name; });
+        if (!chosenFiles.length) {
+            messages.alert({
+                header:'Download Files',
+                content: 'There are no files selected'
+            });
+            return;
+        }
+
+        study.downloadFiles(chosenFiles)
+            .catch(function ( err ) { return messages.alert({
+                header: 'Failed to download files:',
+                content: err.message
+            }); });
+    }; };
+
     var ace = function ( args ) { return m.component(aceComponent, args); };
 
     var noop$1 = function(){};
@@ -1827,6 +1996,7 @@
                         var session = editor.getSession();
                         var commands = editor.commands;
 
+                        editor.setReadOnly(!!settings.isReadonly);
                         editor.setTheme('ace/theme/cobalt');
                         session.setMode('ace/mode/' + mode);
                         if (mode !== 'javascript') session.setUseWorker(false);
@@ -2325,6 +2495,37 @@
             }
             return '<span class="' + cls + '">' + match + '</span>';
         });
+    }
+
+    // taken from here:
+    // https://github.com/JedWatson/classnames/blob/master/index.js
+    var hasOwn = {}.hasOwnProperty;
+
+    function classNames () {
+        var arguments$1 = arguments;
+
+        var classes = '';
+
+        for (var i = 0; i < arguments$1.length; i++) {
+            var arg = arguments$1[i];
+            if (!arg) continue;
+
+            var argType = typeof arg;
+
+            if (argType === 'string' || argType === 'number') {
+                classes += ' ' + arg;
+            } else if (Array.isArray(arg)) {
+                classes += ' ' + classNames.apply(null, arg);
+            } else if (argType === 'object') {
+                for (var key in arg) {
+                    if (hasOwn.call(arg, key) && arg[key]) {
+                        classes += ' ' + key;
+                    }
+                }
+            }
+        }
+
+        return classes.substr(1);
     }
 
     var END_LINE = '\n';
@@ -2846,6 +3047,7 @@
         var setMode = function ( value ) { return function () { return mode(value); }; };
         var modeClass = function ( value ) { return mode() === value ? 'active' : ''; };
         var isJs = file.type === 'js';
+        var hasChanged = file.hasChanged();
         var isExpt = /\.expt\.xml$/.test(file.path);
         var amdMatch = amdReg.exec(file.content());
         var APItype = amdMatch && amdMatch[1];
@@ -2868,7 +3070,7 @@
 
             !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
                 m('a.btn.btn-secondary', {onclick: setMode('edit'), class: modeClass('edit')},[
-                    m('strong','Edit')
+                    m('strong', study.isReadonly ? 'View' : 'Edit')
                 ]),
                 m('a.btn.btn-secondary', {onclick: setMode('syntax'), class: modeClass('syntax')},[
                     m('strong',
@@ -2909,7 +3111,7 @@
                     m('strong.fa.fa-play')
                 ]),
 
-                m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)',class: file.hasChanged() ? 'btn-danger-outline' : ''},[
+                m('a.btn.btn-secondary', {onclick: !hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
                     m('strong.fa.fa-save')
                 ])
             ])
@@ -2921,13 +3123,12 @@
     var textEditorComponent = {
         controller: function(ref){
             var file = ref.file;
-            var study = ref.study;
 
             file.loaded || file.get()
                 .then(m.redraw)
                 .catch(m.redraw);
 
-            var ctrl = {mode:m.prop('edit'), observer: observer(), study: study};
+            var ctrl = {mode:m.prop('edit'), observer: observer()};
 
             return ctrl;
         },
@@ -2947,18 +3148,19 @@
 
             return m('.editor', [
                 textMenuView({mode: ctrl.mode, file: file, study: study, observer: observer}),
-                textContent(ctrl, {file: file,observer: observer})
+                textContent(ctrl, {file: file,observer: observer, study: study})
             ]);
         }
     };
 
     var textContent = function (ctrl, ref) {
         var file = ref.file;
+        var study = ref.study;
         var observer = ref.observer;
 
         var textMode = modeMap[file.type] || 'javascript';
         switch (ctrl.mode()){
-            case 'edit' : return ace({content:file.content, observer: observer, settings: {onSave: save(file), mode: textMode, jshintOptions: jshintOptions}});
+            case 'edit' : return ace({content:file.content, observer: observer, settings: {onSave: save(file), mode: textMode, jshintOptions: jshintOptions, isReadonly: study.isReadonly}});
             case 'validator': return validate({file: file});
             case 'syntax': return syntax({file: file});
         }
@@ -2966,6 +3168,7 @@
 
     var modeMap = {
         js: 'javascript',
+        json: 'json',
         jsp: 'jsp',
         jst: 'ejs',
         html: 'ejs',
@@ -2975,6 +3178,8 @@
 
     var editors = {
         js: textEditor,
+        jsp: textEditor,
+        json: textEditor,
         html: textEditor,
         htm: textEditor,
         jst: textEditor,
@@ -3162,37 +3367,6 @@
         } 
     };
 
-    // taken from here:
-    // https://github.com/JedWatson/classnames/blob/master/index.js
-    var hasOwn = {}.hasOwnProperty;
-
-    function classNames () {
-        var arguments$1 = arguments;
-
-        var classes = '';
-
-        for (var i = 0; i < arguments$1.length; i++) {
-            var arg = arguments$1[i];
-            if (!arg) continue;
-
-            var argType = typeof arg;
-
-            if (argType === 'string' || argType === 'number') {
-                classes += ' ' + arg;
-            } else if (Array.isArray(arg)) {
-                classes += ' ' + classNames.apply(null, arg);
-            } else if (argType === 'object') {
-                for (var key in arg) {
-                    if (hasOwn.call(arg, key) && arg[key]) {
-                        classes += ' ' + key;
-                    }
-                }
-            }
-        }
-
-        return classes.substr(1);
-    }
-
     /**
      * Set this component into your layout then use any mouse event to open the context menu:
      * oncontextmenu: contextMenuComponent.open([...menu])
@@ -3340,30 +3514,38 @@
         'Typical': '/implicit/user/yba/wizards/emptymanager.js'
     };
 
-    // download support according to modernizer
-    var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
-
     var fileContext = function (file, study) {
-        var path = file.isDir ? file.path : file.basePath;
-        var isExpt = /\.expt\.xml$/.test(file.name);
-        var menu = [
-            // {icon:'fa-copy', text:'Duplicate', action: () => messages.alert({header:'Duplicate: ' + file.name, content:'Duplicate has not been implemented yet'})},
+        var path = !file ? '/' : file.isDir ? file.path : file.basePath;
+        var isReadonly = study.isReadonly;
+        var menu = [];
 
-            {icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
-            {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
-            {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(hash)},
-            {icon:'fa-magic', text:'New from wizard', menu: [
-                {text: 'Rating wizard', action: activateWizard(("rating"))}
-            ]},
-            {separator:true},
-            {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: file.content() == file.sourceContent()},
-            {icon:'fa-download', text:'Download', action: downloadFile},
-            {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
-            isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit\//, ''))), text:'Play this task'} : '',
-            isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit\//, ''))))} : '',
-            {icon:'fa-close', text:'Delete', action: deleteFile},
-            {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study)}
-        ];
+        if (!isReadonly) {
+            menu = menu.concat([
+                {icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
+                {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
+                {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(hash)},
+                {icon:'fa-magic', text:'New from wizard', menu: [
+                    {text: 'Rating wizard', action: activateWizard(("rating"))}
+                ]}
+            ]);
+        }
+         
+        // Allows to use as a button without a specific file
+        if (file) {
+            var isExpt = /\.expt\.xml$/.test(file.name);
+
+            if (!isReadonly) menu.push({separator:true});
+
+            menu = menu.concat([
+                {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: isReadonly || file.content() == file.sourceContent()},
+                {icon:'fa-download', text:'Download', action: downloadFile},
+                {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
+                isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
+                isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
+                {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
+                {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study), disabled: isReadonly }
+            ]);
+        }
 
         return contextMenuComponent.open(menu);
 
@@ -3386,18 +3568,7 @@
         }
 
         function downloadFile(){
-            if (downloadSupport){
-                var link = document.createElement('a');
-                link.href = file.url;
-                link.download = file.name;
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } else {
-                var win = window.open(file.url, '_blank');
-                win.focus();
-            }
+            return downloadLink(file.url, file.name);
         }
 
         function deleteFile(){
@@ -3453,15 +3624,6 @@
         }
     }; };
 
-    var uploadBox = function ( args ) { return m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(args)},[
-        m('i.fa.fa-download .fa-3x.m-b-1'),
-        m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange:onchange(args)}),
-        m('label', {for:'upload'},
-            m('strong', 'Choose a file'),
-            m('span', ' or drag it here')
-        )
-    ]); };
-
     // call onchange with files
     var onchange = function ( args ) { return function ( e ) {
         if (typeof args.onchange == 'function') {
@@ -3480,16 +3642,15 @@
         view: function (ctrl, file, ref) {
             var folderHash = ref.folderHash;
             var study = ref.study;
-            var filesVM = ref.filesVM;
 
-            var vm = filesVM(file.id); // vm is created by the study component, it exposes a "isOpen" and "isChanged" properties
+            var vm = study.vm(file.id); // vm is created by the studyModel
             return m('li.file-node',
                 {
                     key: file.id,
                     class: classNames({
                         open : vm.isOpen()
                     }),
-                    onclick: file.isDir ? function () { return vm.isOpen(!vm.isOpen()); } : choose(file),
+                    onclick: file.isDir ? function () { return vm.isOpen(!vm.isOpen()); } : select(file),
                     oncontextmenu: fileContext(file, study),
                     config: file.isDir ? uploadConfig({onchange:uploadFiles(file.path, study)}) : null
                 },
@@ -3507,7 +3668,18 @@
                         })
                     }),
 
-                    m('a', [
+                    m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(file.name)})}, [
+                        // checkbox
+                        m('i.fa.fa-fw', {
+                            onclick: choose$1({file: file,study: study}),
+                            class: classNames({
+                                'fa-check-square-o': vm.isChosen() === 1,
+                                'fa-square-o': vm.isChosen() === 0,
+                                'fa-minus-square-o': vm.isChosen() === -1
+                            })
+                        }),
+
+                        // icon
                         m('i.fa.fa-fw.fa-file-o', {
                             class: classNames({
                                 'fa-file-code-o': /(js)$/.test(file.type),
@@ -3518,18 +3690,51 @@
                             })
                         }),
                         m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
-                        file.isDir ? folder(file.path + '/', {folderHash: folderHash, study: study, filesVM: filesVM}) : ''
+                        file.isDir ? folder(file.path + '/', {folderHash: folderHash, study: study}) : ''
                     ])
                 ]
             );
         }
     };
 
-    var choose = function (file) { return function ( e ) {
+    // select specific file and display it
+    var select = function (file) { return function ( e ) {
         e.stopPropagation();
         e.preventDefault();
         m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
     }; };
+
+    // checkmark a file/folder
+    var choose$1 = function (ref) {
+        var file = ref.file;
+        var study = ref.study;
+
+        return function ( e ) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var lastState = isChosen(file)();
+
+        // mark decendents (and the file itself
+        study
+            .getChildren(file)
+            .forEach(function ( f ) { return isChosen(f)(lastState === 1 ? 0 : 1); }); // update vm for each child
+
+        // update parent folders
+        study
+            .getParents(file)
+            .sort(function (a,b) { return a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1; })
+            .forEach(function ( f ) {
+                var files = f.files;
+                var chosenCount = files.reduce(function (counter, f) { return counter + isChosen(f)(); }, 0);
+                isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
+            });
+
+        function isChosen(file){
+            return study.vm(file.id).isChosen;
+        }
+    };
+    };
 
     var folder = function (path, args) { return m.component(folderComponent, path, args); };
 
@@ -3537,54 +3742,38 @@
         view: function view(ctrl, path, ref){
             var folderHash = ref.folderHash;
             var study = ref.study;
-            var filesVM = ref.filesVM;
 
             var files = folderHash[path] || [];
 
             return m('.files',[
-                m('ul', files.map(function ( file ) { return node(file, {folderHash: folderHash, study: study, filesVM: filesVM}); }))
+                m('ul', files.map(function ( file ) { return node(file, {folderHash: folderHash, study: study}); }))
             ]);
         }
     };
 
-    var currentStudy;
-    var filesVM$1;
-    var filesComponent = {
-        controller: function controller(){
-            // Create new VM only if we change study name
-            var studyId = m.route.param('studyId');
-            if (!filesVM$1 || (currentStudy !== studyId)){
-                currentStudy = studyId;
-                filesVM$1 = viewModelMap$1({
-                    isOpen: m.prop(false),
-                    isChanged: m.prop(false)
-                });
-            }
+    var filesList = function (ref) {
+        var study = ref.study;
 
-            return {filesVM: filesVM$1, parseFiles: parseFiles};
-        },
-        view: function view(ref, ref$1){
-            var parseFiles = ref.parseFiles;
-            var filesVM = ref.filesVM;
-            var study = ref$1.study;
+        var folderHash = parseFiles(study.files());
+        var config = uploadConfig({onchange:uploadFiles('/', study)});
+        var chooseState = getCurrentState(study); 
 
-            var folderHash = parseFiles(study.files());
-            var config = uploadConfig({onchange:uploadFiles('/', study)});
-            return m('div', {config: config}, folder('/', {folderHash: folderHash, study: study, filesVM: filesVM}));
-        }
-    };
-
-
-    // http://lhorie.github.io/mithril-blog/mapping-view-models.html
-    var viewModelMap$1 = function(signature) {
-        var map = {};
-        return function(key) {
-            if (!map[key]) {
-                map[key] = {};
-                for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
-            }
-            return map[key];
-        };
+        return m('div', {config: config}, [
+            m('h5', [
+                m('small', [
+                    m('i.fa.fa-fw', {
+                        onclick: choose(chooseState, study),
+                        class: classNames({
+                            'fa-check-square-o': chooseState === 1,
+                            'fa-square-o': chooseState === 0,
+                            'fa-minus-square-o': chooseState === -1
+                        })
+                    })
+                ]),
+                study.name
+            ]),
+            folder('/', {folderHash: folderHash, study: study})
+        ]);
     };
 
     var parseFiles = function ( files ) { return files.reduce(function (hash, file){
@@ -3594,25 +3783,59 @@
         return hash;
     }, {}); };
 
+    function choose(currentState, study){
+        return function () { return study.files().forEach(function ( file ) { return study.vm(file.id).isChosen(currentState === 1 ? 0 : 1); }); };
+    }
+
+    function getCurrentState(study){
+        var filesCount = study.files().length;
+        var chosenCount = study.getChosenFiles().length;
+        return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
+    }
+
+    var sidebarButtons = function (ref) {
+        var study = ref.study;
+
+        var readonly = study.isReadonly;
+
+        return m('.btn-group.btn-group-sm', [
+            m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || fileContext(null, study), title: 'Create new files'}, [
+                m('i.fa.fa-plus')
+            ]),
+            m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete checkmarked files'}, [
+                m('i.fa.fa-close')
+            ]),
+            m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download checkmarked files'}, [
+                m('i.fa.fa-download')
+            ]),
+            m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
+                m('i.fa.fa-upload'),
+                readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadButton(study)})
+            ])
+        ]);
+    };
+
+
+    function uploadButton(study){
+        return function ( e ) {
+            var dataTransfer = e.dataTransfer || e.target;
+            uploadFiles('/', study)(dataTransfer.files);
+        };
+    }
+
     var sidebarComponent = {
         view: function (ctrl , ref) {
             var study = ref.study;
-            var filesVM = ref.filesVM;
 
             return m('.sidebar', [
-                m('h5', study.id),
-                m('p.text-muted.m-a-1', [
-                    m('small', 'Right click the file list in order to perform actions.')
-                ]),
-    //          m.component(sidebarButtons, {study}),
-                m.component(filesComponent, {study: study,filesVM: filesVM, files: study.files() || []}),
-                uploadBox({onchange: uploadFiles('/', study)})
+                sidebarButtons({study: study}),
+                filesList({study: study})
             ]);
         }
     };
 
     var study;
-    var filesVM;
+
     var editorLayoutComponent = {
         controller: function () {
             var id = m.route.param('studyId');
@@ -3624,12 +3847,7 @@
                     .then(m.redraw);
             }
 
-            if (!filesVM) filesVM = viewModelMap({
-                isOpen: m.prop(false),
-                isChanged: m.prop(false)
-            });
-
-            var ctrl = {study: study, filesVM: filesVM, onunload: onunload};
+            var ctrl = {study: study, onunload: onunload};
 
             window.addEventListener('beforeunload', beforeunload);
 
@@ -3654,18 +3872,17 @@
         },
         view: function (ref) {
             var study = ref.study;
-            var filesVM = ref.filesVM;
 
             return m('.row.study', [
                 study.loaded
                     ? [
                         m('.col-md-2', [
-                            m.component(sidebarComponent, {study: study, filesVM: filesVM})
+                            m.component(sidebarComponent, {study: study})
                         ]),
                         m('.col-md-10',[
                             m.route.param('resource') === 'wizard'
                                 ? m.component(wizardComponent, {study: study})
-                                : m.component(fileEditorComponent, {study: study, filesVM: filesVM})
+                                : m.component(fileEditorComponent, {study: study})
                         ])
                     ]
                     :
@@ -3674,6 +3891,7 @@
         }
     };
 
+<<<<<<< HEAD
     // http://lhorie.github.io/mithril-blog/mapping-view-models.html
     var viewModelMap = function(signature) {
         var map = {};
@@ -3685,6 +3903,9 @@
             return map[key];
         };
     };
+=======
+    var url = '/dashboard/StudyData';
+>>>>>>> study
 
     var STATUS_RUNNING = 'R';
     var STATUS_PAUSED = 'P';

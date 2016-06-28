@@ -39,6 +39,7 @@ let aceComponent = {
                     let session = editor.getSession();
                     let commands = editor.commands;
 
+                    editor.setReadOnly(!!settings.isReadonly);
                     editor.setTheme('ace/theme/cobalt');
                     session.setMode('ace/mode/' + mode);
                     if (mode !== 'javascript') session.setUseWorker(false);

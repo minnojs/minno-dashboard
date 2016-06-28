@@ -51,9 +51,9 @@
         overflow-y: auto;
         top: $navbar-height;
         bottom: 0;
+        z-index:10;
 
-
-        h5, .btn-group {
+        .btn-group {
             margin: 10px;
         }
     }

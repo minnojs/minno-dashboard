@@ -158,3 +158,48 @@ export let createEmpty = (study, path = '') => () => {
         if (response) return createFile(study, name,content);
     });
 };
+
+export let deleteFiles = study => () => {
+    let chosenFiles = study.getChosenFiles().map(f=>f.name);
+    if (!chosenFiles.length) {
+        messages.alert({
+            header:'Remve Files',
+            content: 'There are no files selected'
+        });
+        return;
+    }
+
+    messages.confirm({
+        header: 'Remove Files',
+        content: 'Are you sure you want to remove all checked files? This is a permanent change.'
+    })
+        .then(response => {
+            if (response) doDelete();
+        });
+
+    function doDelete(){
+        study.delFiles(chosenFiles)
+            .then(m.redraw)
+            .catch(err => messages.alert({
+                header: 'Failed to delete files:',
+                content: err.message
+            }));
+    }
+};
+
+export let downloadFiles = (study) => () => {
+    let chosenFiles = study.getChosenFiles().map(f=>f.name);
+    if (!chosenFiles.length) {
+        messages.alert({
+            header:'Download Files',
+            content: 'There are no files selected'
+        });
+        return;
+    }
+
+    study.downloadFiles(chosenFiles)
+        .catch(err => messages.alert({
+            header: 'Failed to download files:',
+            content: err.message
+        }));
+};

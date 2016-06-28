@@ -13,12 +13,12 @@ export default textEditor;
 let textEditor = args => m.component(textEditorComponent, args);
 
 let textEditorComponent = {
-    controller: function({file,study}){
+    controller: function({file}){
         file.loaded || file.get()
             .then(m.redraw)
             .catch(m.redraw);
 
-        let ctrl = {mode:m.prop('edit'), observer: observerFactory(), study};
+        let ctrl = {mode:m.prop('edit'), observer: observerFactory()};
 
         return ctrl;
     },
@@ -35,15 +35,15 @@ let textEditorComponent = {
 
         return m('.editor', [
             textMenu({mode: ctrl.mode, file, study, observer}),
-            textContent(ctrl, {file,observer})
+            textContent(ctrl, {file,observer, study})
         ]);
     }
 };
 
-let textContent = (ctrl, {file, observer}) => {
+let textContent = (ctrl, {file, study, observer}) => {
     let textMode = modeMap[file.type] || 'javascript';
     switch (ctrl.mode()){
-        case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode, jshintOptions}});
+        case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode, jshintOptions, isReadonly: study.isReadonly}});
         case 'validator': return validatorComponent({file});
         case 'syntax': return syntaxComponent({file});
     }
@@ -51,6 +51,7 @@ let textContent = (ctrl, {file, observer}) => {
 
 let modeMap = {
     js: 'javascript',
+    json: 'json',
     jsp: 'jsp',
     jst: 'ejs',
     html: 'ejs',

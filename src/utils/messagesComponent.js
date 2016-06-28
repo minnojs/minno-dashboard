@@ -112,7 +112,7 @@ let messages = {
                         value: prop(),
                         onchange: m.withAttr('value', prop),
                         config: (element, isInitialized) => {
-                            if (!isInitialized) element.focus();
+                            if (!isInitialized) setTimeout(() => element.focus());
                         }
                     })
                 ]),

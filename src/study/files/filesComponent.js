@@ -4,7 +4,7 @@ import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
 
-let study, filesVM;
+let study;
 
 let editorLayoutComponent = {
     controller: ()=>{
@@ -17,12 +17,7 @@ let editorLayoutComponent = {
                 .then(m.redraw);
         }
 
-        if (!filesVM) filesVM = viewModelMap({
-            isOpen: m.prop(false),
-            isChanged: m.prop(false)
-        });
-
-        let ctrl = {study, filesVM, onunload};
+        let ctrl = {study, onunload};
 
         window.addEventListener('beforeunload', beforeunload);
 
@@ -45,17 +40,17 @@ let editorLayoutComponent = {
             }
         }
     },
-    view: ({study, filesVM}) => {
+    view: ({study}) => {
         return m('.row.study', [
             study.loaded
                 ? [
                     m('.col-md-2', [
-                        m.component(sidebarComponent, {study, filesVM})
+                        m.component(sidebarComponent, {study})
                     ]),
                     m('.col-md-10',[
                         m.route.param('resource') === 'wizard'
                             ? m.component(wizardComponent, {study})
-                            : m.component(editorComponent, {study, filesVM})
+                            : m.component(editorComponent, {study})
                     ])
                 ]
                 :
@@ -64,14 +59,3 @@ let editorLayoutComponent = {
     }
 };
 
-// http://lhorie.github.io/mithril-blog/mapping-view-models.html
-var viewModelMap = function(signature) {
-    var map = {};
-    return function(key) {
-        if (!map[key]) {
-            map[key] = {};
-            for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
-        }
-        return map[key];
-    };
-};

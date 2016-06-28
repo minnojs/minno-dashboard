@@ -48,7 +48,7 @@ let filePrototype = {
 
         return fetchJson(this.apiUrl() + `/move/`, {
             method:'put',
-            body: {path}
+            body: {path, url:this.url}
         })
             .then(response => {
                 this.id = response.id;

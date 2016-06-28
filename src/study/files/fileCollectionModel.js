@@ -1,5 +1,6 @@
-import {fetchJson, fetchUpload} from 'utils/modelHelpers';
+import {fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
+import downloadUrl from 'utils/downloadUrl';
 export default studyFactory;
 
 let baseUrl = '/dashboard/dashboard';
@@ -13,6 +14,8 @@ let studyPrototype = {
         return fetchJson(this.apiURL())
             .then(study => {
                 this.loaded = true;
+                this.isReadonly = study.is_readonly;
+                this.name = study.study_name;
                 let files = flattenFiles(study.files)
                     .map(assignStudyId(this.id))
                     .map(fileFactory);
@@ -36,6 +39,7 @@ let studyPrototype = {
             return f => Object.assign(f, {studyId: id});
         }
 
+        // create an array including file and all its children
         function spreadFile(file){
             return [file].concat(flattenFiles(file.files));
         }
@@ -45,6 +49,10 @@ let studyPrototype = {
 
     getFile(id){
         return this.files().find(f => f.id === id);
+    },
+
+    getChosenFiles(){
+        return this.files().filter(file => this.vm(file.id).isChosen() === 1); // do not include half chosen dirs
     },
 
     createFile({name, content='',isDir}){
@@ -119,6 +127,21 @@ let studyPrototype = {
         }
     },
 
+    downloadFiles(files){
+        return fetchJson(this.apiURL(), {method: 'post', body: {files}})
+            .then(response => downloadUrl(`${baseUrl}/download?path=${response.zip_file}&study=_PATH`, this.name));
+    },
+
+    delFiles(files){
+        return fetchVoid(this.apiURL(), {method: 'delete', body: {files}})
+            .then(() => {
+                let filesList = this.files()
+                    .filter(f => files.indexOf(f.path) === -1); // only exact matches here, the choice mechanism takes care of nested folders
+
+                this.files(filesList);
+            });
+    },
+
     del(fileId){
         let file = this.getFile(fileId);
         return file.del()
@@ -127,6 +150,22 @@ let studyPrototype = {
                     .filter(f => f.path.indexOf(file.path) !== 0); // all paths that start with the same path are deleted
                 this.files(files);
             });
+    },
+
+    getParents(file){
+        return this.files().filter(f => f.isDir && file.basePath.indexOf(f.path) === 0);
+    },
+
+    // returns array of children for this file, including itself
+    getChildren(file){
+        return children(file);
+       
+        function children(file){
+            if (!file.files) return [file];
+            return file.files
+                .map(children) // harvest children
+                .reduce((result, files) => result.concat(files), [file]); // flatten
+        }
     }
 };
 
@@ -136,9 +175,25 @@ let studyFactory =  id =>{
         id      : id,
         files   : m.prop([]),
         loaded  : false,
-        error   :false
+        error   :false,
+        vm      : viewModelMap({
+            isOpen: m.prop(false),
+            isChanged: m.prop(false),
+            isChosen: m.prop(0)
+        })
     });
 
     return study;
 };
 
+// http://lhorie.github.io/mithril-blog/mapping-view-models.html
+var viewModelMap = function(signature) {
+    var map = {};
+    return function(key) {
+        if (!map[key]) {
+            map[key] = {};
+            for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
+        }
+        return map[key];
+    };
+};

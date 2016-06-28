@@ -1,6 +1,6 @@
 import studiesComponent from './study/studiesComponent';
 import statisticsComponent from './study/statistics/statisticsComponent';
-import studyComponent from './study/studyComponent';
+import filesComponent from './study/files/filesComponent';
 import poolComponent from './pool/poolComponent';
 import historyComponent from './pool/historyComponent';
 import downloadsComponent from './downloads/downloadsComponent';
@@ -34,8 +34,8 @@ let routes = {
     '/login': loginComponent,
     '/studies' : studiesComponent,
     '/studies/statistics' : statisticsComponent,
-    '/editor/:studyId': studyComponent,
-    '/editor/:studyId/:resource/:fileID': studyComponent,
+    '/editor/:studyId': filesComponent,
+    '/editor/:studyId/:resource/:fileID': filesComponent,
     '/pool': poolComponent,
     '/pool/history': historyComponent,
     '/downloads': downloadsComponent,

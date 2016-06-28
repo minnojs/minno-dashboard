@@ -1,3 +1,4 @@
+import classNames from 'utils/classNames';
 import {play, save} from '../sidebar/fileActions';
 import {pageSnippet, questSnippet, taskSnippet} from './snippetActions';
 
@@ -9,6 +10,7 @@ let textMenuView = ({mode, file, study, observer}) => {
     let setMode = value => () => mode(value);
     let modeClass = value => mode() === value ? 'active' : '';
     let isJs = file.type === 'js';
+    let hasChanged = file.hasChanged();
     let isExpt = /\.expt\.xml$/.test(file.path);
     let amdMatch = amdReg.exec(file.content());
     let APItype = amdMatch && amdMatch[1];
@@ -31,7 +33,7 @@ let textMenuView = ({mode, file, study, observer}) => {
 
         !isJs ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
             m('a.btn.btn-secondary', {onclick: setMode('edit'), class: modeClass('edit')},[
-                m('strong','Edit')
+                m('strong', study.isReadonly ? 'View' : 'Edit')
             ]),
             m('a.btn.btn-secondary', {onclick: setMode('syntax'), class: modeClass('syntax')},[
                 m('strong',
@@ -72,7 +74,7 @@ let textMenuView = ({mode, file, study, observer}) => {
                 m('strong.fa.fa-play')
             ]),
 
-            m('a.btn.btn-secondary', {onclick: save(file), title:'Save (ctrl+s)',class: file.hasChanged() ? 'btn-danger-outline' : ''},[
+            m('a.btn.btn-secondary', {onclick: !hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
                 m('strong.fa.fa-save')
             ])
         ])
