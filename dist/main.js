@@ -5482,7 +5482,7 @@
                 m('h3', 'Data Download Access Requests'),
                 m('p.col-xs-12.text-muted', [
                     m('small', [
-                        ctrl.isAdmin()
+                        ctrl.isAdmin
                             ? 'Approve requests by clicking the Play button; Reject requests by clicking the X button; To grant permission without a request: hit the Grant Access button; For all actions: The user will be notified by email.'
                             : 'You will receive an email when your request is approved or rejected; To cancel a request, click the X button next to the request'
                     ])
