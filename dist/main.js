@@ -6844,21 +6844,19 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                             ]),
+                            m('li.nav-item', [
+                                m('.dropdown', [
+                                    m('a.nav-link', 'Data'),
+                                    m('.dropdown-menu', [
+                                        m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
+                                        m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access')
+                                        //m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                                    ])
+                                ])
+                            ]),
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/downloads', config:m.route},'Downloads')
-                            ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/deploy', config:m.route},'Deploy')
-    //                      ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/studyRemoval', config:m.route}, 'Study Removal')
-    //                      ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
-    //                      ]),
                             m('li.nav-item', [
                                 m('.dropdown', [
                                     m('a.nav-link', 'Admin'),
@@ -6867,10 +6865,17 @@
                                     ])
                                 ])
                             ]),
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
+                            m('li.nav-item.pull-xs-right', [
+                                m('.dropdown', [
+                                    m('a.nav-link', [
+                                        m('i.fa.fa-cog.fa-lg')
+                                    ]),
+                                    m('.dropdown-menu.dropdown-menu-right', [
+                                        m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Change password')
+                                    ])
+                                ])
                             ]),
-                            !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
+                            ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
                                 m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
                                     m('i.fa.fa-sign-out'), '  Logout'
                                 ])
