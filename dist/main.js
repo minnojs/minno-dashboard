@@ -419,7 +419,7 @@
                             ])
                         ]),
 
-                        ctrl.filtered_studies().map(function ( study ) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig}, [
+                        ctrl.filtered_studies().map(function ( study ) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
                                 m('.col-sm-3', [
                                     m('.study-text', study.name)
@@ -473,7 +473,7 @@
 
         el.href = location.pathname + '?' + vdom.attrs.href;
 
-        if (isInit) el.addEventListener('click', route);
+        if (!isInit) el.addEventListener('click', route);
 
         function route(e){
             var el = e.currentTarget;

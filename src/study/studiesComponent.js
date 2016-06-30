@@ -125,7 +125,7 @@ var mainComponent = {
                         ])
                     ]),
 
-                    ctrl.filtered_studies().map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig}, [
+                    ctrl.filtered_studies().map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                         m('.row.study-row', [
                             m('.col-sm-3', [
                                 m('.study-text', study.name)
@@ -179,7 +179,7 @@ function routeConfig(el, isInit, ctx, vdom) {
 
     el.href = location.pathname + '?' + vdom.attrs.href;
 
-    if (isInit) el.addEventListener('click', route);
+    if (!isInit) el.addEventListener('click', route);
 
     function route(e){
         let el = e.currentTarget;
