@@ -12,6 +12,7 @@ var mainComponent = {
             error:m.prop(''),
             study_name:m.prop(''),
             user_name:m.prop(''),
+            //globalSearch: m.prop(''),
             loaded:false
         };
 
@@ -32,6 +33,7 @@ var mainComponent = {
                 return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
             }
         }
+
         function filter_by(permission){
             if(permission === 'all') {
                 ctrl.filtered_studies(ctrl.studies().filter(study => !study.is_public));
@@ -117,6 +119,15 @@ var mainComponent = {
                     ])
                 ])
             ]),
+            
+            /*
+            m('.row', [
+                m('.col-sm-12.p-x-3.p-y-1', [ 
+                    m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                ])
+            ]),
+            */
+
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', [
