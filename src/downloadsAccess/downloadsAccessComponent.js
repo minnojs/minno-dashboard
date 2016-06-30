@@ -53,7 +53,7 @@ let downloadsAccessComponent = {
                             m('th', {colspan: TABLE_WIDTH}, [ 
                                 m('.row', [
                                     m('.col-xs-3.text-xs-left', [
-                                        m('button.btn.btn-secondary', {disabled: ctrl.isAdmin(), onclick:ctrl.isAdmin() || ctrl.create.bind(null, list)}, [
+                                        m('button.btn.btn-secondary', {disabled: ctrl.isAdmin, onclick:ctrl.isAdmin || ctrl.create.bind(null, list)}, [
                                             m('i.fa.fa-plus'), '  Request Access From Admin'
                                         ])
                                     ]),
@@ -63,7 +63,7 @@ let downloadsAccessComponent = {
                                         ])
                                     ])
                                     ,m('.col-xs-2.text-xs-left', [
-                                        ctrl.isAdmin() ? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
+                                        ctrl.isAdmin ? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
                                             m('i.fa.fa-plus'), '  Revoke Access'
                                         ]) : ''
                                     ]),
