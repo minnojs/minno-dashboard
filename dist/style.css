@@ -55,6 +55,18 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
     border-top-left-radius: 0;
     border-left-left-radius: 0; }
 
+.statistics-time-button {
+  display: relative; }
+  .statistics-time-button .time-card {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    padding-left: 10px;
+    text-align: left; }
+  .statistics-time-button:hover .time-card {
+    display: block; }
+
 .c-inputs-stacked.fixed {
   margin-bottom: -1.5em; }
 

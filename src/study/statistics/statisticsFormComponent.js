@@ -32,16 +32,18 @@ let statisticsFormComponent = {
                         m('.btn-group.btn-group-sm', [
                             button(query.sortstudy, 'Study'),
                             button(query.sorttask, 'Task'),
-                            m('button.btn.btn-secondary', {class: query.sorttime() !== 'None' ? 'active' : ''}, 'Time'),
-                            m('.info-box', [
-                                m('.card', [
-                                    m('.card-header', 'Time filter'),
-                                    m('.card-block.c-inputs-stacked', [
-                                        radioButton(query.sorttime, 'None'),
-                                        radioButton(query.sorttime, 'Days'),
-                                        radioButton(query.sorttime, 'Weeks'),
-                                        radioButton(query.sorttime, 'Months'),
-                                        radioButton(query.sorttime, 'Years')
+                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                                'Time',
+                                m('.time-card', [
+                                    m('.card', [
+                                        m('.card-header', 'Time filter'),
+                                        m('.card-block.c-inputs-stacked', [
+                                            radioButton(query.sorttime, 'None'),
+                                            radioButton(query.sorttime, 'Days'),
+                                            radioButton(query.sorttime, 'Weeks'),
+                                            radioButton(query.sorttime, 'Months'),
+                                            radioButton(query.sorttime, 'Years')
+                                        ])
                                     ])
                                 ])
                             ]),
