@@ -95,7 +95,7 @@ let layout = route => {
                                 ])
                             ])
                         ]),
-                        ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
+                        !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
                             m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
                                 m('i.fa.fa-sign-out'), '  Logout'
                             ])
