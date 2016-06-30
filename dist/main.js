@@ -524,6 +524,8 @@
             var sortgroup = ref.sortgroup;
             var sorttime = ref.sorttime;
             var showEmpty = ref.showEmpty;
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
 
             var baseUrl = "" + (location.origin) + "/implicit";
             var post = {
@@ -532,8 +534,8 @@
                 testDB:'newwarehouse',
                 study: study(),
                 task: task(),
-                since:'5/01/2016',
-                until:'6/2/2016',
+                since: parseDate(startDate()),
+                until: parseDate(endDate()),
                 refresh:'no',
                 endTask:'',
                 filter:'',
@@ -557,6 +559,11 @@
                 baseURL:baseUrl
             };
             return post;
+
+            function parseDate(date){
+                if (!date) return;
+                return ("" + (date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
+            }
         } 
     };
 
@@ -6815,7 +6822,6 @@
                             messages.close();
                             doLogout();
                         }
-                        // console.log(timer);
                         if(timer==70)
                             messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
                                 .then(function ( response ) {
@@ -6846,8 +6852,8 @@
                                     m('a.nav-link', 'Data'),
                                     m('.dropdown-menu', [
                                         m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
-                                        m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access')
-                                        //m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                                        m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
+                                        m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
                                     ])
                                 ])
                             ]),

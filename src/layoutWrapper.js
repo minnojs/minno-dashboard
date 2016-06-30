@@ -39,7 +39,6 @@ let layout = route => {
                         messages.close();
                         doLogout();
                     }
-                    // console.log(timer);
                     if(timer==70)
                         messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
                             .then(response => {
@@ -70,8 +69,8 @@ let layout = route => {
                                 m('a.nav-link', 'Data'),
                                 m('.dropdown-menu', [
                                     m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
-                                    m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access')
-                                    //m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                                    m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
+                                    m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
                                 ])
                             ])
                         ]),
