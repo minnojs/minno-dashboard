@@ -399,17 +399,14 @@
                     ])
                 ]),
                 
-                m('.row', [
-                    m('.col-sm-12.p-x-3.p-y-1', [ 
-                        m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', globalSearch)})
-                    ])
-                ]),
-
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', [
+                            m('.col-sm-9', [
+                                m('p.form-control-static',[m('strong', 'Study Name')])
+                            ]),
                             m('.col-sm-3', [
-                                m('strong','Study Name')
+                                m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
                             ])
                         ]),
 
