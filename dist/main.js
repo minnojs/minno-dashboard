@@ -473,7 +473,7 @@
         return study.permission === permission;
     }; };
 
-    var searchFilter = function ( searchTerm ) { return function ( study ) { return !study.name || study.name.indexOf(searchTerm) != -1; }; };
+    var searchFilter = function ( searchTerm ) { return function ( study ) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
 
     function routeConfig(el, isInit, ctx, vdom) {
 

@@ -177,7 +177,7 @@ let permissionFilter = permission => study => {
     return study.permission === permission;
 };
 
-let searchFilter = searchTerm => study => !study.name || study.name.indexOf(searchTerm) != -1;
+let searchFilter = searchTerm => study => !study.name || study.name.match(new RegExp(searchTerm, 'i'));
 
 function routeConfig(el, isInit, ctx, vdom) {
 
