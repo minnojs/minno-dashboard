@@ -6007,6 +6007,7 @@
                     ctrl.sent = true;
                 })
                 .catch(function ( response ) {
+                    ctrl.error(response.message);
                 })
                 .then(m.redraw);
             }
@@ -6150,7 +6151,7 @@
             ])
             :
             m('.StudyRemoval.container', [
-                m('h1', 'Study Removal'),
+                m('h1', 'Study Removal Request'),
                 m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
                 m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
                 radioInput({
@@ -6230,7 +6231,7 @@
                 m('.StudyChangeRequest.container', [
                     m('h1', 'Study Change Request'),
                     m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                    m('p', m('strong','Researcher email address: '), ctrl.researcher_email()),
+                    m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
 
                     m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
 
@@ -6286,11 +6287,8 @@
                     })
                     .catch(function ( response ) {
                         ctrl.error(response.message);
-                        m.redraw();
                     })
-                    .then(function () {
-                        m.redraw();
-                    });
+                    .then(m.redraw());
             }
         },
         view: function view(ctrl){
@@ -6306,46 +6304,57 @@
                         m('.card-block',[
                             m('h4', 'Please fill the following details'),
                             m('form', {onsubmit:ctrl.add}, [
-                                m('input.form-control', {
-                                    type:'username',
-                                    placeholder: 'User name',
-                                    value: ctrl.username(),
-                                    onkeyup: m.withAttr('value', ctrl.username),
-                                    onchange: m.withAttr('value', ctrl.username),
-                                    config: getStartValue$1(ctrl.username)
-                                }),
-                                m('input.form-control', {
-                                    type:'first_name',
-                                    placeholder: 'first name',
-                                    value: ctrl.first_name(),
-                                    onkeyup: m.withAttr('value', ctrl.first_name),
-                                    onchange: m.withAttr('value', ctrl.first_name),
-                                    config: getStartValue$1(ctrl.first_name)
-                                }),
-                                m('input.form-control', {
-                                    type:'last_name',
-                                    placeholder: 'last name',
-                                    value: ctrl.last_name(),
-                                    onkeyup: m.withAttr('value', ctrl.last_name),
-                                    onchange: m.withAttr('value', ctrl.last_name),
-                                    config: getStartValue$1(ctrl.last_name)
-                                }),
-                                m('input.form-control', {
-                                    type:'email',
-                                    placeholder: 'email',
-                                    value: ctrl.email(),
-                                    onkeyup: m.withAttr('value', ctrl.email),
-                                    onchange: m.withAttr('value', ctrl.email),
-                                    config: getStartValue$1(ctrl.email)
-                                }),
-                                m('label.c-input.c-checkbox', [
+                                m('fieldset.form-group',
                                     m('input.form-control', {
-                                        type: 'checkbox',
-                                        onclick: m.withAttr('checked', ctrl.iscu)}),
-                                    m('span.c-indicator'),
-                                    m.trust('&nbsp;'),
-                                    m('span', 'contract user')
-                                ])
+                                        type:'username',
+                                        placeholder: 'User name',
+                                        value: ctrl.username(),
+                                        onkeyup: m.withAttr('value', ctrl.username),
+                                        onchange: m.withAttr('value', ctrl.username),
+                                        config: getStartValue$1(ctrl.username)
+                                    }
+                                )),
+                                m('fieldset.form-group',
+                                    m('input.form-control', {
+                                        type:'first_name',
+                                        placeholder: 'first name',
+                                        value: ctrl.first_name(),
+                                        onkeyup: m.withAttr('value', ctrl.first_name),
+                                        onchange: m.withAttr('value', ctrl.first_name),
+                                        config: getStartValue$1(ctrl.first_name)
+                                    }
+                                )),
+                                m('fieldset.form-group',
+                                        m('input.form-control', {
+                                            type:'last_name',
+                                            placeholder: 'last name',
+                                            value: ctrl.last_name(),
+                                            onkeyup: m.withAttr('value', ctrl.last_name),
+                                            onchange: m.withAttr('value', ctrl.last_name),
+                                            config: getStartValue$1(ctrl.last_name)
+                                        }
+                                )),
+                                m('fieldset.form-group',
+                                    m('input.form-control', {
+                                        type:'email',
+                                        placeholder: 'email',
+                                        value: ctrl.email(),
+                                        onkeyup: m.withAttr('value', ctrl.email),
+                                        onchange: m.withAttr('value', ctrl.email),
+                                        config: getStartValue$1(ctrl.email)
+                                    }
+                                )),
+                                m('fieldset.form-group',
+
+                                    m('label.c-input.c-checkbox', [
+                                        m('input.form-control', {
+                                            type: 'checkbox',
+                                            onclick: m.withAttr('checked', ctrl.iscu)}),
+                                        m('span.c-indicator'),
+                                        m.trust('&nbsp;'),
+                                        m('span', 'contract user')
+                                    ])
+                                )
                             ]),
 
                             ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
@@ -6378,7 +6387,7 @@
 
     var body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
-            m('h4', 'Select new password'),
+            m('h4', 'Enter New Password'),
             m('form', [
                 m('input.form-control', {
                     type:'password',
@@ -6683,7 +6692,7 @@
                     });
             }
             function do_make_public(is_public){
-                messages.confirm({okText: ['Yes, Make ', is_public ? 'Public' : 'Private'], cancelText: ['No, keap ', is_public ? 'Private' : 'Public' ], header:'Are you sure?', content:m('p', [m('p', is_public
+                messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keap ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
                                                                                     ?
                                                                                     'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
                                                                                     :
@@ -6725,7 +6734,7 @@
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
                                 m('i.fa.fa-plus'), '  Add new collaboration'
                             ]),
-                            m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                            m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                         ])
                     ]),
                     
