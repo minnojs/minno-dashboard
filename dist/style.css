@@ -104,11 +104,13 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   .navbar .dropdown-menu {
     border-radius: 0;
     border-color: #2882b5;
-    background: #f8fcfd;
+    background: #b9dcf0;
     border-top-width: 8px;
     border-top-color: #2882b5;
     margin-top: 0;
     margin-left: -0.5rem; }
+    .navbar .dropdown-menu .dropdown-item:hover {
+      background: #a5d2eb; }
 
 .nav-item.active {
   background: #1f648b; }
