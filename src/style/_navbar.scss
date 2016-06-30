@@ -1,13 +1,31 @@
-$navbar-height: 58px;
+$navbar-height: 54px;
 $navbar-background: #2882b5;
 
 .navbar {
   background: $navbar-background; 
   .is-iframe & {display:none}
+
+  .dropdown:hover .dropdown-menu {
+      display:block;
+      
+  }
+  .nav-link { cursor: pointer;}
+  .dropdown-menu {
+    border-radius:0;
+    border-color: darken($navbar-background, 0%);
+    background: lighten($navbar-background, 55%);
+
+    // offset the dropdown
+    border-top-width: 8px;
+    border-top-color: $navbar-background;
+
+    margin-top:0;
+    margin-left: -0.5rem;
+  }
 }
 
 .nav-item.active {
-    //background: darken( $navbar-background, 10%);
+    background: darken( $navbar-background, 10%);
 }
 
 .main-content {

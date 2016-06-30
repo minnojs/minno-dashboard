@@ -92,9 +92,24 @@ h1, h2, h3, h4, h5 {
   background: #2882b5; }
   .is-iframe .navbar {
     display: none; }
+  .navbar .dropdown:hover .dropdown-menu {
+    display: block; }
+  .navbar .nav-link {
+    cursor: pointer; }
+  .navbar .dropdown-menu {
+    border-radius: 0;
+    border-color: #2882b5;
+    background: #f8fcfd;
+    border-top-width: 8px;
+    border-top-color: #2882b5;
+    margin-top: 0;
+    margin-left: -0.5rem; }
+
+.nav-item.active {
+  background: #1f648b; }
 
 .main-content {
-  margin-top: 59px; }
+  margin-top: 55px; }
   .is-iframe .main-content {
     margin-top: 0; }
 
@@ -394,7 +409,7 @@ h1, h2, h3, h4, h5 {
   position: fixed;
   width: inherit;
   overflow-y: auto;
-  top: 58px;
+  top: 54px;
   bottom: 0;
   z-index: 10; }
   .study .sidebar .btn-group {

@@ -79,22 +79,21 @@ let layout = route => {
 //                      m('li.nav-item',[
 //                          m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
 //                      ]),
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/addUser', config:m.route}, 'Add User')
+                        m('li.nav-item', [
+                            m('.dropdown', [
+                                m('a.nav-link', 'Admin'),
+                                m('.dropdown-menu', [
+                                    m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
+                                ])
+                            ])
                         ]),
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                         ]),
-                        m('li.nav-item.pull-xs-right',[
-                            ctrl.isloggedin
-                                ?
-                                [
-                                    m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
-                                        m('i.fa.fa-sign-out'), '  Logout'
-                                    ])
-                                ]
-                                :
-                                []
+                        ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
+                            m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+                                m('i.fa.fa-sign-out'), '  Logout'
+                            ])
                         ])
                     ])
                 ]),
