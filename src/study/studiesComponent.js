@@ -8,16 +8,17 @@ var mainComponent = {
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
-            filtered_studies:m.prop([]),
             error:m.prop(''),
             study_name:m.prop(''),
             user_name:m.prop(''),
-            //globalSearch: m.prop(''),
-            loaded:false
+            globalSearch: m.prop(''),
+            permissionChoice: m.prop('all'),
+            loaded:false,
+            do_create, do_delete, do_rename
         };
 
         load();
-        return {ctrl, do_create, do_delete, do_rename, filter_by};
+        return ctrl;
 
         function load() {
             fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
@@ -25,30 +26,12 @@ var mainComponent = {
                 .then(toJSON)
                 .then(response => response.studies.sort(sortStudies))
                 .then(ctrl.studies)
-                .then(ctrl.filtered_studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
 
             function sortStudies(study1, study2){
                 return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
             }
-        }
-
-        function filter_by(permission){
-            if(permission === 'all') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => !study.is_public));
-                return;
-            }
-            if(permission === 'public') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => study.is_public));
-                return;
-            }
-
-            if(permission === 'collaboration') {
-                ctrl.filtered_studies(ctrl.studies().filter(study => study.permission !== 'owner').filter(study => !study.is_public));
-                return;
-            }
-            ctrl.filtered_studies(ctrl.studies().filter(study => study.permission === permission));
         }
 
         function do_delete(study_id){
@@ -95,8 +78,8 @@ var mainComponent = {
         }
 
     },
-    view({ctrl, do_create, do_delete, do_rename, filter_by}){
-        if (!ctrl.loaded) return m('.loader');
+    view({loaded, studies, do_create, do_delete, do_rename, permissionChoice, globalSearch}){
+        if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row', [
                 m('.col-sm-6', [
@@ -109,7 +92,7 @@ var mainComponent = {
                     ]),
 
                     m('.input-group.pull-right.m-r-1', [
-                        m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: e => filter_by(e.target.value)}, [
+                        m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: e => permissionChoice(e.target.value)}, [
                             m('option',{disabled: true}, 'Filter studies'),
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
@@ -120,13 +103,11 @@ var mainComponent = {
                 ])
             ]),
             
-            /*
             m('.row', [
                 m('.col-sm-12.p-x-3.p-y-1', [ 
-                    m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                    m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', globalSearch)})
                 ])
             ]),
-            */
 
             m('.card.studies-card', [
                 m('.card-block', [
@@ -136,55 +117,67 @@ var mainComponent = {
                         ])
                     ]),
 
-                    ctrl.filtered_studies().map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
-                        m('.row.study-row', [
-                            m('.col-sm-3', [
-                                m('.study-text', study.name)
-                            ]),
-                            m('.col-sm-9', [
-                                m('.btn-toolbar.pull-right', [
-                                    m('.btn-group.btn-group-sm', [
-                                        study.permission !=='read only' && !study.is_public
-                                        ?
-                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                            study.permission==='owner'
+                    studies()
+                        .filter(permissionFilter(permissionChoice()))
+                        .filter(searchFilter(globalSearch()))
+                        .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
+                            m('.row.study-row', [
+                                m('.col-sm-3', [
+                                    m('.study-text', study.name)
+                                ]),
+                                m('.col-sm-9', [
+                                    m('.btn-toolbar.pull-right', [
+                                        m('.btn-group.btn-group-sm', [
+                                            study.permission !=='read only' && !study.is_public
                                             ?
-                                            [m('a.dropdown-item',
-                                                {onclick:function() {do_delete(study.id);}},
-                                                [m('i.fa.fa-remove'), ' Delete']),
-                                            m('a.dropdown-item',
-                                                {onclick:function() {do_rename(study.id);}},
-                                                    [m('i.fa.fa-exchange'), ' Rename'])]
-                                            :'',
-                                            m('a.dropdown-item', {
-                                                href: `/deploy/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Deploy'),
-                                            m('a.dropdown-item', {
-                                                href: `/studyChangeRequest/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Change'),
-                                            m('a.dropdown-item', {
-                                                href: `/studyRemoval/${study.id}`,
-                                                config: m.route
-                                            }, 'Request Removal'),
-                                            m('a.dropdown-item', {
-                                                href: `/sharing/${study.id}`,
-                                                config: m.route
-                                            }, [m('i.fa.fa-user-plus'), ' Sharing'])
-                                        ]})
-                                        :
-                                        ''
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                study.permission==='owner'
+                                                ?
+                                                [m('a.dropdown-item',
+                                                    {onclick:function() {do_delete(study.id);}},
+                                                    [m('i.fa.fa-remove'), ' Delete']),
+                                                m('a.dropdown-item',
+                                                    {onclick:function() {do_rename(study.id);}},
+                                                        [m('i.fa.fa-exchange'), ' Rename'])]
+                                                :'',
+                                                m('a.dropdown-item', {
+                                                    href: `/deploy/${study.id}`,
+                                                    config: m.route
+                                                }, 'Request Deploy'),
+                                                m('a.dropdown-item', {
+                                                    href: `/studyChangeRequest/${study.id}`,
+                                                    config: m.route
+                                                }, 'Request Change'),
+                                                m('a.dropdown-item', {
+                                                    href: `/studyRemoval/${study.id}`,
+                                                    config: m.route
+                                                }, 'Request Removal'),
+                                                m('a.dropdown-item', {
+                                                    href: `/sharing/${study.id}`,
+                                                    config: m.route
+                                                }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                            ]})
+                                            :
+                                            ''
+                                        ])
                                     ])
                                 ])
                             ])
-                        ])
-                    ]))
+                        ]))
                 ])
             ])
         ]);
     }
 };
+
+let permissionFilter = permission => study => {
+    if(permission === 'all') return !study.is_public;
+    if(permission === 'public') return study.is_public;
+    if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
+    return study.permission === permission;
+};
+
+let searchFilter = searchTerm => study => !study.name || study.name.indexOf(searchTerm) != -1;
 
 function routeConfig(el, isInit, ctx, vdom) {
 
@@ -203,4 +196,3 @@ function routeConfig(el, isInit, ctx, vdom) {
         m.route(el.search.slice(1));
     }
 }
-
