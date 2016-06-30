@@ -2138,7 +2138,7 @@
         return {level:'warn', message: message, test:test};
     }
 
-    function error$1(message, test){
+    function error(message, test){
         return {level:'error', message: message, test:test};
     }
 
@@ -2276,16 +2276,16 @@
             if (!interactions) {return;}
 
             if (!Array.isArray(interactions)){
-                return [error$1('Interactions must be an array.', true)];
+                return [error('Interactions must be an array.', true)];
             }
 
             return  interactions.map(function (interaction, index) {
                 return [
-                    !interaction.conditions ? error$1(("Interaction [" + index + "] must have conditions"), true) : [
-                        error$1(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function ( c) { return !c.type; }))
+                    !interaction.conditions ? error(("Interaction [" + index + "] must have conditions"), true) : [
+                        error(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function ( c) { return !c.type; }))
                     ],
-                    !interaction.actions ? error$1(("Interaction [" + index + "] must have actions"), true) : [
-                        error$1(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function ( a) { return !a.type; }))
+                    !interaction.actions ? error(("Interaction [" + index + "] must have actions"), true) : [
+                        error(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function ( a) { return !a.type; }))
                     ]
                 ];
             });
@@ -2301,12 +2301,12 @@
             if (!input) {return;}
 
             if (!Array.isArray(trial.input)){
-                return [error$1('Input must be an Array', true)];
+                return [error('Input must be an Array', true)];
             }
 
             return [
-                error$1('Input must always have a handle', input.some(function ( i) { return !i.handle; })),
-                error$1('Input must always have an on attribute', input.some(function ( i) { return !i.on; }))
+                error('Input must always have a handle', input.some(function ( i) { return !i.handle; })),
+                error('Input must always have an on attribute', input.some(function ( i) { return !i.on; }))
             ];
         }
     }
@@ -6007,7 +6007,6 @@
                     ctrl.sent = true;
                 })
                 .catch(function ( response ) {
-                    throw error;
                 })
                 .then(m.redraw);
             }
@@ -6026,22 +6025,22 @@
             ])
             :
             m('.deploy.container', [
-                m('h3', 'Deploy'),
-                m('p', 'Researcher name: ', ctrl.researcher_name()),
-                m('p', 'Researcher email address: ', ctrl.researcher_email()),
-                m('p', 'Study folder location: ', ctrl.folder_location()),
+                m('h3', 'Study Deploy Request'),
+                m('p', 'Researcher Name: ', ctrl.researcher_name()),
+                m('p', 'Researcher Email Address: ', ctrl.researcher_email()),
+                m('p', 'Study Folder Location: ', ctrl.folder_location()),
                 radioInput({
-                    label:m('span', ['Name of experiment file', ASTERIX]),
+                    label:m('span', ['Name of Experiment File', ASTERIX]),
                     prop: ctrl.experiment_file,
                     values:ctrl.experiment_files(),
                     form: form, required:true, isStack:true
                 }),
 
-                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target number of completed study sessions', ASTERIX],  placeholder: 'Target number of completed study sessions', prop: ctrl.target_number, form: form, required:true}),
+                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target Number of Completed Study Sessions', ASTERIX],  placeholder: 'Target Number of Completed Study Sessions', prop: ctrl.target_number, form: form, required:true}),
 
-                m('h4', 'Participant restrictions'),
+                m('h4', 'Participant Restrictions'),
                 rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments, exist_rule_file: ctrl.exist_rule_file}),
-                m('h4', 'Acceptance checklist'),
+                m('h4', 'Checklist'),
                 checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
                 checkboxInput({
                     description: m('span', [ 'This study has been approved by the appropriate IRB ', m('span.text-danger', '*') ]),
@@ -6152,8 +6151,8 @@
             :
             m('.StudyRemoval.container', [
                 m('h1', 'Study Removal'),
-                m('p', 'Researcher name: ', ctrl.researcher_name()),                
-                m('p', 'Researcher email address: ', ctrl.researcher_email()),                
+                m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+                m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
                 radioInput({
                     label:m('span', ['Study name', ASTERIX$1]), 
                     prop: ctrl.study_name, 
@@ -6230,8 +6229,8 @@
                 :
                 m('.StudyChangeRequest.container', [
                     m('h1', 'Study Change Request'),
-                    m('p', 'Researcher name: ', ctrl.researcher_name()),
-                    m('p', 'Researcher email address: ', ctrl.researcher_email()),
+                    m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+                    m('p', m('strong','Researcher email address: '), ctrl.researcher_email()),
 
                     m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
 

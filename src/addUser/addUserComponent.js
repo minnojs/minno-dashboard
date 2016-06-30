@@ -28,11 +28,8 @@ let addComponent = {
                 })
                 .catch(response => {
                     ctrl.error(response.message);
-                    m.redraw();
                 })
-                .then(() => {
-                    m.redraw();
-                });
+                .then(m.redraw());
         }
     },
     view(ctrl){
@@ -48,46 +45,57 @@ let addComponent = {
                     m('.card-block',[
                         m('h4', 'Please fill the following details'),
                         m('form', {onsubmit:ctrl.add}, [
-                            m('input.form-control', {
-                                type:'username',
-                                placeholder: 'User name',
-                                value: ctrl.username(),
-                                onkeyup: m.withAttr('value', ctrl.username),
-                                onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue(ctrl.username)
-                            }),
-                            m('input.form-control', {
-                                type:'first_name',
-                                placeholder: 'first name',
-                                value: ctrl.first_name(),
-                                onkeyup: m.withAttr('value', ctrl.first_name),
-                                onchange: m.withAttr('value', ctrl.first_name),
-                                config: getStartValue(ctrl.first_name)
-                            }),
-                            m('input.form-control', {
-                                type:'last_name',
-                                placeholder: 'last name',
-                                value: ctrl.last_name(),
-                                onkeyup: m.withAttr('value', ctrl.last_name),
-                                onchange: m.withAttr('value', ctrl.last_name),
-                                config: getStartValue(ctrl.last_name)
-                            }),
-                            m('input.form-control', {
-                                type:'email',
-                                placeholder: 'email',
-                                value: ctrl.email(),
-                                onkeyup: m.withAttr('value', ctrl.email),
-                                onchange: m.withAttr('value', ctrl.email),
-                                config: getStartValue(ctrl.email)
-                            }),
-                            m('label.c-input.c-checkbox', [
+                            m('fieldset.form-group',
                                 m('input.form-control', {
-                                    type: 'checkbox',
-                                    onclick: m.withAttr('checked', ctrl.iscu)}),
-                                m('span.c-indicator'),
-                                m.trust('&nbsp;'),
-                                m('span', 'contract user')
-                            ])
+                                    type:'username',
+                                    placeholder: 'User name',
+                                    value: ctrl.username(),
+                                    onkeyup: m.withAttr('value', ctrl.username),
+                                    onchange: m.withAttr('value', ctrl.username),
+                                    config: getStartValue(ctrl.username)
+                                }
+                            )),
+                            m('fieldset.form-group',
+                                m('input.form-control', {
+                                    type:'first_name',
+                                    placeholder: 'first name',
+                                    value: ctrl.first_name(),
+                                    onkeyup: m.withAttr('value', ctrl.first_name),
+                                    onchange: m.withAttr('value', ctrl.first_name),
+                                    config: getStartValue(ctrl.first_name)
+                                }
+                            )),
+                            m('fieldset.form-group',
+                                    m('input.form-control', {
+                                        type:'last_name',
+                                        placeholder: 'last name',
+                                        value: ctrl.last_name(),
+                                        onkeyup: m.withAttr('value', ctrl.last_name),
+                                        onchange: m.withAttr('value', ctrl.last_name),
+                                        config: getStartValue(ctrl.last_name)
+                                    }
+                            )),
+                            m('fieldset.form-group',
+                                m('input.form-control', {
+                                    type:'email',
+                                    placeholder: 'email',
+                                    value: ctrl.email(),
+                                    onkeyup: m.withAttr('value', ctrl.email),
+                                    onchange: m.withAttr('value', ctrl.email),
+                                    config: getStartValue(ctrl.email)
+                                }
+                            )),
+                            m('fieldset.form-group',
+
+                                m('label.c-input.c-checkbox', [
+                                    m('input.form-control', {
+                                        type: 'checkbox',
+                                        onclick: m.withAttr('checked', ctrl.iscu)}),
+                                    m('span.c-indicator'),
+                                    m.trust('&nbsp;'),
+                                    m('span', 'contract user')
+                                ])
+                            )
                         ]),
 
                         ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',

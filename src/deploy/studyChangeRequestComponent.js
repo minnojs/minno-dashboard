@@ -61,8 +61,8 @@ let studyChangeRequestComponent = {
             :
             m('.StudyChangeRequest.container', [
                 m('h1', 'Study Change Request'),
-                m('p', 'Researcher name: ', ctrl.researcher_name()),
-                m('p', 'Researcher email address: ', ctrl.researcher_email()),
+                m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+                m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
 
                 m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
 

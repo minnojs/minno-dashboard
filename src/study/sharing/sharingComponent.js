@@ -68,7 +68,7 @@ let collaborationComponent = {
                 });
         }
         function do_make_public(is_public){
-            messages.confirm({okText: ['Yes, Make ', is_public ? 'Public' : 'Private'], cancelText: ['No, keap ', is_public ? 'Private' : 'Public' ], header:'Are you sure?', content:m('p', [m('p', is_public
+            messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keap ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
                                                                                 ?
                                                                                 'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
                                                                                 :
@@ -105,7 +105,7 @@ let collaborationComponent = {
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add new collaboration'
                         ]),
-                        m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['make it ', ctrl.is_public() ? 'private' : 'public'])
+                        m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                     ])
                 ]),
                 

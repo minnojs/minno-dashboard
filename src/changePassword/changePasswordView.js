@@ -1,6 +1,6 @@
 export let body = ctrl => m('.card.card-inverse.col-md-4', [
     m('.card-block',[
-        m('h4', 'Select new password'),
+        m('h4', 'Enter New Password'),
         m('form', [
             m('input.form-control', {
                 type:'password',

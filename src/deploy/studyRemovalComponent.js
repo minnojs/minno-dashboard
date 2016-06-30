@@ -58,9 +58,9 @@ let StudyRemovalComponent = {
         ])
         :
         m('.StudyRemoval.container', [
-            m('h1', 'Study Removal'),
-            m('p', 'Researcher name: ', ctrl.researcher_name()),                
-            m('p', 'Researcher email address: ', ctrl.researcher_email()),                
+            m('h1', 'Study Removal Request'),
+            m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+            m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
             radioInput({
                 label:m('span', ['Study name', ASTERIX]), 
                 prop: ctrl.study_name, 
