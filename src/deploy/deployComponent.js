@@ -37,9 +37,11 @@ let deployComponent = {
             comments: m.prop('')   
             
         };
+
         get_study_prop(m.route.param('studyId'))
             .then(response =>{
                 ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
+                ctrl.study_name = response.study_name;
                 ctrl.researcher_name(response.researcher_name);
                 ctrl.researcher_email(response.researcher_email);
                 ctrl.folder_location(response.folder);
@@ -49,7 +51,8 @@ let deployComponent = {
             })
             .catch(error => {
                 throw error;
-            }).then(m.redraw);
+            })
+            .then(m.redraw);
     
         return {ctrl, form, submit};
         function submit(){
@@ -71,19 +74,35 @@ let deployComponent = {
         }
     },
     view({form, ctrl, submit}){
-        return ctrl.sent
-        ?
-        m('.deploy.centrify',[
+        if (ctrl.sent) return m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
             m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
             ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : ''
-        ])
-        :
-        m('.deploy.container', [
-            m('h3', 'Study Deploy Request'),
-            m('p', 'Researcher Name: ', ctrl.researcher_name()),
-            m('p', 'Researcher Email Address: ', ctrl.researcher_email()),
-            m('p', 'Study Folder Location: ', ctrl.folder_location()),
+        ]);
+        
+        return m('.deploy.container', [
+            m('h3', [
+                'Request Deploy ',
+                m('small', ctrl.study_name)
+            ]),
+
+            m('.card.card-inverse.card-info', [
+                m('.card-block', [
+                    m('.row', [
+                        m('.col-sm-5', m('strong', 'Researcher Name: ')),
+                        m('.col-sm-5', ctrl.researcher_name())
+                    ]),
+                    m('.row', [
+                        m('.col-sm-5', m('strong', 'Researcher Email Address: ')),
+                        m('.col-sm-5', ctrl.researcher_email())
+                    ]),
+                    m('.row', [
+                        m('.col-sm-5', m('strong', 'Study Folder Location: ')),
+                        m('.col-sm-5', ctrl.folder_location())
+                    ])
+                ])
+            ]),
+
             radioInput({
                 label:m('span', ['Name of Experiment File', ASTERIX]),
                 prop: ctrl.experiment_file,
