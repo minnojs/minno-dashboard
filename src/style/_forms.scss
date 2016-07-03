@@ -1,0 +1,16 @@
+.checkbox-input-group {padding: .375rem .75rem}
+.form-control-sm {padding-top: 4px; padding-bottom: 4px;}
+
+// fix post c-custom margin
+.c-inputs-stacked .c-input:last-child::after { display: none; }
+
+.checkmarked {
+    text-indent: -0.3em;
+    padding-left: 1.2em;
+
+    > .fa {
+        float: left;
+        margin-top: 0.35em;
+        margin-left: -1.2em;
+    }
+}

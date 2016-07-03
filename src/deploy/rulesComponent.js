@@ -23,7 +23,12 @@ let rulesComponent = {
     },
     view: ({visual, value, edit, remove, exist_rule_file}) => {
         return m('div', [
-            m('btn-toolbar', [
+            !exist_rule_file() ? '' : m('.small.text-muted', [
+                'You already have a rule file by the name of "',
+                exist_rule_file(),
+                '", it will be overwritten if you create a new one.'
+            ]),
+            m('.btn-group', [
                 m('.btn.btn-secondary.btn-sm', {onclick: edit},  [
                     m('i.fa.fa-edit'), ' Rule editor'
                 ]),
@@ -31,10 +36,9 @@ let rulesComponent = {
                     m('i.fa.fa-remove'), ' Clear rules'
                 ])
             ]),
-            m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
+            m('#ruleGenerator.card', {config: getInputs(visual, value)}, [
                 m('.card-block', visual())
-            ]),
-            exist_rule_file() ? m('small.text-muted', ['You already have rule file with the name ',exist_rule_file(), ', it will overridden by creating a new one by the rule editor.']) : ''
+            ])
         ]);
     }
 };
