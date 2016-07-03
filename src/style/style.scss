@@ -19,6 +19,7 @@ $navbar-height: 54px;
 
 h1, h2, h3, h4, h5 {font-weight: 300}
 h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 100; color: #818a91; font-size:70%}
+.strong {font-weight: bold}
 
 // utility
 .centrify {
@@ -44,6 +45,12 @@ h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 100; color: #818a
 
 .pool {
 	padding-bottom: 9em;
+}
+
+#ruleGenerator {
+    background-color: #bcdae2;
+    border-color: #bcdae2;
+    margin-top: 0.5em;
 }
 
 #messages .card {
@@ -87,10 +94,6 @@ h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 100; color: #818a
     &:hover .time-card {display: block;}
 }
 
-.c-inputs-stacked.fixed {margin-bottom: -1.5em}
-.checkbox-input-group {padding: .375rem .75rem}
-.form-control-sm {padding-top: 4px; padding-bottom: 4px;}
-
 // used within the validator
 .stringified {
 	.pre {text-decoration: none;white-space: pre;}
@@ -105,6 +108,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 100; color: #818a
 
 @import "./navbar";
 @import "./loader";
+@import "./forms";
 @import "./context";
 @import "./files";
 @import "./backdrop";

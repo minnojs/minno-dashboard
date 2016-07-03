@@ -16,7 +16,7 @@ let inputWrapper = (view) => (ctrl, args) => {
         args.isStack
         ? [ 
             m('.col-sm-12', [
-                args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
+                args.label != null ? m('label', {class: 'strong'}, args.label) : '',
                 view(ctrl, args, {groupClass, inputClass}),
                 args.help && m('small.text-muted.m-y-0', args.help )
             ])

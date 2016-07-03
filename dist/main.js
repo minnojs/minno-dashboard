@@ -782,7 +782,7 @@
             args.isStack
             ? [ 
                 m('.col-sm-12', [
-                    args.label != null ? m('label', {class: 'form-control-label'}, args.label) : '',
+                    args.label != null ? m('label', {class: 'strong'}, args.label) : '',
                     view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
                     args.help && m('small.text-muted.m-y-0', args.help )
                 ])
@@ -5929,7 +5929,12 @@
             var exist_rule_file = ref.exist_rule_file;
 
             return m('div', [
-                m('btn-toolbar', [
+                !exist_rule_file() ? '' : m('.small.text-muted', [
+                    'You already have a rule file by the name of "',
+                    exist_rule_file(),
+                    '", it will be overwritten if you create a new one.'
+                ]),
+                m('.btn-group', [
                     m('.btn.btn-secondary.btn-sm', {onclick: edit},  [
                         m('i.fa.fa-edit'), ' Rule editor'
                     ]),
@@ -5937,10 +5942,9 @@
                         m('i.fa.fa-remove'), ' Clear rules'
                     ])
                 ]),
-                m('#ruleGenerator.card.card-warning.m-t-1', {config: getInputs(visual, value)}, [
+                m('#ruleGenerator.card', {config: getInputs(visual, value)}, [
                     m('.card-block', visual())
-                ]),
-                exist_rule_file() ? m('small.text-muted', ['You already have rule file with the name ',exist_rule_file(), ', it will overridden by creating a new one by the rule editor.']) : ''
+                ])
             ]);
         }
     };
@@ -6062,36 +6066,40 @@
                     form: form, required:true, isStack:true
                 }),
 
-                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target Number of Completed Study Sessions', ASTERIX],  placeholder: 'Target Number of Completed Study Sessions', prop: ctrl.target_number, form: form, required:true}),
+                textInput({help: 'For private studies (not in the Project Implicit research pool), enter n/a', label:['Target Number of Completed Study Sessions', ASTERIX],  placeholder: 'Target Number of Completed Study Sessions', prop: ctrl.target_number, form: form, required:true, isStack:true}),
 
-                m('h4', 'Participant Restrictions'),
+                m('.font-weight-bold', 'Participant Restrictions'),
                 rulesEditor({value:ctrl.rulesValue, visual: ctrl.rulesVisual, comments: ctrl.rulesComments, exist_rule_file: ctrl.exist_rule_file}),
-                m('h4', 'Checklist'),
-                checkboxInput({description: ['The study\'s study-id starts with my user name', ASTERIX], prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
-                checkboxInput({
-                    description: m('span', [ 'This study has been approved by the appropriate IRB ', m('span.text-danger', '*') ]),
-                    prop: ctrl.approved_by_irb,
-                    required:true,
-                    form: form, isStack:true
-                }),
-                checkboxInput({
-                    description: m('span', [ 'All items on "Study Testing" and "Study Approval" from Project Implicit Study Development Checklist completed (items 9 - 17) ', ASTERIX]),
-                    help: m('span', ['The checklist is available at ', m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'http://peoplescience.org/node/105')]),
-                    prop: ctrl.completed_checklist,
-                    form: form, isStack:true,
-                    required:true
-                }),
-                checkboxInput({
-                    description: m('span', ['My study folder includes ZERO files that aren\'t necessary for the study  ', ASTERIX]),
-                    help: 'e.g., word documents, older versions of files, items that were dropped from the final version',
-                    prop: ctrl.zero_unnecessary_files,
-                    required:true,
-                    form: form, isStack:true
-                }),
-                checkboxInput({description: ['I used a realstart and lastpage tasks', ASTERIX], prop: ctrl.realstart, form: form, required:true, isStack:true}),
 
+                m('.font-weight-bold', 'Study is ready for deploy: ', ASTERIX),
+                m('.m-b-1', [
+                    checkbox({description: 'The study\'s study-id starts with my user name', prop: ctrl.valid_study_name, form: form, required:true, isStack:true}),
+                    checkbox({
+                        description:  'This study has been approved by the appropriate IRB ', 
+                        prop: ctrl.approved_by_irb,
+                        required:true,
+                        form: form, isStack:true
+                    }),
+                    checkbox({
+                        description:  [
+                            'All items on "Study Testing" and "Study Approval" from ',  
+                            m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'Project Implicit Study Development Checklist'), 
+                            ' completed (items 9 - 17) '
+                        ],
+                        prop: ctrl.completed_checklist,
+                        form: form, isStack:true,
+                        required:true
+                    }),
+                    checkbox({
+                        description: 'My study folder includes ZERO files that aren\'t necessary for the study (e.g., word documents, older versions of files, items that were dropped from the final version)',
+                        prop: ctrl.zero_unnecessary_files,
+                        required:true,
+                        form: form, isStack:true
+                    }),
+                    checkbox({description: 'I used a realstart and lastpage tasks', prop: ctrl.realstart, form: form, required:true, isStack:true})
+                ]),
                 radioInput({
-                    label:m('span', ['Study approved by a *User Experience* Reviewer (Calvin Lai):', ASTERIX]),
+                    label:['Study has been approved by a *User Experience* Reviewer (Calvin Lai): ', ASTERIX],
                     prop: ctrl.approved_by_a_reviewer,
                     values: {
                         'No, this study is not for the Project Implicit pool.' : 'No, this study is not for the Project Implicit pool.',
@@ -6101,7 +6109,7 @@
                 }),
 
                 radioInput({
-                    label: m('span', ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched?', ASTERIX]),
+                    label: ['If you are building this study for another researcher (e.g. a contract study), has the researcher received the standard final launch confirmation email and confirmed that the study is ready to be launched? ', ASTERIX],
                     prop: ctrl.launch_confirmation,
                     values: {
                         'No,this study is mine': 'No,this study is mine',
@@ -6116,6 +6124,45 @@
             ]);
         }
     };
+
+    var checkbox = function ( args ) { return m.component({
+        controller: function controller(ref){
+            var prop = ref.prop;
+            var form = ref.form;
+            var required = ref.required;
+
+            var validity = function () { return !required || prop(); };
+            if (!form) throw new Error('Form not defined');
+            form.register(validity);
+
+            return {validity: validity, showValidation: form.showValidation};
+        },
+        view: function (ctrl, ref) {
+            var prop = ref.prop;
+            var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+            var help = ref.help;
+            var required = ref.required;
+            var form = ref.form;
+
+            return m('.checkmarked', 
+            // config
+            { onclick: function () { return prop(!prop()); } },
+            // content
+            [ 
+                m('i.fa.fa-fw', {
+                    class: classNames({
+                        'fa-square-o' : !prop(),
+                        'fa-check-square-o' : prop(),
+                        'text-success' : required && form.showValidation() && prop(),
+                        'text-danger' : required && form.showValidation() && !prop()
+                    })
+                }),
+                m.trust('&nbsp;'),
+                description,
+                !help ? '' : m('small.text-muted', help)
+            ]);
+        }
+    }, args); };
 
     var ASTERIX$1 = m('span.text-danger', '*');
 

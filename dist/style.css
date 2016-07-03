@@ -12,6 +12,9 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   color: #818a91;
   font-size: 70%; }
 
+.strong {
+  font-weight: bold; }
+
 .centrify {
   display: flex;
   justify-content: center;
@@ -31,6 +34,11 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
 
 .pool {
   padding-bottom: 9em; }
+
+#ruleGenerator {
+  background-color: #bcdae2;
+  border-color: #bcdae2;
+  margin-top: 0.5em; }
 
 #messages .card {
   overflow-y: auto; }
@@ -66,16 +74,6 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
     text-align: left; }
   .statistics-time-button:hover .time-card {
     display: block; }
-
-.c-inputs-stacked.fixed {
-  margin-bottom: -1.5em; }
-
-.checkbox-input-group {
-  padding: .375rem .75rem; }
-
-.form-control-sm {
-  padding-top: 4px;
-  padding-bottom: 4px; }
 
 .stringified .pre {
   text-decoration: none;
@@ -187,6 +185,24 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   40% {
     box-shadow: 0 -2em #00CED1;
     height: 5em; } }
+
+.checkbox-input-group {
+  padding: .375rem .75rem; }
+
+.form-control-sm {
+  padding-top: 4px;
+  padding-bottom: 4px; }
+
+.c-inputs-stacked .c-input:last-child::after {
+  display: none; }
+
+.checkmarked {
+  text-indent: -0.3em;
+  padding-left: 1.2em; }
+  .checkmarked > .fa {
+    float: left;
+    margin-top: 0.35em;
+    margin-left: -1.2em; }
 
 /**
  * Context menu according to
