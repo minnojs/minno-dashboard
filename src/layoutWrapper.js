@@ -3,6 +3,7 @@ import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
 import {getAuth, logout} from 'login/authModel';
 export default layout;
+
 let timer = 0;
 let countdown = 0;
 
@@ -12,20 +13,17 @@ let layout = route => {
             const ctrl = {
                 isloggedin: false,
                 doLogout,
-                redirect:true,
                 timer:m.prop(0)
             };
 
             is_loggedin();
+
             function is_loggedin(){
                 getAuth().then((response) => {
                     ctrl.isloggedin = response.isloggedin;
-
-                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/reset_password/'+ m.route.param('code'))
+                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                         m.route('/login');
-                    else
-                        ctrl.redirect = false;
-                    timer = response.timeoutInSeconds;
+
                     timer = response.timeoutInSeconds;
                     run_countdown();
                     m.redraw();
@@ -41,7 +39,6 @@ let layout = route => {
                         messages.close();
                         doLogout();
                     }
-                    // console.log(timer);
                     if(timer==70)
                         messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
                             .then(response => {
@@ -67,29 +64,34 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                         ]),
+                        m('li.nav-item', [
+                            m('.dropdown', [
+                                m('a.nav-link', 'Data'),
+                                m('.dropdown-menu', [
+                                    m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
+                                    m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
+                                    m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                                ])
+                            ])
+                        ]),
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
-                        ]),
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/downloads', config:m.route},'Downloads')
-                        ]),
-//                      m('li.nav-item',[
-//                          m('a.nav-link',{href:'/deploy', config:m.route},'Deploy')
-//                      ]),
-//                      m('li.nav-item',[
-//                          m('a.nav-link',{href:'/studyRemoval', config:m.route}, 'Study Removal')
-//                      ]),
-//                      m('li.nav-item',[
-//                          m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
-//                      ]),
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/change_password', config:m.route}, 'Settings')
                         ]),
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Admin'),
                                 m('.dropdown-menu', [
                                     m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
+                                ])
+                            ])
+                        ]),
+                        m('li.nav-item.pull-xs-right', [
+                            m('.dropdown', [
+                                m('a.nav-link', [
+                                    m('i.fa.fa-cog.fa-lg')
+                                ]),
+                                m('.dropdown-menu.dropdown-menu-right', [
+                                    m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Change password')
                                 ])
                             ])
                         ]),
@@ -102,11 +104,7 @@ let layout = route => {
                 ]),
 
                 m('.main-content.container-fluid', [
-                    !ctrl.redirect
-                    ?
                     route
-                    :
-                    ''
                 ]),
 
                 m.component(contextMenu), // register context menu

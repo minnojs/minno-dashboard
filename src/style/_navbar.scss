@@ -5,15 +5,12 @@ $navbar-background: #2882b5;
   background: $navbar-background; 
   .is-iframe & {display:none}
 
-  .dropdown:hover .dropdown-menu {
-      display:block;
-      
-  }
+  .dropdown:hover .dropdown-menu { display:block; }
   .nav-link { cursor: pointer;}
   .dropdown-menu {
     border-radius:0;
     border-color: darken($navbar-background, 0%);
-    background: lighten($navbar-background, 55%);
+    background: lighten($navbar-background, 40%);
 
     // offset the dropdown
     border-top-width: 8px;
@@ -22,6 +19,8 @@ $navbar-background: #2882b5;
     margin-top:0;
     margin-left: -0.5rem;
   }
+  .dropdown-menu.dropdown-menu-right {margin-right: -0.5rem;}
+  .dropdown-item:hover {background: lighten($navbar-background, 35%);}
 }
 
 .nav-item.active {

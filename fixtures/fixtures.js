@@ -29,6 +29,8 @@ router.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
 });
 
+router.get('/is_loggedin', (req,res) => res.json({"timeoutInSeconds":3600,"role":"SU","isloggedin":true}));
+
 router.get('/studies', (req,res)=>{
     res.json({studies: [
         {id:'asd1', name:'Study 1'},

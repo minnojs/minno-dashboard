@@ -17,7 +17,7 @@ export let getStatistics = query => {
     /**
      * Parses the query as we build it locally and creates an appropriate post for the server
      **/
-    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty}){
+    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate}){
         let baseUrl = `${location.origin}/implicit`;
         let post = {
             db: source().match(/^(.*?):/)[1], // before colon
@@ -25,8 +25,8 @@ export let getStatistics = query => {
             testDB:'newwarehouse',
             study: study(),
             task: task(),
-            since:'5/01/2016',
-            until:'6/2/2016',
+            since: parseDate(startDate()),
+            until: parseDate(endDate()),
             refresh:'no',
             endTask:'',
             filter:'',
@@ -50,6 +50,11 @@ export let getStatistics = query => {
             baseURL:baseUrl
         };
         return post;
+
+        function parseDate(date){
+            if (!date) return;
+            return `${date.getMonth()+1}/${date.getDate()}/${date.getYear() + 1900}`;
+        }
     } 
 };
 

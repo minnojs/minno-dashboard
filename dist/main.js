@@ -316,6 +316,7 @@
                     .then(ctrl.studies)
                     .then(function () { return ctrl.loaded = true; })
                     .then(m.redraw);
+
                 function sortStudies(study1, study2){
                     return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
                 }
@@ -391,24 +392,21 @@
                                 m('option',{disabled: true}, 'Filter studies'),
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
-                                m('option', {value:'collaboration'}, 'Show only studies shared with me'),
+                                m('option', {value:'collaborate'}, 'Show only studies that shared with me'),
                                 m('option', {value:'public'}, 'Show only public studies')
                             ])
                         ])
                     ])
                 ]),
                 
-                m('.row', [
-                    m('.col-sm-12.p-x-3.p-y-1', [ 
-                        m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', globalSearch)})
-                    ])
-                ]),
-
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', [
+                            m('.col-sm-9', [
+                                m('p.form-control-static',[m('strong', 'Study Name')])
+                            ]),
                             m('.col-sm-3', [
-                                m('strong','Study Name')
+                                m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
                             ])
                         ]),
 
@@ -526,6 +524,8 @@
             var sortgroup = ref.sortgroup;
             var sorttime = ref.sorttime;
             var showEmpty = ref.showEmpty;
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
 
             var baseUrl = "" + (location.origin) + "/implicit";
             var post = {
@@ -534,8 +534,8 @@
                 testDB:'newwarehouse',
                 study: study(),
                 task: task(),
-                since:'5/01/2016',
-                until:'6/2/2016',
+                since: parseDate(startDate()),
+                until: parseDate(endDate()),
                 refresh:'no',
                 endTask:'',
                 filter:'',
@@ -559,6 +559,11 @@
                 baseURL:baseUrl
             };
             return post;
+
+            function parseDate(date){
+                if (!date) return;
+                return ("" + (date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
+            }
         } 
     };
 
@@ -1066,16 +1071,18 @@
                             m('.btn-group.btn-group-sm', [
                                 button(query.sortstudy, 'Study'),
                                 button(query.sorttask, 'Task'),
-                                m('button.btn.btn-secondary', {class: query.sorttime() !== 'None' ? 'active' : ''}, 'Time'),
-                                m('.info-box', [
-                                    m('.card', [
-                                        m('.card-header', 'Time filter'),
-                                        m('.card-block.c-inputs-stacked', [
-                                            radioButton(query.sorttime, 'None'),
-                                            radioButton(query.sorttime, 'Days'),
-                                            radioButton(query.sorttime, 'Weeks'),
-                                            radioButton(query.sorttime, 'Months'),
-                                            radioButton(query.sorttime, 'Years')
+                                m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                                    'Time',
+                                    m('.time-card', [
+                                        m('.card', [
+                                            m('.card-header', 'Time filter'),
+                                            m('.card-block.c-inputs-stacked', [
+                                                radioButton(query.sorttime, 'None'),
+                                                radioButton(query.sorttime, 'Days'),
+                                                radioButton(query.sorttime, 'Weeks'),
+                                                radioButton(query.sorttime, 'Months'),
+                                                radioButton(query.sorttime, 'Years')
+                                            ])
                                         ])
                                     ])
                                 ]),
@@ -6384,7 +6391,7 @@
         body: {password: password, confirm: confirm}
     }); };
 
-    var password_body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
+    var body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
             m('h4', 'Enter New Password'),
             m('form', [
@@ -6406,8 +6413,9 @@
                     config: getStartValue$2(ctrl.confirm)
                 })
             ]),
-            ctrl.password_error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()) : '',
-            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
+            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+            m('button.btn.btn-primary.btn-block', {onclick: ctrl.set_password},'Update')
+
         ])
     ]); };
 
@@ -6461,12 +6469,11 @@
                         m('h5', 'Password successfully updated!')
                     ]
                 :
-                password_body(ctrl)]);
+                body(ctrl)]);
         }
     };
 
     var change_password_url = '/dashboard/dashboard/change_password';
-    var change_email_url = '/dashboard/dashboard/change_email';
 
     function apiURL$1(code)
     {   
@@ -6477,136 +6484,25 @@
         method: 'get'
     }); };
 
+
     var set_password$1 = function (code, password, confirm) { return fetchJson(apiURL$1(code), {
         method: 'post',
         body: {password: password, confirm: confirm}
     }); };
 
-    var set_email = function (email) { return fetchJson(change_email_url, {
-        method: 'post',
-        body: {email: email}
-    }); };
-
-    var get_email = function () { return fetchJson(change_email_url, {
-        method: 'get'
-    }); };
-
-    var emil_body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
-        m('.card-block',[
-            m('h4', 'Enter New Email Address'),
-            m('form', [
-                m('input.form-control', {
-                    type:'email',
-                    placeholder: 'New Email Address',
-                    value: ctrl.email(),
-                    onkeyup: m.withAttr('value', ctrl.email),
-                    onchange: m.withAttr('value', ctrl.email),
-                    config: getStartValue$3(ctrl.email)
-                })
-            ])
-            ,
-            ctrl.email_error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()) : '',
-            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
-
-        ])
-
-    ]); };
-
-    function getStartValue$3(prop){
-        return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
-        };
-    }
-
     var changePasswordComponent = {
         controller: function controller(){
-
+            var password = m.prop('');
+            var confirm = m.prop('');
             var ctrl = {
-                password:m.prop(''),
-                confirm:m.prop(''),
-                email: m.prop(''),
-                password_error: m.prop(''),
-                password_changed:false,
-                email_error: m.prop(''),
-                email_changed:false,
-                do_set_password: do_set_password,
-                do_set_email: do_set_email
+                password: password,
+                confirm: confirm,
+                error: m.prop(''),
+                changed:false,
+                set_password: update
             };
-
-            get_email()
-            .then(function (response) {
-                ctrl.email(response.email);
-            })
-            .catch(function ( response ) {
-                ctrl.email_error(response.message);
-                m.redraw();
-            })
-            .then(function () {m.redraw();});
-
-            return ctrl;
-
-
-
-            function do_set_password(){
-                set_password$1('', ctrl.password, ctrl.confirm)
-                    .then(function () {
-                        ctrl.password_changed = true;
-                    })
-                    .catch(function ( response ) {
-                        ctrl.password_error(response.message);
-                    })
-                    .then(m.redraw());
-            }
-
-            function do_set_email(){
-                set_email(ctrl.email)
-                    .then(function () {
-                        ctrl.email_changed = true;
-                        m.redraw();
-                    })
-                    .catch(function ( response ) {
-                        ctrl.email_error(response.message);
-                        m.redraw();
-                    });
-            }
-        },
-        view: function view(ctrl){
-            return m('.activation.centrify', {config:fullHeight},[
-                ctrl.password_changed
-                ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!')
-                    ]
-                :
-                ctrl.email_changed
-                ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Email successfully updated!')
-                ]
-                :
-                [
-                    password_body(ctrl),
-                    emil_body(ctrl)
-                ]
-            ]);
-        }
-    };
-
-    var resetPasswordComponent = {
-        controller: function controller(){
-
-            var ctrl = {
-                password:m.prop(''),
-                confirm:m.prop(''),
-                password_error: m.prop(''),
-                password_changed:false,
-                code: m.prop(''),
-                do_set_password: do_set_password
-            };
-            ctrl.code(m.route.param('code')!== undefined ? m.route.param('code') : '');
-            is_recovery_code(ctrl.code())
+            var code = m.route.param('code')!== undefined ? m.route.param('code') : '';
+            is_recovery_code(code)
             .catch(function () {
                 m.route('/');
             })
@@ -6616,12 +6512,12 @@
             return ctrl;
             
             function update(){
-                do_set_password(ctrl.code(), ctrl.password, ctrl.confirm)
+                set_password$1(code, password, confirm)
                     .then(function () {
-                        ctrl.password_changed = true;
+                        ctrl.changed = true;
                     })
                     .catch(function ( response ) {
-                        ctrl.password_error(response.message);
+                        ctrl.error(response.message);
                         m.redraw();
                     })
                     .then(function () {
@@ -6631,15 +6527,14 @@
         },
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
-                ctrl.password_changed
+                ctrl.changed
                 ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                         m('h5', 'Password successfully updated!')
                     ]
                 :
-                password_body(ctrl)
-            ]);
+                body(ctrl)]);
         }
     };
 
@@ -6663,7 +6558,7 @@
             function recoveryAction(){
                 recovery(username)
                     .then(function () {
-                        // m.route('/');
+                        m.route('/');
                     })
                     .catch(function ( response ) {
                         ctrl.error(response.message);
@@ -6685,7 +6580,7 @@
                                 value: ctrl.username(),
                                 onkeyup: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue$4(ctrl.username)
+                                config: getStartValue$3(ctrl.username)
                             })
                         ]),
 
@@ -6697,7 +6592,7 @@
         }
     };
 
-    function getStartValue$4(prop){
+    function getStartValue$3(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
         };
@@ -6874,7 +6769,7 @@
         '/recovery':  recoveryComponent,
         '/activation/:code':  activationComponent,
         '/change_password':  changePasswordComponent,
-        '/reset_password/:code':  resetPasswordComponent,
+        '/change_password/:code':  changePasswordComponent,
         '/addUser':  addComponent,
         '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
         '/studyRemoval/:studyId':  StudyRemovalComponent,
@@ -6903,20 +6798,17 @@
                 var ctrl = {
                     isloggedin: false,
                     doLogout: doLogout,
-                    redirect:true,
                     timer:m.prop(0)
                 };
 
                 is_loggedin();
+
                 function is_loggedin(){
                     getAuth().then(function (response) {
                         ctrl.isloggedin = response.isloggedin;
-
-                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/reset_password/'+ m.route.param('code'))
+                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                             m.route('/login');
-                        else
-                            ctrl.redirect = false;
-                        timer = response.timeoutInSeconds;
+
                         timer = response.timeoutInSeconds;
                         run_countdown();
                         m.redraw();
@@ -6932,7 +6824,6 @@
                             messages.close();
                             doLogout();
                         }
-                        // console.log(timer);
                         if(timer==70)
                             messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
                                 .then(function ( response ) {
@@ -6958,29 +6849,34 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                             ]),
+                            m('li.nav-item', [
+                                m('.dropdown', [
+                                    m('a.nav-link', 'Data'),
+                                    m('.dropdown-menu', [
+                                        m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
+                                        m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
+                                        m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                                    ])
+                                ])
+                            ]),
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
-                            ]),
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/downloads', config:m.route},'Downloads')
-                            ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/deploy', config:m.route},'Deploy')
-    //                      ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/studyRemoval', config:m.route}, 'Study Removal')
-    //                      ]),
-    //                      m('li.nav-item',[
-    //                          m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
-    //                      ]),
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/change_password', config:m.route}, 'Settings')
                             ]),
                             m('li.nav-item', [
                                 m('.dropdown', [
                                     m('a.nav-link', 'Admin'),
                                     m('.dropdown-menu', [
                                         m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
+                                    ])
+                                ])
+                            ]),
+                            m('li.nav-item.pull-xs-right', [
+                                m('.dropdown', [
+                                    m('a.nav-link', [
+                                        m('i.fa.fa-cog.fa-lg')
+                                    ]),
+                                    m('.dropdown-menu.dropdown-menu-right', [
+                                        m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Change password')
                                     ])
                                 ])
                             ]),
@@ -6993,11 +6889,7 @@
                     ]),
 
                     m('.main-content.container-fluid', [
-                        !ctrl.redirect
-                        ?
                         route
-                        :
-                        ''
                     ]),
 
                     m.component(contextMenuComponent), // register context menu
