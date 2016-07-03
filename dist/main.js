@@ -7024,7 +7024,7 @@
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                     m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                        m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
+                        m('a.navbar-brand', {href:'/dashboard/dashboard'}, '234'),
                         m('ul.nav.navbar-nav',[
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
