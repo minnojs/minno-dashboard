@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var checkStatus = function ( response ) {
+    var checkStatus = function (response) {
 
         if (response.status >= 200 && response.status < 300) {
             return response;
@@ -14,14 +14,14 @@
         throw error;
     };
 
-    var toJSON = function ( response ) { return response
+    var toJSON = function (response) { return response
         .json()
         .catch( ); };
 
     // extract info from status error
-    var catchJSON = function ( err ) { return (err.response ? err.response.json() : Promise.reject())
+    var catchJSON = function (err) { return (err.response ? err.response.json() : Promise.reject())
         .catch(function () { return Promise.reject(err); })
-        .then(function ( json ) { return Promise.reject(json); }); };
+        .then(function (json) { return Promise.reject(json); }); };
 
 
     function fetchVoid(url, options){
@@ -48,7 +48,7 @@
 
     function fetchText(url, options){
         return fetchVoid(url, options)
-            .then(function ( response ) { return response.text(); });
+            .then(function (response) { return response.text(); });
     }
 
     function fetchUpload(url, options){
@@ -62,7 +62,7 @@
             .catch(catchJSON);
     }
 
-    var noop = function () {};
+    var noop = function (){};
 
     var messages = {
         vm: {isOpen: false},
@@ -78,22 +78,22 @@
             return promise;
         },
 
-        close: function ( response ) {
+        close: function (response) {
             var vm = messages.vm;
             vm.isOpen = false;
             if (typeof vm.resolve === 'function') vm.resolve(response);
             m.redraw();
         },
 
-        custom: function ( opts) { return messages.open('custom', opts); },
-        alert: function ( opts ) { return messages.open('alert', opts); },
-        confirm: function ( opts ) { return messages.open('confirm', opts); },
-        prompt: function ( opts ) { return messages.open('prompt', opts); },
+        custom: function (opts){ return messages.open('custom', opts); },
+        alert: function (opts) { return messages.open('alert', opts); },
+        confirm: function (opts) { return messages.open('confirm', opts); },
+        prompt: function (opts) { return messages.open('prompt', opts); },
 
         view: function () {
             var vm = messages.vm;
             var close = messages.close.bind(null, null);
-            var stopPropagation = function ( e ) { return e.stopPropagation(); };
+            var stopPropagation = function (e) { return e.stopPropagation(); };
             return m('#messages.backdrop', [
                 !vm || !vm.isOpen
                     ? ''
@@ -137,12 +137,12 @@
                 if ( opts === void 0 ) opts={};
 
                 return opts.content;
-            },
+    },
 
             alert: function (opts) {
                 if ( opts === void 0 ) opts={};
 
-                var close = function ( response ) { return messages.close.bind(null, response); };
+                var close = function (response) { return messages.close.bind(null, response); };
                 return [
                     m('h4', opts.header),
                     m('p.card-text', opts.content),
@@ -155,7 +155,7 @@
             confirm: function (opts) {
                 if ( opts === void 0 ) opts={};
 
-                var close = function ( response ) { return messages.close.bind(null, response); };
+                var close = function (response) { return messages.close.bind(null, response); };
                 return [
                     m('h4', opts.header),
                     m('p.card-text', opts.content),
@@ -175,7 +175,7 @@
             prompt: function (opts) {
                 if ( opts === void 0 ) opts={};
 
-                var close = function ( response ) { return messages.close.bind(null, response); };
+                var close = function (response) { return messages.close.bind(null, response); };
                 var prop = opts.prop || noop;
                 return [
                     m('h4', opts.header),
@@ -252,7 +252,7 @@
      * @param toggleContent the: content for the toggle element
      * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
      **/
-    var dropdown = function ( args ) { return m.component(dropdownComponent, args); };
+    var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
         controller: function controller(){
@@ -272,7 +272,7 @@
             ]);
         },
 
-        config: function ( isOpen ) { return function (element, isInit, ctx) {
+        config: function (isOpen) { return function (element, isInit, ctx) {
             if (!isInit) {
                 // this is a bit memory intensive, but lets not preemptively optimse
                 // bootstrap do this with a backdrop
@@ -312,9 +312,9 @@
                 fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
                     .then(checkStatus)
                     .then(toJSON)
-                    .then(function ( response ) { return response.studies.sort(sortStudies); })
+                    .then(function (response) { return response.studies.sort(sortStudies); })
                     .then(ctrl.studies)
-                    .then(function () { return ctrl.loaded = true; })
+                    .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
                 function sortStudies(study1, study2){
                     return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
@@ -323,13 +323,13 @@
 
             function do_delete(study_id){
                 messages.confirm({header:'Delete study', content:'Are you sure?', prop: ctrl.study_name})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response)
                             delete_study(study_id, ctrl)
-                                .then(function () {
+                                .then(function (){
                                     load();
                                 })
-                                .catch(function ( error ) {
+                                .catch(function (error) {
                                     messages.alert({header: 'Delete study', content: m('p', {class: 'alert alert-danger'}, error.message)});
 
                                 }).then(m.redraw);
@@ -338,12 +338,12 @@
 
             function do_create(){
                 messages.prompt({header:'New Study', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response) create_study(ctrl)
                             .then(function (response){
                                 m.route('/editor/'+response.study_id);
                             })
-                            .catch(function ( error ) {
+                            .catch(function (error) {
                                 ctrl.error(error.message);
                                 do_create();
                             }).then(m.redraw);
@@ -352,12 +352,12 @@
 
             function do_rename(study_id){
                 messages.prompt({header:'New Name', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response) rename_study(study_id, ctrl)
-                            .then(function () {
+                            .then(function (){
                                 load();
                             })
-                            .catch(function ( error ) {
+                            .catch(function (error) {
                                 ctrl.error(error.message);
                                 do_rename(study_id);
                             }).then(m.redraw);
@@ -387,7 +387,7 @@
                         ]),
 
                         m('.input-group.pull-right.m-r-1', [
-                            m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function ( e ) { return permissionChoice(e.target.value); }}, [
+                            m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function (e) { return permissionChoice(e.target.value); }}, [
                                 m('option',{disabled: true}, 'Filter studies'),
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
@@ -412,7 +412,7 @@
                         studies()
                             .filter(permissionFilter(permissionChoice()))
                             .filter(searchFilter(globalSearch()))
-                            .map(function ( study ) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
+                            .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
                                     m('.col-sm-3', [
                                         m('.study-text', study.name)
@@ -462,14 +462,14 @@
         }
     };
 
-    var permissionFilter = function ( permission ) { return function ( study ) {
+    var permissionFilter = function (permission) { return function (study) {
         if(permission === 'all') return !study.is_public;
         if(permission === 'public') return study.is_public;
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
         return study.permission === permission;
     }; };
 
-    var searchFilter = function ( searchTerm ) { return function ( study ) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
+    var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
 
     function routeConfig(el, isInit, ctx, vdom) {
 
@@ -491,16 +491,16 @@
 
     var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
-    var baseUrl$1   = "" + urlPrefix + "dashboard/studies";
-    var url    = "" + urlPrefix + "StudyData";
-    var baseUrl$2    = "" + urlPrefix + "dashboard";
-    var statisticsUrl    = "" + urlPrefix + "PITracking";
-    var url$1    = "" + urlPrefix + "DashboardData";
-    var activation1_url    = "" + urlPrefix + "dashboard/activation";
+    var baseUrl$1   = urlPrefix + "dashboard/studies";
+    var url    = urlPrefix + "StudyData";
+    var baseUrl$2    = urlPrefix + "dashboard";
+    var statisticsUrl    = urlPrefix + "PITracking";
+    var url$1    = urlPrefix + "DashboardData";
+    var activation1_url    = urlPrefix + "dashboard/activation";
 
-    var getStatistics = function ( query ) {
+    var getStatistics = function (query) {
         return fetchText(statisticsUrl, {method:'post', body: parseQuery(query)})
-            .then(function ( response ) {
+            .then(function (response) {
                 var csv = CSVToArray(response);
                 return {
                     study: query.study(),
@@ -526,7 +526,7 @@
             var startDate = ref.startDate;
             var endDate = ref.endDate;
 
-            var baseUrl = "" + (location.origin) + "/implicit";
+            var baseUrl = (location.origin) + "/implicit";
             var post = {
                 db: source().match(/^(.*?):/)[1], // before colon
                 current: source().match(/:(.*?)$/)[1], // after colon
@@ -553,15 +553,15 @@
                 threads:'yes',
                 threadsNum:'1',
                 zero: showEmpty(),
-                curl:("" + baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
-                hurl:("" + baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
+                curl:(baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
+                hurl:(baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
                 baseURL:baseUrl
             };
             return post;
 
             function parseDate(date){
                 if (!date) return;
-                return ("" + (date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
+                return ((date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
             }
         } 
     };
@@ -660,7 +660,7 @@
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
-    var dateRangePicker = function ( args ) { return m.component(pikadayRange, args); };
+    var dateRangePicker = function (args) { return m.component(pikadayRange, args); };
 
     var pikaday = {
         view: function view(ctrl, ref){
@@ -741,7 +741,7 @@
                 }
 
                 function onSelect(prop){
-                    return function ( date ) {
+                    return function (date) {
                         prop(date); // update start/end
 
                         startPicker.setDate(startDate(),true);
@@ -802,7 +802,7 @@
         controller: function controller(ref) {
             var prop = ref.prop;
             var form = ref.form;
-            var ref_required = ref.required, required = ref_required === void 0 ? false : ref_required;
+            var required = ref.required; if ( required === void 0 ) required = false;
 
             var validity = function () { return !required || prop().length; };
             form.register(validity);
@@ -812,11 +812,11 @@
 
         view: inputWrapper(function (ctrl, ref, ref$1) {
             var prop = ref.prop;
-            var ref_isArea = ref.isArea, isArea = ref_isArea === void 0 ? false : ref_isArea;
-            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-            var ref_placeholder = ref.placeholder, placeholder = ref_placeholder === void 0 ? '' : ref_placeholder;
+            var isArea = ref.isArea; if ( isArea === void 0 ) isArea = false;
+            var isFirst = ref.isFirst; if ( isFirst === void 0 ) isFirst = false;
+            var placeholder = ref.placeholder; if ( placeholder === void 0 ) placeholder = '';
             var help = ref.help;
-            var ref_rows = ref.rows, rows = ref_rows === void 0 ? 3 : ref_rows;
+            var rows = ref.rows; if ( rows === void 0 ) rows = 3;
             var inputClass = ref$1.inputClass;
 
             return !isArea
@@ -905,7 +905,7 @@
         },
         view: inputWrapper(function (ctrl, ref, ref$1) {
             var prop = ref.prop;
-            var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+            var description = ref.description; if ( description === void 0 ) description = '';
             var groupClass = ref$1.groupClass;
             var inputClass = ref$1.inputClass;
 
@@ -939,15 +939,15 @@
         },
         view: inputWrapper(function (ctrl, ref, ref$1) {
             var prop = ref.prop;
-            var ref_isFirst = ref.isFirst, isFirst = ref_isFirst === void 0 ? false : ref_isFirst;
-            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+            var isFirst = ref.isFirst; if ( isFirst === void 0 ) isFirst = false;
+            var values = ref.values; if ( values === void 0 ) values = {};
             var inputClass = ref$1.inputClass;
 
             return m('.input-group', [
                 m('select.c-select.form-control', {class: inputClass}, {
-                    onchange: function ( e ) { return prop(values[e.target.value]); },
+                    onchange: function (e) { return prop(values[e.target.value]); },
                     config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-                }, Object.keys(values).map(function ( key ) { return m('option',  key); }))
+                }, Object.keys(values).map(function (key) { return m('option',  key); }))
             ]);
         })
     };
@@ -979,13 +979,13 @@
         return p;
     };
 
-    var arrayInput$1 = function ( args ) {
-        var identity = function ( arg ) { return arg; };
+    var arrayInput$1 = function (args) {
+        var identity = function (arg) { return arg; };
         var fixedArgs = Object.assign(args);
         fixedArgs.prop = transformProp({
             prop: args.prop,
-            output: function ( arr ) { return arr.map(args.fromArr || identity).join('\n'); },
-            input: function ( str ) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
+            output: function (arr) { return arr.map(args.fromArr || identity).join('\n'); },
+            input: function (str) { return str === '' ? [] : str.replace(/\n*$/, '').split('\n').map(args.toArr || identity); }
         });
 
         return m.component(textInputComponent, fixedArgs);
@@ -1006,10 +1006,10 @@
         },
         view: inputWrapper(function (ctrl, ref) {
             var prop = ref.prop;
-            var ref_values = ref.values, values = ref_values === void 0 ? {} : ref_values;
+            var values = ref.values; if ( values === void 0 ) values = {};
 
             return m('.c-inputs-stacked', Object.keys(values)
-                .map(function ( key ) { return m('label.c-input.c-radio', [
+                .map(function (key) { return m('label.c-input.c-radio', [
                     m('input', {type:'radio', checked: values[key] === prop(), onchange: prop.bind(null, values[key])}),
                     m('span.c-indicator'),
                     key
@@ -1024,20 +1024,20 @@
                 validationHash.push(fn);
             },
             isValid: function isValid() {
-                return validationHash.every(function ( fn ) { return fn.call(); });
+                return validationHash.every(function (fn) { return fn.call(); });
             },
             showValidation: m.prop(false)
         };
     }
 
-    var textInput = function ( args ) { return m.component(textInputComponent, args); };
-    var maybeInput = function ( args ) { return m.component(maybeInputComponent, args); };
-    var checkboxInput = function ( args ) { return m.component(checkboxInputComponent, args); };
-    var selectInput = function ( args ) { return m.component(selectInputComponent, args); };
-    var radioInput = function ( args ) { return m.component(selectInputComponent$1, args); };
+    var textInput = function (args) { return m.component(textInputComponent, args); };
+    var maybeInput = function (args) { return m.component(maybeInputComponent, args); };
+    var checkboxInput = function (args) { return m.component(checkboxInputComponent, args); };
+    var selectInput = function (args) { return m.component(selectInputComponent, args); };
+    var radioInput = function (args) { return m.component(selectInputComponent$1, args); };
     var arrayInput = arrayInput$1;
 
-    var statisticsForm = function ( args ) { return m.component(statisticsFormComponent, args); };
+    var statisticsForm = function (args) { return m.component(statisticsFormComponent, args); };
     var SOURCES = {
         'Research pool - Current studies'   : 'Research:Current',
         'Research pool - Past studies'      : 'Research:History',
@@ -1150,7 +1150,7 @@
         };
     }
 
-    var statisticsTable = function ( args ) { return m.component(statisticsTableComponent, args); };
+    var statisticsTable = function (args) { return m.component(statisticsTableComponent, args); };
 
     var statisticsTableComponent = {
         controller: function controller(){
@@ -1171,7 +1171,7 @@
                         m('thead', [
                             m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
                         ]),
-                        m('tbody', tableContent().data.map(function ( row ) { return m('tr', row.map(function ( column ) { return m('td', column); })); }))
+                        m('tbody', tableContent().data.map(function (row) { return m('tr', row.map(function (column) { return m('td', column); })); }))
                     ])
                 ])
             ]);
@@ -1227,9 +1227,9 @@
             ]),
             m('.row', [
                 m('.col-sm-12',[
-                    m('button.btn.btn-secondary.btn-sm', {onclick: function () { return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
+                    m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(("" + (tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                    !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
@@ -1239,10 +1239,10 @@
                 statisticsTable({tableContent: tableContent})
             ])
         ]);
-        }
+    }
     };
 
-    var downloadFile = function (filename, text) { return function ( element ) {
+    var downloadFile = function (filename, text) { return function (element) {
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
     }; };
@@ -1268,21 +1268,21 @@
 
     var filePrototype = {
         apiUrl: function apiUrl(){
-            return ("" + baseUrl$2 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
+            return (baseUrl$2 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
         get: function get(){
             var this$1 = this;
 
             return fetchJson(this.apiUrl())
-                .then(function ( response ) {
+                .then(function (response) {
                     var content = response.content.replace(/\r\n?|\n?$/g, '\n'); // replace carriage returns and add new line to EOF. this makes sure all files are unix encoded...
                     this$1.sourceContent(content);
                     this$1.content(content);
                     this$1.loaded = true;
                     this$1.error = false;
                 })
-                .catch(function ( reason ) {
+                .catch(function (reason) {
                     this$1.loaded = true;
                     this$1.error = true;
                     return Promise.reject(reason); // do not swallow error
@@ -1296,7 +1296,7 @@
                 method:'put',
                 body: {content: this.content}
             })
-                .then(function ( response ) {
+                .then(function (response) {
                     this$1.sourceContent(this$1.content()); // update source content
                     return response;
                 });
@@ -1306,10 +1306,10 @@
             var this$1 = this;
 
             var basePath = (path.substring(0, path.lastIndexOf('/')));
-            var folderExists = basePath === '' || study.files().some(function ( f ) { return f.isDir && f.path === basePath; });
+            var folderExists = basePath === '' || study.files().some(function (f) { return f.isDir && f.path === basePath; });
 
             if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
-            if (study.files().some(function ( f) { return f.path === path; })) return Promise.reject({message: ("File " + path + " already exists.")});
+            if (study.files().some(function (f){ return f.path === path; })) return Promise.reject({message: ("File " + path + " already exists.")});
 
             var oldPath = this.path;
             this.setPath(path);
@@ -1319,11 +1319,11 @@
                 method:'put',
                 body: {path: path, url:this.url}
             })
-                .then(function ( response ) {
+                .then(function (response) {
                     this$1.id = response.id;
                     this$1.url = response.url;
                 })
-                .catch(function ( response ) {
+                .catch(function (response) {
                     this$1.setPath(oldPath);
                     return Promise.reject(response);
                 });
@@ -1347,7 +1347,7 @@
 
             return new Promise(function (resolve) {
                 requirejs.undef(name);
-                context.eval(content.replace(("define("),"define('" + name + "',"));
+                context.eval(content.replace("define(","define('" + name + "',"));
                 resolve();
             });
         },
@@ -1387,7 +1387,7 @@
      * }
      */
 
-    var fileFactory = function ( fileObj ) {
+    var fileFactory = function (fileObj) {
         var file = Object.create(filePrototype);
         var path = decodeURIComponent(fileObj.path);
 
@@ -1410,7 +1410,7 @@
 
         file.content(fileObj.content || '');
 
-        if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(function ( file ) { return Object.assign(file, {studyId: fileObj.studyId}); });
+        if (fileObj.files) file.files = fileObj.files.map(fileFactory).map(function (file) { return Object.assign(file, {studyId: fileObj.studyId}); });
 
         return file;
 
@@ -1459,14 +1459,14 @@
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
 
-            return ("" + baseUrl$3 + "/files/" + (encodeURIComponent(this.id)) + "" + path);
+            return (baseUrl$3 + "/files/" + (encodeURIComponent(this.id)) + path);
         },
 
         get: function get(){
             var this$1 = this;
 
             return fetchJson(this.apiURL())
-                .then(function ( study ) {
+                .then(function (study) {
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
                     this$1.name = study.study_name;
@@ -1477,7 +1477,7 @@
                     this$1.files(files);
                     this$1.sort();
                 })
-                .catch(function ( reason ) {
+                .catch(function (reason) {
                     this$1.error = true;
                     return Promise.reject(reason); // do not swallow error
                 });
@@ -1490,7 +1490,7 @@
             }
 
             function assignStudyId(id){
-                return function ( f ) { return Object.assign(f, {studyId: id}); };
+                return function (f) { return Object.assign(f, {studyId: id}); };
             }
 
             // create an array including file and all its children
@@ -1502,35 +1502,35 @@
         },
 
         getFile: function getFile(id){
-            return this.files().find(function ( f ) { return f.id === id; });
+            return this.files().find(function (f) { return f.id === id; });
         },
 
         getChosenFiles: function getChosenFiles(){
             var this$1 = this;
 
-            return this.files().filter(function ( file ) { return this$1.vm(file.id).isChosen() === 1; }); // do not include half chosen dirs
+            return this.files().filter(function (file) { return this$1.vm(file.id).isChosen() === 1; }); // do not include half chosen dirs
         },
 
         createFile: function createFile(ref){
-            // validation (make sure there are no invalid characters)
             var this$1 = this;
             var name = ref.name;
-            var ref_content = ref.content, content = ref_content === void 0 ? '' : ref_content;
+            var content = ref.content; if ( content === void 0 ) content = '';
             var isDir = ref.isDir;
 
+            // validation (make sure there are no invalid characters)
             if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: ("The file name \"" + name + "\" is not valid")});
 
             // validation (make sure file does not already exist)
-            var exists = this.files().some(function ( file ) { return file.path === name; });
+            var exists = this.files().some(function (file) { return file.path === name; });
             if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists")});
 
             // validateion (make sure direcotry exists)
             var basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
-            var dirExists = basePath === '' || this.files().some(function ( file ) { return file.isDir && file.path === basePath; });
+            var dirExists = basePath === '' || this.files().some(function (file) { return file.isDir && file.path === basePath; });
             if (!dirExists) return Promise.reject({message: ("The directory \"" + basePath + "\" does not exist")});
 
             return fetchJson(this.apiURL('/file'), {method:'post', body: {name: name, content: content, isDir: isDir}})
-                .then(function ( response ) {
+                .then(function (response) {
                     Object.assign(response, {studyId: this$1.id, content: content, path:name, isDir: isDir});
                     var file = fileFactory(response);
                     file.loaded = true;
@@ -1557,15 +1557,15 @@
         uploadFiles: function uploadFiles(path, files){
             var this$1 = this;
 
-            var paths = Array.from(files, function ( file ) { return path === '/' ? file.name : path + '/' + file.name; });
+            var paths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
             var formData = buildFormData(path === '/' ? '' : path, files);
             // validation (make sure files do not already exist)
-            var exists = this.files().find(function ( file ) { return paths.includes(file.path); });
+            var exists = this.files().find(function (file) { return paths.includes(file.path); });
             if (exists) return Promise.reject({message: ("The file \"" + (exists.path) + "\" already exists")});
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
-                .then(function ( response ) {
-                    response.forEach(function ( src ) {
+                .then(function (response) {
+                    response.forEach(function (src) {
                         var file = fileFactory(Object.assign({studyId: this$1.id},src));
                         this$1.files().push(file);
                     });
@@ -1594,7 +1594,7 @@
             var this$1 = this;
 
             return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
-                .then(function ( response ) { return downloadLink(("" + baseUrl$3 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+                .then(function (response) { return downloadLink((baseUrl$3 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
         },
 
         delFiles: function delFiles(files){
@@ -1603,7 +1603,7 @@
             return fetchVoid(this.apiURL(), {method: 'delete', body: {files: files}})
                 .then(function () {
                     var filesList = this$1.files()
-                        .filter(function ( f ) { return files.indexOf(f.path) === -1; }); // only exact matches here, the choice mechanism takes care of nested folders
+                        .filter(function (f) { return files.indexOf(f.path) === -1; }); // only exact matches here, the choice mechanism takes care of nested folders
 
                     this$1.files(filesList);
                 });
@@ -1616,13 +1616,13 @@
             return file.del()
                 .then(function () {
                     var files = this$1.files()
-                        .filter(function ( f ) { return f.path.indexOf(file.path) !== 0; }); // all paths that start with the same path are deleted
+                        .filter(function (f) { return f.path.indexOf(file.path) !== 0; }); // all paths that start with the same path are deleted
                     this$1.files(files);
                 });
         },
 
         getParents: function getParents(file){
-            return this.files().filter(function ( f ) { return f.isDir && file.basePath.indexOf(f.path) === 0; });
+            return this.files().filter(function (f) { return f.isDir && file.basePath.indexOf(f.path) === 0; });
         },
 
         // returns array of children for this file, including itself
@@ -1638,7 +1638,7 @@
         }
     };
 
-    var studyFactory =  function ( id ) {
+    var studyFactory =  function (id) {
         var study = Object.create(studyPrototype);
         Object.assign(study, {
             id      : id,
@@ -1708,10 +1708,10 @@
         m('h5', 'Unknow file type')
     ]); };
 
-    var uploadFiles = function (path,study) { return function ( files ) {
+    var uploadFiles = function (path,study) { return function (files) {
         study
             .uploadFiles(path, files)
-            .catch(function ( response ) { return messages.alert({
+            .catch(function (response) { return messages.alert({
                 header: 'Upload File',
                 content: response.message
             }); })
@@ -1725,7 +1725,7 @@
             header: 'Move/Rename File',
             prop: newPath
         })
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) return moveAction(file,study);
             });
 
@@ -1733,7 +1733,7 @@
             var def = file
                 .move(newPath(),study) // the actual movement
                 .then(redirect)
-                .catch(function ( response ) { return messages.alert({
+                .catch(function (response) { return messages.alert({
                     header: 'Move/Rename File',
                     content: response.message
                 }); })
@@ -1751,13 +1751,13 @@
 
     var playground;
     var play = function (file,study) { return function () {
-        var isSaved = study.files().every(function ( file ) { return !file.hasChanged(); });  
+        var isSaved = study.files().every(function (file) { return !file.hasChanged(); });  
 
         if (isSaved) open();
         else messages.confirm({
             header: 'Play task',
             content: 'You have unsaved files, the player will use the saved version, are you sure you want to proceed?' 
-        }).then(function ( response ) { return response && open(); });
+        }).then(function (response) { return response && open(); });
 
         function open(){
             // this is important, if we don't close the original window we get problems with onload
@@ -1778,16 +1778,16 @@
         }
     }; };
 
-    var save = function ( file ) { return function () {
+    var save = function (file) { return function () {
         file.save()
             .then(m.redraw)
-            .catch(function ( err ) { return messages.alert({
+            .catch(function (err) { return messages.alert({
                 header: 'Error Saving:',
                 content: err.message
             }); });
     }; };
 
-    var copyUrl = function ( url ) { return function () {
+    var copyUrl = function (url) { return function () {
         var input = document.createElement('input');
         input.value = url;
         document.body.appendChild(input);
@@ -1799,7 +1799,7 @@
                     m('.form-group', [
                         m('label', 'Copy Url by clicking Ctrl + C'),
                         m('input.form-control', {
-                            config: function ( el ) { return el.select(); },
+                            config: function (el) { return el.select(); },
                             value: url
                         })
                     ])
@@ -1822,15 +1822,15 @@
 
     // add trailing slash if needed, and then remove proceeding slash
     // return prop
-    var pathProp = function ( path ) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
+    var pathProp = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var  createFile = function (study, name, content) {
         study.createFile({name:name(), content:content()})
-            .then(function ( response ) {
+            .then(function (response) {
                 m.route(("/editor/" + (study.id) + "/file/" + (encodeURIComponent(response.id))));
                 return response;
             })
-            .catch(function ( err ) { return messages.alert({
+            .catch(function (err) { return messages.alert({
                 header: 'Failed to create file:',
                 content: err.message
             }); });
@@ -1847,11 +1847,11 @@
             content: 'Please insert directory name',
             prop: name
         })
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) return study.createFile({name:name(), isDir:true});
             })
             .then(m.redraw)
-            .catch(function ( err ) { return messages.alert({
+            .catch(function (err) { return messages.alert({
                 header: 'Failed to create directory:',
                 content: err.message
             }); });
@@ -1863,20 +1863,20 @@
 
         return function () {
         var name = pathProp(path);
-        var content = function () { return ''; };
+        var content = function (){ return ''; };
 
         messages.prompt({
             header: 'Create file',
             content: 'Please insert the file name:',
             prop: name
-        }).then(function ( response ) {
+        }).then(function (response) {
             if (response) return createFile(study, name,content);
         });
     };
     };
 
-    var deleteFiles = function ( study ) { return function () {
-        var chosenFiles = study.getChosenFiles().map(function ( f) { return f.name; });
+    var deleteFiles = function (study) { return function () {
+        var chosenFiles = study.getChosenFiles().map(function (f){ return f.name; });
         if (!chosenFiles.length) {
             messages.alert({
                 header:'Remve Files',
@@ -1889,14 +1889,14 @@
             header: 'Remove Files',
             content: 'Are you sure you want to remove all checked files? This is a permanent change.'
         })
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) doDelete();
             });
 
         function doDelete(){
             study.delFiles(chosenFiles)
                 .then(m.redraw)
-                .catch(function ( err ) { return messages.alert({
+                .catch(function (err) { return messages.alert({
                     header: 'Failed to delete files:',
                     content: err.message
                 }); });
@@ -1904,7 +1904,7 @@
     }; };
 
     var downloadFiles = function (study) { return function () {
-        var chosenFiles = study.getChosenFiles().map(function ( f) { return f.name; });
+        var chosenFiles = study.getChosenFiles().map(function (f){ return f.name; });
         if (!chosenFiles.length) {
             messages.alert({
                 header:'Download Files',
@@ -1914,13 +1914,13 @@
         }
 
         study.downloadFiles(chosenFiles)
-            .catch(function ( err ) { return messages.alert({
+            .catch(function (err) { return messages.alert({
                 header: 'Failed to download files:',
                 content: err.message
             }); });
     }; };
 
-    var ace = function ( args ) { return m.component(aceComponent, args); };
+    var ace = function (args) { return m.component(aceComponent, args); };
 
     var noop$1 = function(){};
 
@@ -1932,14 +1932,14 @@
         config: function(ref){
             var content = ref.content;
             var observer = ref.observer;
-            var ref_settings = ref.settings, settings = ref_settings === void 0 ? {} : ref_settings;
+            var settings = ref.settings; if ( settings === void 0 ) settings = {};
 
             return function(element, isInitialized, ctx){
                 var editor;
                 var mode = settings.mode || 'javascript';
 
                 // paster with padding
-                var paste = function ( text ) {
+                var paste = function (text) {
                     if (!editor) return false;
                     var pos = editor.getSelectionRange().start; 
                     var line = editor.getSession().getLine(pos.row);
@@ -2039,12 +2039,12 @@
                 while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
                 if (!channels[channel]) return;
-                channels[channel].forEach(function ( cb ) { return cb.apply(null, args); });
+                channels[channel].forEach(function (cb) { return cb.apply(null, args); });
             }
         };
     }
 
-    var syntax = function ( args ) { return m.component(syntaxComponent, args); };
+    var syntax = function (args) { return m.component(syntaxComponent, args); };
 
     /**
      * Syntax component
@@ -2070,8 +2070,8 @@
             var errorCount = 0;
             var warningCount = 0;
             var errors = isValid ? [] : data.errors
-                .filter(function ( e ) { return e; }) // clean null values
-                .map(function ( err ) {
+                .filter(function (e) { return e; }) // clean null values
+                .map(function (err) {
                     var isError = err.code && (err.code[0] === 'E');
 
                     isError ? errorCount++ : warningCount++;
@@ -2093,12 +2093,12 @@
             };
         },
 
-        controller:  function ( args ) {
+        controller:  function (args) {
             var file = args.file;
             return syntaxComponent.analize(file.syntaxValid, file.syntaxData);
         },
 
-        view: function ( ctrl ) {
+        view: function (ctrl) {
             return m('div', [
                 ctrl.isValid
                     ?
@@ -2109,7 +2109,7 @@
                     :
                     m('div', [
                         m('table.table', [
-                            m('tbody', ctrl.errors.map(function ( err ) {
+                            m('tbody', ctrl.errors.map(function (err) {
                                 return m('tr',[
                                     m('td.text-muted', ("line " + (err.line))),
                                     m('td.text-muted', ("col " + (err.col))),
@@ -2149,8 +2149,8 @@
 
     function row(element, testArr){
         var messages = flatten(testArr)
-            .filter(function ( msg ) { return msg; }) // clean empty
-            .filter(function ( msg ) { return typeof msg.test == 'function' ? msg.test(element) : !!msg.test; }); // run test...
+            .filter(function (msg) { return msg; }) // clean empty
+            .filter(function (msg) { return typeof msg.test == 'function' ? msg.test(element) : !!msg.test; }); // run test...
 
         return !messages.length ? null : {
             element: element,
@@ -2166,24 +2166,24 @@
 
     function multiPick(arr, propArr){
         return arr
-            .map(function ( e) { return e && [].concat(e[propArr[0]], e[propArr[1]], e[propArr[2]]); }) // gather all stim arrays
+            .map(function (e){ return e && [].concat(e[propArr[0]], e[propArr[1]], e[propArr[2]]); }) // gather all stim arrays
             .reduce(function (previous, current){ return previous.concat(current); },[]) // flatten arrays
-            .filter(function ( t) { return t; }); // remove all undefined stim
+            .filter(function (t){ return t; }); // remove all undefined stim
     }
 
     function flattenSequence(sequence){
         function unMix(e){
-            return flattenSequence([].concat(e.data, e.elseData, (e.branches || []).map(function ( e) { return e.data; })));
+            return flattenSequence([].concat(e.data, e.elseData, (e.branches || []).map(function (e){ return e.data; })));
         }
 
         return sequence
             .reduce(function (previous, current) {return previous.concat(current && current.mixer ? unMix(current) : current);},[])
-            .filter(function ( t) { return t; }); // remove all undefined stim;
+            .filter(function (t){ return t; }); // remove all undefined stim;
     }
 
     function concatClean(){
         var args = [].splice.call(arguments,0);
-        return [].concat.apply([], args).filter(function ( e) { return e; });
+        return [].concat.apply([], args).filter(function (e){ return e; });
     }
 
     function pipElements(script){
@@ -2215,7 +2215,7 @@
     }
 
     function filterMap(arr, fn){
-        return arr.map(fn).filter(function ( e) { return e; });
+        return arr.map(fn).filter(function (e){ return e; });
     }
 
     /**
@@ -2232,17 +2232,17 @@
 
         var errors = [
             r('base_url', [
-                w('Your base_url is not in the same directory as your script.', function ( e ) {
+                w('Your base_url is not in the same directory as your script.', function (e) {
                     // use this!!!
                     // http://stackoverflow.com/questions/4497531/javascript-get-url-path
-                    var getPath = function ( url ) {
+                    var getPath = function (url) {
                         var a = document.createElement('a');
                         a.href = url;
                         return a.pathname;
                     };
 
                     var path = getPath(url).substring(0, url.lastIndexOf('/') + 1); // get path but remove file name
-                    var t = function ( s ) { return (!s || getPath(s).indexOf(path) !== 0); };
+                    var t = function (s) { return (!s || getPath(s).indexOf(path) !== 0); };
 
                     return (typeof e == 'object') ? t(e.image) && t(e.template) : t(e);
                 })
@@ -2260,7 +2260,7 @@
         // wrap warn/error so that I don't have to individually
         function byProp(fn){
             return function(msg, test){
-                return fn(msg, function ( e ) {
+                return fn(msg, function (e) {
                     for (var prop in e) {
                         return test(e[prop]);
                     }
@@ -2287,10 +2287,10 @@
             return  interactions.map(function (interaction, index) {
                 return [
                     !interaction.conditions ? error(("Interaction [" + index + "] must have conditions"), true) : [
-                        error(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function ( c) { return !c.type; }))
+                        error(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function (c){ return !c.type; }))
                     ],
                     !interaction.actions ? error(("Interaction [" + index + "] must have actions"), true) : [
-                        error(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function ( a) { return !a.type; }))
+                        error(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function (a){ return !a.type; }))
                     ]
                 ];
             });
@@ -2310,8 +2310,8 @@
             }
 
             return [
-                error('Input must always have a handle', input.some(function ( i) { return !i.handle; })),
-                error('Input must always have an on attribute', input.some(function ( i) { return !i.on; }))
+                error('Input must always have a handle', input.some(function (i){ return !i.handle; })),
+                error('Input must always have an on attribute', input.some(function (i){ return !i.on; }))
             ];
         }
     }
@@ -2346,10 +2346,10 @@
         }
     }
 
-    var validate = function ( args ) { return m.component(validateComponent, args); };
+    var validate = function (args) { return m.component(validateComponent, args); };
 
     var validateComponent = {
-        controller: function ( args ) {
+        controller: function (args) {
             var file = args.file;
             var ctrl = {
                 validations : m.prop([]),
@@ -2359,10 +2359,10 @@
             m.startComputation();
             file
                 .define()
-                .then(function () {
+                .then(function (){
                     return file.require();
                 })
-                .then(function ( script ) {
+                .then(function (script) {
                     ctrl.validations(validate$1(script, file.url));
                     m.endComputation();
                 })
@@ -2373,14 +2373,14 @@
 
             return ctrl;
         },
-        view: function ( ctrl ) {
+        view: function (ctrl) {
             return  m('div', [
                 !ctrl.isError ? '' :    m('div', {class:'alert alert-danger'}, [
                     m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-                    ("There was a problem parsing this script. Are you sure that it is a valid PI script? Make sure you fix all syntax errors.")
+                    "There was a problem parsing this script. Are you sure that it is a valid PI script? Make sure you fix all syntax errors."
                 ]),
 
-                ctrl.validations().map(function ( validationReport ) {
+                ctrl.validations().map(function (validationReport) {
                     return [
                         m('h4', validationReport.type),
                         !validationReport.errors.length
@@ -2390,13 +2390,13 @@
                                 'Your script is squeaky clean'
                             ])
                             :
-                            validationReport.errors.map(function ( err ) {
+                            validationReport.errors.map(function (err) {
                                 return m('.row',[
                                     m('.col-md-4.stringified',
                                         m('div', {class:'pre'}, m.trust(stringify(err.element)))
                                     ),
                                     m('.col-md-8',[
-                                        m('ul', err.messages.map(function ( msg ) {
+                                        m('ul', err.messages.map(function (msg) {
                                             return m('li.list-unstyled', {class: msg.level == 'error' ? 'text-danger' : 'text-info'}, [
                                                 m('strong', msg.level),
                                                 msg.message
@@ -2472,7 +2472,7 @@
 
         var classes = '';
 
-        for (var i = 0; i < arguments$1.length; i++) {
+        for (var i = 0; i < arguments.length; i++) {
             var arg = arguments$1[i];
             if (!arg) continue;
 
@@ -2502,7 +2502,7 @@
         return str.replace(/^/gm, tab);
     };
 
-    var print = function ( obj ) {
+    var print = function (obj) {
         switch (typeof obj) {
             case 'boolean': return obj ? 'true' : 'false';
             case 'string' : return printString(obj); 
@@ -2526,14 +2526,14 @@
                 .replace(/\u0000/g, '\\0')
                 // manage rows separately
                 .split(END_LINE)
-                .map(function ( str ) { return ("'" + str + "'"); })
-                .join((" +" + END_LINE + "" + TAB));
+                .map(function (str) { return ("'" + str + "'"); })
+                .join((" +" + END_LINE + TAB));
         }
         
         function printArray(arr){
-            var isShort = arr.every(function ( element ) { return ['string', 'number', 'boolean'].includes(typeof element) && (element.length === undefined || element.length < 15); } );
+            var isShort = arr.every(function (element) { return ['string', 'number', 'boolean'].includes(typeof element) && (element.length === undefined || element.length < 15); } );
             var content = arr
-                .map(function ( value ) { return print(value); })
+                .map(function (value) { return print(value); })
                 .join(isShort ? ', ' : ',\n');
 
             return isShort
@@ -2543,8 +2543,8 @@
 
         function printObj(obj){
             var content = Object.keys(obj)
-                .map(function ( key ) { return ("" + (escapeKey(key)) + " : " + (print(obj[key]))); })
-                .map(function ( row ) { return indent(row); })
+                .map(function (key) { return ((escapeKey(key)) + " : " + (print(obj[key]))); })
+                .map(function (row) { return indent(row); })
                 .join(',' + END_LINE);
             return ("{\n" + content + "\n}");
 
@@ -2554,7 +2554,7 @@
         }
     };
 
-    var inheritInput = function ( args ) { return m.component(inheritInputComponent, args); };
+    var inheritInput = function (args) { return m.component(inheritInputComponent, args); };
 
     var inheritInputComponent = {
         controller: function controller(ref){
@@ -2592,9 +2592,9 @@
         },
 
         view: inputWrapper(function (ref) {
-
             var type = ref.type;
             var set = ref.set;
+
 
             return m('.form-inline', [
                 m('.form-group.input-group', [
@@ -2606,7 +2606,7 @@
                 ]),
                 m('select.c-select', {
                     onchange: m.withAttr('value', type)
-                }, TYPES.map(function ( key ) { return m('option', {value:key},key); }))
+                }, TYPES.map(function (key) { return m('option', {value:key},key); }))
             ]);
         })
     };
@@ -2836,7 +2836,7 @@
 
     var typeMap = {None: undefined, Text: 'text', 'Text Area': 'textarea', 'Select One': 'selectOne', 'Select Multiple': 'selectMulti', Slider: 'slider'};
 
-    var question = function ( type ) {
+    var question = function (type) {
         switch (type) {
             case 'text' : return textComponent;
             case 'textarea' : return textareaComponent;
@@ -2971,7 +2971,7 @@
         }
     };
 
-    var  snippetRunner = function ( component ) { return function ( observer ) { return function () {
+    var  snippetRunner = function (component) { return function (observer) { return function () {
         var output = m.prop();
         messages
             .custom({
@@ -2979,7 +2979,7 @@
                 content: m.component(component, {output: output, close: close}),
                 wide: true
             })
-            .then(function ( isOk ) { return isOk && observer.trigger('paste', print(clearUnused(output()))); });
+            .then(function (isOk) { return isOk && observer.trigger('paste', print(clearUnused(output()))); });
 
         function close(value) {return function () { return messages.close(value); };}
     }; }; };
@@ -3010,8 +3010,8 @@
         var study = ref.study;
         var observer = ref.observer;
 
-        var setMode = function ( value ) { return function () { return mode(value); }; };
-        var modeClass = function ( value ) { return mode() === value ? 'active' : ''; };
+        var setMode = function (value) { return function () { return mode(value); }; };
+        var modeClass = function (value) { return mode() === value ? 'active' : ''; };
         var isJs = file.type === 'js';
         var hasChanged = file.hasChanged();
         var isExpt = /\.expt\.xml$/.test(file.path);
@@ -3025,11 +3025,11 @@
             ),
 
             m('.btn-group.btn-group-sm.pull-xs-right', [
-                m('a.btn.btn-secondary', {href: ("http://projectimplicit.github.io/PIquest/0.0/basics/overview.html"), target: '_blank', title:'API documentation'},[
+                m('a.btn.btn-secondary', {href: "http://projectimplicit.github.io/PIquest/0.0/basics/overview.html", target: '_blank', title:'API documentation'},[
                     m('strong.fa.fa-book'),
                     m('strong', ' Docs')
                 ]),
-                m('a.btn.btn-secondary', {href: ("https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts"), target: '_blank', title:'Editor help'},[
+                m('a.btn.btn-secondary', {href: "https://github.com/ajaxorg/ace/wiki/Default-Keyboard-Shortcuts", target: '_blank', title:'Editor help'},[
                     m('strong.fa.fa-info')
                 ])
             ]),
@@ -3084,7 +3084,7 @@
         ]);
     };
 
-    var textEditor = function ( args ) { return m.component(textEditorComponent, args); };
+    var textEditor = function (args) { return m.component(textEditorComponent, args); };
 
     var textEditorComponent = {
         controller: function(ref){
@@ -3170,9 +3170,9 @@
         },
 
         view: function (ref, args) {
-            if ( args === void 0 ) args = {};
             var file = ref.file;
             var study = ref.study;
+            if ( args === void 0 ) args = {};
 
             var editor = file && editors[file.type] || unknownComponent;
 
@@ -3195,26 +3195,26 @@
 
         var NEW_LINE = '\n';
         var content = [
-            ("var API = new Quest();"),
+            "var API = new Quest();",
 
-            (""),
-            ("// The structure for the basic questionnaire page"),
+            "",
+            "// The structure for the basic questionnaire page",
             ("API.addPagesSet('basicPage', " + (print(basicPage)) + ");"),
 
-            (""),
-            ("// The structure for the basic question    "),
+            "",
+            "// The structure for the basic question    ",
             ("API.addQuestionsSet('basicSelect', " + (print(basicSelect)) + ");"),
 
-            ("// This is the question pool, the sequence picks the questions from here"),
+            "// This is the question pool, the sequence picks the questions from here",
             ("API.addQuestionsSet('questionList', " + (print(questionList)) + ");"),
-            (""),
+            "",
 
-            ("// This is the sequence of questions"),
-            ("// Note that you may want to update the \"times\" property if you change the number of questions"),
+            "// This is the sequence of questions",
+            "// Note that you may want to update the \"times\" property if you change the number of questions",
             ("API.addSequence(" + (print(sequence)) + ");"),
 
-            (""),
-            ("return API.script;")
+            "",
+            "return API.script;"
         ].join(NEW_LINE);
 
         return ("define(['questAPI'], function(Quest){\n" + (indent(content)) + "\n});");
@@ -3234,7 +3234,7 @@
                 
             };
 
-            var compileScript = function ( script ) { return function () {
+            var compileScript = function (script) { return function () {
                 script.basicPage.questions = [
                     {inherit: {type:script.randomize() ? 'exRandom' : 'sequential', set:'questionList'}}
                 ];
@@ -3291,12 +3291,12 @@
             };
             return {path: path, form: form, submit: submit, script: script};
         },
-        view: function view(ref){      
+        view: function view(ref){
             var form = ref.form;
             var submit = ref.submit;
             var script = ref.script;
             var path = ref.path;
-
+          
             var basicPage = script.basicPage;
             var basicSelect = script.basicSelect;
 
@@ -3321,7 +3321,7 @@
                 m('h4', 'Sequence'),
                 checkboxInput({label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form}),
                 maybeInput({label: 'Choose', help:'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times}),
-                arrayInput({label: 'questions', prop: script.questionList, toArr: function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }, fromArr: function ( q ) { return q.stem; }, rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
+                arrayInput({label: 'questions', prop: script.questionList, toArr: function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }, fromArr: function (q) { return q.stem; }, rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
                 m('.row', [
                     m('.col-cs-12.text-xs-right', [
                         !form.showValidation() || form.isValid()
@@ -3365,7 +3365,7 @@
             );
         },
 
-        open: function ( menu ) { return function ( e ) {
+        open: function (menu) { return function (e) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -3409,7 +3409,7 @@
 
     // add trailing slash if needed, and then remove proceeding slash
     // return prop
-    var pathProp$1 = function ( path ) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
+    var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
         var study = ref.study;
@@ -3426,10 +3426,10 @@
             content: 'Please insert the file name:',
             prop: name
         })
-            .then(function ( response ) {
-                if (response) return template.then(function ( content ) { return createFile(study, name,function () { return content; }); });
+            .then(function (response) {
+                if (response) return template.then(function (content) { return createFile(study, name,function () { return content; }); });
             })
-            .catch(function ( err ) {
+            .catch(function (err) {
                 var message = (err.response && err.response.status === 404)
                     ? ("Template file not found at " + url)
                     : err.message;
@@ -3491,7 +3491,7 @@
                 {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
                 {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(hash)},
                 {icon:'fa-magic', text:'New from wizard', menu: [
-                    {text: 'Rating wizard', action: activateWizard(("rating"))}
+                    {text: 'Rating wizard', action: activateWizard("rating")}
                 ]}
             ]);
         }
@@ -3542,13 +3542,13 @@
                 header:['Delete ',m('small', file.name)],
                 content: 'Are you sure you want to delete this file? This action is permanent!'
             })
-            .then(function ( ok ) {
+            .then(function (ok) {
                 if (ok) return study.del(file.id);
             })
             .then(m.redraw)
-            .catch( function ( err ) {
+            .catch( function (err) {
                 err.response.json()
-                    .then(function ( response ) {
+                    .then(function (response) {
                         messages.alert({
                             header: 'Delete failed:',
                             content: response.message
@@ -3584,14 +3584,14 @@
         }
     }
 
-    var uploadConfig = function ( ctrl ) { return function (element, isInitialized) {
+    var uploadConfig = function (ctrl) { return function (element, isInitialized) {
         if (!isInitialized) {
             dragdrop(element, {onchange: ctrl.onchange});
         }
     }; };
 
     // call onchange with files
-    var onchange = function ( args ) { return function ( e ) {
+    var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
         }
@@ -3664,7 +3664,7 @@
     };
 
     // select specific file and display it
-    var select = function (file) { return function ( e ) {
+    var select = function (file) { return function (e) {
         e.stopPropagation();
         e.preventDefault();
         m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
@@ -3675,7 +3675,7 @@
         var file = ref.file;
         var study = ref.study;
 
-        return function ( e ) {
+        return function (e) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -3684,13 +3684,13 @@
         // mark decendents (and the file itself
         study
             .getChildren(file)
-            .forEach(function ( f ) { return isChosen(f)(lastState === 1 ? 0 : 1); }); // update vm for each child
+            .forEach(function (f) { return isChosen(f)(lastState === 1 ? 0 : 1); }); // update vm for each child
 
         // update parent folders
         study
             .getParents(file)
             .sort(function (a,b) { return a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1; })
-            .forEach(function ( f ) {
+            .forEach(function (f) {
                 var files = f.files;
                 var chosenCount = files.reduce(function (counter, f) { return counter + isChosen(f)(); }, 0);
                 isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
@@ -3712,7 +3712,7 @@
             var files = folderHash[path] || [];
 
             return m('.files',[
-                m('ul', files.map(function ( file ) { return node(file, {folderHash: folderHash, study: study}); }))
+                m('ul', files.map(function (file) { return node(file, {folderHash: folderHash, study: study}); }))
             ]);
         }
     };
@@ -3742,7 +3742,7 @@
         ]);
     };
 
-    var parseFiles = function ( files ) { return files.reduce(function (hash, file){
+    var parseFiles = function (files) { return files.reduce(function (hash, file){
         var path = file.basePath;
         if (!hash[path]) hash[path] = [];
         hash[path].push(file);
@@ -3750,7 +3750,7 @@
     }, {}); };
 
     function choose(currentState, study){
-        return function () { return study.files().forEach(function ( file ) { return study.vm(file.id).isChosen(currentState === 1 ? 0 : 1); }); };
+        return function () { return study.files().forEach(function (file) { return study.vm(file.id).isChosen(currentState === 1 ? 0 : 1); }); };
     }
 
     function getCurrentState(study){
@@ -3783,7 +3783,7 @@
 
 
     function uploadButton(study){
-        return function ( e ) {
+        return function (e) {
             var dataTransfer = e.dataTransfer || e.target;
             uploadFiles('/', study)(dataTransfer.files);
         };
@@ -3803,7 +3803,7 @@
     var study;
 
     var editorLayoutComponent = {
-        controller: function () {
+        controller: function (){
             var id = m.route.param('studyId');
 
             if (!study || (study.id !== id)){
@@ -3820,7 +3820,7 @@
             return ctrl;
 
             function hasUnsavedData(){
-                return study.files().some(function ( f ) { return f.content() !== f.sourceContent(); });
+                return study.files().some(function (f) { return f.content() !== f.sourceContent(); });
             }
 
             function beforeunload(event) {
@@ -3952,7 +3952,7 @@
      * Create edit component
      * Promise editMessage({input:Object, output:Prop})
      */
-    var editMessage = function ( args ) { return messages.custom({
+    var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -3976,8 +3976,8 @@
                 study: study,
                 submitAttempt: false,
                 validity: function validity(){
-                    var isEmail = function ( str  ) { return /\S+@\S+\.\S+/.test(str); };
-                    var isNormalInteger = function ( str ) { return /^\+?(0|[1-9]\d*)$/.test(str); };
+                    var isEmail = function (str)  { return /\S+@\S+\.\S+/.test(str); };
+                    var isNormalInteger = function (str) { return /^\+?(0|[1-9]\d*)$/.test(str); };
 
                     var response = {
                         rulesUrl: study.rulesUrl(),
@@ -3991,7 +3991,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
                     if (isValid) {
                         study.targetCompletions(+study.targetCompletions());// targetCompletions should be cast as a number
@@ -4012,11 +4012,11 @@
             var validity = ctrl.validity();
             var miniButtonView = function (prop, name, url) { return m('button.btn.btn-secondary.btn-sm', {onclick: prop.bind(null,url)}, name); };
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -4107,7 +4107,7 @@
      * Create edit component
      * Promise editMessage({output:Prop})
      */
-    var createMessage = function ( args ) { return messages.custom({
+    var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -4133,7 +4133,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
                     if (isValid) close(true);
                 },
                 cancel: function cancel() {
@@ -4147,11 +4147,11 @@
             var study = ctrl.study;
             var validity = ctrl.validity();
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -4188,11 +4188,11 @@
             header: 'Continue Study:',
             content: ("Are you sure you want to continue \"" + (study.studyId) + "\"?")
         })
-        .then(function ( response ) {
+        .then(function (response) {
             if(response) {
                 studyPending(study, true)();
                 return updateStatus(study, STATUS_RUNNING)
-                    .then(function () { return study.studyStatus = STATUS_RUNNING; })
+                    .then(function (){ return study.studyStatus = STATUS_RUNNING; })
                     .catch(reportError('Continue Study'))
                     .then(studyPending(study, false));
             }
@@ -4204,11 +4204,11 @@
             header: 'Pause Study:',
             content: ("Are you sure you want to pause \"" + (study.studyId) + "\"?")
         })
-        .then(function ( response ) {
+        .then(function (response) {
             if(response) {
                 studyPending(study, true)();
                 return updateStatus(study, STATUS_PAUSED)
-                    .then(function () { return study.studyStatus = STATUS_PAUSED; })
+                    .then(function (){ return study.studyStatus = STATUS_PAUSED; })
                     .catch(reportError('Pause Study'))
                     .then(studyPending(study, false));
             }
@@ -4220,11 +4220,11 @@
             header: 'Remove Study:',
             content: ("Are you sure you want to remove \"" + (study.studyId) + "\" from the pool?")
         })
-        .then(function ( response ) {
+        .then(function (response) {
             if(response) {
                 studyPending(study, true)();
                 return updateStatus(study, STATUS_STOP)
-                    .then(function () { return list(list().filter(function ( el ) { return el !== study; })); })
+                    .then(function () { return list(list().filter(function (el) { return el !== study; })); })
                     .catch(reportError('Remove Study'))
                     .then(studyPending(study, false));
             }
@@ -4234,7 +4234,7 @@
     var edit  = function (input) {
         var output = m.prop();
         return editMessage({input: input, output: output})
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) {
                     studyPending(input, true)();
                     var study = Object.assign({}, input, unPropify(output()));
@@ -4249,11 +4249,11 @@
     var create = function (list) {
         var output = m.prop();
         return createMessage({output: output})
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) {
                     spinner.show();
                     getStudyId(output())
-                        .then(function ( response ) { return Object.assign(unPropify(output()), response); }) // add response data to "newStudy"
+                        .then(function (response) { return Object.assign(unPropify(output()), response); }) // add response data to "newStudy"
                         .then(spinner.hide)
                         .then(editNewStudy);
                 }
@@ -4262,7 +4262,7 @@
         function editNewStudy(input){
             var output = m.prop();
             return editMessage({input: input, output: output})
-                .then(function ( response ) {
+                .then(function (response) {
                     if (response) {
                         var study = Object.assign({
                             startedSessions: 0,
@@ -4279,11 +4279,11 @@
         }
     };
 
-    var reset = function ( study ) {
+    var reset = function (study) {
         messages.confirm({
             header: 'Restart study',
             content: 'Are you sure you want to restart this study? This action will reset all started and completed sessions.'
-        }).then(function ( response ) {
+        }).then(function (response) {
             if (response) {
                 var old = {
                     startedSessions: study.startedSessions,
@@ -4292,7 +4292,7 @@
                 study.startedSessions = study.completedSessions = 0;
                 m.redraw();
                 return resetStudy(study)
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         Object.assign(study, old);
                         return Promise.reject(response);
                     })
@@ -4301,14 +4301,14 @@
         });
     };
 
-    var reportError = function ( header ) { return function ( err ) { return messages.alert({header: header, content: err.message}); }; };
+    var reportError = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
 
     var studyPending = function (study, state) { return function () {
         study.$pending = state;
         m.redraw();
     }; };
 
-    var unPropify = function ( obj ) { return Object.keys(obj).reduce(function (result, key) {
+    var unPropify = function (obj) { return Object.keys(obj).reduce(function (result, key) {
         result[key] = obj[key]();
         return result;
     }, {}); };
@@ -4330,8 +4330,8 @@
     }); };
 
     function formatDate(date){
-        var pad = function ( num ) { return num < 10 ? '0' + num : num; };
-        return ("" + (pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
+        var pad = function (num) { return num < 10 ? '0' + num : num; };
+        return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
     }
 
     var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
@@ -4355,7 +4355,7 @@
                 .then(m.redraw);
             return ctrl;
         },
-        view: function ( ctrl ) {
+        view: function (ctrl) {
             var list = ctrl.list;
             return m('.pool', [
                 m('h2', 'Study pool'),
@@ -4404,7 +4404,7 @@
                                     )
                                 )
                                 :
-                                list().filter(studyFilter(ctrl)).map(function ( study ) { return m('tr', [
+                                list().filter(studyFilter(ctrl)).map(function (study) { return m('tr', [
                                     // ### ID
                                     m('td', study.studyId),
 
@@ -4492,7 +4492,7 @@
     var thConfig = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter(ctrl){
-        return function ( study ) { return includes(study.studyId, ctrl.globalSearch()) ||
+        return function (study) { return includes(study.studyId, ctrl.globalSearch()) ||
             includes(study.studyUrl, ctrl.globalSearch()) ||
             includes(study.rulesUrl, ctrl.globalSearch()); };
 
@@ -4518,7 +4518,7 @@
 
             return ctrl;
         },
-        view: function ( ctrl ) {
+        view: function (ctrl) {
             var list = ctrl.list;
             return m('.pool', [
                 m('h2', 'Pool history'),
@@ -4555,7 +4555,7 @@
                         ])
                     ]),
                     m('tbody', [
-                        list().filter(studyFilter$1(ctrl)).map(function ( study ) { return m('tr', [
+                        list().filter(studyFilter$1(ctrl)).map(function (study) { return m('tr', [
                             // ### ID
                             m('td', study.studyId),
 
@@ -4627,7 +4627,7 @@
     var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter$1(ctrl){
-        return function ( study ) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
+        return function (study) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
                 || includes(study.targetCompletions, ctrl.globalSearch()))
             && (new Date(study.creationDate)).getTime() >= ctrl.startDate().getTime()
         && (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime()+86000000; }; //include the end day selected
@@ -4653,12 +4653,12 @@
         body: {action:'getAllDownloads'}
     }).then(interceptErrors$1); };
 
-    var removeDownload = function ( download ) { return fetchVoid(url$1, {
+    var removeDownload = function (download) { return fetchVoid(url$1, {
         method:'post',
         body: Object.assign({action:'removeDownload'}, download)
     }).then(interceptErrors$1); };
 
-    var createDownload = function ( download ) { return fetchJson(url$1, {
+    var createDownload = function (download) { return fetchJson(url$1, {
         method: 'post',
         body: Object.assign({action:'download'}, download)
     }).then(interceptErrors$1); };
@@ -4673,7 +4673,7 @@
         return Promise.reject({message: response.msg});
     }
 
-    function createMessage$1 ( args ) { return messages.custom({
+    function createMessage$1 (args) { return messages.custom({
         content: m.component(createComponent$1, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -4707,7 +4707,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
                     if (isValid) close(true);
                 },
@@ -4722,11 +4722,11 @@
             var download = ctrl.download;
             var validity = ctrl.validity();
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -4794,8 +4794,8 @@
 
         return getAllDownloads()
             .then(list)
-            .then(function ( response ) {
-                if (!cancel() && response.some(function ( download ) { return download.studyStatus === STATUS_RUNNING$1; })) {
+            .then(function (response) {
+                if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
                     recursiveGetAll({list: list, cancel: cancel, error: error});
                 }
             })
@@ -4844,10 +4844,10 @@
     }
 
     function doRemove(download, list){
-        list(list().filter(function ( el ) { return el !== download; }));
+        list(list().filter(function (el) { return el !== download; }));
         m.redraw();
         removeDownload(download)
-            .catch(function ( err ) {
+            .catch(function (err) {
                 list().push(download);
                 return messages.alert({
                     header: 'Delete Request',
@@ -4863,7 +4863,7 @@
     function create$1(list, cancel){
         var output = m.prop();
         return createMessage$1({output: output})
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response){
                     var download = unPropify$1(output());
                     list().unshift(Object.assign({
@@ -4882,12 +4882,12 @@
             });
     }
 
-    var unPropify$1 = function ( obj ) { return Object.keys(obj).reduce(function (result, key) {
+    var unPropify$1 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
         result[key] = obj[key]();
         return result;
     }, {}); };
 
-    var reportError$1 = function ( header ) { return function ( err ) { return messages.alert({header: header, content: err.message}); }; };
+    var reportError$1 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
 
     var TABLE_WIDTH$1 = 7;
     var statusLabelsMap = {}; // defined at the bottom of this file
@@ -4959,7 +4959,7 @@
                                 )
                                 :
 
-                                list().filter(studyFilter$2(ctrl)).map(function ( download ) { return m('tr', [
+                                list().filter(studyFilter$2(ctrl)).map(function (download) { return m('tr', [
                                     // ### ID
                                     m('td', download.studyId),
 
@@ -5029,7 +5029,7 @@
 
     function studyFilter$2(ctrl){
         var search = ctrl.globalSearch();
-        return function ( study ) { return includes(study.studyId, search) ||
+        return function (study) { return includes(study.studyId, search) ||
             includes(study.studyUrl, search); };
 
         function includes(val, search){
@@ -5094,7 +5094,7 @@
         return Promise.reject({message: errors[response.error]});
     }
 
-    var createMessage$2 = function ( args ) { return messages.custom({
+    var createMessage$2 = function (args) { return messages.custom({
         content: m.component(createComponent$2, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -5124,7 +5124,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
                     if (isValid) close(true);
                 },
@@ -5139,11 +5139,11 @@
             var downloadAccess = ctrl.downloadAccess;
             var validity = ctrl.validity();
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -5178,7 +5178,7 @@
         if (!isInitialized) element.focus();
     };
 
-    var grantMessage = function ( args ) { return messages.custom({
+    var grantMessage = function (args) { return messages.custom({
         content: m.component(grantComponent, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -5210,7 +5210,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
                     if (isValid) close(true);
                 },
@@ -5225,11 +5225,11 @@
             var downloadAccess = ctrl.downloadAccess;
             var validity = ctrl.validity();
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -5272,7 +5272,7 @@
         if (!isInitialized) element.focus();
     };
 
-    var revokeMessage = function ( args ) { return messages.custom({
+    var revokeMessage = function (args) { return messages.custom({
         content: m.component(revokeComponent, Object.assign({close:messages.close}, args)),
         wide: true
     }); };
@@ -5304,7 +5304,7 @@
                 ok: function ok(){
                     ctrl.submitAttempt = true;
                     var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function ( key ) { return response[key]; });
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
                     if (isValid) close(true);
                 },
@@ -5319,11 +5319,11 @@
             var downloadAccess = ctrl.downloadAccess;
             var validity = ctrl.validity();
             var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'has-danger': !valid,
                 'has-success' : valid
             }); };
-            var inputClasses = function ( valid ) { return !ctrl.submitAttempt ? '' : classNames({
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
                 'form-control-danger': !valid,
                 'form-control-success': valid
             }); };
@@ -5371,10 +5371,10 @@
             header: 'Approve Access Request:',
             content: ("Are you sure you want to grant access of '" + (downloadAccess.studyId) + "' to '" + (downloadAccess.username) + "'?")
         })
-        .then(function ( response ) {
+        .then(function (response) {
             if(response) {
                 return updateApproved(downloadAccess, STATUS_APPROVED)
-                    .then(function () { return list(list().filter(function ( el ) { return el !== downloadAccess; })); })
+                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
                     .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
                     .catch(reportError$2('Grant Access'))
                     .then(m.redraw());
@@ -5388,11 +5388,11 @@
             header: 'Delete request:',
             content: ("Are you sure you want to delete the access request for'" + (downloadAccess.studyId) + "'? If access has already been granted you will lose it")
         })
-        .then(function ( response ) {
+        .then(function (response) {
             if(response) {
                 
                 return deleteDataAccessRequest(downloadAccess)
-                    .then(function () { return list(list().filter(function ( el ) { return el !== downloadAccess; })); })
+                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
                     .then(messages.alert({header:'Deletion complete', content: 'Access has been deleted'}))
                     .catch(reportError$2('Remove Download Request'))
                     .then(m.redraw());
@@ -5403,7 +5403,7 @@
     var grant = function () {
         var output = m.prop();
         return grantMessage({output: output})
-        .then(function ( response ) {
+        .then(function (response) {
             if (response) {
                 var now = new Date();
                 var downloadAccess = Object.assign({
@@ -5419,7 +5419,7 @@
     var revoke = function () {
         var output = m.prop();
         return revokeMessage({output: output})
-        .then(function ( response ) {
+        .then(function (response) {
             if (response) {
                 var now = new Date();
                 var downloadAccess = Object.assign({
@@ -5434,7 +5434,7 @@
     var create$2 = function (list) {
         var output = m.prop();
         return createMessage$2({output: output})
-            .then(function ( response ) {
+            .then(function (response) {
                 if (response) {
                     var now = new Date();
                     var downloadAccess = Object.assign({
@@ -5449,9 +5449,9 @@
             });
     };
 
-    var reportError$2 = function ( header ) { return function ( err ) { return messages.alert({header: header, content: err.message}); }; };
+    var reportError$2 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
 
-    var unPropify$2 = function ( obj ) { return Object.keys(obj).reduce(function (result, key) {
+    var unPropify$2 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
         result[key] = obj[key]();
         return result;
     }, {}); };
@@ -5481,7 +5481,7 @@
 
             return ctrl;
         },
-        view: function ( ctrl ) {
+        view: function (ctrl) {
             var list = ctrl.list;
             return m('.downloadAccess', [
                 m('h3', 'Data Download Access Requests'),
@@ -5543,7 +5543,7 @@
                                     )
                                 )
                                 :
-                                list().filter(dataRequestFilter(ctrl)).map(function ( dataRequest ) { return m('tr', [
+                                list().filter(dataRequestFilter(ctrl)).map(function (dataRequest) { return m('tr', [
                                     // ### ID
                                     m('td', dataRequest.studyId),
                                     
@@ -5583,7 +5583,7 @@
     var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function dataRequestFilter(ctrl){
-        return function ( dataRequest ) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
+        return function (dataRequest) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
             includes(dataRequest.username, ctrl.globalSearch()) ||
             includes(dataRequest.email, ctrl.globalSearch()); };
 
@@ -5611,7 +5611,7 @@
                     .then(function () {
                         m.route('/');
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.error(response.message);
                         m.redraw();
                     })
@@ -5670,7 +5670,7 @@
 
     function getStartValue(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
@@ -5689,9 +5689,9 @@
                 sortBy: m.prop('CREATION_DATE')
             };
             get_study_list()
-                .then(function ( response ) {ctrl.list(response.requests);
+                .then(function (response) {ctrl.list(response.requests);
                 })
-                .catch(function ( error ) {
+                .catch(function (error) {
                     throw error;
                 })
                 .then(m.redraw);
@@ -5721,7 +5721,7 @@
                     ])
                 ]),
                 m('tbody', [
-                    ctrl.list().map(function ( study ) { return m('tr', [
+                    ctrl.list().map(function (study) { return m('tr', [
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),
                         m('td', study.RULE_FILE),
@@ -5755,10 +5755,10 @@
                 sortBy: m.prop('CREATION_DATE')
             };
             get_change_request_list()
-              .then(function ( response ) {ctrl.list(response.requests);
+              .then(function (response) {ctrl.list(response.requests);
                   sortTable(ctrl.list, ctrl.sortBy);
               })
-                .catch(function ( error ) {
+                .catch(function (error) {
                     throw error;
                 })
                 .then(m.redraw);
@@ -5792,7 +5792,7 @@
                         )
                     )
                     :
-                    ctrl.list().map(function ( study ) { return m('tr', [
+                    ctrl.list().map(function (study) { return m('tr', [
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                         m('td', study.RESEARCHER_NAME),
@@ -5823,10 +5823,10 @@
                 sortBy: m.prop('CREATION_DATE')
             };
             get_removal_list()
-              .then(function ( response ) {ctrl.list(response.requests);
+              .then(function (response) {ctrl.list(response.requests);
                   sortTable(ctrl.list, ctrl.sortBy);
               })
-                .catch(function ( error ) {
+                .catch(function (error) {
                     throw error;
                 })
                 .then(m.redraw);
@@ -5856,7 +5856,7 @@
                         )
                     )
                     :
-                    ctrl.list().map(function ( study ) { return m('tr', [
+                    ctrl.list().map(function (study) { return m('tr', [
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
                         m('td', study.RESEARCHER_NAME),
@@ -5871,7 +5871,7 @@
 
     function deploy_url(study_id)
     {
-        return ("" + baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
     var get_study_prop = function (study_id) { return fetchJson(deploy_url(study_id), {
@@ -5893,7 +5893,7 @@
         body: {file_names: ctrl.file_names, target_sessions: ctrl.target_sessions, status: ctrl.status, comments: ctrl.comments}
     }); };
 
-    function rulesEditor ( args ) { return m.component(rulesComponent, args); };
+    function rulesEditor (args) { return m.component(rulesComponent, args); };
 
     var rulesComponent = {
         controller: function controller(ref){
@@ -5990,7 +5990,7 @@
             };
 
             get_study_prop(m.route.param('studyId'))
-                .then(function ( response ) {
+                .then(function (response) {
                     ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
                     ctrl.study_name = response.study_name;
                     ctrl.researcher_name(response.researcher_name);
@@ -6000,7 +6000,7 @@
                         return obj;
                     }, {}));
                 })
-                .catch(function ( error ) {
+                .catch(function (error) {
                     throw error;
                 })
                 .then(m.redraw);
@@ -6018,7 +6018,7 @@
                     ctrl.rule_file(response.rule_file);
                     ctrl.sent = true;
                 })
-                .catch(function ( response ) {
+                .catch(function (response) {
                     ctrl.error(response.message);
                 })
                 .then(m.redraw);
@@ -6124,7 +6124,7 @@
         }
     };
 
-    var checkbox = function ( args ) { return m.component({
+    var checkbox = function (args) { return m.component({
         controller: function controller(ref){
             var prop = ref.prop;
             var form = ref.form;
@@ -6138,14 +6138,14 @@
         },
         view: function (ctrl, ref) {
             var prop = ref.prop;
-            var ref_description = ref.description, description = ref_description === void 0 ? '' : ref_description;
+            var description = ref.description; if ( description === void 0 ) description = '';
             var help = ref.help;
             var required = ref.required;
             var form = ref.form;
 
             return m('.checkmarked', 
             // config
-            { onclick: function () { return prop(!prop()); } },
+            { onclick: function (){ return prop(!prop()); } },
             // content
             [ 
                 m('i.fa.fa-fw', {
@@ -6178,7 +6178,7 @@
                 comments: m.prop('')
             };
             get_study_prop(m.route.param('studyId'))
-                .then(function ( response ) {
+                .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
                     ctrl.study_names(response.experiment_file.reduce(function (obj, row) {
@@ -6186,7 +6186,7 @@
                         return obj;
                     }, {}));
                 })
-                .catch(function ( error ) {
+                .catch(function (error) {
                     m.route('/');
                     throw error;
                 })
@@ -6202,7 +6202,7 @@
                     .then(function () {
                         ctrl.sent = true;
                     })
-                    .catch(function ( error ) {
+                    .catch(function (error) {
                         throw error;
                     })
                     .then(m.redraw);
@@ -6256,13 +6256,13 @@
                 comments: m.prop('')
             };
             get_study_prop(m.route.param('studyId'))
-                .then(function ( response ) {
+                .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
                     ctrl.user_name(response.user_name);
                     ctrl.study_name(response.study_name);
                 })
-                .catch(function () {
+                .catch(function (){
                     m.route('/');
                 })
                 .then(m.redraw);
@@ -6278,7 +6278,7 @@
                     .then(function () {
                         ctrl.sent = true;
                     })
-                    .catch(function ( error ) {
+                    .catch(function (error) {
                         throw error;
                     }).then(m.redraw);
             }
@@ -6357,7 +6357,7 @@
                         ctrl.added = true;
                         m.redraw();
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.error(response.message);
                         m.redraw();
                     });
@@ -6439,13 +6439,13 @@
 
     function getStartValue$1(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
     function apiURL(code)
     {   
-        return ("" + activation1_url + "/" + (encodeURIComponent(code)));
+        return (activation1_url + "/" + (encodeURIComponent(code)));
     }
 
     var is_activation_code = function (code) { return fetchJson(apiURL(code), {
@@ -6457,7 +6457,7 @@
         body: {password: password, confirm: confirm}
     }); };
 
-    var password_body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
+    var password_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
             m('h4', 'Enter New Password'),
             m('form', [
@@ -6486,7 +6486,7 @@
 
     function getStartValue$2(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
@@ -6516,7 +6516,7 @@
                     .then(function () {
                         ctrl.activated = true;
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.error(response.message);
                         m.redraw();
                     })
@@ -6543,7 +6543,7 @@
 
     function apiURL$1(code)
     {   
-        return ("" + change_password_url + "/" + (encodeURIComponent(code)));
+        return (change_password_url + "/" + (encodeURIComponent(code)));
     }
 
     var is_recovery_code = function (code) { return fetchJson(apiURL$1(code), {
@@ -6564,7 +6564,7 @@
         method: 'get'
     }); };
 
-    var emil_body = function ( ctrl ) { return m('.card.card-inverse.col-md-4', [
+    var emil_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
             m('h4', 'Enter New Email Address'),
             m('form', [
@@ -6587,7 +6587,7 @@
 
     function getStartValue$3(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
@@ -6610,11 +6610,11 @@
             .then(function (response) {
                 ctrl.email(response.email);
             })
-            .catch(function ( response ) {
+            .catch(function (response) {
                 ctrl.email_error(response.message);
                 m.redraw();
             })
-            .then(function () {m.redraw();});
+            .then(function (){m.redraw();});
 
             return ctrl;
 
@@ -6625,7 +6625,7 @@
                     .then(function () {
                         ctrl.password_changed = true;
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.password_error(response.message);
                     })
                     .then(m.redraw());
@@ -6637,7 +6637,7 @@
                         ctrl.email_changed = true;
                         m.redraw();
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.email_error(response.message);
                         m.redraw();
                     });
@@ -6693,7 +6693,7 @@
                     .then(function () {
                         ctrl.password_changed = true;
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.password_error(response.message);
                         m.redraw();
                     })
@@ -6738,7 +6738,7 @@
                     .then(function () {
                         // m.route('/');
                     })
-                    .catch(function ( response ) {
+                    .catch(function (response) {
                         ctrl.error(response.message);
                         m.redraw();
                     });
@@ -6772,7 +6772,7 @@
 
     function getStartValue$4(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function () { return prop(element.value); }, 30);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
@@ -6781,13 +6781,13 @@
 
     function collaboration_url(study_id)
     {
-        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+        return (baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
 
     function public_url(study_id)
     {
-        return ("" + baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
+        return (baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
@@ -6825,24 +6825,24 @@
             };
             function load() {
                 get_collaborations(m.route.param('studyId'))
-                    .then(function ( response ) {ctrl.users(response.users);
+                    .then(function (response) {ctrl.users(response.users);
                         ctrl.is_public(response.is_public);
                         ctrl.study_name(response.study_name);
                         ctrl.loaded = true;})
-                    .catch(function ( error ) {
+                    .catch(function (error) {
                         throw error;
                     }).then(m.redraw);
 
             }
             function remove(user_id){
                 messages.confirm({header:'Delete collaboration', content:'Are you sure?'})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response)
                             remove_collaboration(m.route.param('studyId'), user_id)
-                                .then(function () {
+                                .then(function (){
                                     load();
                                 })
-                                .catch(function ( error ) {
+                                .catch(function (error) {
                                     ctrl.col_error(error.message);
                                 })
                                 .then(m.redraw);
@@ -6862,14 +6862,14 @@
                         m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
                     ]); }
                     })})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response)
                             add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
-                            .then(function () {
+                            .then(function (){
                                 ctrl.col_error('');
                                 load();
                             })
-                            .catch(function ( error ) {
+                            .catch(function (error) {
                                 ctrl.col_error(error.message);
                                 do_add_collaboration();
                             }).then(m.redraw);
@@ -6882,13 +6882,13 @@
                                                                                     :
                                                                                     'Making the study private will hide its files from everyone but you.'),
                     m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
-                    .then(function ( response ) {
+                    .then(function (response) {
                         if (response) make_pulic(m.route.param('studyId'), is_public)
-                            .then(function () {
+                            .then(function (){
                                 ctrl.pub_error('');
                                 load();
                             })
-                            .catch(function ( error ) {
+                            .catch(function (error) {
                                 ctrl.pub_error(error.message);
                                 do_make_public(is_public);
                             }).then(m.redraw);
@@ -6931,7 +6931,7 @@
                             ])
                         ]),
                         m('tbody', [
-                            ctrl.users().map(function ( user ) { return m('tr', [
+                            ctrl.users().map(function (user) { return m('tr', [
                                 m('td', user.USERNAME),
                                 m('td', user.PERMISSION),
                                 m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, 'Remove'))
@@ -6970,7 +6970,7 @@
     var timer = 0;
     var countdown = 0;
 
-    var layout = function ( route ) {
+    var layout = function (route) {
         return {
             controller: function controller(){
                 var ctrl = {
@@ -7006,7 +7006,7 @@
                         }
                         if(timer==70)
                             messages.confirm({header:'Timeout Warning', content:'The session is about to expire. Do you want to keep working?',okText:'Yes, stay signed-in', cancelText:'No, sign out'})
-                                .then(function ( response ) {
+                                .then(function (response) {
                                     if (!response)
                                         return doLogout();
                                     return is_loggedin();
@@ -7024,7 +7024,7 @@
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                     m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                        m('a.navbar-brand', {href:'/dashboard/dashboard'}, '234'),
+                        m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
