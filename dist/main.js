@@ -6289,11 +6289,12 @@
                 add(username, first_name , last_name, email, iscu)
                     .then(function () {
                         ctrl.added = true;
+                        m.redraw();
                     })
                     .catch(function ( response ) {
                         ctrl.error(response.message);
-                    })
-                    .then(m.redraw());
+                        m.redraw();
+                    });
             }
         },
         view: function view(ctrl){
@@ -6908,6 +6909,7 @@
             controller: function controller(){
                 var ctrl = {
                     isloggedin: false,
+                    role: m.prop(''),
                     doLogout: doLogout,
                     timer:m.prop(0)
                 };
@@ -6916,6 +6918,7 @@
 
                 function is_loggedin(){
                     getAuth().then(function (response) {
+                        ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
                         if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                             m.route('/login');
@@ -6973,6 +6976,8 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),
+                            ctrl.role()=='SU'
+                            ?
                             m('li.nav-item', [
                                 m('.dropdown', [
                                     m('a.nav-link', 'Admin'),
@@ -6980,7 +6985,7 @@
                                         m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                     ])
                                 ])
-                            ]),
+                            ]):'',
                             m('li.nav-item.pull-xs-right', [
                                 m('.dropdown', [
                                     m('a.nav-link', [

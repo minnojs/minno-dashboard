@@ -25,11 +25,12 @@ let addComponent = {
             add(username, first_name , last_name, email, iscu)
                 .then(() => {
                     ctrl.added = true;
+                    m.redraw();
                 })
                 .catch(response => {
                     ctrl.error(response.message);
-                })
-                .then(m.redraw());
+                    m.redraw();
+                });
         }
     },
     view(ctrl){

@@ -12,6 +12,7 @@ let layout = route => {
         controller(){
             const ctrl = {
                 isloggedin: false,
+                role: m.prop(''),
                 doLogout,
                 timer:m.prop(0)
             };
@@ -20,6 +21,7 @@ let layout = route => {
 
             function is_loggedin(){
                 getAuth().then((response) => {
+                    ctrl.role(response.role);
                     ctrl.isloggedin = response.isloggedin;
                     if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                         m.route('/login');
@@ -77,6 +79,8 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                         ]),
+                        ctrl.role()=='SU'
+                        ?
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Admin'),
@@ -84,7 +88,7 @@ let layout = route => {
                                     m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                 ])
                             ])
-                        ]),
+                        ]):'',
                         m('li.nav-item.pull-xs-right', [
                             m('.dropdown', [
                                 m('a.nav-link', [
