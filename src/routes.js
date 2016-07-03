@@ -14,7 +14,8 @@ import studyRemovalComponent from './deploy/studyRemovalComponent';
 import studyChangeRequestComponent from './deploy/studyChangeRequestComponent';
 import addUserComponent from './addUser/addUserComponent';
 import activationComponent from './activation/activationComponent';
-import changePasswordComponent from './changePassword/changePasswordComponent';
+import settingsComponent from './changePassword/settingsComponent';
+import resetPasswordComponent from './changePassword/resetPasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
 import sharingComponent from 'study/sharing/sharingComponent';
 export default routes;
@@ -22,8 +23,8 @@ export default routes;
 let routes = { 
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
-    '/change_password':  changePasswordComponent,
-    '/change_password/:code':  changePasswordComponent,
+    '/change_password':  settingsComponent,
+    '/reset_password/:code':  resetPasswordComponent,
     '/addUser':  addUserComponent,
     '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
     '/studyRemoval/:studyId':  studyRemovalComponent,

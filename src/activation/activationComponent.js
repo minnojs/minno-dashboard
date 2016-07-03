@@ -1,6 +1,6 @@
 import {is_activation_code, set_password} from './activationModel';
 import fullHeight from 'utils/fullHeight';
-import {body} from 'changePassword/changePasswordView';
+import {password_body} from 'changePassword/changePasswordView';
 
 export default activationComponent;
 
@@ -48,6 +48,6 @@ let activationComponent = {
                     m('h5', 'Password successfully updated!')
                 ]
             :
-            body(ctrl)]);
+            password_body(ctrl)]);
     }
 };

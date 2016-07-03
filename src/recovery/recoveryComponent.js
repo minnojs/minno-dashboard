@@ -15,7 +15,7 @@ let recoveryComponent = {
         function recoveryAction(){
             recovery(username)
                 .then(() => {
-                    m.route('/');
+                    // m.route('/');
                 })
                 .catch(response => {
                     ctrl.error(response.message);

@@ -12,17 +12,20 @@ let layout = route => {
             const ctrl = {
                 isloggedin: false,
                 doLogout,
+                redirect:true,
                 timer:m.prop(0)
             };
 
             is_loggedin();
-
             function is_loggedin(){
                 getAuth().then((response) => {
                     ctrl.isloggedin = response.isloggedin;
-                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
-                        m.route('/login');
 
+                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/reset_password/'+ m.route.param('code'))
+                        m.route('/login');
+                    else
+                        ctrl.redirect = false;
+                    timer = response.timeoutInSeconds;
                     timer = response.timeoutInSeconds;
                     run_countdown();
                     m.redraw();
@@ -79,6 +82,9 @@ let layout = route => {
 //                      m('li.nav-item',[
 //                          m('a.nav-link',{href:'/StudyChangeRequest', config:m.route}, 'Study Change Request')
 //                      ]),
+                        m('li.nav-item',[
+                            m('a.nav-link',{href:'/change_password', config:m.route}, 'Settings')
+                        ]),
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Admin'),
@@ -86,9 +92,6 @@ let layout = route => {
                                     m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                 ])
                             ])
-                        ]),
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/change_password', config:m.route}, 'Change password')
                         ]),
                         !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
                             m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
@@ -99,7 +102,11 @@ let layout = route => {
                 ]),
 
                 m('.main-content.container-fluid', [
+                    !ctrl.redirect
+                    ?
                     route
+                    :
+                    ''
                 ]),
 
                 m.component(contextMenu), // register context menu

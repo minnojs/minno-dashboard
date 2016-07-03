@@ -28,7 +28,6 @@ var mainComponent = {
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
-
             function sortStudies(study1, study2){
                 return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
             }
@@ -96,7 +95,7 @@ var mainComponent = {
                             m('option',{disabled: true}, 'Filter studies'),
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
-                            m('option', {value:'collaborate'}, 'Show only studies that shared with me'),
+                            m('option', {value:'collaboration'}, 'Show only studies shared with me'),
                             m('option', {value:'public'}, 'Show only public studies')
                         ])
                     ])
