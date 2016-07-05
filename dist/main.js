@@ -420,18 +420,22 @@
                                     m('.col-sm-9', [
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
-                                                study.permission !=='read only' && !study.is_public
+                                                study.permission =='read only' || study.is_public
                                                 ?
+                                                ''
+                                                :
                                                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    study.permission==='owner'
+                                                    study.permission!=='owner'
                                                     ?
+                                                    ''
+                                                    :
                                                     [m('a.dropdown-item',
                                                         {onclick:function() {do_delete(study.id);}},
                                                         [m('i.fa.fa-remove'), ' Delete']),
                                                     m('a.dropdown-item',
                                                         {onclick:function() {do_rename(study.id);}},
                                                             [m('i.fa.fa-exchange'), ' Rename'])]
-                                                    :'',
+                                                    ,
                                                     m('a.dropdown-item', {
                                                         href: ("/deploy/" + (study.id)),
                                                         config: m.route
@@ -449,8 +453,6 @@
                                                         config: m.route
                                                     }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                                 ]})
-                                                :
-                                                ''
                                             ])
                                         ])
                                     ])
@@ -5657,7 +5659,7 @@
                                 })
                             ]),
 
-                            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                             m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
                             m('p.text-center',
                                 m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
@@ -6044,16 +6046,16 @@
                 m('.card.card-inverse.card-info', [
                     m('.card-block', [
                         m('.row', [
-                            m('.col-sm-5', m('strong', 'Researcher Name: ')),
-                            m('.col-sm-5', ctrl.researcher_name())
+                            m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                            m('.col-sm-9', ctrl.researcher_name())
                         ]),
                         m('.row', [
-                            m('.col-sm-5', m('strong', 'Researcher Email Address: ')),
-                            m('.col-sm-5', ctrl.researcher_email())
+                            m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                            m('.col-sm-9', ctrl.researcher_email())
                         ]),
                         m('.row', [
-                            m('.col-sm-5', m('strong', 'Study Folder Location: ')),
-                            m('.col-sm-5', ctrl.folder_location())
+                            m('.col-sm-3', m('strong', 'Study Folder Location: ')),
+                            m('.col-sm-9', ctrl.folder_location())
                         ])
                     ])
                 ]),
@@ -6118,7 +6120,7 @@
                 }),
 
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
-                ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                 m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
             ]);
         }
@@ -6172,6 +6174,7 @@
                 sent:false,
                 researcher_name: m.prop(''),
                 researcher_email: m.prop(''),
+                global_study_name: m.prop(''),
                 study_name: m.prop(''),
                 study_names: m.prop(''),
                 completed_n: m.prop(''),
@@ -6181,6 +6184,7 @@
                 .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
+                    ctrl.global_study_name(response.study_name);
                     ctrl.study_names(response.experiment_file.reduce(function (obj, row) {
                         obj[row.file_id] = row.file_id;
                         return obj;
@@ -6222,12 +6226,25 @@
             ])
             :
             m('.StudyRemoval.container', [
-                m('h1', 'Study Removal Request'),
-                m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
+                m('h3', [
+                    'Study Removal Request ',
+                    m('small', ctrl.global_study_name())
+                ]),
+                m('.card.card-inverse.card-info', [
+                    m('.card-block', [
+                        m('.row', [
+                            m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                            m('.col-sm-9', ctrl.researcher_name())
+                        ]),
+                        m('.row', [
+                            m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                            m('.col-sm-9', ctrl.researcher_email())
+                        ])
+                    ])
+                ]),
                 radioInput({
                     label:m('span', ['Study name', ASTERIX$1]), 
-                    prop: ctrl.study_name, 
+                    prop: ctrl.study_name,
                     values:ctrl.study_names(),
                     help: 'This is the name you submitted to the RDE (e.g., colinsmith.elmcogload) ',
                     form: form, required:true, isStack:true
@@ -6300,11 +6317,32 @@
                 ])
                 :
                 m('.StudyChangeRequest.container', [
-                    m('h1', 'Study Change Request'),
-                    m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                    m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
+                    m('h3', [
+                        'Study Change Request ',
+                        m('small', ctrl.study_name())
+                    ]),
+                    m('.card.card-inverse.card-info', [
+                        m('.card-block', [
+                            m('.row', [
+                                m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                                m('.col-sm-9', ctrl.researcher_name())
+                            ]),
+                            m('.row', [
+                                m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                                m('.col-sm-9', ctrl.researcher_email())
+                            ]),
+                            m('.row', [
+                                m('.col-sm-3', m('strong', 'Study showfiles link: ')),
+                                m('.col-sm-9', m('a', {href:study_showfiles_link}, study_showfiles_link))
+                            ])
+                        ])
+                    ]),
 
-                    m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
+
+                    // m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+                    // m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
+                    //
+                    // m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
 
                     textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form: form, required:true, isStack:true}),
 
@@ -6429,7 +6467,7 @@
                                 )
                             ]),
 
-                            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                             m('button.btn.btn-primary.btn-block', {onclick: ctrl.add},'Add')
                         ])
                     ])
@@ -6479,7 +6517,7 @@
                     config: getStartValue$2(ctrl.confirm)
                 })
             ]),
-            ctrl.password_error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()) : '',
+            !ctrl.password_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()),
             m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
         ])
     ]); };
@@ -6578,7 +6616,7 @@
                 })
             ])
             ,
-            ctrl.email_error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()) : '',
+            !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
             m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
 
         ])
@@ -6762,7 +6800,7 @@
                             })
                         ]),
 
-                        ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                        !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                         m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
                     ])
                 ])
@@ -7042,8 +7080,10 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),
-                            ctrl.role()=='SU'
+                            ctrl.role()!='SU'
                             ?
+                            ''
+                            :
                             m('li.nav-item', [
                                 m('.dropdown', [
                                     m('a.nav-link', 'Admin'),
@@ -7051,7 +7091,7 @@
                                         m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                     ])
                                 ])
-                            ]):'',
+                            ]),
                             m('li.nav-item.pull-xs-right', [
                                 m('.dropdown', [
                                     m('a.nav-link', [

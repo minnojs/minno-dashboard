@@ -60,11 +60,32 @@ let studyChangeRequestComponent = {
             ])
             :
             m('.StudyChangeRequest.container', [
-                m('h1', 'Study Change Request'),
-                m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
+                m('h3', [
+                    'Study Change Request ',
+                    m('small', ctrl.study_name())
+                ]),
+                m('.card.card-inverse.card-info', [
+                    m('.card-block', [
+                        m('.row', [
+                            m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                            m('.col-sm-9', ctrl.researcher_name())
+                        ]),
+                        m('.row', [
+                            m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                            m('.col-sm-9', ctrl.researcher_email())
+                        ]),
+                        m('.row', [
+                            m('.col-sm-3', m('strong', 'Study showfiles link: ')),
+                            m('.col-sm-9', m('a', {href:study_showfiles_link}, study_showfiles_link))
+                        ])
+                    ])
+                ]),
 
-                m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
+
+                // m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
+                // m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
+                //
+                // m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
 
                 textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form, required:true, isStack:true}),
 

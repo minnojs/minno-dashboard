@@ -12,7 +12,7 @@ export let emil_body = ctrl => m('.card.card-inverse.col-md-4', [
             })
         ])
         ,
-        ctrl.email_error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()) : '',
+        !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
         m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
 
     ])

@@ -124,18 +124,22 @@ var mainComponent = {
                                 m('.col-sm-9', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
-                                            study.permission !=='read only' && !study.is_public
+                                            study.permission =='read only' || study.is_public
                                             ?
+                                            ''
+                                            :
                                             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                study.permission==='owner'
+                                                study.permission!=='owner'
                                                 ?
+                                                ''
+                                                :
                                                 [m('a.dropdown-item',
                                                     {onclick:function() {do_delete(study.id);}},
                                                     [m('i.fa.fa-remove'), ' Delete']),
                                                 m('a.dropdown-item',
                                                     {onclick:function() {do_rename(study.id);}},
                                                         [m('i.fa.fa-exchange'), ' Rename'])]
-                                                :'',
+                                                ,
                                                 m('a.dropdown-item', {
                                                     href: `/deploy/${study.id}`,
                                                     config: m.route
@@ -153,8 +157,6 @@ var mainComponent = {
                                                     config: m.route
                                                 }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                             ]})
-                                            :
-                                            ''
                                         ])
                                     ])
                                 ])

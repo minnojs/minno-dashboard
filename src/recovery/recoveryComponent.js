@@ -41,7 +41,7 @@ let recoveryComponent = {
                         })
                     ]),
 
-                    ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                     m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
                 ])
             ])

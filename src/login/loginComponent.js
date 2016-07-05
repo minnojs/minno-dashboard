@@ -67,7 +67,7 @@ let loginComponent = {
                             })
                         ]),
 
-                        ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+                        !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                         m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
                         m('p.text-center',
                             m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))

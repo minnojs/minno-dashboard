@@ -79,8 +79,10 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                         ]),
-                        ctrl.role()=='SU'
+                        ctrl.role()!='SU'
                         ?
+                        ''
+                        :
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Admin'),
@@ -88,7 +90,7 @@ let layout = route => {
                                     m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                 ])
                             ])
-                        ]):'',
+                        ]),
                         m('li.nav-item.pull-xs-right', [
                             m('.dropdown', [
                                 m('a.nav-link', [

@@ -90,16 +90,16 @@ let deployComponent = {
             m('.card.card-inverse.card-info', [
                 m('.card-block', [
                     m('.row', [
-                        m('.col-sm-5', m('strong', 'Researcher Name: ')),
-                        m('.col-sm-5', ctrl.researcher_name())
+                        m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                        m('.col-sm-9', ctrl.researcher_name())
                     ]),
                     m('.row', [
-                        m('.col-sm-5', m('strong', 'Researcher Email Address: ')),
-                        m('.col-sm-5', ctrl.researcher_email())
+                        m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                        m('.col-sm-9', ctrl.researcher_email())
                     ]),
                     m('.row', [
-                        m('.col-sm-5', m('strong', 'Study Folder Location: ')),
-                        m('.col-sm-5', ctrl.folder_location())
+                        m('.col-sm-3', m('strong', 'Study Folder Location: ')),
+                        m('.col-sm-9', ctrl.folder_location())
                     ])
                 ])
             ]),
@@ -164,7 +164,7 @@ let deployComponent = {
             }),
 
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
-            ctrl.error() ? m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()) : '',
+            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
             m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
         ]);
     }
