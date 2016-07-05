@@ -14,3 +14,6 @@
         margin-left: -1.2em;
     }
 }
+
+.form-group.has-danger  .c-input > input:not(:checked) ~ .c-indicator {background: #d9534f; opacity:0.5}
+.form-group.has-success .c-input > input:not(:checked) ~ .c-indicator {background: #5cb85c; opacity:0.5}
