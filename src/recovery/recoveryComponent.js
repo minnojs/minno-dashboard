@@ -4,23 +4,19 @@ export default recoveryComponent;
 
 let recoveryComponent = {
     controller(){
-        const username = m.prop('');
         const ctrl = {
-            username,
+            username: m.prop(''),
             error: m.prop(''),
-            recovery: recoveryAction
+            recoveryAction
         };
         return ctrl;
 
         function recoveryAction(){
-            recovery(username)
-                .then(() => {
-                    // m.route('/');
-                })
+            recovery(ctrl.username)
                 .catch(response => {
                     ctrl.error(response.message);
-                    m.redraw();
-                });
+                })
+                .then(m.redraw);
         }
     },
     view(ctrl){
@@ -30,7 +26,7 @@ let recoveryComponent = {
                     m('h4', 'Password Reset Request'),
                     m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                    m('form', {onsubmit:ctrl.recovery}, [
+                    m('form', {onsubmit:ctrl.recoveryAction}, [
                         m('input.form-control', {
                             type:'username',
                             placeholder: 'Username / Email',

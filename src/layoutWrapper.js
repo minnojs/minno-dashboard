@@ -97,7 +97,7 @@ let layout = route => {
                                     m('i.fa.fa-cog.fa-lg')
                                 ]),
                                 m('.dropdown-menu.dropdown-menu-right', [
-                                    m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Change password')
+                                    m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Settings')
                                 ])
                             ])
                         ]),

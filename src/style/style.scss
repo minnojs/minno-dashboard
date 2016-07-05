@@ -105,6 +105,9 @@ h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 200; color: #818a
 	.editor { position: absolute;top: 0;right: 0;bottom: 0;left: 0; height:300px; font-size: 18px;}
 }
 
+.table.table-nowrap th {white-space:nowrap}
+
+
 @import "./navbar";
 @import "./loader";
 @import "./forms";

@@ -50,8 +50,8 @@ let deployComponent = {
                     return obj;
                 }, {}));
             })
-            .catch(error => {
-                throw error;
+            .catch(response => {
+                ctrl.error(response.message);
             })
             .then(m.redraw);
     
@@ -63,6 +63,7 @@ let deployComponent = {
                 ctrl.error('Missing parameters');
                 return;
             }
+
             deploy(m.route.param('studyId'), ctrl)
             .then((response) => {
                 ctrl.rule_file(response.rule_file);
@@ -179,10 +180,8 @@ let checkbox = args => m.component({
         return {validity, showValidation: form.showValidation};
     },
     view: (ctrl, {prop, description = '', help, required, form}) => m('.checkmarked', 
-        // config
         { onclick: ()=>prop(!prop()) },
-        // content
-        [ 
+        [
             m('i.fa.fa-fw', {
                 class: classNames({
                     'fa-square-o' : !prop(),

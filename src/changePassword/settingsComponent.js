@@ -27,9 +27,8 @@ let changePasswordComponent = {
         })
         .catch(response => {
             ctrl.email_error(response.message);
-            m.redraw();
         })
-        .then(()=>{m.redraw();});
+        .then(m.redraw);
 
         return ctrl;
 
@@ -43,19 +42,18 @@ let changePasswordComponent = {
                 .catch(response => {
                     ctrl.password_error(response.message);
                 })
-                .then(m.redraw());
+                .then(m.redraw);
         }
 
         function do_set_email(){
             set_email(ctrl.email)
                 .then(() => {
                     ctrl.email_changed = true;
-                    m.redraw();
                 })
                 .catch(response => {
                     ctrl.email_error(response.message);
-                    m.redraw();
-                });
+                })
+                .then(m.redraw);
         }
     },
     view(ctrl){

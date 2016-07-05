@@ -7,7 +7,6 @@ export default resetPasswordComponent;
 
 let resetPasswordComponent = {
     controller(){
-
         const ctrl = {
             password:m.prop(''),
             confirm:m.prop(''),
@@ -18,12 +17,13 @@ let resetPasswordComponent = {
         };
         ctrl.code(m.route.param('code')!== undefined ? m.route.param('code') : '');
         is_recovery_code(ctrl.code())
-        .catch(() => {
-            m.route('/');
-        })
-        .then(() => {
-            m.redraw();
-        });    
+            .catch(() => {
+                m.route('/');
+            })
+            .then(() => {
+                m.redraw();
+            });
+
         return ctrl;
         
         function do_set_password(){
@@ -33,11 +33,8 @@ let resetPasswordComponent = {
                 })
                 .catch(response => {
                     ctrl.password_error(response.message);
-                    m.redraw();
                 })
-                .then(() => {
-                    m.redraw();
-                });
+                .then(m.redraw);
         }
     },
     view(ctrl){

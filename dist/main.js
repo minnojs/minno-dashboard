@@ -360,7 +360,8 @@
                             .catch(function (error) {
                                 ctrl.error(error.message);
                                 do_rename(study_id);
-                            }).then(m.redraw);
+                            })
+                            .then(m.redraw);
                     });
             }
 
@@ -5707,7 +5708,7 @@
             ?
             m('.loader')
             :
-            m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+            m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
                         m('th', thConfig$4('CREATION_DATE',ctrl.sortBy), 'Creation date'),
@@ -5747,7 +5748,6 @@
         return fetchJson(baseUrl$5);
     }
 
-    var TABLE_WIDTH$3 = 8;
     var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
     var changeRequestListComponent = {
         controller: function controller(){
@@ -5772,7 +5772,12 @@
 
             var list = ctrl.list;
 
-            return m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+
+            return ctrl.list().length === 0
+                ?
+                m('.loader')
+                :
+                m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
                         m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
@@ -5786,14 +5791,6 @@
                     ])
                 ]),
                 m('tbody', [
-                    ctrl.list().length === 0
-                    ?
-                    m('tr.table-info',
-                        m('td.text-xs-center', {colspan: TABLE_WIDTH$3},
-                            m('strong', 'Heads up! '), 'There are no pool studies yet'
-                        )
-                    )
-                    :
                     ctrl.list().map(function (study) { return m('tr', [
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
@@ -5815,7 +5812,6 @@
         return fetchJson(baseUrl$6);
     }
 
-    var TABLE_WIDTH$4 = 8;
     var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var removalListComponent = {
@@ -5838,7 +5834,12 @@
             var ctrl = ref.ctrl;
 
             var list = ctrl.list;
-            return m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+
+            return ctrl.list().length === 0
+                ?
+                m('.loader')
+                :
+            m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
                         m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
@@ -5850,14 +5851,6 @@
                     ])
                 ]),
                 m('tbody', [
-                    ctrl.list().length === 0
-                    ?
-                    m('tr.table-info',
-                        m('td.text-xs-center', {colspan: TABLE_WIDTH$4},
-                            m('strong', 'Heads up! '), 'There are no pool studies yet'
-                        )
-                    )
-                    :
                     ctrl.list().map(function (study) { return m('tr', [
                         m('td', study.CREATION_DATE),
                         m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
@@ -6002,8 +5995,8 @@
                         return obj;
                     }, {}));
                 })
-                .catch(function (error) {
-                    throw error;
+                .catch(function (response) {
+                    ctrl.error(response.message);
                 })
                 .then(m.redraw);
         
@@ -6015,6 +6008,7 @@
                     ctrl.error('Missing parameters');
                     return;
                 }
+
                 deploy(m.route.param('studyId'), ctrl)
                 .then(function (response) {
                     ctrl.rule_file(response.rule_file);
@@ -6146,10 +6140,8 @@
             var form = ref.form;
 
             return m('.checkmarked', 
-            // config
             { onclick: function (){ return prop(!prop()); } },
-            // content
-            [ 
+            [
                 m('i.fa.fa-fw', {
                     class: classNames({
                         'fa-square-o' : !prop(),
@@ -6178,8 +6170,10 @@
                 study_name: m.prop(''),
                 study_names: m.prop(''),
                 completed_n: m.prop(''),
-                comments: m.prop('')
+                comments: m.prop(''),
+                error: m.prop('')
             };
+
             get_study_prop(m.route.param('studyId'))
                 .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
@@ -6190,24 +6184,24 @@
                         return obj;
                     }, {}));
                 })
-                .catch(function (error) {
-                    m.route('/');
-                    throw error;
+                .catch(function (response) {
+                    ctrl.error(response.message);
                 })
                 .then(m.redraw);
+
             function submit(){
                 form.showValidation(true);
                 if (!form.isValid())
                 {
-                    messages.alert({header:'Error', content:'not valid'});
+                    ctrl.error('Missing parameters');
                     return;
                 }
                 study_removal(m.route.param('studyId'), ctrl)
                     .then(function () {
                         ctrl.sent = true;
                     })
-                    .catch(function (error) {
-                        throw error;
+                    .catch(function (response) {
+                        ctrl.error(response.message);
                     })
                     .then(m.redraw);
             }
@@ -6251,6 +6245,7 @@
                 }),
                 textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
+                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                 m('button.btn.btn-primary', {onclick: submit}, 'Submit')
             ]);
         }
@@ -6270,7 +6265,8 @@
                 target_sessions: m.prop(''),
                 status: m.prop(''),
                 file_names: m.prop(''),
-                comments: m.prop('')
+                comments: m.prop(''),
+                error: m.prop('')
             };
             get_study_prop(m.route.param('studyId'))
                 .then(function (response) {
@@ -6279,8 +6275,8 @@
                     ctrl.user_name(response.user_name);
                     ctrl.study_name(response.study_name);
                 })
-                .catch(function (){
-                    m.route('/');
+                .catch(function (response) {
+                    ctrl.error(response.message);
                 })
                 .then(m.redraw);
 
@@ -6288,15 +6284,15 @@
                 form.showValidation(true);
                 if (!form.isValid())
                 {
-                    messages.alert({header:'Error', content:'not valid'});
+                    ctrl.error('Missing parameters');
                     return;
                 }
                 Study_change_request(m.route.param('studyId'), ctrl)
                     .then(function () {
                         ctrl.sent = true;
                     })
-                    .catch(function (error) {
-                        throw error;
+                    .catch(function (response) {
+                        ctrl.error(response.message);
                     }).then(m.redraw);
             }
             return {ctrl: ctrl, form: form, submit: submit};
@@ -6339,11 +6335,6 @@
                     ]),
 
 
-                    // m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                    // m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
-                    //
-                    // m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
-
                     textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form: form, required:true, isStack:true}),
 
                     radioInput({
@@ -6358,6 +6349,7 @@
                     }),
                     textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form: form, required:true, isStack:true}),
                     textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
+                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                     m('button.btn.btn-primary', {onclick: submit}, 'Submit')
                 ]);
         }
@@ -6530,37 +6522,30 @@
 
     var activationComponent = {
         controller: function controller(){
-            var password = m.prop('');
-            var confirm = m.prop('');
             var ctrl = {
-                password: password,
-                confirm: confirm,
+                password: m.prop(''),
+                confirm: m.prop(''),
                 error: m.prop(''),
                 activated:false,
-                set_password: update
+                do_set_password: do_set_password
             };
            
             is_activation_code(m.route.param('code'))
             .catch(function () {
                 m.route('/');
             })
-            .then(function () {
-                m.redraw();
-            });
+            .then(m.redraw);
             return ctrl;
 
-            function update(){
-                set_password(m.route.param('code'), password, confirm)
+            function do_set_password(){
+                set_password(m.route.param('code'), ctrl.password, ctrl.confirm)
                     .then(function () {
                         ctrl.activated = true;
                     })
                     .catch(function (response) {
                         ctrl.error(response.message);
-                        m.redraw();
                     })
-                    .then(function () {
-                        m.redraw();
-                    });
+                    .then(m.redraw);
             }
         },
         view: function view(ctrl){
@@ -6650,9 +6635,8 @@
             })
             .catch(function (response) {
                 ctrl.email_error(response.message);
-                m.redraw();
             })
-            .then(function (){m.redraw();});
+            .then(m.redraw);
 
             return ctrl;
 
@@ -6666,19 +6650,18 @@
                     .catch(function (response) {
                         ctrl.password_error(response.message);
                     })
-                    .then(m.redraw());
+                    .then(m.redraw);
             }
 
             function do_set_email(){
                 set_email(ctrl.email)
                     .then(function () {
                         ctrl.email_changed = true;
-                        m.redraw();
                     })
                     .catch(function (response) {
                         ctrl.email_error(response.message);
-                        m.redraw();
-                    });
+                    })
+                    .then(m.redraw);
             }
         },
         view: function view(ctrl){
@@ -6707,7 +6690,6 @@
 
     var resetPasswordComponent = {
         controller: function controller(){
-
             var ctrl = {
                 password:m.prop(''),
                 confirm:m.prop(''),
@@ -6718,12 +6700,13 @@
             };
             ctrl.code(m.route.param('code')!== undefined ? m.route.param('code') : '');
             is_recovery_code(ctrl.code())
-            .catch(function () {
-                m.route('/');
-            })
-            .then(function () {
-                m.redraw();
-            });    
+                .catch(function () {
+                    m.route('/');
+                })
+                .then(function () {
+                    m.redraw();
+                });
+
             return ctrl;
             
             function do_set_password(){
@@ -6733,11 +6716,8 @@
                     })
                     .catch(function (response) {
                         ctrl.password_error(response.message);
-                        m.redraw();
                     })
-                    .then(function () {
-                        m.redraw();
-                    });
+                    .then(m.redraw);
             }
         },
         view: function view(ctrl){
@@ -6763,23 +6743,19 @@
 
     var recoveryComponent = {
         controller: function controller(){
-            var username = m.prop('');
             var ctrl = {
-                username: username,
+                username: m.prop(''),
                 error: m.prop(''),
-                recovery: recoveryAction
+                recoveryAction: recoveryAction
             };
             return ctrl;
 
             function recoveryAction(){
-                recovery(username)
-                    .then(function () {
-                        // m.route('/');
-                    })
+                recovery(ctrl.username)
                     .catch(function (response) {
                         ctrl.error(response.message);
-                        m.redraw();
-                    });
+                    })
+                    .then(m.redraw);
             }
         },
         view: function view(ctrl){
@@ -6789,7 +6765,7 @@
                         m('h4', 'Password Reset Request'),
                         m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                        m('form', {onsubmit:ctrl.recovery}, [
+                        m('form', {onsubmit:ctrl.recoveryAction}, [
                             m('input.form-control', {
                                 type:'username',
                                 placeholder: 'Username / Email',
@@ -6859,7 +6835,10 @@
                 permission:m.prop(''),
                 loaded:false,
                 col_error:m.prop(''),
-                pub_error:m.prop('')
+                pub_error:m.prop(''),
+                remove: remove,
+                do_add_collaboration: do_add_collaboration,
+                do_make_public: do_make_public
             };
             function load() {
                 get_collaborations(m.route.param('studyId'))
@@ -6868,7 +6847,7 @@
                         ctrl.study_name(response.study_name);
                         ctrl.loaded = true;})
                     .catch(function (error) {
-                        throw error;
+                        ctrl.col_error(error.message);
                     }).then(m.redraw);
 
             }
@@ -6910,7 +6889,8 @@
                             .catch(function (error) {
                                 ctrl.col_error(error.message);
                                 do_add_collaboration();
-                            }).then(m.redraw);
+                            })
+                            .then(m.redraw);
                     });
             }
             function do_make_public(is_public){
@@ -6929,34 +6909,29 @@
                             .catch(function (error) {
                                 ctrl.pub_error(error.message);
                                 do_make_public(is_public);
-                            }).then(m.redraw);
+                            })
+                            .then(m.redraw);
                     });
 
             }
             load();
-            return {ctrl: ctrl, remove: remove, do_add_collaboration: do_add_collaboration, do_make_public: do_make_public};
+            return ctrl;
         },
-        view: function view(ref){
-            var ctrl = ref.ctrl;
-            var remove = ref.remove;
-            var do_add_collaboration = ref.do_add_collaboration;
-            var do_make_public = ref.do_make_public;
-
+        view: function view(ctrl){
             return  !ctrl.loaded
                 ?
                 m('.loader')
                 :
                 m('.container', [
-
                     m('.row',[
                         m('.col-sm-7', [
                             m('h3', [ctrl.study_name(), ': Sharing'])
                         ]),
                         m('.col-sm-5', [
-                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                                 m('i.fa.fa-plus'), '  Add new collaboration'
                             ]),
-                            m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
+                            m('button.btn.btn-secondary.btn-sm', {onclick:function() {ctrl.do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                         ])
                     ]),
                     
@@ -6972,7 +6947,7 @@
                             ctrl.users().map(function (user) { return m('tr', [
                                 m('td', user.USERNAME),
                                 m('td', user.PERMISSION),
-                                m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, 'Remove'))
+                                m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.USER_ID);}}, 'Remove'))
                             ]); })
 
                         ])
@@ -7098,7 +7073,7 @@
                                         m('i.fa.fa-cog.fa-lg')
                                     ]),
                                     m('.dropdown-menu.dropdown-menu-right', [
-                                        m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Change password')
+                                        m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Settings')
                                     ])
                                 ])
                             ]),

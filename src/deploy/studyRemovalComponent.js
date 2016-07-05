@@ -1,6 +1,5 @@
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
 import {study_removal, get_study_prop} from 'deploy/deployModel';
-import messages from 'utils/messagesComponent';
 
 export default StudyRemovalComponent;
 const ASTERIX = m('span.text-danger', '*');
@@ -16,8 +15,10 @@ let StudyRemovalComponent = {
             study_name: m.prop(''),
             study_names: m.prop(''),
             completed_n: m.prop(''),
-            comments: m.prop('')
+            comments: m.prop(''),
+            error: m.prop('')
         };
+
         get_study_prop(m.route.param('studyId'))
             .then(response =>{
                 ctrl.researcher_name(response.researcher_name);
@@ -28,24 +29,24 @@ let StudyRemovalComponent = {
                     return obj;
                 }, {}));
             })
-            .catch(error => {
-                m.route('/');
-                throw error;
+            .catch(response => {
+                ctrl.error(response.message);
             })
             .then(m.redraw);
+
         function submit(){
             form.showValidation(true);
             if (!form.isValid())
             {
-                messages.alert({header:'Error', content:'not valid'});
+                ctrl.error('Missing parameters');
                 return;
             }
             study_removal(m.route.param('studyId'), ctrl)
                 .then(() => {
                     ctrl.sent = true;
                 })
-                .catch(error => {
-                    throw error;
+                .catch(response => {
+                    ctrl.error(response.message);
                 })
                 .then(m.redraw);
         }
@@ -85,6 +86,7 @@ let StudyRemovalComponent = {
             }),
             textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form, required:true, isStack:true}),
             textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
+            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
             m('button.btn.btn-primary', {onclick: submit}, 'Submit')
         ]);
     }

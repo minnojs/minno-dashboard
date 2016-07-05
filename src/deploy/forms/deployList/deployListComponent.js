@@ -26,7 +26,7 @@ let deployComponent = {
         ?
         m('.loader')
         :
-        m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+        m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
             m('thead', [
                 m('tr', [
                     m('th', thConfig('CREATION_DATE',ctrl.sortBy), 'Creation date'),

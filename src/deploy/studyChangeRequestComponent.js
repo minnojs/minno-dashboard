@@ -1,6 +1,5 @@
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
 import {Study_change_request, get_study_prop} from 'deploy/deployModel';
-import messages from 'utils/messagesComponent';
 
 export default studyChangeRequestComponent;
 const ASTERIX = m('span.text-danger', '*');
@@ -17,7 +16,8 @@ let studyChangeRequestComponent = {
             target_sessions: m.prop(''),
             status: m.prop(''),
             file_names: m.prop(''),
-            comments: m.prop('')
+            comments: m.prop(''),
+            error: m.prop('')
         };
         get_study_prop(m.route.param('studyId'))
             .then(response =>{
@@ -26,8 +26,8 @@ let studyChangeRequestComponent = {
                 ctrl.user_name(response.user_name);
                 ctrl.study_name(response.study_name);
             })
-            .catch(()=> {
-                m.route('/');
+            .catch(response => {
+                ctrl.error(response.message);
             })
             .then(m.redraw);
 
@@ -35,15 +35,15 @@ let studyChangeRequestComponent = {
             form.showValidation(true);
             if (!form.isValid())
             {
-                messages.alert({header:'Error', content:'not valid'});
+                ctrl.error('Missing parameters');
                 return;
             }
             Study_change_request(m.route.param('studyId'), ctrl)
                 .then(() => {
                     ctrl.sent = true;
                 })
-                .catch(error => {
-                    throw error;
+                .catch(response => {
+                    ctrl.error(response.message);
                 }).then(m.redraw);
         }
         return {ctrl, form, submit};
@@ -82,11 +82,6 @@ let studyChangeRequestComponent = {
                 ]),
 
 
-                // m('p', m('strong','Researcher Name: '), ctrl.researcher_name()),
-                // m('p', m('strong','Researcher Email Address: '), ctrl.researcher_email()),
-                //
-                // m('p', ['Study showfiles link: ', m('a', {href:study_showfiles_link}, study_showfiles_link)]),
-
                 textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form, required:true, isStack:true}),
 
                 radioInput({
@@ -101,6 +96,7 @@ let studyChangeRequestComponent = {
                 }),
                 textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
+                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
                 m('button.btn.btn-primary', {onclick: submit}, 'Submit')
             ]);
     }

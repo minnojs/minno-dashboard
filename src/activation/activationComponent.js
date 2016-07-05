@@ -6,37 +6,30 @@ export default activationComponent;
 
 let activationComponent = {
     controller(){
-        const password = m.prop('');
-        const confirm = m.prop('');
         const ctrl = {
-            password,
-            confirm,
+            password: m.prop(''),
+            confirm: m.prop(''),
             error: m.prop(''),
             activated:false,
-            set_password: update
+            do_set_password
         };
        
         is_activation_code(m.route.param('code'))
         .catch(() => {
             m.route('/');
         })
-        .then(() => {
-            m.redraw();
-        });
+        .then(m.redraw);
         return ctrl;
 
-        function update(){
-            set_password(m.route.param('code'), password, confirm)
+        function do_set_password(){
+            set_password(m.route.param('code'), ctrl.password, ctrl.confirm)
                 .then(() => {
                     ctrl.activated = true;
                 })
                 .catch(response => {
                     ctrl.error(response.message);
-                    m.redraw();
                 })
-                .then(() => {
-                    m.redraw();
-                });
+                .then(m.redraw);
         }
     },
     view(ctrl){

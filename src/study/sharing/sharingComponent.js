@@ -13,7 +13,10 @@ let collaborationComponent = {
             permission:m.prop(''),
             loaded:false,
             col_error:m.prop(''),
-            pub_error:m.prop('')
+            pub_error:m.prop(''),
+            remove,
+            do_add_collaboration,
+            do_make_public
         };
         function load() {
             get_collaborations(m.route.param('studyId'))
@@ -22,7 +25,7 @@ let collaborationComponent = {
                     ctrl.study_name(response.study_name);
                     ctrl.loaded = true;})
                 .catch(error => {
-                    throw error;
+                    ctrl.col_error(error.message);
                 }).then(m.redraw);
 
         }
@@ -64,7 +67,8 @@ let collaborationComponent = {
                         .catch(error => {
                             ctrl.col_error(error.message);
                             do_add_collaboration();
-                        }).then(m.redraw);
+                        })
+                        .then(m.redraw);
                 });
         }
         function do_make_public(is_public){
@@ -83,29 +87,29 @@ let collaborationComponent = {
                         .catch(error => {
                             ctrl.pub_error(error.message);
                             do_make_public(is_public);
-                        }).then(m.redraw);
+                        })
+                        .then(m.redraw);
                 });
 
         }
         load();
-        return {ctrl, remove, do_add_collaboration, do_make_public};
+        return ctrl;
     },
-    view({ctrl, remove, do_add_collaboration, do_make_public}){
+    view(ctrl){
         return  !ctrl.loaded
             ?
             m('.loader')
             :
             m('.container', [
-
                 m('.row',[
                     m('.col-sm-7', [
                         m('h3', [ctrl.study_name(), ': Sharing'])
                     ]),
                     m('.col-sm-5', [
-                        m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:do_add_collaboration}, [
+                        m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add new collaboration'
                         ]),
-                        m('button.btn.btn-secondary.btn-sm', {onclick:function() {do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
+                        m('button.btn.btn-secondary.btn-sm', {onclick:function() {ctrl.do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                     ])
                 ]),
                 
@@ -121,7 +125,7 @@ let collaborationComponent = {
                         ctrl.users().map(user => m('tr', [
                             m('td', user.USERNAME),
                             m('td', user.PERMISSION),
-                            m('td', m('button.btn.btn-secondary', {onclick:function() {remove(user.USER_ID);}}, 'Remove'))
+                            m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.USER_ID);}}, 'Remove'))
                         ]))
 
                     ])

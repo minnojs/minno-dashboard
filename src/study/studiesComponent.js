@@ -72,7 +72,8 @@ var mainComponent = {
                         .catch(error => {
                             ctrl.error(error.message);
                             do_rename(study_id);
-                        }).then(m.redraw);
+                        })
+                        .then(m.redraw);
                 });
         }
 
