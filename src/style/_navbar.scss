@@ -28,6 +28,6 @@ $navbar-background: #2882b5;
 }
 
 .main-content {
-	margin-top: $navbar-height + 1;
-	.is-iframe & {margin-top:0}
+	padding-top: $navbar-height + 1;
+	.is-iframe & {padding-top:0}
 }

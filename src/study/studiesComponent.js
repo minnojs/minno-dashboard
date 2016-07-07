@@ -81,7 +81,7 @@ var mainComponent = {
     view({loaded, studies, do_create, do_delete, do_rename, permissionChoice, globalSearch}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
-            m('.row', [
+            m('.row.p-t-1', [
                 m('.col-sm-6', [
                     m('h3', 'My Studies')
                 ]),

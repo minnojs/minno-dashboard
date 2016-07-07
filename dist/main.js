@@ -382,7 +382,7 @@
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
-                m('.row', [
+                m('.row.p-t-1', [
                     m('.col-sm-6', [
                         m('h3', 'My Studies')
                     ]),
@@ -942,11 +942,13 @@
             var values = ref.values; if ( values === void 0 ) values = {};
             var inputClass = ref$1.inputClass;
 
+            var value = prop();
             return m('.input-group', [
-                m('select.c-select.form-control', {class: inputClass}, {
+                m('select.c-select.form-control', {
+                    class: inputClass, 
                     onchange: function (e) { return prop(values[e.target.value]); },
                     config: function (element, isInit) { return isFirst && isInit && element.focus(); }
-                }, Object.keys(values).map(function (key) { return m('option',  key); }))
+                }, Object.keys(values).map(function (key) { return m('option', {selected:value === values[key]}, key); }))
             ]);
         })
     };
@@ -1196,7 +1198,7 @@
                 task: m.prop(''),
                 studyType: m.prop('Both'),
                 studydb: m.prop('Any'),
-                sortstudy: m.prop(false),
+                sortstudy: m.prop(true),
                 sorttask: m.prop(false),
                 sortgroup: m.prop(false),
                 sorttime: m.prop('None'),

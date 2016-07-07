@@ -1,9 +1,4 @@
 @charset "UTF-8";
-.main-content {
-  padding-top: 54px; }
-  .is-iframe .main-content {
-    margin-top: 0; }
-
 h1, h2, h3, h4, h5 {
   font-weight: 300; }
 
@@ -128,9 +123,9 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   background: #1f648b; }
 
 .main-content {
-  margin-top: 55px; }
+  padding-top: 55px; }
   .is-iframe .main-content {
-    margin-top: 0; }
+    padding-top: 0; }
 
 .loader,
 .loader:before,

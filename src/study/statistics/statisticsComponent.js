@@ -16,7 +16,7 @@ let statisticsComponent = {
             task: m.prop(''),
             studyType: m.prop('Both'),
             studydb: m.prop('Any'),
-            sortstudy: m.prop(false),
+            sortstudy: m.prop(true),
             sorttask: m.prop(false),
             sortgroup: m.prop(false),
             sorttime: m.prop('None'),

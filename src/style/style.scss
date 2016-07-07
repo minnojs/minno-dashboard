@@ -12,11 +12,6 @@ $color-primary-4: #2E76A1;
 
 $navbar-height: 54px;
 
-.main-content {
-	padding-top: $navbar-height;
-	.is-iframe & {margin-top:0}
-}
-
 h1, h2, h3, h4, h5 {font-weight: 300}
 h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 200; color: #818a91; font-size:70%}
 
