@@ -219,13 +219,18 @@
 
     };
 
-    // import {studyUrl as baseUrl} from 'modelUrls';
+    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
-    var baseUrl = '/dashboard/dashboard/studies';
+    var baseUrl   = urlPrefix + "dashboard/studies";
+    var url    = urlPrefix + "StudyData";
+    var baseUrl$1    = urlPrefix + "dashboard";
+    var STATISTICS_URL    = urlPrefix + "PITracking";
+    var url$1    = urlPrefix + "DashboardData";
+    var activation1_url    = urlPrefix + "dashboard/activation";
 
     function get_url(study_id)
     {
-        return ("/dashboard/dashboard/" + (encodeURIComponent(study_id)));
+        return (baseUrl + "/" + (encodeURIComponent(study_id)));
     }
 
     var create_study = function (ctrl) { return fetchJson(baseUrl, {
@@ -492,17 +497,8 @@
         }
     }
 
-    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
-
-    var baseUrl$1   = urlPrefix + "dashboard/studies";
-    var url    = urlPrefix + "StudyData";
-    var baseUrl$2    = urlPrefix + "dashboard";
-    var statisticsUrl    = urlPrefix + "PITracking";
-    var url$1    = urlPrefix + "DashboardData";
-    var activation1_url    = urlPrefix + "dashboard/activation";
-
     var getStatistics = function (query) {
-        return fetchText(statisticsUrl, {method:'post', body: parseQuery(query)})
+        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
             .then(function (response) {
                 var csv = CSVToArray(response);
                 return {
@@ -1271,7 +1267,7 @@
 
     var filePrototype = {
         apiUrl: function apiUrl(){
-            return (baseUrl$2 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
+            return (baseUrl$1 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
         get: function get(){
@@ -1456,13 +1452,13 @@
         }
     };
 
-    var baseUrl$3 = '/dashboard/dashboard';
+    var baseUrl$2 = '/dashboard/dashboard';
 
     var studyPrototype = {
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
 
-            return (baseUrl$3 + "/files/" + (encodeURIComponent(this.id)) + path);
+            return (baseUrl$2 + "/files/" + (encodeURIComponent(this.id)) + path);
         },
 
         get: function get(){
@@ -1597,7 +1593,7 @@
             var this$1 = this;
 
             return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
-                .then(function (response) { return downloadLink((baseUrl$3 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+                .then(function (response) { return downloadLink((baseUrl$2 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
         },
 
         delFiles: function delFiles(files){
@@ -5677,10 +5673,10 @@
         };
     }
 
-    var baseUrl$4 = '/dashboard/dashboard/deploy_list';
+    var baseUrl$3 = '/dashboard/dashboard/deploy_list';
 
     function get_study_list(){
-        return fetchJson(baseUrl$4);
+        return fetchJson(baseUrl$3);
     }
 
     var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
@@ -5741,11 +5737,11 @@
         }
     };
 
-    var baseUrl$5 = '/dashboard/dashboard/change_request_list';
+    var baseUrl$4 = '/dashboard/dashboard/change_request_list';
 
 
     function get_change_request_list(){
-        return fetchJson(baseUrl$5);
+        return fetchJson(baseUrl$4);
     }
 
     var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
@@ -5806,10 +5802,10 @@
         }
     };
 
-    var baseUrl$6 = '/dashboard/dashboard/removal_list';
+    var baseUrl$5 = '/dashboard/dashboard/removal_list';
 
     function get_removal_list(){
-        return fetchJson(baseUrl$6);
+        return fetchJson(baseUrl$5);
     }
 
     var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
@@ -5866,7 +5862,7 @@
 
     function deploy_url(study_id)
     {
-        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return (baseUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
     var get_study_prop = function (study_id) { return fetchJson(deploy_url(study_id), {
@@ -6790,18 +6786,18 @@
         };
     }
 
-    var baseUrl$7 = '/dashboard/dashboard/studies';
+    var baseUrl$6 = '/dashboard/dashboard/studies';
 
 
     function collaboration_url(study_id)
     {
-        return (baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+        return (baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
 
     function public_url(study_id)
     {
-        return (baseUrl$7 + "/" + (encodeURIComponent(study_id)) + "/public");
+        return (baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {

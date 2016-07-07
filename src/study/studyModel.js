@@ -1,17 +1,16 @@
 import {fetchJson} from 'utils/modelHelpers';
-// import {studyUrl as baseUrl} from 'modelUrls';
+import {studyUrl as baseUrl} from 'modelUrls';
 
-const baseUrl = '/dashboard/dashboard/studies';
 
 function get_url(study_id)
 {
-    return `/dashboard/dashboard/${encodeURIComponent(study_id)}`;
+    return `${baseUrl}/${encodeURIComponent(study_id)}`;
 }
 
 /*CRUD*/
 
 export let load = () => {
-    fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'});
+    fetch(baseUrl, {credentials: 'same-origin'});
 };
 
 export let create_study = (ctrl) => fetchJson(baseUrl, {
