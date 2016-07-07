@@ -3076,7 +3076,7 @@
                     m('strong.fa.fa-play')
                 ]),
 
-                m('a.btn.btn-secondary', {onclick: !hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
+                m('a.btn.btn-secondary', {onclick: hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
                     m('strong.fa.fa-save')
                 ])
             ])
