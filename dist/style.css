@@ -436,14 +436,15 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   padding-left: 0;
   padding-right: 0; }
 
-.study .editor .editor-menu {
-  padding: 4px 0; }
-
-.study .editor .file-name {
-  color: #818a91;
-  font-weight: bold;
-  margin: 4px;
-  float: left; }
+.study .editor {
+  padding: 0.3em; }
+  .study .editor .editor-menu {
+    padding: 4px 0; }
+  .study .editor .file-name {
+    color: #818a91;
+    font-weight: bold;
+    margin: 4px;
+    float: left; }
 
 .study .sidebar {
   position: fixed;
