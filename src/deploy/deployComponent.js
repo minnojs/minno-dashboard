@@ -88,21 +88,17 @@ let deployComponent = {
                 m('small', ctrl.study_name)
             ]),
 
-            m('.card.card-inverse.card-info', [
-                m('.card-block', [
-                    m('.row', [
-                        m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                        m('.col-sm-9', ctrl.researcher_name())
-                    ]),
-                    m('.row', [
-                        m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                        m('.col-sm-9', ctrl.researcher_email())
-                    ]),
-                    m('.row', [
-                        m('.col-sm-3', m('strong', 'Study Folder Location: ')),
-                        m('.col-sm-9', ctrl.folder_location())
-                    ])
-                ])
+            m('.row', [
+                m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                m('.col-sm-9', ctrl.researcher_name())
+            ]),
+            m('.row', [
+                m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                m('.col-sm-9', ctrl.researcher_email())
+            ]),
+            m('.row.m-b-1', [
+                m('.col-sm-3', m('strong', 'Study Folder Location: ')),
+                m('.col-sm-9', ctrl.folder_location())
             ]),
 
             radioInput({

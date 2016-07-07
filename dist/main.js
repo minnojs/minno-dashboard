@@ -6033,21 +6033,17 @@
                     m('small', ctrl.study_name)
                 ]),
 
-                m('.card.card-inverse.card-info', [
-                    m('.card-block', [
-                        m('.row', [
-                            m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                            m('.col-sm-9', ctrl.researcher_name())
-                        ]),
-                        m('.row', [
-                            m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                            m('.col-sm-9', ctrl.researcher_email())
-                        ]),
-                        m('.row', [
-                            m('.col-sm-3', m('strong', 'Study Folder Location: ')),
-                            m('.col-sm-9', ctrl.folder_location())
-                        ])
-                    ])
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                    m('.col-sm-9', ctrl.researcher_name())
+                ]),
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                    m('.col-sm-9', ctrl.researcher_email())
+                ]),
+                m('.row.m-b-1', [
+                    m('.col-sm-3', m('strong', 'Study Folder Location: ')),
+                    m('.col-sm-9', ctrl.folder_location())
                 ]),
 
                 radioInput({
@@ -6220,18 +6216,16 @@
                     'Study Removal Request ',
                     m('small', ctrl.global_study_name())
                 ]),
-                m('.card.card-inverse.card-info', [
-                    m('.card-block', [
-                        m('.row', [
-                            m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                            m('.col-sm-9', ctrl.researcher_name())
-                        ]),
-                        m('.row', [
-                            m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                            m('.col-sm-9', ctrl.researcher_email())
-                        ])
-                    ])
+
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                    m('.col-sm-9', ctrl.researcher_name())
                 ]),
+                m('.row.m-b-1', [
+                    m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                    m('.col-sm-9', ctrl.researcher_email())
+                ]),
+
                 radioInput({
                     label:m('span', ['Study name', ASTERIX$1]), 
                     prop: ctrl.study_name,
@@ -6313,21 +6307,18 @@
                         'Study Change Request ',
                         m('small', ctrl.study_name())
                     ]),
-                    m('.card.card-inverse.card-info', [
-                        m('.card-block', [
-                            m('.row', [
-                                m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                                m('.col-sm-9', ctrl.researcher_name())
-                            ]),
-                            m('.row', [
-                                m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                                m('.col-sm-9', ctrl.researcher_email())
-                            ]),
-                            m('.row', [
-                                m('.col-sm-3', m('strong', 'Study showfiles link: ')),
-                                m('.col-sm-9', m('a', {href:study_showfiles_link}, study_showfiles_link))
-                            ])
-                        ])
+
+                    m('.row', [
+                        m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                        m('.col-sm-9', ctrl.researcher_name())
+                    ]),
+                    m('.row', [
+                        m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                        m('.col-sm-9', ctrl.researcher_email())
+                    ]),
+                    m('.row.m-b-1', [
+                        m('.col-sm-3', m('strong', 'Study showfiles link: ')),
+                        m('.col-sm-9', m('a', {href:study_showfiles_link, target: '_blank'}, study_showfiles_link))
                     ]),
 
 
