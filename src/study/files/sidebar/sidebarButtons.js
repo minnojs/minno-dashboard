@@ -10,10 +10,10 @@ let sidebarButtons = ({study}) => {
         m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || fileContext(null, study), title: 'Create new files'}, [
             m('i.fa.fa-plus')
         ]),
-        m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete checkmarked files'}, [
+        m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete selected files'}, [
             m('i.fa.fa-close')
         ]),
-        m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download checkmarked files'}, [
+        m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download selected files'}, [
             m('i.fa.fa-download')
         ]),
         m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
