@@ -97,7 +97,7 @@ var mainComponent = {
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
                             m('option', {value:'collaboration'}, 'Show only studies shared with me'),
-                            m('option', {value:'public'}, 'Show only public studies')
+                            m('option', {value:'public'}, 'Show public studies')
                         ])
                     ])
                 ])

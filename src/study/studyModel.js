@@ -26,3 +26,4 @@ export let rename_study = (study_id, ctrl) => fetchJson(get_url(study_id), {
 
 export let delete_study = (study_id) => fetchJson(get_url(study_id), {
     method: 'delete'});
+    
