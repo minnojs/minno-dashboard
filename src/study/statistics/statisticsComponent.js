@@ -10,7 +10,7 @@ let statisticsComponent = {
         let tableContent = m.prop();
         let query = {
             source: m.prop('Research:Current'),
-            startDate: m.prop(new Date()),
+            startDate: m.prop(firstDayInPreviousMonth(new Date())),
             endDate: m.prop(new Date()),
             study: m.prop(''),
             task: m.prop(''),
@@ -31,6 +31,10 @@ let statisticsComponent = {
             getStatistics(query)
                 .then(tableContent)
                 .then(m.redraw);
+        }
+
+        function firstDayInPreviousMonth(yourDate) {
+            return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
         }
     },
     view: ({query, tableContent, submit, displayHelp}) => m('.container.statistics', [

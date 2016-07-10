@@ -4,6 +4,7 @@ let inputWrapper = (view) => (ctrl, args) => {
     let groupClass;
     let inputClass;
     let form = args.form;
+    let colWidth = args.colWidth || 2;
 
     if (!form) throw new Error('Inputs require a form');
         
@@ -22,10 +23,10 @@ let inputWrapper = (view) => (ctrl, args) => {
             ])
         ]
         : [
-            m('.col-sm-2', [
+            m(`.col-sm-${colWidth}`, [
                 m('label.form-control-label', args.label)
             ]),
-            m('.col-sm-10', [
+            m(`.col-sm-${12 - colWidth}`, [
                 view(ctrl, args, {groupClass, inputClass})
             ]),
             args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )

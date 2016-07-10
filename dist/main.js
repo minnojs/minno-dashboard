@@ -768,6 +768,7 @@
         var groupClass;
         var inputClass;
         var form = args.form;
+        var colWidth = args.colWidth || 2;
 
         if (!form) throw new Error('Inputs require a form');
             
@@ -786,10 +787,10 @@
                 ])
             ]
             : [
-                m('.col-sm-2', [
+                m((".col-sm-" + colWidth), [
                     m('label.form-control-label', args.label)
                 ]),
-                m('.col-sm-10', [
+                m((".col-sm-" + (12 - colWidth)), [
                     view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
                 ]),
                 args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
@@ -1039,10 +1040,11 @@
     var arrayInput = arrayInput$1;
 
     var statisticsForm = function (args) { return m.component(statisticsFormComponent, args); };
+    var colWidth = 3;
     var SOURCES = {
         'Research pool - Current studies'   : 'Research:Current',
         'Research pool - Past studies'      : 'Research:History',
-        'Research pool - All studies'       : 'Research:Any',
+        'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
         'All studies'                       : 'Both:Any'
     };
@@ -1060,14 +1062,14 @@
             return m('.row', [
                 m('.col-sm-6', [
                     //sourceComponent({label:'Source', studyType: query.studyType, studyDb: query.studyDb, form}),
-                    selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form}),
-                    textInput({label:'Study', prop: query.study , form: form}),
-                    textInput({label:'Task', prop: query.task , form: form}),
+                    selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
+                    textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
+                    textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth}),
                     m('.form-group.row', [
-                        m('.col-sm-2', [
-                            m('label.form-control-label', 'Categories')
+                        m('.col-sm-3', [
+                            m('label.form-control-label', 'Show by')
                         ]),
-                        m('.col-sm-10.pull-right', [
+                        m('.col-sm-9.pull-right', [
                             m('.btn-group.btn-group-sm', [
                                 button(query.sortstudy, 'Study'),
                                 button(query.sorttask, 'Task'),
@@ -1086,23 +1088,27 @@
                                         ])
                                     ])
                                 ]),
-                                button(query.sortgroup, 'Data Group'),
+                                button(query.sortgroup, 'Data Group')
+                            ]),
+                            m('.btn-group.btn-group-sm.pull-right', [
                                 button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
                             ])
                         ])
                     ]),
                     m('.form-group.row', [
-                        m('.col-sm-2', [
+                        m('.col-sm-3', [
                             m('label.form-control-label', 'Compute completions')
                         ]),
-                        m('.col-sm-10.pull-right', [
-                            m('.btn-group.btn-group-sm', [
-                                m('.form-inline', [
-                                    m('.form-group', [
-                                        m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)}),
-                                        m('label', 'to'),
-                                        m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
-                                    ])
+                        m('.col-sm-9', [
+                            m('.row', [
+                                m('.col-sm-5', [
+                                    m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
+                                ]),
+                                m('.col-sm-1', [
+                                    m('.form-control-static', 'to')
+                                ]),
+                                m('.col-sm-5', [
+                                    m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
                                 ])
                             ])
                         ])
@@ -1180,10 +1186,12 @@
     };
 
     var statisticsInstructions = function () { return m('.text-muted', [
-        m('p', 'Choose whether you want participation data from the demo site, the research site, or both. You can also choose "current" (to get participation data from those studies that are in the pool right now), "history" (to get data from studies that have ever been in the research pool), or "any" (to get data from all research studies, regardless of whether or not they have ever been in the pool).'),
-        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies within your specified time period.'),
-        m('p', 'You can also enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks. You can also choose how you want the data displayed. If you click "Study", you will see data from any study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated out by task. The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.'),
-        m('p', 'You can define how completion rate is calculated by setting "start" and "completed". Only studies that visited those tasks would be used in the calculation.')
+        m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
+        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies.'),
+        m('p', 'You can also use the Task box to enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks.'),
+        m('p', 'You can also choose how you want the data displayed, using the "Show by" options. If you click "Study", you will see data from each study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated by task.  The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.  '),
+        m('p', 'You can define how completion rate is calculated by entering text to "First task" and "Last task". Only sessions that visited those tasks would be used for the calculation.'),
+        m('p', 'When you choose to show the results by date, you will see all the studies that have at least one session in the requested date range, separated by day, week, month or year. This will also show dates with zero sessions. If you want to hide rows with zero sessions, select the "Hide empty" option.')
     ]); };
 
     var statisticsComponent = {
@@ -1192,7 +1200,7 @@
             var tableContent = m.prop();
             var query = {
                 source: m.prop('Research:Current'),
-                startDate: m.prop(new Date()),
+                startDate: m.prop(firstDayInPreviousMonth(new Date())),
                 endDate: m.prop(new Date()),
                 study: m.prop(''),
                 task: m.prop(''),
@@ -1213,6 +1221,10 @@
                 getStatistics(query)
                     .then(tableContent)
                     .then(m.redraw);
+            }
+
+            function firstDayInPreviousMonth(yourDate) {
+                return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
             }
         },
         view: function (ref) {
