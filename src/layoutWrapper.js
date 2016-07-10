@@ -92,14 +92,7 @@ let layout = route => {
                             ])
                         ]),
                         m('li.nav-item.pull-xs-right', [
-                            m('.dropdown', [
-                                m('a.nav-link', [
-                                    m('i.fa.fa-cog.fa-lg')
-                                ]),
-                                m('.dropdown-menu.dropdown-menu-right', [
-                                    m('a.dropdown-item',{href:'/change_password', config:m.route}, 'Settings')
-                                ])
-                            ])
+                            m('a.nav-link',{href:'/change_password', config:m.route},m('i.fa.fa-cog.fa-lg'))
                         ]),
                         !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
                             m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
