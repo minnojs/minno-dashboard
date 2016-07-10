@@ -738,4 +738,82 @@ th[data-sort-by].active:before {
       /* pointer-events: none; */
       /* in case of FastClick lib use */ }
 
+.fab-container {
+  margin: 1em;
+  position: fixed;
+  bottom: 0;
+  right: 0; }
+
+.fab-buttons {
+  max-height: 0;
+  transition: max-height 0.1s;
+  overflow: hidden; }
+  .fab-container:hover > .fab-buttons {
+    max-height: 500px;
+    overflow: visible; }
+  .fab-buttons .fab-button {
+    background: #66b2dd;
+    opacity: 0;
+    width: 35px;
+    height: 35px;
+    margin: 0 auto 15px;
+    transition: opacity .3s, width .3s, heigh .3s, margin .3s; }
+    .fab-container:hover .fab-buttons .fab-button {
+      opacity: 1;
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 20px; }
+    .fab-buttons .fab-button:nth-last-of-type(1) {
+      transition-delay: 30ms; }
+    .fab-buttons .fab-button:nth-last-of-type(2) {
+      transition-delay: 60ms; }
+    .fab-buttons .fab-button:nth-last-of-type(3) {
+      transition-delay: 90ms; }
+    .fab-buttons .fab-button:nth-last-of-type(4) {
+      transition-delay: 120ms; }
+    .fab-buttons .fab-button:nth-last-of-type(5) {
+      transition-delay: 150ms; }
+    .fab-buttons .fab-button:nth-last-of-type(6) {
+      transition-delay: 180ms; }
+
+.fab-button {
+  color: white;
+  background: #2882b5;
+  text-decoration: none;
+  position: relative;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0px 5px 11px -2px rgba(0, 0, 0, 0.18), 0px 4px 12px -7px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+  .fab-button.fab-main {
+    width: 56px;
+    height: 56px;
+    opacity: 1; }
+  .fab-button:hover {
+    text-decoration: none;
+    color: white;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.14), 0 4px 8px rgba(0, 0, 0, 0.28); }
+
+[tooltip]:before {
+  content: attr(tooltip);
+  background: #585858;
+  padding: 5px 7px;
+  margin-right: 10px;
+  border-radius: 2px;
+  color: #FFF;
+  font: 500 12px Roboto;
+  white-space: nowrap;
+  position: absolute;
+  bottom: 20%;
+  right: 100%;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .3s; }
+
+[tooltip]:hover:before {
+  visibility: visible;
+  opacity: 1; }
+
 /*# sourceMappingURL=style.css.map */

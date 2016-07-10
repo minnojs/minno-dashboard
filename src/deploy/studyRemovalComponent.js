@@ -1,4 +1,5 @@
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
+import actionsFab from '../study/actionsFab';
 import {study_removal, get_study_prop} from 'deploy/deployModel';
 
 export default StudyRemovalComponent;
@@ -6,6 +7,7 @@ const ASTERIX = m('span.text-danger', '*');
 
 let StudyRemovalComponent = {
     controller(){
+        const studyId = m.route.param('studyId');
         let form = formFactory();
         let ctrl = {
             sent:false,
@@ -19,7 +21,7 @@ let StudyRemovalComponent = {
             error: m.prop('')
         };
 
-        get_study_prop(m.route.param('studyId'))
+        get_study_prop(studyId)
             .then(response =>{
                 ctrl.researcher_name(response.researcher_name);
                 ctrl.researcher_email(response.researcher_email);
@@ -41,7 +43,7 @@ let StudyRemovalComponent = {
                 ctrl.error('Missing parameters');
                 return;
             }
-            study_removal(m.route.param('studyId'), ctrl)
+            study_removal(studyId, ctrl)
                 .then(() => {
                     ctrl.sent = true;
                 })
@@ -50,14 +52,15 @@ let StudyRemovalComponent = {
                 })
                 .then(m.redraw);
         }
-        return {ctrl, form, submit};
+        return {ctrl, form, submit, studyId};
     },
-    view({form, ctrl, submit}){
+    view({form, ctrl, submit, studyId}){
         return ctrl.sent
         ?
         m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-            m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
+            m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')]),
+            actionsFab({studyId})
         ])
         :
         m('.StudyRemoval.container', [
@@ -85,7 +88,8 @@ let StudyRemovalComponent = {
             textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form, required:true, isStack:true}),
             textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-            m('button.btn.btn-primary', {onclick: submit}, 'Submit')
+            m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
+            actionsFab({studyId})
         ]);
     }
 };

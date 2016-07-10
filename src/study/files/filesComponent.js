@@ -1,4 +1,5 @@
 export default editorLayoutComponent;
+import actionsFab from '../actionsFab';
 import studyFactory from './fileCollectionModel';
 import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
@@ -42,20 +43,17 @@ let editorLayoutComponent = {
     },
     view: ({study}) => {
         return m('.row.study', [
-            study.loaded
-                ? [
-                    m('.col-md-2', [
-                        m.component(sidebarComponent, {study})
-                    ]),
-                    m('.col-md-10',[
-                        m.route.param('resource') === 'wizard'
-                            ? m.component(wizardComponent, {study})
-                            : m.component(editorComponent, {study})
-                    ])
-                ]
-                :
-                ''
+            !study.loaded ? '' : [
+                m('.col-md-2', [
+                    m.component(sidebarComponent, {study})
+                ]),
+                m('.col-md-10',[
+                    m.route.param('resource') === 'wizard'
+                        ? m.component(wizardComponent, {study})
+                        : m.component(editorComponent, {study})
+                ])
+            ],
+            !study.loaded ? '' : actionsFab({studyId: study.id})
         ]);
     }
 };
-

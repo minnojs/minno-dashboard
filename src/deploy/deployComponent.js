@@ -1,4 +1,5 @@
 import {deploy, get_study_prop} from './deployModel';
+import actionsFab from '../study/actionsFab';
 import classNames from 'utils/classNames';
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
 import rulesEditor from './rulesComponent';
@@ -8,6 +9,7 @@ const ASTERIX = m('span.text-danger', '*');
 
 let deployComponent = {
     controller(){
+        const studyId = m.route.param('studyId');
         let form = formFactory();
         let ctrl = {
             sent:false,
@@ -39,7 +41,7 @@ let deployComponent = {
             
         };
 
-        get_study_prop(m.route.param('studyId'))
+        get_study_prop(studyId)
             .then(response =>{
                 ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
                 ctrl.study_name = response.study_name;
@@ -55,7 +57,7 @@ let deployComponent = {
             })
             .then(m.redraw);
     
-        return {ctrl, form, submit};
+        return {ctrl, form, submit, studyId};
         function submit(){
             form.showValidation(true);
             if (!form.isValid())
@@ -64,7 +66,7 @@ let deployComponent = {
                 return;
             }
 
-            deploy(m.route.param('studyId'), ctrl)
+            deploy(studyId, ctrl)
             .then((response) => {
                 ctrl.rule_file(response.rule_file);
                 ctrl.sent = true;
@@ -75,11 +77,12 @@ let deployComponent = {
             .then(m.redraw);
         }
     },
-    view({form, ctrl, submit}){
+    view({form, ctrl, submit, studyId}){
         if (ctrl.sent) return m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
             m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-            ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : ''
+            ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : '',
+            actionsFab({studyId})
         ]);
         
         return m('.deploy.container', [
@@ -162,7 +165,8 @@ let deployComponent = {
 
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-            m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
+            m('button.btn.btn-primary', {onclick: submit}, 'Deploy'),
+            actionsFab({studyId})
         ]);
     }
 };

@@ -10,7 +10,7 @@
     "js": "rollup --config --sourcemap",
     "watch:js": "rollup --config --sourcemap --watch",
     "css": "node-sass src/style/style.scss --output dist --source-map=true",
-    "watch:css": "node-sass -w src/style/style.scss --output dist --source-map=true",
+    "watch:css": "node-sass -w src/style --output dist --source-map=true",
     "serve": "node fixtures/fixtures.js",
     "bundle": "npm-run-all --parallel js css",
     "start": "npm-run-all --parallel serve watch:*"

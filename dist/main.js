@@ -1260,6 +1260,24 @@
         element.setAttribute('download', filename);
     }; };
 
+    var fab = function (args) { return m.component(fabComponent, args); };
+
+    var fabComponent = {
+        view: function (ctrl, ref) {
+            var studyId = ref.studyId;
+
+            return m('.fab-container', [
+            m('.fab-buttons', [
+                m('a.fab-button', {tooltip:'Request Removal', href: ("/studyRemoval/" + studyId), config:m.route}, m('i.fa.fa-remove')),
+                m('a.fab-button', {tooltip:'Request Change', href: ("/studyChangeRequest/" + studyId), config:m.route}, 'C'),
+                m('a.fab-button', {tooltip:'Request Deploy', href: ("/deploy/" + studyId), config:m.route}, 'D'),
+                m('a.fab-button', {tooltip:'Edit', href: ("/editor/" + studyId), config:m.route}, m('i.fa.fa-edit'))
+            ]),  
+            m('.fab-button.fab-main', {tooltip:'Actions'}, m('i.fa.fa-lg.fa-bolt'))  
+        ]);
+    }
+    };
+
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
         // See http://jshint.com/docs/ for more details
@@ -3853,19 +3871,17 @@
             var study = ref.study;
 
             return m('.row.study', [
-                study.loaded
-                    ? [
-                        m('.col-md-2', [
-                            m.component(sidebarComponent, {study: study})
-                        ]),
-                        m('.col-md-10',[
-                            m.route.param('resource') === 'wizard'
-                                ? m.component(wizardComponent, {study: study})
-                                : m.component(fileEditorComponent, {study: study})
-                        ])
-                    ]
-                    :
-                    ''
+                !study.loaded ? '' : [
+                    m('.col-md-2', [
+                        m.component(sidebarComponent, {study: study})
+                    ]),
+                    m('.col-md-10',[
+                        m.route.param('resource') === 'wizard'
+                            ? m.component(wizardComponent, {study: study})
+                            : m.component(fileEditorComponent, {study: study})
+                    ])
+                ],
+                !study.loaded ? '' : fab({studyId: study.id})
             ]);
         }
     };
@@ -5963,6 +5979,7 @@
 
     var deployComponent$1 = {
         controller: function controller(){
+            var studyId = m.route.param('studyId');
             var form = formFactory();
             var ctrl = {
                 sent:false,
@@ -5994,7 +6011,7 @@
                 
             };
 
-            get_study_prop(m.route.param('studyId'))
+            get_study_prop(studyId)
                 .then(function (response) {
                     ctrl.exist_rule_file(response.have_rule_file ? response.study_name+'.rules.xml' : '');
                     ctrl.study_name = response.study_name;
@@ -6010,7 +6027,7 @@
                 })
                 .then(m.redraw);
         
-            return {ctrl: ctrl, form: form, submit: submit};
+            return {ctrl: ctrl, form: form, submit: submit, studyId: studyId};
             function submit(){
                 form.showValidation(true);
                 if (!form.isValid())
@@ -6019,7 +6036,7 @@
                     return;
                 }
 
-                deploy(m.route.param('studyId'), ctrl)
+                deploy(studyId, ctrl)
                 .then(function (response) {
                     ctrl.rule_file(response.rule_file);
                     ctrl.sent = true;
@@ -6034,11 +6051,13 @@
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
+            var studyId = ref.studyId;
 
             if (ctrl.sent) return m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                 m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-                ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: ("/editor/" + (m.route.param('studyId')) + "/file/" + (ctrl.rule_file()) + ".xml"), config: m.route}, ctrl.rule_file())]) : ''
+                ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: ("/editor/" + (m.route.param('studyId')) + "/file/" + (ctrl.rule_file()) + ".xml"), config: m.route}, ctrl.rule_file())]) : '',
+                fab({studyId: studyId})
             ]);
             
             return m('.deploy.container', [
@@ -6121,7 +6140,8 @@
 
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
+                m('button.btn.btn-primary', {onclick: submit}, 'Deploy'),
+                fab({studyId: studyId})
             ]);
         }
     };
@@ -6167,6 +6187,7 @@
 
     var StudyRemovalComponent = {
         controller: function controller(){
+            var studyId = m.route.param('studyId');
             var form = formFactory();
             var ctrl = {
                 sent:false,
@@ -6180,7 +6201,7 @@
                 error: m.prop('')
             };
 
-            get_study_prop(m.route.param('studyId'))
+            get_study_prop(studyId)
                 .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
@@ -6202,7 +6223,7 @@
                     ctrl.error('Missing parameters');
                     return;
                 }
-                study_removal(m.route.param('studyId'), ctrl)
+                study_removal(studyId, ctrl)
                     .then(function () {
                         ctrl.sent = true;
                     })
@@ -6211,18 +6232,20 @@
                     })
                     .then(m.redraw);
             }
-            return {ctrl: ctrl, form: form, submit: submit};
+            return {ctrl: ctrl, form: form, submit: submit, studyId: studyId};
         },
         view: function view(ref){
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
+            var studyId = ref.studyId;
 
             return ctrl.sent
             ?
             m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
+                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')]),
+                fab({studyId: studyId})
             ])
             :
             m('.StudyRemoval.container', [
@@ -6250,7 +6273,8 @@
                 textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
+                fab({studyId: studyId})
             ]);
         }
     };
@@ -6259,6 +6283,7 @@
 
     var studyChangeRequestComponent = {
         controller: function controller(){
+            var studyId = m.route.param('studyId');
             var form = formFactory();
             var ctrl = {
                 sent:false,
@@ -6272,7 +6297,7 @@
                 comments: m.prop(''),
                 error: m.prop('')
             };
-            get_study_prop(m.route.param('studyId'))
+            get_study_prop(studyId)
                 .then(function (response) {
                     ctrl.researcher_name(response.researcher_name);
                     ctrl.researcher_email(response.researcher_email);
@@ -6291,7 +6316,7 @@
                     ctrl.error('Missing parameters');
                     return;
                 }
-                Study_change_request(m.route.param('studyId'), ctrl)
+                Study_change_request(studyId, ctrl)
                     .then(function () {
                         ctrl.sent = true;
                     })
@@ -6299,60 +6324,60 @@
                         ctrl.error(response.message);
                     }).then(m.redraw);
             }
-            return {ctrl: ctrl, form: form, submit: submit};
+            return {ctrl: ctrl, form: form, submit: submit, studyId: studyId};
         },
         view: function view(ref){
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
+            var studyId = ref.studyId;
 
             var study_showfiles_link = document.location.origin + '/implicit/showfiles.jsp?user=' + ctrl.user_name() + '&study=' + ctrl.study_name();
 
+            if (ctrl.sent) return m('.deploy.centrify',[
+                m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')]),
+                fab({studyId: studyId})
+            ]);
+                
+            return m('.StudyChangeRequest.container', [
+                m('h3', [
+                    'Study Change Request ',
+                    m('small', ctrl.study_name())
+                ]),
 
-            return ctrl.sent
-                ?
-                m('.deploy.centrify',[
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')])
-                ])
-                :
-                m('.StudyChangeRequest.container', [
-                    m('h3', [
-                        'Study Change Request ',
-                        m('small', ctrl.study_name())
-                    ]),
-
-                    m('.row', [
-                        m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                        m('.col-sm-9', ctrl.researcher_name())
-                    ]),
-                    m('.row', [
-                        m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                        m('.col-sm-9', ctrl.researcher_email())
-                    ]),
-                    m('.row.m-b-1', [
-                        m('.col-sm-3', m('strong', 'Study showfiles link: ')),
-                        m('.col-sm-9', m('a', {href:study_showfiles_link, target: '_blank'}, study_showfiles_link))
-                    ]),
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                    m('.col-sm-9', ctrl.researcher_name())
+                ]),
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                    m('.col-sm-9', ctrl.researcher_email())
+                ]),
+                m('.row.m-b-1', [
+                    m('.col-sm-3', m('strong', 'Study showfiles link: ')),
+                    m('.col-sm-9', m('a', {href:study_showfiles_link, target: '_blank'}, study_showfiles_link))
+                ]),
 
 
-                    textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form: form, required:true, isStack:true}),
+                textInput({label: m('span', ['Target number of additional sessions (In addition to the sessions completed so far)', m('span.text-danger', ' *')]),  placeholder: 'Target number of additional sessions', prop: ctrl.target_sessions, form: form, required:true, isStack:true}),
 
-                    radioInput({
-                        label: m('span', ['What\'s the current status of your study?', ASTERIX$2]),
-                        prop: ctrl.status,
-                        values: {
-                            'Currently collecting data and does not need to be unpaused': 'Currently collecting data and does not need to be unpaused',
-                            'Manually paused and needs to be unpaused' : 'Manually paused and needs to be unpaused',
-                            'Auto-paused due to low completion rates or meeting target N.' : 'Auto-paused due to low completion rates or meeting target N.'
-                        },
-                        form: form, required:true, isStack:true
-                    }),
-                    textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form: form, required:true, isStack:true}),
-                    textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
-                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                    m('button.btn.btn-primary', {onclick: submit}, 'Submit')
-                ]);
+                radioInput({
+                    label: m('span', ['What\'s the current status of your study?', ASTERIX$2]),
+                    prop: ctrl.status,
+                    values: {
+                        'Currently collecting data and does not need to be unpaused': 'Currently collecting data and does not need to be unpaused',
+                        'Manually paused and needs to be unpaused' : 'Manually paused and needs to be unpaused',
+                        'Auto-paused due to low completion rates or meeting target N.' : 'Auto-paused due to low completion rates or meeting target N.'
+                    },
+                    form: form, required:true, isStack:true
+                }),
+                textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form: form, required:true, isStack:true}),
+                textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
+                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
+                fab({studyId: studyId})
+            ]);
         }
     };
 

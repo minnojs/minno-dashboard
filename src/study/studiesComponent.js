@@ -1,5 +1,5 @@
-import {toJSON, checkStatus} from 'utils/modelHelpers';
 export default mainComponent;
+import {toJSON, checkStatus} from 'utils/modelHelpers';
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
 import dropdown from 'utils/dropdown';
