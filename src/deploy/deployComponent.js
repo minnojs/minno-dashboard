@@ -1,5 +1,4 @@
 import {deploy, get_study_prop} from './deployModel';
-import actionsFab from '../study/actionsFab';
 import classNames from 'utils/classNames';
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
 import rulesEditor from './rulesComponent';
@@ -81,8 +80,7 @@ let deployComponent = {
         if (ctrl.sent) return m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
             m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-            ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : '',
-            actionsFab({studyId})
+            ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: `/editor/${m.route.param('studyId')}/file/${ctrl.rule_file()}.xml`, config: m.route}, ctrl.rule_file())]) : ''
         ]);
         
         return m('.deploy.container', [
@@ -165,8 +163,7 @@ let deployComponent = {
 
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-            m('button.btn.btn-primary', {onclick: submit}, 'Deploy'),
-            actionsFab({studyId})
+            m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
         ]);
     }
 };

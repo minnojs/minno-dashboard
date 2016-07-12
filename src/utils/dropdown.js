@@ -18,10 +18,10 @@ let dropdownComponent = {
         return {isOpen};
     },
 
-    view({isOpen}, {toggleSelector, toggleContent, elements}){
+    view({isOpen}, {toggleSelector, toggleContent, elements, right}){
         return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
             m(toggleSelector, {onmousedown: () => {isOpen(!isOpen());}}, toggleContent), 
-            m('.dropdown-menu', elements)
+            m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
         ]);
     },
 

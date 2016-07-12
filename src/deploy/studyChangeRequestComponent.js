@@ -1,5 +1,4 @@
 import {formFactory, textInput, radioInput} from 'utils/formHelpers';
-import actionsFab from '../study/actionsFab';
 import {Study_change_request, get_study_prop} from 'deploy/deployModel';
 
 export default studyChangeRequestComponent;
@@ -50,13 +49,12 @@ let studyChangeRequestComponent = {
         }
         return {ctrl, form, submit, studyId};
     },
-    view({form, ctrl, submit, studyId}){
+    view({form, ctrl, submit}){
         let study_showfiles_link = document.location.origin + '/implicit/showfiles.jsp?user=' + ctrl.user_name() + '&study=' + ctrl.study_name();
 
         if (ctrl.sent) return m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-            m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')]),
-            actionsFab({studyId})
+            m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')])
         ]);
             
         return m('.StudyChangeRequest.container', [
@@ -94,8 +92,7 @@ let studyChangeRequestComponent = {
             textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form, required:true, isStack:true}),
             textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-            m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
-            actionsFab({studyId})
+            m('button.btn.btn-primary', {onclick: submit}, 'Submit')
         ]);
     }
 };

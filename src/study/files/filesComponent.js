@@ -1,5 +1,4 @@
 export default editorLayoutComponent;
-import actionsFab from '../actionsFab';
 import studyFactory from './fileCollectionModel';
 import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
@@ -52,8 +51,7 @@ let editorLayoutComponent = {
                         ? m.component(wizardComponent, {study})
                         : m.component(editorComponent, {study})
                 ])
-            ],
-            !study.loaded ? '' : actionsFab({studyId: study.id})
+            ]
         ]);
     }
 };

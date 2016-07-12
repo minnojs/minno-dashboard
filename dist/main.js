@@ -270,10 +270,11 @@
             var toggleSelector = ref$1.toggleSelector;
             var toggleContent = ref$1.toggleContent;
             var elements = ref$1.elements;
+            var right = ref$1.right;
 
             return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
                 m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
-                m('.dropdown-menu', elements)
+                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
             ]);
         },
 
@@ -1259,24 +1260,6 @@
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
     }; };
-
-    var fab = function (args) { return m.component(fabComponent, args); };
-
-    var fabComponent = {
-        view: function (ctrl, ref) {
-            var studyId = ref.studyId;
-
-            return m('.fab-container', [
-            m('.fab-buttons', [
-                m('a.fab-button', {tooltip:'Request Removal', href: ("/studyRemoval/" + studyId), config:m.route}, m('i.fa.fa-remove')),
-                m('a.fab-button', {tooltip:'Request Change', href: ("/studyChangeRequest/" + studyId), config:m.route}, 'C'),
-                m('a.fab-button', {tooltip:'Request Deploy', href: ("/deploy/" + studyId), config:m.route}, 'D'),
-                m('a.fab-button', {tooltip:'Edit', href: ("/editor/" + studyId), config:m.route}, m('i.fa.fa-edit'))
-            ]),  
-            m('.fab-button.fab-main', {tooltip:'Actions'}, m('i.fa.fa-lg.fa-bolt'))  
-        ]);
-    }
-    };
 
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
@@ -3794,20 +3777,31 @@
         var study = ref.study;
 
         var readonly = study.isReadonly;
+        var studyId = m.route.param('studyId');
 
-        return m('.btn-group.btn-group-sm', [
-            m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || fileContext(null, study), title: 'Create new files'}, [
-                m('i.fa.fa-plus')
+        return m('.btn-toolbar', [
+            m('.btn-group.btn-group-sm', [
+                m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || fileContext(null, study), title: 'Create new files'}, [
+                    m('i.fa.fa-plus')
+                ]),
+                m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete selected files'}, [
+                    m('i.fa.fa-close')
+                ]),
+                m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download selected files'}, [
+                    m('i.fa.fa-download')
+                ]),
+                m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
+                    m('i.fa.fa-upload'),
+                    readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadButton(study)})
+                ])
             ]),
-            m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete selected files'}, [
-                m('i.fa.fa-close')
-            ]),
-            m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download selected files'}, [
-                m('i.fa.fa-download')
-            ]),
-            m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
-                m('i.fa.fa-upload'),
-                readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadButton(study)})
+            m('.btn-group.btn-group-sm', [
+                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), right: true,  elements: [
+                    m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
+                    m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
+                    m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
+                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                ]})
             ])
         ]);
     };
@@ -3880,8 +3874,7 @@
                             ? m.component(wizardComponent, {study: study})
                             : m.component(fileEditorComponent, {study: study})
                     ])
-                ],
-                !study.loaded ? '' : fab({studyId: study.id})
+                ]
             ]);
         }
     };
@@ -6056,8 +6049,7 @@
             if (ctrl.sent) return m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                 m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),
-                ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: ("/editor/" + (m.route.param('studyId')) + "/file/" + (ctrl.rule_file()) + ".xml"), config: m.route}, ctrl.rule_file())]) : '',
-                fab({studyId: studyId})
+                ctrl.rule_file() !='' ? m('h5', ['Rule File: ', m('a', {href: ("/editor/" + (m.route.param('studyId')) + "/file/" + (ctrl.rule_file()) + ".xml"), config: m.route}, ctrl.rule_file())]) : ''
             ]);
             
             return m('.deploy.container', [
@@ -6140,8 +6132,7 @@
 
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Deploy'),
-                fab({studyId: studyId})
+                m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
             ]);
         }
     };
@@ -6232,20 +6223,18 @@
                     })
                     .then(m.redraw);
             }
-            return {ctrl: ctrl, form: form, submit: submit, studyId: studyId};
+            return {ctrl: ctrl, form: form, submit: submit};
         },
         view: function view(ref){
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
-            var studyId = ref.studyId;
 
             return ctrl.sent
             ?
             m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')]),
-                fab({studyId: studyId})
+                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
             ])
             :
             m('.StudyRemoval.container', [
@@ -6273,8 +6262,7 @@
                 textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
-                fab({studyId: studyId})
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
             ]);
         }
     };
@@ -6330,14 +6318,12 @@
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
-            var studyId = ref.studyId;
 
             var study_showfiles_link = document.location.origin + '/implicit/showfiles.jsp?user=' + ctrl.user_name() + '&study=' + ctrl.study_name();
 
             if (ctrl.sent) return m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')]),
-                fab({studyId: studyId})
+                m('h5', ['The change request form was sent successfully ', m('a', {href:'/changeRequestList', config: m.route}, 'View change request  requests')])
             ]);
                 
             return m('.StudyChangeRequest.container', [
@@ -6375,8 +6361,7 @@
                 textInput({isArea: true, label: m('span', ['Change Request', m('span.text-danger', ' *')]), help: 'List all file names involved in the change request. Specify for each file whether file is being updated or added to production.)',  placeholder: 'Change Request', prop: ctrl.file_names, form: form, required:true, isStack:true}),
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Submit'),
-                fab({studyId: studyId})
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
             ]);
         }
     };
