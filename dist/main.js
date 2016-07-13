@@ -343,6 +343,7 @@
             }
 
             function do_create(){
+                ctrl.study_name('');
                 messages.prompt({header:'New Study', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
                     .then(function (response) {
                         if (response) create_study(ctrl)
@@ -356,8 +357,15 @@
                     });
             }
 
-            function do_rename(study_id){
-                messages.prompt({header:'New Name', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
+            function do_rename(study_id, study_name){
+                ctrl.study_name(study_name);
+                messages.confirm({
+                    header:'New Name',
+                    content: m.component({view: function () { return m('p', [
+                        m('input.form-control', {placeholder: 'Enter Study Name', value: ctrl.study_name(), onchange: m.withAttr('value', ctrl.study_name)}),
+                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
+                    ]); }
+                    })})
                     .then(function (response) {
                         if (response) rename_study(study_id, ctrl)
                             .then(function (){
@@ -365,7 +373,7 @@
                             })
                             .catch(function (error) {
                                 ctrl.error(error.message);
-                                do_rename(study_id);
+                                do_rename(study_id, study_name);
                             })
                             .then(m.redraw);
                     });
@@ -440,7 +448,7 @@
                                                         {onclick:function() {do_delete(study.id);}},
                                                         [m('i.fa.fa-remove'), ' Delete']),
                                                     m('a.dropdown-item',
-                                                        {onclick:function() {do_rename(study.id);}},
+                                                        {onclick:function() {do_rename(study.id, study.name);}},
                                                             [m('i.fa.fa-exchange'), ' Rename'])]
                                                     ,
                                                     m('a.dropdown-item', {
