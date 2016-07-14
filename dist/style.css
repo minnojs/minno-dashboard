@@ -7,6 +7,9 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   color: #818a91;
   font-size: 70%; }
 
+.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool {
+  padding-top: 1em; }
+
 .centrify {
   display: flex;
   justify-content: center;
