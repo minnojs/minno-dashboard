@@ -2,6 +2,7 @@ import {deleteFiles, downloadFiles} from './fileActions';
 import fileContext from './fileContext';
 import {uploadFiles} from './fileActions';
 import dropdown from 'utils/dropdown';
+import {do_delete, do_rename} from '../../studyActions';
 export default sidebarButtons;
 
 let sidebarButtons = ({study}) => {
@@ -26,10 +27,18 @@ let sidebarButtons = ({study}) => {
         ]),
         m('.btn-group.btn-group-sm', [
             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), right: true,  elements: [
+                readonly ? '' : [
+                    m('a.dropdown-item', {onclick: do_delete(study.id, () => m.route('/studies'))}, [
+                        m('i.fa.fa-fw.fa-remove'), ' Delete'
+                    ]),
+                    m('a.dropdown-item', {onclick: do_rename(study.id, study.name, name => study.name = name)}, [
+                        m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                    ])
+                ],
                 m('a.dropdown-item', { href: `/deploy/${studyId}`, config: m.route }, 'Request Deploy'),
                 m('a.dropdown-item', { href: `/studyChangeRequest/${studyId}`, config: m.route }, 'Request Change'),
                 m('a.dropdown-item', { href: `/studyRemoval/${studyId}`, config: m.route }, 'Request Removal'),
-                m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
             ]})
         ])
     ]);

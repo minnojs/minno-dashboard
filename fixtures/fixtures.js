@@ -39,6 +39,12 @@ router.get('/studies', (req,res)=>{
     ]});
 });
 
+router
+    .get('/studies/:id', (req,res)=>res.json(1))
+    .delete('/studies/:id', (req,res)=>res.json(1))
+    .post('/studies/:id', (req,res)=>res.json(1))
+    .put('/studies/:id', (req,res)=>res.json(1));
+
 router.get('/studies/:studyId/collaboration', (req,res)=>{
     res.json({
         study_name: 'mystudy',

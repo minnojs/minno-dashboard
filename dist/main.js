@@ -327,6 +327,7 @@
         .then(function (response) {
             if (response) delete_study(study_id)
                 .then(callback)
+                .then(m.redraw)
                 .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
                 .then(m.redraw);
         }); }; };
@@ -336,18 +337,19 @@
         var study_name = m.prop(name);
         var error = m.prop('');
 
-        var ask = messages.confirm({
+        var ask = function () { return messages.confirm({
             header:'New Name',
             content: m('div', [
                 m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
                 !error() ? '' : m('p.alert.alert-danger', error())
             ])
-        }).then(function (response) { return response && rename(); });
+        }).then(function (response) { return response && rename(); }); };
 
         var rename = function () { return rename_study(study_id, study_name)
-            .then(callback)
-            .catch(function (error) {
-                error(error.message);
+            .then(callback.bind(null, study_name()))
+            .then(m.redraw)
+            .catch(function (e) {
+                error(e.message);
                 ask();
             }); };
                     
@@ -422,7 +424,7 @@
                                 //m('p.form-control-static',[m('strong', 'Last Changed')])
                             ]),
                             m('.col-sm-4', [
-                                m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
+                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
                             ])
                         ]),
 
@@ -445,17 +447,17 @@
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     study.permission !== 'owner' ? '' : [
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
-                                                            m('i.fa.fa-remove'), ' Delete'
+                                                            m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                         ]),
                                                         m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
-                                                            m('i.fa.fa-exchange'), ' Rename'
+                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename'
                                                         ])
                                                     ],
 
                                                     m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
                                                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
                                                     m('a.dropdown-item', { href: ("/studyRemoval/" + (study.id)), config: m.route }, 'Request Removal'),
-                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                                                 ]})
                                             ])
                                         ])
@@ -3794,10 +3796,18 @@
             ]),
             m('.btn-group.btn-group-sm', [
                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), right: true,  elements: [
+                    readonly ? '' : [
+                        m('a.dropdown-item', {onclick: do_delete(study.id, function () { return m.route('/studies'); })}, [
+                            m('i.fa.fa-fw.fa-remove'), ' Delete'
+                        ]),
+                        m('a.dropdown-item', {onclick: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
+                            m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                        ])
+                    ],
                     m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                     m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
-                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                 ]})
             ])
         ]);

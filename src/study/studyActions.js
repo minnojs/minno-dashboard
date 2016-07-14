@@ -29,6 +29,7 @@ export let do_delete = (study_id, callback) => () => messages.confirm({header:'D
     .then(response => {
         if (response) delete_study(study_id)
             .then(callback)
+            .then(m.redraw)
             .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
             .then(m.redraw);
     });
@@ -38,7 +39,7 @@ export let do_rename = (study_id, name, callback) => () => {
     let study_name = m.prop(name);
     let error = m.prop('');
 
-    let ask = messages.confirm({
+    let ask = () => messages.confirm({
         header:'New Name',
         content: m('div', [
             m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
@@ -47,9 +48,10 @@ export let do_rename = (study_id, name, callback) => () => {
     }).then(response => response && rename());
 
     let rename = () => rename_study(study_id, study_name)
-        .then(callback)
-        .catch(error => {
-            error(error.message);
+        .then(callback.bind(null, study_name()))
+        .then(m.redraw)
+        .catch(e => {
+            error(e.message);
             ask();
         });
                 

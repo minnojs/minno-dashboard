@@ -64,7 +64,7 @@ var mainComponent = {
                             //m('p.form-control-static',[m('strong', 'Last Changed')])
                         ]),
                         m('.col-sm-4', [
-                            m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
+                            m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
                         ])
                     ]),
 
@@ -87,17 +87,17 @@ var mainComponent = {
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 study.permission !== 'owner' ? '' : [
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
-                                                        m('i.fa.fa-remove'), ' Delete'
+                                                        m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                     ]),
                                                     m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
-                                                        m('i.fa.fa-exchange'), ' Rename'
+                                                        m('i.fa.fa-fw.fa-exchange'), ' Rename'
                                                     ])
                                                 ],
 
                                                 m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
                                                 m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),
                                                 m('a.dropdown-item', { href: `/studyRemoval/${study.id}`, config: m.route }, 'Request Removal'),
-                                                m('a.dropdown-item', { href: `/sharing/${study.id}`, config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                                m('a.dropdown-item', { href: `/sharing/${study.id}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                                             ]})
                                         ])
                                     ])
