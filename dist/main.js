@@ -62,6 +62,86 @@
             .catch(catchJSON);
     }
 
+    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+
+    var baseUrl   = urlPrefix + "dashboard/studies";
+    var url    = urlPrefix + "StudyData";
+    var baseUrl$1    = urlPrefix + "dashboard";
+    var STATISTICS_URL    = urlPrefix + "PITracking";
+    var url$1    = urlPrefix + "DashboardData";
+    var activation1_url    = urlPrefix + "dashboard/activation";
+
+    function get_url(study_id) {
+        return (baseUrl + "/" + (encodeURIComponent(study_id)));
+    }
+
+    /*CRUD*/
+    var load_studies = function () { return fetchJson(baseUrl, {credentials: 'same-origin'}); };
+
+    var create_study = function (study_name) { return fetchJson(baseUrl, {
+        method: 'post',
+        body: {study_name: study_name}
+    }); };
+
+    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+
+    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
+
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
+    var dropdown = function (args) { return m.component(dropdownComponent, args); };
+
+    var dropdownComponent = {
+        controller: function controller(){
+            var isOpen = m.prop(false);
+            return {isOpen: isOpen};
+        },
+
+        view: function view(ref, ref$1){
+            var isOpen = ref.isOpen;
+            var toggleSelector = ref$1.toggleSelector;
+            var toggleContent = ref$1.toggleContent;
+            var elements = ref$1.elements;
+            var right = ref$1.right;
+
+            return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
+                m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
+                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
+            ]);
+        },
+
+        config: function (isOpen) { return function (element, isInit, ctx) {
+            if (!isInit) {
+                // this is a bit memory intensive, but lets not preemptively optimse
+                // bootstrap do this with a backdrop
+                document.addEventListener('mousedown', onClick, false);
+                ctx.onunload = function () { return document.removeEventListener('mousedown', onClick); };
+            }
+
+            function onClick(e){
+                if (!isOpen()) return;
+
+                // if we are within the dropdown do not close it
+                // this is conditional to prevent IE problems
+                if (e.target.closest && e.target.closest('.dropdown') === element) return; 
+                isOpen(false);
+                m.redraw();
+            }
+        }; }
+    };
+
     var noop = function (){};
 
     var messages = {
@@ -219,175 +299,95 @@
 
     };
 
-    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+    var do_create = function () {
+        var study_name = m.prop('');
+        var error = m.prop();
 
-    var baseUrl   = urlPrefix + "dashboard/studies";
-    var url    = urlPrefix + "StudyData";
-    var baseUrl$1    = urlPrefix + "dashboard";
-    var STATISTICS_URL    = urlPrefix + "PITracking";
-    var url$1    = urlPrefix + "DashboardData";
-    var activation1_url    = urlPrefix + "dashboard/activation";
+        var ask = function () { return messages.prompt({
+            header:'New Study', 
+            content: m('div', [
+                m('p', 'Enter Study Name:'), 
+                m('span.alert.alert-danger', error())
+            ]), 
+            prop: study_name
+        }).then(function (response) { return response && create(); }); };
+        
+        var create = function () { return create_study(study_name)
+            .then(function (response) { return m.route('/editor/'+response.study_id); })
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            }); };
 
-    function get_url(study_id)
-    {
-        return (baseUrl + "/" + (encodeURIComponent(study_id)));
-    }
-
-    var create_study = function (ctrl) { return fetchJson(baseUrl, {
-        method: 'post',
-        body: {study_name: ctrl.study_name}
-    }); };
-
-    var rename_study = function (study_id, ctrl) { return fetchJson(get_url(study_id), {
-        method: 'put',
-        body: {study_name: ctrl.study_name}
-    }); };
-
-
-    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {
-        method: 'delete'}); };
-
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
-    var dropdown = function (args) { return m.component(dropdownComponent, args); };
-
-    var dropdownComponent = {
-        controller: function controller(){
-            var isOpen = m.prop(false);
-            return {isOpen: isOpen};
-        },
-
-        view: function view(ref, ref$1){
-            var isOpen = ref.isOpen;
-            var toggleSelector = ref$1.toggleSelector;
-            var toggleContent = ref$1.toggleContent;
-            var elements = ref$1.elements;
-            var right = ref$1.right;
-
-            return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
-                m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
-                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
-            ]);
-        },
-
-        config: function (isOpen) { return function (element, isInit, ctx) {
-            if (!isInit) {
-                // this is a bit memory intensive, but lets not preemptively optimse
-                // bootstrap do this with a backdrop
-                document.addEventListener('mousedown', onClick, false);
-                ctx.onunload = function () { return document.removeEventListener('mousedown', onClick); };
-            }
-
-            function onClick(e){
-                if (!isOpen()) return;
-
-                // if we are within the dropdown do not close it
-                // this is conditional to prevent IE problems
-                if (e.target.closest && e.target.closest('.dropdown') === element) return; 
-                isOpen(false);
-                m.redraw();
-            }
-        }; }
+        // activate creation
+        ask();
     };
+
+    var do_delete = function (study_id, callback) { return function () { return messages.confirm({header:'Delete study', content:'Are you sure?'})
+        .then(function (response) {
+            if (response) delete_study(study_id)
+                .then(callback)
+                .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
+                .then(m.redraw);
+        }); }; };
+
+
+    var do_rename = function (study_id, name, callback) { return function () {
+        var study_name = m.prop(name);
+        var error = m.prop('');
+
+        var ask = messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])
+        }).then(function (response) { return response && rename(); });
+
+        var rename = function () { return rename_study(study_id, study_name)
+            .then(callback)
+            .catch(function (error) {
+                error(error.message);
+                ask();
+            }); };
+                    
+        // activate creation
+        ask();
+    }; };
 
     var mainComponent = {
         controller: function(){
             var ctrl = {
                 studies:m.prop([]),
-                error:m.prop(''),
-                study_name:m.prop(''),
                 user_name:m.prop(''),
                 globalSearch: m.prop(''),
                 permissionChoice: m.prop('all'),
                 loaded:false,
-                do_create: do_create, do_delete: do_delete, do_rename: do_rename
+                loadStudies: loadStudies
             };
 
-            load();
+            loadStudies();
             return ctrl;
 
-            function load() {
-                fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
-                    .then(checkStatus)
-                    .then(toJSON)
+            function loadStudies() {
+                load_studies()
                     .then(function (response) { return response.studies.sort(sortStudies); })
                     .then(ctrl.studies)
                     .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
+
                 function sortStudies(study1, study2){
                     return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
                 }
-            }
-
-            function do_delete(study_id){
-                messages.confirm({header:'Delete study', content:'Are you sure?', prop: ctrl.study_name})
-                    .then(function (response) {
-                        if (response)
-                            delete_study(study_id, ctrl)
-                                .then(function (){
-                                    load();
-                                })
-                                .catch(function (error) {
-                                    messages.alert({header: 'Delete study', content: m('p', {class: 'alert alert-danger'}, error.message)});
-
-                                }).then(m.redraw);
-                    });
-            }
-
-            function do_create(){
-                ctrl.study_name('');
-                messages.prompt({header:'New Study', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
-                    .then(function (response) {
-                        if (response) create_study(ctrl)
-                            .then(function (response){
-                                m.route('/editor/'+response.study_id);
-                            })
-                            .catch(function (error) {
-                                ctrl.error(error.message);
-                                do_create();
-                            }).then(m.redraw);
-                    });
-            }
-
-            function do_rename(study_id, study_name){
-                ctrl.study_name(study_name);
-                messages.confirm({
-                    header:'New Name',
-                    content: m.component({view: function () { return m('p', [
-                        m('input.form-control', {placeholder: 'Enter Study Name', value: ctrl.study_name(), onchange: m.withAttr('value', ctrl.study_name)}),
-                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
-                    ]); }
-                    })})
-                    .then(function (response) {
-                        if (response) rename_study(study_id, ctrl)
-                            .then(function (){
-                                load();
-                            })
-                            .catch(function (error) {
-                                ctrl.error(error.message);
-                                do_rename(study_id, study_name);
-                            })
-                            .then(m.redraw);
-                    });
             }
 
         },
         view: function view(ref){
             var loaded = ref.loaded;
             var studies = ref.studies;
-            var do_create = ref.do_create;
-            var do_delete = ref.do_delete;
-            var do_rename = ref.do_rename;
             var permissionChoice = ref.permissionChoice;
             var globalSearch = ref.globalSearch;
+            var loadStudies = ref.loadStudies;
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
@@ -402,8 +402,7 @@
                         ]),
 
                         m('.input-group.pull-right.m-r-1', [
-                            m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: function (e) { return permissionChoice(e.target.value); }}, [
-                                m('option',{disabled: true}, 'Filter studies'),
+                            m('select.c-select.form-control.form-control-sm', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
                                 m('option', {value:'collaboration'}, 'Show only studies shared with me'),
@@ -416,10 +415,13 @@
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', [
-                            m('.col-sm-9', [
+                            m('.col-sm-5', [
                                 m('p.form-control-static',[m('strong', 'Study Name')])
                             ]),
                             m('.col-sm-3', [
+                                //m('p.form-control-static',[m('strong', 'Last Changed')])
+                            ]),
+                            m('.col-sm-4', [
                                 m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
                             ])
                         ]),
@@ -429,44 +431,31 @@
                             .filter(searchFilter(globalSearch()))
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
-                                    m('.col-sm-3', [
-                                        m('.study-text', study.name)
+                                    m('.col-sm-5', [
+                                        m('.study-text', study.name),
+                                        !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
+                                        study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
                                     ]),
-                                    m('.col-sm-9', [
+                                    m('.col-sm-3', [
+                                        m('.study-text', study.last_changed)
+                                    ]),
+                                    m('.col-sm-4', [
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
-                                                study.permission =='read only' || study.is_public
-                                                ?
-                                                ''
-                                                :
-                                                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    study.permission!=='owner'
-                                                    ?
-                                                    ''
-                                                    :
-                                                    [m('a.dropdown-item',
-                                                        {onclick:function() {do_delete(study.id);}},
-                                                        [m('i.fa.fa-remove'), ' Delete']),
-                                                    m('a.dropdown-item',
-                                                        {onclick:function() {do_rename(study.id, study.name);}},
-                                                            [m('i.fa.fa-exchange'), ' Rename'])]
-                                                    ,
-                                                    m('a.dropdown-item', {
-                                                        href: ("/deploy/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Request Deploy'),
-                                                    m('a.dropdown-item', {
-                                                        href: ("/studyChangeRequest/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Request Change'),
-                                                    m('a.dropdown-item', {
-                                                        href: ("/studyRemoval/" + (study.id)),
-                                                        config: m.route
-                                                    }, 'Request Removal'),
-                                                    m('a.dropdown-item', {
-                                                        href: ("/sharing/" + (study.id)),
-                                                        config: m.route
-                                                    }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                                study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                    study.permission !== 'owner' ? '' : [
+                                                        m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
+                                                            m('i.fa.fa-remove'), ' Delete'
+                                                        ]),
+                                                        m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
+                                                            m('i.fa.fa-exchange'), ' Rename'
+                                                        ])
+                                                    ],
+
+                                                    m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
+                                                    m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
+                                                    m('a.dropdown-item', { href: ("/studyRemoval/" + (study.id)), config: m.route }, 'Request Removal'),
+                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                                 ]})
                                             ])
                                         ])

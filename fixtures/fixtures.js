@@ -33,9 +33,9 @@ router.get('/is_loggedin', (req,res) => res.json({"timeoutInSeconds":3600,"role"
 
 router.get('/studies', (req,res)=>{
     res.json({studies: [
-        {id:'asd1', name:'Study 1'},
-        {id:'asd2', name:'Study 2'},
-        {id:'asd3', name:'Study 3'}
+        {id:'asd1', name:'Study 1', permission: 'owner'},
+        {id:'asd2', name:'Study 2', is_public: true},
+        {id:'asd3', name:'Study 3', permission: 'read_only'}
     ]});
 });
 

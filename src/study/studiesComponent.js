@@ -1,92 +1,36 @@
 export default mainComponent;
-import {toJSON, checkStatus} from 'utils/modelHelpers';
-import messages from 'utils/messagesComponent';
-import {create_study, delete_study, rename_study} from './studyModel';
+import {load_studies} from './studyModel';
 import dropdown from 'utils/dropdown';
+import {do_create, do_delete, do_rename} from './studyActions';
 
 var mainComponent = {
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
-            error:m.prop(''),
-            study_name:m.prop(''),
             user_name:m.prop(''),
             globalSearch: m.prop(''),
             permissionChoice: m.prop('all'),
             loaded:false,
-            do_create, do_delete, do_rename
+            loadStudies
         };
 
-        load();
+        loadStudies();
         return ctrl;
 
-        function load() {
-            fetch('/dashboard/dashboard/studies', {credentials: 'same-origin'})
-                .then(checkStatus)
-                .then(toJSON)
+        function loadStudies() {
+            load_studies()
                 .then(response => response.studies.sort(sortStudies))
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
+
             function sortStudies(study1, study2){
                 return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
             }
         }
 
-        function do_delete(study_id){
-            messages.confirm({header:'Delete study', content:'Are you sure?', prop: ctrl.study_name})
-                .then(response => {
-                    if (response)
-                        delete_study(study_id, ctrl)
-                            .then(()=> {
-                                load();
-                            })
-                            .catch(error => {
-                                messages.alert({header: 'Delete study', content: m('p', {class: 'alert alert-danger'}, error.message)});
-
-                            }).then(m.redraw);
-                });
-        }
-
-        function do_create(){
-            ctrl.study_name('');
-            messages.prompt({header:'New Study', content:m('p', [m('p', 'Enter Study Name:'), m('span', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())]), prop: ctrl.study_name})
-                .then(response => {
-                    if (response) create_study(ctrl)
-                        .then((response)=>{
-                            m.route('/editor/'+response.study_id);
-                        })
-                        .catch(error => {
-                            ctrl.error(error.message);
-                            do_create();
-                        }).then(m.redraw);
-                });
-        }
-
-        function do_rename(study_id, study_name){
-            ctrl.study_name(study_name);
-            messages.confirm({
-                header:'New Name',
-                content: m.component({view: () => m('p', [
-                    m('input.form-control', {placeholder: 'Enter Study Name', value: ctrl.study_name(), onchange: m.withAttr('value', ctrl.study_name)}),
-                    m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
-                ])
-                })})
-                .then(response => {
-                    if (response) rename_study(study_id, ctrl)
-                        .then(()=>{
-                            load();
-                        })
-                        .catch(error => {
-                            ctrl.error(error.message);
-                            do_rename(study_id, study_name);
-                        })
-                        .then(m.redraw);
-                });
-        }
-
     },
-    view({loaded, studies, do_create, do_delete, do_rename, permissionChoice, globalSearch}){
+    view({loaded, studies, permissionChoice, globalSearch, loadStudies}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
@@ -100,8 +44,7 @@ var mainComponent = {
                     ]),
 
                     m('.input-group.pull-right.m-r-1', [
-                        m('select.c-select.form-control.form-control-sm', {value:'Filter studies', onchange: e => permissionChoice(e.target.value)}, [
-                            m('option',{disabled: true}, 'Filter studies'),
+                        m('select.c-select.form-control.form-control-sm', {onchange: e => permissionChoice(e.target.value)}, [
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
                             m('option', {value:'collaboration'}, 'Show only studies shared with me'),
@@ -114,10 +57,13 @@ var mainComponent = {
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', [
-                        m('.col-sm-9', [
+                        m('.col-sm-5', [
                             m('p.form-control-static',[m('strong', 'Study Name')])
                         ]),
                         m('.col-sm-3', [
+                            //m('p.form-control-static',[m('strong', 'Last Changed')])
+                        ]),
+                        m('.col-sm-4', [
                             m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', globalSearch)})    
                         ])
                     ]),
@@ -127,44 +73,31 @@ var mainComponent = {
                         .filter(searchFilter(globalSearch()))
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
-                                m('.col-sm-3', [
-                                    m('.study-text', study.name)
+                                m('.col-sm-5', [
+                                    m('.study-text', study.name),
+                                    !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
+                                    study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
                                 ]),
-                                m('.col-sm-9', [
+                                m('.col-sm-3', [
+                                    m('.study-text', study.last_changed)
+                                ]),
+                                m('.col-sm-4', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
-                                            study.permission =='read only' || study.is_public
-                                            ?
-                                            ''
-                                            :
-                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                study.permission!=='owner'
-                                                ?
-                                                ''
-                                                :
-                                                [m('a.dropdown-item',
-                                                    {onclick:function() {do_delete(study.id);}},
-                                                    [m('i.fa.fa-remove'), ' Delete']),
-                                                m('a.dropdown-item',
-                                                    {onclick:function() {do_rename(study.id, study.name);}},
-                                                        [m('i.fa.fa-exchange'), ' Rename'])]
-                                                ,
-                                                m('a.dropdown-item', {
-                                                    href: `/deploy/${study.id}`,
-                                                    config: m.route
-                                                }, 'Request Deploy'),
-                                                m('a.dropdown-item', {
-                                                    href: `/studyChangeRequest/${study.id}`,
-                                                    config: m.route
-                                                }, 'Request Change'),
-                                                m('a.dropdown-item', {
-                                                    href: `/studyRemoval/${study.id}`,
-                                                    config: m.route
-                                                }, 'Request Removal'),
-                                                m('a.dropdown-item', {
-                                                    href: `/sharing/${study.id}`,
-                                                    config: m.route
-                                                }, [m('i.fa.fa-user-plus'), ' Sharing'])
+                                            study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                study.permission !== 'owner' ? '' : [
+                                                    m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
+                                                        m('i.fa.fa-remove'), ' Delete'
+                                                    ]),
+                                                    m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
+                                                        m('i.fa.fa-exchange'), ' Rename'
+                                                    ])
+                                                ],
+
+                                                m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
+                                                m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),
+                                                m('a.dropdown-item', { href: `/studyRemoval/${study.id}`, config: m.route }, 'Request Removal'),
+                                                m('a.dropdown-item', { href: `/sharing/${study.id}`, config: m.route }, [m('i.fa.fa-user-plus'), ' Sharing'])
                                             ]})
                                         ])
                                     ])
