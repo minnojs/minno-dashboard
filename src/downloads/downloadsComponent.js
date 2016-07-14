@@ -32,109 +32,106 @@ const downloadsComponent = {
 
     view(ctrl) {
         let list = ctrl.list;
+
+        if (ctrl.error()) return m('.downloads', [
+            m('h3', 'Data Download'),
+            m('.alert.alert-warning', [
+                m('strong', 'Warning!! '), ctrl.error().message
+            ])
+        ]);
+
         return m('.downloads', [
-            m('h2', 'Downloads'),
-            ctrl.error()
-                ?
-                m('.alert.alert-warning',
-                    m('strong', 'Warning!! '), ctrl.error().message
-                )
-                :
-                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                    m('thead', [
-                        m('tr', [
-                            m('th', {colspan:TABLE_WIDTH}, [
-                                m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
-                            ])
-                        ]),
-                        m('tr', [
-                            m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
-                                m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
-                                    m('i.fa.fa-plus'), '  Download request'
-                                ])
-                            ])
-                        ]),
-                        m('tr', [
-                            m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
-                            m('th', 'Data file'),
-                            m('th', thConfig('db',ctrl.sortBy), 'Database'),
-                            m('th', thConfig('fileSize',ctrl.sortBy), 'File Size'),
-                            m('th', thConfig('creationDate',ctrl.sortBy), 'Date Added'),
-                            m('th','Status'),
-                            m('th','Actions')
+            m('.row.m-b-1', [
+                m('.col-sm-6', [
+                    m('h3', 'Data Download')
+                ]),
+                m('.col-sm-3',[
+                    m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
+                        m('i.fa.fa-plus'), ' Request Data'
+                    ])
+                ]),
+                m('.col-sm-3',[
+                    m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                ])
+            ]),
+
+            m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                m('thead', [
+                    m('tr', [
+                        m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
+                        m('th', 'Data file'),
+                        m('th', thConfig('db',ctrl.sortBy), 'Database'),
+                        m('th', thConfig('fileSize',ctrl.sortBy), 'File Size'),
+                        m('th', thConfig('creationDate',ctrl.sortBy), 'Date Added'),
+                        m('th','Status'),
+                        m('th','Actions')
+                    ])
+                ]),
+                m('tbody', [
+                    list().length === 0
+                        ? m('tr.table-info', [
+                            m('td.text-xs-center', {colspan: TABLE_WIDTH}, 'There are no downloads running yet')
                         ])
-                    ]),
-                    m('tbody', [
-                        list().length === 0
-                            ?
-                            m('tr.table-info',
-                                m('td.text-xs-center', {colspan: TABLE_WIDTH},
-                                    m('strong', 'Heads up! '), 'There are no downloads running yet'
-                                )
-                            )
-                            :
+                        : list().filter(studyFilter(ctrl)).map(download => m('tr', [
+                            // ### ID
+                            m('td', download.studyId),
 
-                            list().filter(studyFilter(ctrl)).map(download => m('tr', [
-                                // ### ID
-                                m('td', download.studyId),
+                            // ### Study url
+                            m('td', download.studyStatus == STATUS_RUNNING
+                                ? m('i.text-muted', 'Loading...')
+                                : download.fileSize
+                                    ? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
+                                    : m('i.text-muted', 'No Data')
+                            ),
 
-                                // ### Study url
-                                m('td',
-                                    download.studyStatus == STATUS_RUNNING
-                                        ? m('i.text-muted', 'Loading...')
-                                        : download.fileSize
-                                            ? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
-                                            : m('i.text-muted', 'No Data')
-                                ),
+                            // ### Database
+                            m('td', download.db),
 
-                                // ### Database
-                                m('td', download.db),
+                            // ### Filesize
+                            m('td', download.fileSize !== 'unknown'
+                                ? download.fileSize
+                                : m('i.text-muted', 'Unknown')
+                            ),
 
-                                // ### Filesize
-                                m('td', download.fileSize !== 'unknown'
-                                    ? download.fileSize
-                                    : m('i.text-muted', 'Unknown')
-                                ),
-
-                                // ### Date Added
-                                m('td', [
-                                    formatDate(new Date(download.creationDate)),
-                                    '  ',
-                                    m('i.fa.fa-info-circle'),
-                                    m('.info-box', [
-                                        m('.card', [
-                                            m('.card-header', 'Creation Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
-                                                ])
+                            // ### Date Added
+                            m('td', [
+                                formatDate(new Date(download.creationDate)),
+                                '  ',
+                                m('i.fa.fa-info-circle'),
+                                m('.info-box', [
+                                    m('.card', [
+                                        m('.card-header', 'Creation Details'),
+                                        m('ul.list-group.list-group-flush',[
+                                            m('li.list-group-item', [
+                                                m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
+                                            ]),
+                                            m('li.list-group-item', [
+                                                m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
+                                            ]),
+                                            m('li.list-group-item', [
+                                                m('strong', 'End Date: '), formatDate(new Date(download.endDate))
                                             ])
                                         ])
                                     ])
-                                ]),
+                                ])
+                            ]),
 
-                                // ### Status
-                                m('td', [
-                                    statusLabelsMap[download.studyStatus]
-                                ]),
+                            // ### Status
+                            m('td', [
+                                statusLabelsMap[download.studyStatus]
+                            ]),
 
-                                // ### Actions
-                                m('td', [
-                                    m('.btn-group', [
-                                        m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, download, list)}, [
-                                            m('i.fa.fa-close')
-                                        ])
+                            // ### Actions
+                            m('td', [
+                                m('.btn-group', [
+                                    m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, download, list)}, [
+                                        m('i.fa.fa-close')
                                     ])
                                 ])
-                            ]))
-                    ])
+                            ])
+                        ]))
                 ])
+            ])
         ]);
     }
 };

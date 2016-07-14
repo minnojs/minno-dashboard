@@ -58,34 +58,44 @@ let createComponent = {
         });
 
         return m('div',[
-            m('h4', 'Request Download'),
+            m('h4', 'Request Data'),
             m('.card-block', [
-                m('.form-group', {class:groupClasses(validity.studyId)}, [
-                    m('label', 'Study Id'),
-                    m('input.form-control', {
-                        config: focusConfig,
-                        placeholder:'Study Id',
-                        value: download.studyId(),
-                        onkeyup: m.withAttr('value', download.studyId),
-                        class:inputClasses(validity.studyId)
-                    }),
-                    validationView(validity.studyId, 'The study ID is required in order to request a download.')
-                ]),
-                m('.form-group', [
-                    m('label','Database'),
-                    m('select.form-control', {onchange: m.withAttr('value',download.db)}, [
-                        m('option',{value:'test', selected: download.db() === 'test'}, 'Development'),
-                        m('option',{value:'warehouse', selected: download.db() === 'warehouse'}, 'Production')
+                m('.row', [
+                    m('.col-sm-6', [
+                        m('.form-group', {class:groupClasses(validity.studyId)}, [
+                            m('label', 'Study ID'),
+                            m('input.form-control', {
+                                config: focusConfig,
+                                placeholder:'Study Id',
+                                value: download.studyId(),
+                                onkeyup: m.withAttr('value', download.studyId),
+                                class:inputClasses(validity.studyId)
+                            }),
+                            validationView(validity.studyId, 'The study ID is required in order to request a download.')
+                        ])   
+                    ]),
+                    m('.col-sm-6', [
+                        m('.form-group', [
+                            m('label','Database'),
+                            m('select.form-control.c-select', {onchange: m.withAttr('value',download.db)}, [
+                                m('option',{value:'test', selected: download.db() === 'test'}, 'Development'),
+                                m('option',{value:'warehouse', selected: download.db() === 'warehouse'}, 'Production')
+                            ])
+                        ])
                     ])
                 ]),
-                m('.form-group', [
-                    m('label', 'Date Range'),
-                    dateRangePicker(download),
-                    m('p.text-muted.btn-toolbar', [
-                        dayButtonView(download, 'Last 7 Days', 7),
-                        dayButtonView(download, 'Last 30 Days', 30),
-                        dayButtonView(download, 'Last 90 Days', 90),
-                        dayButtonView(download, 'All times', 3650)
+                m('.row', [
+                    m('.col-sm-12', [
+                        m('.form-group', [
+                            m('label', 'Date Range'),
+                            m('p.text-muted.btn-toolbar', [
+                                dayButtonView(download, 'Last 7 Days', 7),
+                                dayButtonView(download, 'Last 30 Days', 30),
+                                dayButtonView(download, 'Last 90 Days', 90),
+                                dayButtonView(download, 'All times', 3650)
+                            ]),
+                            m('.text-xs-center', dateRangePicker(download))
+                        ])
                     ])
                 ])
             ]),
