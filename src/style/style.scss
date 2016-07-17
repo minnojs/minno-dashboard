@@ -84,9 +84,9 @@ h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 200; color: #818a
     .time-card {
         display:none;
         position: absolute;
-        left:100%;
-        top:0;
-        padding-left: 10px;
+        top:100%;
+        left:0;
+        padding-top: 5px;
         text-align: left;
     }
     &:hover .time-card {display: block;}
