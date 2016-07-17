@@ -417,11 +417,12 @@
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', [
-                            m('.col-sm-5', [
+                            m('.col-sm-3', [
+                                
                                 m('p.form-control-static',[m('strong', 'Study Name')])
                             ]),
-                            m('.col-sm-3', [
-                                //m('p.form-control-static',[m('strong', 'Last Changed')])
+                            m('.col-sm-5', [
+                                m('p.form-control-static',[m('strong', ' Last Changed')])
                             ]),
                             m('.col-sm-4', [
                                 m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
@@ -433,13 +434,13 @@
                             .filter(searchFilter(globalSearch()))
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
-                                    m('.col-sm-5', [
+                                    m('.col-sm-3', [
                                         m('.study-text', study.name),
                                         !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
                                         study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
                                     ]),
-                                    m('.col-sm-3', [
-                                        m('.study-text', study.last_changed)
+                                    m('.col-sm-5', [
+                                        m('.study-text', study.last_modified)
                                     ]),
                                     m('.col-sm-4', [
                                         m('.btn-toolbar.pull-right', [
@@ -4421,12 +4422,12 @@
                                 ])
                             ]) : '',
                             m('tr', [
-                                m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
-                                m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
-                                m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
-                                m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
-                                m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
+                                m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
+                                m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
+                                m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),
+                                m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
+                                m('th', thConfig$1('creationDate',ctrl.sortBy), 'Date'),
                                 m('th','Status'),
                                 m('th','Actions')
                             ])
@@ -4525,7 +4526,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter(ctrl){
         return function (study) { return includes(study.studyId, ctrl.globalSearch()) ||
@@ -4579,15 +4580,15 @@
                             ])
                         ]),
                         m('tr', [
-                            m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
-                            m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
-                            m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
-                            m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
-                            m('th', thConfig$1('creationDate',ctrl.sortBy), 'Creation Date'),
-                            m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
+                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
+                            m('th', thConfig$2('studyUrl',ctrl.sortBy), 'Study'),
+                            m('th', thConfig$2('rulesUrl',ctrl.sortBy), 'Rules'),
+                            m('th', thConfig$2('autopauseUrl',ctrl.sortBy), 'Autopause'),     
+                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Creation Date'),
+                            m('th', thConfig$2('completedSessions',ctrl.sortBy), 'Completion'),
                             m('th','New Status'),
                             m('th','Old Status'),
-                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater')
+                            m('th', thConfig$2('updaterId',ctrl.sortBy), 'Updater')
                         ])
                     ]),
                     m('tbody', [
@@ -4660,7 +4661,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter$1(ctrl){
         return function (study) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
@@ -4991,11 +4992,11 @@
                 m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                     m('thead', [
                         m('tr', [
-                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
+                            m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
                             m('th', 'Data file'),
-                            m('th', thConfig$2('db',ctrl.sortBy), 'Database'),
-                            m('th', thConfig$2('fileSize',ctrl.sortBy), 'File Size'),
-                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Date Added'),
+                            m('th', thConfig$3('db',ctrl.sortBy), 'Database'),
+                            m('th', thConfig$3('fileSize',ctrl.sortBy), 'File Size'),
+                            m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date Added'),
                             m('th','Status'),
                             m('th','Actions')
                         ])
@@ -5070,7 +5071,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter$2(ctrl){
         var search = ctrl.globalSearch();
@@ -5571,10 +5572,10 @@
                             ]),
 
                             m('tr', [
-                                m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
-                                m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
-                                m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
+                                m('th', thConfig$4('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig$4('username',ctrl.sortBy), 'Username'),
+                                m('th', thConfig$4('email',ctrl.sortBy), 'Email'),
+                                m('th', thConfig$4('creationDate',ctrl.sortBy), 'Date'),
                                 m('th','Status'),
                                 m('th','Actions')
                             ])
@@ -5625,7 +5626,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function dataRequestFilter(ctrl){
         return function (dataRequest) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
@@ -5725,7 +5726,7 @@
         return fetchJson(baseUrl$3);
     }
 
-    var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var deployComponent = {
         controller: function controller(){
@@ -5753,16 +5754,16 @@
             m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$4('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$4('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
-                        m('th', thConfig$4('RULE_FILE',ctrl.sortBy), 'Rule file'),
-                        m('th', thConfig$4('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$4('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$4('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
-                        m('th', thConfig$4('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
-                        m('th', thConfig$4('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
-                        m('th', thConfig$4('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
-                        m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$5('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
+                        m('th', thConfig$5('RULE_FILE',ctrl.sortBy), 'Rule file'),
+                        m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$5('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
+                        m('th', thConfig$5('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
+                        m('th', thConfig$5('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
+                        m('th', thConfig$5('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
+                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5790,7 +5791,7 @@
         return fetchJson(baseUrl$4);
     }
 
-    var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
     var changeRequestListComponent = {
         controller: function controller(){
 
@@ -5822,14 +5823,14 @@
                 m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$5('FILE_NAMES',ctrl.sortBy), 'File names'),
-                        m('th', thConfig$5('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
-                        m('th', thConfig$5('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
-                        m('th', thConfig$5('STATUS',ctrl.sortBy), 'Status'),
-                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$6('FILE_NAMES',ctrl.sortBy), 'File names'),
+                        m('th', thConfig$6('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
+                        m('th', thConfig$6('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
+                        m('th', thConfig$6('STATUS',ctrl.sortBy), 'Status'),
+                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5854,7 +5855,7 @@
         return fetchJson(baseUrl$5);
     }
 
-    var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$7 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var removalListComponent = {
         controller: function controller(){
@@ -5884,12 +5885,12 @@
             m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$6('STUDY_NAME',ctrl.sortBy), 'Study name'),
-                        m('th', thConfig$6('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$7('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$7('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$7('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$7('STUDY_NAME',ctrl.sortBy), 'Study name'),
+                        m('th', thConfig$7('COMPLETED_N',ctrl.sortBy), 'Completed n'),
+                        m('th', thConfig$7('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [

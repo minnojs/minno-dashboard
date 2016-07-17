@@ -3,6 +3,8 @@ import {load_studies} from './studyModel';
 import dropdown from 'utils/dropdown';
 import {do_create, do_delete, do_rename} from './studyActions';
 
+let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
+
 var mainComponent = {
     controller: function(){
         var ctrl = {
@@ -57,11 +59,12 @@ var mainComponent = {
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', [
-                        m('.col-sm-5', [
+                        m('.col-sm-3', [
+                            
                             m('p.form-control-static',[m('strong', 'Study Name')])
                         ]),
-                        m('.col-sm-3', [
-                            //m('p.form-control-static',[m('strong', 'Last Changed')])
+                        m('.col-sm-5', [
+                            m('p.form-control-static',[m('strong', ' Last Changed')])
                         ]),
                         m('.col-sm-4', [
                             m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
@@ -73,13 +76,13 @@ var mainComponent = {
                         .filter(searchFilter(globalSearch()))
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
-                                m('.col-sm-5', [
+                                m('.col-sm-3', [
                                     m('.study-text', study.name),
                                     !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
                                     study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
                                 ]),
-                                m('.col-sm-3', [
-                                    m('.study-text', study.last_changed)
+                                m('.col-sm-5', [
+                                    m('.study-text', study.last_modified)
                                 ]),
                                 m('.col-sm-4', [
                                     m('.btn-toolbar.pull-right', [
