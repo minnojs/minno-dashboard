@@ -718,6 +718,9 @@
 
                 if (!isInitialized) setup();
 
+                // external date change
+                if (!areDatesEqual(startDate, startPicker) || !areDatesEqual(endDate, endPicker)) update(); 
+
                 function setup(){
                     startPicker = ctx.startPicker = new Pikaday({
                         onSelect: onSelect(startDate)
@@ -743,21 +746,25 @@
                     return function (date) {
                         prop(date); // update start/end
 
-                        startPicker.setDate(startDate(),true);
-                        endPicker.setDate(endDate(),true);
                         update();
-
                         m.redraw();
-
-                        function update(){
-                            startPicker.setStartRange(startDate());
-                            startPicker.setEndRange(endDate());
-                            endPicker.setStartRange(startDate());
-                            endPicker.setEndRange(endDate());
-                            startPicker.setMaxDate(endDate());
-                            endPicker.setMinDate(startDate());
-                        }
                     };
+                }
+
+                function update(){
+                    startPicker.setDate(startDate(),true);
+                    endPicker.setDate(endDate(),true);
+
+                    startPicker.setStartRange(startDate());
+                    startPicker.setEndRange(endDate());
+                    endPicker.setStartRange(startDate());
+                    endPicker.setEndRange(endDate());
+                    startPicker.setMaxDate(endDate());
+                    endPicker.setMinDate(startDate());
+                }
+
+                function areDatesEqual(prop, picker){
+                    return prop().getTime() === picker.getDate().getTime();
                 }
             };
         }
@@ -4821,11 +4828,13 @@
         download.endDate(new Date());
     }}, name); };
 
+    var DURATION = 5000;
+
     /**
      * Get all downloads
      */
 
-    var recursiveGetAll = debounce(getAll, 5000);
+    var recursiveGetAll = debounce(getAll, DURATION);
     function getAll(ref){
         var list = ref.list;
         var cancel = ref.cancel;

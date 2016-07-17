@@ -55,6 +55,9 @@ let pikadayRange = {
 
             if (!isInitialized) setup();
 
+            // external date change
+            if (!areDatesEqual(startDate, startPicker) || !areDatesEqual(endDate, endPicker)) update(); 
+
             function setup(){
                 startPicker = ctx.startPicker = new Pikaday({
                     onSelect: onSelect(startDate)
@@ -80,21 +83,25 @@ let pikadayRange = {
                 return date => {
                     prop(date); // update start/end
 
-                    startPicker.setDate(startDate(),true);
-                    endPicker.setDate(endDate(),true);
                     update();
-
                     m.redraw();
-
-                    function update(){
-                        startPicker.setStartRange(startDate());
-                        startPicker.setEndRange(endDate());
-                        endPicker.setStartRange(startDate());
-                        endPicker.setEndRange(endDate());
-                        startPicker.setMaxDate(endDate());
-                        endPicker.setMinDate(startDate());
-                    }
                 };
+            }
+
+            function update(){
+                startPicker.setDate(startDate(),true);
+                endPicker.setDate(endDate(),true);
+
+                startPicker.setStartRange(startDate());
+                startPicker.setEndRange(endDate());
+                endPicker.setStartRange(startDate());
+                endPicker.setEndRange(endDate());
+                startPicker.setMaxDate(endDate());
+                endPicker.setMinDate(startDate());
+            }
+
+            function areDatesEqual(prop, picker){
+                return prop().getTime() === picker.getDate().getTime();
             }
         };
     }

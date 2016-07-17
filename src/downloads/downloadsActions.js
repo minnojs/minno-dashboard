@@ -1,12 +1,13 @@
 import {getAllDownloads, removeDownload, createDownload, STATUS_RUNNING} from './downloadsModel';
 import createMessage from './downloadsCreate';
 import messages from 'utils/messagesComponent';
+const DURATION = 5000;
 
 /**
  * Get all downloads
  */
 
-export let recursiveGetAll = debounce(getAll, 5000);
+export let recursiveGetAll = debounce(getAll, DURATION);
 export function getAll({list, cancel, error}){
     return getAllDownloads()
         .then(list)
