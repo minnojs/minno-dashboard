@@ -20,26 +20,31 @@ var mainComponent = {
         return ctrl;
         function loadStudies() {
             load_studies()
-                .then(response => response.studies.sort(sort_studies_by_name))
+                .then(response => response.studies.sort(sort_studies_by_name2))
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
 
         }
-        function sort_studies_by_name(study1, study2){
-            return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+        function sort_studies_by_name2(study1, study2){
+
+            return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
         }
+
         function sort_studies_by_date2(study1, study2){
             return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
         }
+
         function sort_studies_by_date(){
             ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
-            // m.redraw();
+        }
+        function sort_studies_by_name(){
+            ctrl.studies(ctrl.studies().sort(sort_studies_by_name2));
         }
 
 
     },
-    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date}){
+    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
@@ -68,7 +73,7 @@ var mainComponent = {
                     m('.row', [
                         m('.col-sm-3', [
                             
-                            m('p.form-control-static',[m('strong', 'Study Name')])
+                            m('p.form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name')])
                         ]),
                         m('.col-sm-5', [
                             m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])

@@ -374,21 +374,26 @@
             return ctrl;
             function loadStudies() {
                 load_studies()
-                    .then(function (response) { return response.studies.sort(sort_studies_by_name); })
+                    .then(function (response) { return response.studies.sort(sort_studies_by_name2); })
                     .then(ctrl.studies)
                     .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
 
             }
-            function sort_studies_by_name(study1, study2){
-                return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+            function sort_studies_by_name2(study1, study2){
+
+                return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
             }
+
             function sort_studies_by_date2(study1, study2){
                 return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
             }
+
             function sort_studies_by_date(){
                 ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
-                // m.redraw();
+            }
+            function sort_studies_by_name(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_name2));
             }
 
 
@@ -400,6 +405,7 @@
             var globalSearch = ref.globalSearch;
             var loadStudies = ref.loadStudies;
             var sort_studies_by_date = ref.sort_studies_by_date;
+            var sort_studies_by_name = ref.sort_studies_by_name;
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
@@ -429,7 +435,7 @@
                         m('.row', [
                             m('.col-sm-3', [
                                 
-                                m('p.form-control-static',[m('strong', 'Study Name')])
+                                m('p.form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name')])
                             ]),
                             m('.col-sm-5', [
                                 m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
