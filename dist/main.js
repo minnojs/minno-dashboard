@@ -64,21 +64,22 @@
 
     var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
-    var baseUrl   = urlPrefix + "dashboard/studies";
-    var url    = urlPrefix + "StudyData";
-    var baseUrl$1    = urlPrefix + "dashboard";
-    var STATISTICS_URL    = urlPrefix + "PITracking";
-    var url$1    = urlPrefix + "DashboardData";
-    var activation1_url    = urlPrefix + "dashboard/activation";
+    var baseUrl        = urlPrefix + "dashboard";
+    var studyUrl       = urlPrefix + "dashboard/studies";
+    var url        = urlPrefix + "StudyData";
+    var baseUrl$1        = urlPrefix + "dashboard";
+    var STATISTICS_URL  = urlPrefix + "PITracking";
+    var url$1   = urlPrefix + "DashboardData";
+    var activation1_url  = urlPrefix + "dashboard/activation";
 
     function get_url(study_id) {
-        return (baseUrl + "/" + (encodeURIComponent(study_id)));
+        return (studyUrl + "/" + (encodeURIComponent(study_id)));
     }
 
     /*CRUD*/
-    var load_studies = function () { return fetchJson(baseUrl, {credentials: 'same-origin'}); };
+    var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
 
-    var create_study = function (study_name) { return fetchJson(baseUrl, {
+    var create_study = function (study_name) { return fetchJson(studyUrl, {
         method: 'post',
         body: {study_name: study_name}
     }); };
@@ -301,14 +302,14 @@
 
     var do_create = function () {
         var study_name = m.prop('');
-        var error = m.prop();
+        var error = m.prop('');
 
         var ask = function () { return messages.prompt({
             header:'New Study', 
             content: m('div', [
-                m('p', 'Enter Study Name:'), 
+                m('p', 'Enter Study Name:'),
                 m('span.alert.alert-danger', error())
-            ]), 
+            ]),
             prop: study_name
         }).then(function (response) { return response && create(); }); };
         
@@ -331,7 +332,6 @@
                 .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
                 .then(m.redraw);
         }); }; };
-
 
     var do_rename = function (study_id, name, callback) { return function () {
         var study_name = m.prop(name);
@@ -365,23 +365,32 @@
                 globalSearch: m.prop(''),
                 permissionChoice: m.prop('all'),
                 loaded:false,
-                loadStudies: loadStudies
+                loadStudies: loadStudies,
+                sort_studies_by_name: sort_studies_by_name,
+                sort_studies_by_date: sort_studies_by_date
             };
 
             loadStudies();
             return ctrl;
-
             function loadStudies() {
                 load_studies()
-                    .then(function (response) { return response.studies.sort(sortStudies); })
+                    .then(function (response) { return response.studies.sort(sort_studies_by_name); })
                     .then(ctrl.studies)
                     .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
 
-                function sortStudies(study1, study2){
-                    return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
-                }
             }
+            function sort_studies_by_name(study1, study2){
+                return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+            }
+            function sort_studies_by_date2(study1, study2){
+                return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
+            }
+            function sort_studies_by_date(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
+                // m.redraw();
+            }
+
 
         },
         view: function view(ref){
@@ -390,6 +399,7 @@
             var permissionChoice = ref.permissionChoice;
             var globalSearch = ref.globalSearch;
             var loadStudies = ref.loadStudies;
+            var sort_studies_by_date = ref.sort_studies_by_date;
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
@@ -422,7 +432,7 @@
                                 m('p.form-control-static',[m('strong', 'Study Name')])
                             ]),
                             m('.col-sm-5', [
-                                m('p.form-control-static',[m('strong', ' Last Changed')])
+                                m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
                             ]),
                             m('.col-sm-4', [
                                 m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
@@ -1474,13 +1484,11 @@
         }
     };
 
-    var baseUrl$2 = '/dashboard/dashboard';
-
     var studyPrototype = {
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
 
-            return (baseUrl$2 + "/files/" + (encodeURIComponent(this.id)) + path);
+            return (baseUrl + "/files/" + (encodeURIComponent(this.id)) + path);
         },
 
         get: function get(){
@@ -1615,7 +1623,7 @@
             var this$1 = this;
 
             return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
-                .then(function (response) { return downloadLink((baseUrl$2 + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+                .then(function (response) { return downloadLink((baseUrl + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
         },
 
         delFiles: function delFiles(files){
@@ -4350,10 +4358,9 @@
         return result;
     }, {}); };
 
-    var loginUrl      = '/dashboard/dashboard/connect';
-    var logoutUrl     = '/dashboard/dashboard/logout';
-    var is_logedinUrl = '/dashboard/dashboard/is_loggedin';
-
+    var loginUrl = baseUrl + "/connect";
+    var logoutUrl = baseUrl + "/logout";
+    var is_logedinUrl = baseUrl + "/is_loggedin";
 
     var login = function (username, password) { return fetchJson(loginUrl, {
         method: 'post',
@@ -4422,12 +4429,12 @@
                                 ])
                             ]) : '',
                             m('tr', [
-                                m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
-                                m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
-                                m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),
-                                m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
-                                m('th', thConfig$1('creationDate',ctrl.sortBy), 'Date'),
+                                m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
+                                m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
+                                m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
+                                m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
+                                m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
                                 m('th','Status'),
                                 m('th','Actions')
                             ])
@@ -4526,7 +4533,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter(ctrl){
         return function (study) { return includes(study.studyId, ctrl.globalSearch()) ||
@@ -4580,15 +4587,15 @@
                             ])
                         ]),
                         m('tr', [
-                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
-                            m('th', thConfig$2('studyUrl',ctrl.sortBy), 'Study'),
-                            m('th', thConfig$2('rulesUrl',ctrl.sortBy), 'Rules'),
-                            m('th', thConfig$2('autopauseUrl',ctrl.sortBy), 'Autopause'),     
-                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Creation Date'),
-                            m('th', thConfig$2('completedSessions',ctrl.sortBy), 'Completion'),
+                            m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
+                            m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
+                            m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
+                            m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
+                            m('th', thConfig$1('creationDate',ctrl.sortBy), 'Creation Date'),
+                            m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
                             m('th','New Status'),
                             m('th','Old Status'),
-                            m('th', thConfig$2('updaterId',ctrl.sortBy), 'Updater')
+                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater')
                         ])
                     ]),
                     m('tbody', [
@@ -4661,7 +4668,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter$1(ctrl){
         return function (study) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
@@ -4992,11 +4999,11 @@
                 m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                     m('thead', [
                         m('tr', [
-                            m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
+                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
                             m('th', 'Data file'),
-                            m('th', thConfig$3('db',ctrl.sortBy), 'Database'),
-                            m('th', thConfig$3('fileSize',ctrl.sortBy), 'File Size'),
-                            m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date Added'),
+                            m('th', thConfig$2('db',ctrl.sortBy), 'Database'),
+                            m('th', thConfig$2('fileSize',ctrl.sortBy), 'File Size'),
+                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Date Added'),
                             m('th','Status'),
                             m('th','Actions')
                         ])
@@ -5071,7 +5078,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function studyFilter$2(ctrl){
         var search = ctrl.globalSearch();
@@ -5572,10 +5579,10 @@
                             ]),
 
                             m('tr', [
-                                m('th', thConfig$4('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig$4('username',ctrl.sortBy), 'Username'),
-                                m('th', thConfig$4('email',ctrl.sortBy), 'Email'),
-                                m('th', thConfig$4('creationDate',ctrl.sortBy), 'Date'),
+                                m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
+                                m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
+                                m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
                                 m('th','Status'),
                                 m('th','Actions')
                             ])
@@ -5626,7 +5633,7 @@
     };
 
     // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     function dataRequestFilter(ctrl){
         return function (dataRequest) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
@@ -5720,13 +5727,13 @@
         };
     }
 
-    var baseUrl$3 = '/dashboard/dashboard/deploy_list';
+    var deploy_url = baseUrl + "/deploy_list";
 
     function get_study_list(){
-        return fetchJson(baseUrl$3);
+        return fetchJson(deploy_url);
     }
 
-    var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$4 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var deployComponent = {
         controller: function controller(){
@@ -5754,16 +5761,16 @@
             m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$5('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
-                        m('th', thConfig$5('RULE_FILE',ctrl.sortBy), 'Rule file'),
-                        m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$5('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
-                        m('th', thConfig$5('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
-                        m('th', thConfig$5('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
-                        m('th', thConfig$5('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
-                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$4('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$4('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
+                        m('th', thConfig$4('RULE_FILE',ctrl.sortBy), 'Rule file'),
+                        m('th', thConfig$4('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$4('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$4('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
+                        m('th', thConfig$4('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
+                        m('th', thConfig$4('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
+                        m('th', thConfig$4('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
+                        m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5784,14 +5791,14 @@
         }
     };
 
-    var baseUrl$4 = '/dashboard/dashboard/change_request_list';
+    var change_request_url = baseUrl + "/change_request_list";
 
 
     function get_change_request_list(){
-        return fetchJson(baseUrl$4);
+        return fetchJson(change_request_url);
     }
 
-    var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$5 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
     var changeRequestListComponent = {
         controller: function controller(){
 
@@ -5823,14 +5830,14 @@
                 m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$6('FILE_NAMES',ctrl.sortBy), 'File names'),
-                        m('th', thConfig$6('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
-                        m('th', thConfig$6('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
-                        m('th', thConfig$6('STATUS',ctrl.sortBy), 'Status'),
-                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$5('FILE_NAMES',ctrl.sortBy), 'File names'),
+                        m('th', thConfig$5('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
+                        m('th', thConfig$5('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
+                        m('th', thConfig$5('STATUS',ctrl.sortBy), 'Status'),
+                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5849,13 +5856,13 @@
         }
     };
 
-    var baseUrl$5 = '/dashboard/dashboard/removal_list';
+    var removal_url = baseUrl + "/removal_list";
 
     function get_removal_list(){
-        return fetchJson(baseUrl$5);
+        return fetchJson(removal_url);
     }
 
-    var thConfig$7 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var thConfig$6 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
 
     var removalListComponent = {
         controller: function controller(){
@@ -5885,12 +5892,12 @@
             m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
                     m('tr', [
-                        m('th', thConfig$7('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$7('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$7('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$7('STUDY_NAME',ctrl.sortBy), 'Study name'),
-                        m('th', thConfig$7('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                        m('th', thConfig$7('COMMENTS',ctrl.sortBy), 'Comments')
+                        m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig$6('STUDY_NAME',ctrl.sortBy), 'Study name'),
+                        m('th', thConfig$6('COMPLETED_N',ctrl.sortBy), 'Completed n'),
+                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
                     ])
                 ]),
                 m('tbody', [
@@ -5907,26 +5914,26 @@
         }
     };
 
-    function deploy_url(study_id)
+    function deploy_url$1(study_id)
     {
-        return (baseUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
-    var get_study_prop = function (study_id) { return fetchJson(deploy_url(study_id), {
+    var get_study_prop = function (study_id) { return fetchJson(deploy_url$1(study_id), {
         method: 'get'
     }); };
 
-    var study_removal = function (study_id, ctrl) { return fetchJson(deploy_url(study_id), {
+    var study_removal = function (study_id, ctrl) { return fetchJson(deploy_url$1(study_id), {
         method: 'delete',
         body: {study_name: ctrl.study_name, completed_n: ctrl.completed_n, comments: ctrl.comments}
     }); };
 
-    var deploy = function (study_id, ctrl) { return fetchJson(deploy_url(study_id), {
+    var deploy = function (study_id, ctrl) { return fetchJson(deploy_url$1(study_id), {
         method: 'post',
         body: {target_number: ctrl.target_number, approved_by_a_reviewer: ctrl.approved_by_a_reviewer, experiment_file: ctrl.experiment_file, launch_confirmation: ctrl.launch_confirmation, comments: ctrl.comments, rulesValue: ctrl.rulesValue}
     }); };
 
-    var Study_change_request = function (study_id, ctrl) { return fetchJson(deploy_url(study_id), {
+    var Study_change_request = function (study_id, ctrl) { return fetchJson(deploy_url$1(study_id), {
         method: 'put',
         body: {file_names: ctrl.file_names, target_sessions: ctrl.target_sessions, status: ctrl.status, comments: ctrl.comments}
     }); };
@@ -6390,7 +6397,7 @@
         }
     };
 
-    var add_userUrl = '/dashboard/dashboard/add_user';
+    var add_userUrl = baseUrl + "/add_user";
 
     var add = function (username, first_name , last_name, email, iscu) { return fetchJson(add_userUrl, {
         method: 'post',
@@ -6596,8 +6603,8 @@
         }
     };
 
-    var change_password_url = '/dashboard/dashboard/change_password';
-    var change_email_url = '/dashboard/dashboard/change_email';
+    var change_password_url = baseUrl + "/change_password";
+    var change_email_url = baseUrl + "/change_email";
 
     function apiURL$1(code)
     {   
@@ -6769,7 +6776,8 @@
         }
     };
 
-    var recoveryUrl = '/dashboard/dashboard/recovery';
+    var recoveryUrl = baseUrl + "/recovery";
+
 
     var recovery = function (username) { return fetchJson(recoveryUrl, {
         method: 'post',
@@ -6825,18 +6833,15 @@
         };
     }
 
-    var baseUrl$6 = '/dashboard/dashboard/studies';
-
-
     function collaboration_url(study_id)
     {
-        return (baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
 
     function public_url(study_id)
     {
-        return (baseUrl$6 + "/" + (encodeURIComponent(study_id)) + "/public");
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
     var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
@@ -7072,7 +7077,7 @@
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                     m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                        m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
+                        m('a.navbar-brand', {href:baseUrl}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')

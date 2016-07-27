@@ -2,8 +2,7 @@ import {fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 import downloadUrl from 'utils/downloadUrl';
 export default studyFactory;
-
-let baseUrl = '/dashboard/dashboard';
+import {baseUrl} from 'modelUrls';
 
 let studyPrototype = {
     apiURL(path = ''){

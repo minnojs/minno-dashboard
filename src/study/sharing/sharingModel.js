@@ -1,16 +1,16 @@
 import {fetchJson} from 'utils/modelHelpers';
-const baseUrl = '/dashboard/dashboard/studies';
+import {studyUrl} from 'modelUrls';
 
 
 function collaboration_url(study_id)
 {
-    return `${baseUrl}/${encodeURIComponent(study_id)}/collaboration`;
+    return `${studyUrl}/${encodeURIComponent(study_id)}/collaboration`;
 }
 
 
 function public_url(study_id)
 {
-    return `${baseUrl}/${encodeURIComponent(study_id)}/public`;
+    return `${studyUrl}/${encodeURIComponent(study_id)}/public`;
 }
 
 export let get_collaborations = (study_id) => fetchJson(collaboration_url(study_id), {

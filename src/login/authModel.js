@@ -1,9 +1,9 @@
 import {fetchJson,fetchVoid} from 'utils/modelHelpers';
+import {baseUrl} from 'modelUrls';
 
-const loginUrl      = '/dashboard/dashboard/connect';
-const logoutUrl     = '/dashboard/dashboard/logout';
-const is_logedinUrl = '/dashboard/dashboard/is_loggedin';
-
+const loginUrl = `${baseUrl}/connect`;
+const logoutUrl = `${baseUrl}/logout`;
+const is_logedinUrl = `${baseUrl}/is_loggedin`;
 
 export let login = (username, password) => fetchJson(loginUrl, {
     method: 'post',

@@ -1,7 +1,8 @@
 import {fetchJson} from 'utils/modelHelpers';
+import {baseUrl} from 'modelUrls';
 
-const baseUrl = '/dashboard/dashboard/deploy_list';
+const deploy_url = `${baseUrl}/deploy_list`;
 
 export function get_study_list(){
-    return fetchJson(baseUrl);
+    return fetchJson(deploy_url);
 }

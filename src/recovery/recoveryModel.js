@@ -1,6 +1,8 @@
 import {fetchJson} from 'utils/modelHelpers';
+import {baseUrl} from 'modelUrls';
 
-const recoveryUrl = '/dashboard/dashboard/recovery';
+const recoveryUrl = `${baseUrl}/recovery`;
+
 
 export let recovery = (username) => fetchJson(recoveryUrl, {
     method: 'post',

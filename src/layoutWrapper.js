@@ -2,6 +2,8 @@ import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
 import {getAuth, logout} from 'login/authModel';
+import {baseUrl} from 'modelUrls';
+
 export default layout;
 
 let timer = 0;
@@ -61,7 +63,7 @@ let layout = route => {
         view(ctrl){
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                 m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                    m('a.navbar-brand', {href:'/dashboard/dashboard'}, 'Dashboard'),
+                    m('a.navbar-brand', {href:baseUrl}, 'Dashboard'),
                     m('ul.nav.navbar-nav',[
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/studies', config:m.route},'Studies')

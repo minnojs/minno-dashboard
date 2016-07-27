@@ -3,14 +3,14 @@ import {create_study, delete_study, rename_study} from './studyModel';
 
 export let do_create = () => {
     let study_name = m.prop('');
-    let error = m.prop();
+    let error = m.prop('');
 
     let ask = () => messages.prompt({
         header:'New Study', 
         content: m('div', [
-            m('p', 'Enter Study Name:'), 
+            m('p', 'Enter Study Name:'),
             m('span.alert.alert-danger', error())
-        ]), 
+        ]),
         prop: study_name
     }).then(response => response && create());
     
@@ -33,7 +33,6 @@ export let do_delete = (study_id, callback) => () => messages.confirm({header:'D
             .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
             .then(m.redraw);
     });
-
 
 export let do_rename = (study_id, name, callback) => () => {
     let study_name = m.prop(name);

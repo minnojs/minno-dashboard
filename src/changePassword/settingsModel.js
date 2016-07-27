@@ -1,7 +1,8 @@
 import {fetchJson} from 'utils/modelHelpers';
+import {baseUrl} from 'modelUrls';
 
-const change_password_url = '/dashboard/dashboard/change_password';
-const change_email_url = '/dashboard/dashboard/change_email';
+const change_password_url = `${baseUrl}/change_password`;
+const change_email_url = `${baseUrl}/change_email`;
 
 function apiURL(code)
 {   

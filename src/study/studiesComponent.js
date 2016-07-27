@@ -3,8 +3,6 @@ import {load_studies} from './studyModel';
 import dropdown from 'utils/dropdown';
 import {do_create, do_delete, do_rename} from './studyActions';
 
-let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
-
 var mainComponent = {
     controller: function(){
         var ctrl = {
@@ -13,26 +11,35 @@ var mainComponent = {
             globalSearch: m.prop(''),
             permissionChoice: m.prop('all'),
             loaded:false,
-            loadStudies
+            loadStudies,
+            sort_studies_by_name,
+            sort_studies_by_date
         };
 
         loadStudies();
         return ctrl;
-
         function loadStudies() {
             load_studies()
-                .then(response => response.studies.sort(sortStudies))
+                .then(response => response.studies.sort(sort_studies_by_name))
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
 
-            function sortStudies(study1, study2){
-                return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
-            }
+        }
+        function sort_studies_by_name(study1, study2){
+            return study1.name === study2.name ? 0 : study1.name > study2.name ? 1 : -1;
+        }
+        function sort_studies_by_date2(study1, study2){
+            return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
+        }
+        function sort_studies_by_date(){
+            ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
+            // m.redraw();
         }
 
+
     },
-    view({loaded, studies, permissionChoice, globalSearch, loadStudies}){
+    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
@@ -64,7 +71,7 @@ var mainComponent = {
                             m('p.form-control-static',[m('strong', 'Study Name')])
                         ]),
                         m('.col-sm-5', [
-                            m('p.form-control-static',[m('strong', ' Last Changed')])
+                            m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
                         ]),
                         m('.col-sm-4', [
                             m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
