@@ -308,7 +308,7 @@
             header:'New Study', 
             content: m('div', [
                 m('p', 'Enter Study Name:'),
-                m('span.alert.alert-danger', error())
+                !error() ? '' : m('p.alert.alert-danger', error())
             ]),
             prop: study_name
         }).then(function (response) { return response && create(); }); };
