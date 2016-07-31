@@ -3511,8 +3511,8 @@
     };
 
     hash.piManager = {
-        'Empty': '/implicit/user/yba/wizards/emptymanager.js',
-        'Typical': '/implicit/user/yba/wizards/emptymanager.js'
+        'Empty': '/implicit/user/yba/wizards/emptymgr.js',
+        'Typical': '/implicit/user/yba/wizards/typicalmgr.js'
     };
 
     var fileContext = function (file, study) {
