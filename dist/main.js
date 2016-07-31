@@ -4744,7 +4744,6 @@
             // export study to calling component
             output(download);
 
-
             var ctrl = {
                 download: download,
                 submitAttempt: false,
@@ -4816,7 +4815,7 @@
                                     dayButtonView$1(download, 'Last 7 Days', 7),
                                     dayButtonView$1(download, 'Last 30 Days', 30),
                                     dayButtonView$1(download, 'Last 90 Days', 90),
-                                    dayButtonView$1(download, 'All times', 3650)
+                                    dayButtonView$1(download, 'All time', 3650)
                                 ]),
                                 m('.text-xs-center', dateRangePicker(download))
                             ])
@@ -4835,14 +4834,30 @@
         if (!isInitialized) element.focus();
     };
 
-    var dayButtonView$1 = function (download, name, days) { return m('button.btn.btn-secondary.btn-sm', {onclick: function () {
+
+    var daysAgo = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
-        download.startDate(d);
-        download.endDate(new Date());
-    }}, name); };
+        return d;
+    };
 
-    var DURATION = 5000;
+    var equalDates = function (date1, date2) { return date1.getDate() === date2.getDate(); };
+    var activeDate = function (ref, days) {
+        var startDate = ref.startDate;
+        var endDate = ref.endDate;
+
+        return equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
+    };
+
+    var dayButtonView$1 = function (download, name, days) { return m('button.btn.btn-secondary.btn-sm', {
+        class: activeDate(download, days)? 'active' : '',
+        onclick: function () {
+            download.startDate(daysAgo(days));
+            download.endDate(new Date());
+        }
+    }, name); };
+
+    var DURATION = 1000;
 
     /**
      * Get all downloads

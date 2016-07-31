@@ -20,7 +20,6 @@ let createComponent = {
         // export study to calling component
         output(download);
 
-
         let ctrl = {
             download,
             submitAttempt: false,
@@ -92,7 +91,7 @@ let createComponent = {
                                 dayButtonView(download, 'Last 7 Days', 7),
                                 dayButtonView(download, 'Last 30 Days', 30),
                                 dayButtonView(download, 'Last 90 Days', 90),
-                                dayButtonView(download, 'All times', 3650)
+                                dayButtonView(download, 'All time', 3650)
                             ]),
                             m('.text-xs-center', dateRangePicker(download))
                         ])
@@ -111,9 +110,21 @@ let focusConfig = (element, isInitialized) => {
     if (!isInitialized) element.focus();
 };
 
-let dayButtonView = (download, name, days) => m('button.btn.btn-secondary.btn-sm', {onclick: () => {
+
+let daysAgo = (days) => {
     let d = new Date();
     d.setDate(d.getDate() - days);
-    download.startDate(d);
-    download.endDate(new Date());
-}}, name);
+    return d;
+};
+
+let equalDates = (date1, date2) => date1.getDate() === date2.getDate();
+let activeDate = ({startDate, endDate}, days) => equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
+
+let dayButtonView = (download, name, days) => m('button.btn.btn-secondary.btn-sm', {
+    class: activeDate(download, days)? 'active' : '',
+    onclick: () => {
+        download.startDate(daysAgo(days));
+        download.endDate(new Date());
+    }
+}, name);
+

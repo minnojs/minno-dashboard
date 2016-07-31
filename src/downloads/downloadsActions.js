@@ -1,7 +1,7 @@
 import {getAllDownloads, removeDownload, createDownload, STATUS_RUNNING} from './downloadsModel';
 import createMessage from './downloadsCreate';
 import messages from 'utils/messagesComponent';
-const DURATION = 5000;
+const DURATION = 1000;
 
 /**
  * Get all downloads
