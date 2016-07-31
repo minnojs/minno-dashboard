@@ -15,12 +15,10 @@ export let removeDownload = download => fetchVoid(url, {
     body: Object.assign({action:'removeDownload'}, download)
 }).then(interceptErrors);
 
-export let createDownload = download => fetchJson(url, {
+export let createDownload = download => fetchVoid(url, {
     method: 'post',
     body: Object.assign({action:'download'}, download)
 }).then(interceptErrors);
-
-
 
 function interceptErrors(response){
     if (!response || !response.error){

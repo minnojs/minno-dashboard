@@ -4708,12 +4708,10 @@
         body: Object.assign({action:'removeDownload'}, download)
     }).then(interceptErrors$1); };
 
-    var createDownload = function (download) { return fetchJson(url$1, {
+    var createDownload = function (download) { return fetchVoid(url$1, {
         method: 'post',
         body: Object.assign({action:'download'}, download)
     }).then(interceptErrors$1); };
-
-
 
     function interceptErrors$1(response){
         if (!response || !response.error){
