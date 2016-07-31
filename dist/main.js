@@ -4834,13 +4834,12 @@
         if (!isInitialized) element.focus();
     };
 
-
+    // helper functions for the day buttons
     var daysAgo = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
         return d;
     };
-
     var equalDates = function (date1, date2) { return date1.getDate() === date2.getDate(); };
     var activeDate = function (ref, days) {
         var startDate = ref.startDate;
@@ -4857,7 +4856,7 @@
         }
     }, name); };
 
-    var DURATION = 1000;
+    var DURATION = 5000;
 
     /**
      * Get all downloads
@@ -4949,12 +4948,11 @@
                     },download));
                     cancel(true);
                     return createDownload(download)
+                        .catch(reportError$1('Error creating download'))
+                        .then(cancel.bind(null, false))
                         .then(function () {
-                            cancel(false);
                             getAll({list: list, cancel: cancel});
-                        })
-                        .catch(reportError$1)
-                        .then(cancel.bind(null, false));
+                        });
                 }
             });
     }

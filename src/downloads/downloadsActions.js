@@ -1,7 +1,7 @@
 import {getAllDownloads, removeDownload, createDownload, STATUS_RUNNING} from './downloadsModel';
 import createMessage from './downloadsCreate';
 import messages from 'utils/messagesComponent';
-const DURATION = 1000;
+const DURATION = 5000;
 
 /**
  * Get all downloads
@@ -89,12 +89,11 @@ export function create(list, cancel){
                 },download));
                 cancel(true);
                 return createDownload(download)
+                    .catch(reportError('Error creating download'))
+                    .then(cancel.bind(null, false))
                     .then(() => {
-                        cancel(false);
                         getAll({list, cancel});
-                    })
-                    .catch(reportError)
-                    .then(cancel.bind(null, false));
+                    });
             }
         });
 }

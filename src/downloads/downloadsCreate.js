@@ -110,13 +110,12 @@ let focusConfig = (element, isInitialized) => {
     if (!isInitialized) element.focus();
 };
 
-
+// helper functions for the day buttons
 let daysAgo = (days) => {
     let d = new Date();
     d.setDate(d.getDate() - days);
     return d;
 };
-
 let equalDates = (date1, date2) => date1.getDate() === date2.getDate();
 let activeDate = ({startDate, endDate}, days) => equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
 
@@ -127,4 +126,3 @@ let dayButtonView = (download, name, days) => m('button.btn.btn-secondary.btn-sm
         download.endDate(new Date());
     }
 }, name);
-
