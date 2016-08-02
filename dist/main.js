@@ -64,13 +64,14 @@
 
     var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
-    var baseUrl        = urlPrefix + "dashboard";
-    var studyUrl       = urlPrefix + "dashboard/studies";
-    var url        = urlPrefix + "StudyData";
-    var baseUrl$1        = urlPrefix + "dashboard";
-    var STATISTICS_URL  = urlPrefix + "PITracking";
-    var url$1   = urlPrefix + "DashboardData";
-    var activation1_url  = urlPrefix + "dashboard/activation";
+    var baseUrl            = urlPrefix + "dashboard";
+    var studyUrl           = urlPrefix + "dashboard/studies";
+    var url            = urlPrefix + "StudyData";
+    var baseUrl$1            = urlPrefix + "dashboard";
+    var STATISTICS_URL      = urlPrefix + "PITracking";
+    var url$1       = urlPrefix + "DashboardData";
+    var activation1_url      = urlPrefix + "dashboard/activation";
+    var url$2 = urlPrefix + "DownloadsAccess";
 
     function get_url(study_id) {
         return (studyUrl + "/" + (encodeURIComponent(study_id)));
@@ -5111,7 +5112,6 @@
     statusLabelsMap[STATUS_RUNNING$1] = m('span.label.label-info', 'Running');
     statusLabelsMap[STATUS_ERROR] = m('span.label.label-danger', 'Error');
 
-    var url$2 = '/dashboard/DownloadsAccess';
     var STATUS_APPROVED = true;
     var STATUS_SUBMITTED = false;
 

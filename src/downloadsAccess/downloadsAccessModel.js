@@ -1,5 +1,6 @@
 import {fetchJson} from 'utils/modelHelpers';
-const url = '/dashboard/DownloadsAccess';
+import {downloadsAccessUrl as url} from 'modelUrls';
+
 export const STATUS_APPROVED = true;
 export const STATUS_SUBMITTED = false;
 
