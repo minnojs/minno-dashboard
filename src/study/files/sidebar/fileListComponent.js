@@ -21,7 +21,7 @@ let filesList = ({study}) => {
                     })
                 })
             ]),
-            study.name
+            m('a.no-decoration', {href:`/editor/${study.id}`, config:m.route}, study.name)
         ]),
         folderComponent('/', {folderHash, study})
     ]);

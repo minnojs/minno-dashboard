@@ -10,6 +10,10 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
 .deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool {
   padding-top: 1em; }
 
+a.no-decoration {
+  text-decoration: none;
+  color: inherit; }
+
 .centrify {
   display: flex;
   justify-content: center;
