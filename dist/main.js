@@ -4396,12 +4396,14 @@
                 list: m.prop([]),
                 globalSearch: m.prop(''),
                 sortBy: m.prop(),
-                error: m.prop('')
+                error: m.prop(''),
+                loaded: m.prop()
             };
 
             getAuth().then(function (response) {ctrl.canCreate = response.role === 'SU';});
             getAllPoolStudies()
                 .then(ctrl.list)
+                .then(ctrl.loaded)
                 .catch(ctrl.error)
                 .then(m.redraw);
             return ctrl;
@@ -4451,7 +4453,10 @@
                                 ?
                                 m('tr.table-info',
                                     m('td.text-xs-center', {colspan: TABLE_WIDTH},
-                                        m('strong', 'Heads up! '), 'There are no pool studies yet'
+                                        m('strong', 'Heads up! '), 
+                                        ctrl.loaded()
+                                            ? 'None of your studies is in the Research Pool right now'
+                                            : 'Loading...'
                                     )
                                 )
                                 :
