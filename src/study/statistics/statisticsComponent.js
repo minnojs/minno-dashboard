@@ -8,6 +8,7 @@ let statisticsComponent = {
     controller(){
         let displayHelp = m.prop(false);
         let tableContent = m.prop();
+        let loading = m.prop(false);
         let query = {
             source: m.prop('Research:Current'),
             startDate: m.prop(firstDayInPreviousMonth(new Date())),
@@ -25,11 +26,13 @@ let statisticsComponent = {
             lastTask: m.prop('')
         };
 
-        return {query, submit, displayHelp, tableContent};
+        return {query, submit, displayHelp, tableContent,loading};
 
         function submit(){
+            loading(true);
             getStatistics(query)
                 .then(tableContent)
+                .then(loading.bind(null, false))
                 .then(m.redraw);
         }
 
@@ -37,7 +40,7 @@ let statisticsComponent = {
             return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
         }
     },
-    view: ({query, tableContent, submit, displayHelp}) => m('.container.statistics', [
+    view: ({query, tableContent, submit, displayHelp, loading}) => m('.container.statistics', [
         m('h3', 'Statistics'),
         m('.row', [
             statisticsForm({query})
@@ -46,14 +49,16 @@ let statisticsComponent = {
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                 m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
+                !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
             m('.col-sm-12.p-a-2', statisticsInstructions())
         ]),
-        m('.row', [
-            statisticsTable({tableContent})
+        m('.row.m-t-1', [
+            loading()
+                ? m('.loader')
+                : statisticsTable({tableContent})
         ])
     ])
 };

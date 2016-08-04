@@ -4,7 +4,7 @@ import {statisticsUrl as STATISTICS_URL} from 'modelUrls';
 export let getStatistics = query => {
     return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
         .then(response => {
-            let csv = CSVToArray(response);
+            let csv = response ? CSVToArray(response) : [[]];
             return {
                 study: query.study(),
                 file: response,

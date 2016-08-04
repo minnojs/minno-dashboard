@@ -518,7 +518,7 @@
     var getStatistics = function (query) {
         return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
             .then(function (response) {
-                var csv = CSVToArray(response);
+                var csv = response ? CSVToArray(response) : [[]];
                 return {
                     study: query.study(),
                     file: response,
@@ -1193,18 +1193,19 @@
             var tableContent = ref$1.tableContent;
 
             var content = tableContent();
-            if (!content) return m('.row'); 
+            if (!content) return m('div'); 
+            if (!content.file) return m('.col-sm-12', [
+                m('.alert.alert-info', 'There was no data found for this request')            
+            ]);
 
             var list = m.prop(content.data);
             
-            return m('.row.m-t-1', [
-                m('.col-sm-12', [
-                    m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
-                        m('thead', [
-                            m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
-                        ]),
-                        m('tbody', tableContent().data.map(function (row) { return m('tr', row.map(function (column) { return m('td', column); })); }))
-                    ])
+            return m('.col-sm-12', [
+                m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
+                    m('thead', [
+                        m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
+                    ]),
+                    m('tbody', tableContent().data.map(function (row) { return m('tr', row.map(function (column) { return m('td', column); })); }))
                 ])
             ]);
         }
@@ -1223,6 +1224,7 @@
         controller: function controller(){
             var displayHelp = m.prop(false);
             var tableContent = m.prop();
+            var loading = m.prop(false);
             var query = {
                 source: m.prop('Research:Current'),
                 startDate: m.prop(firstDayInPreviousMonth(new Date())),
@@ -1240,11 +1242,13 @@
                 lastTask: m.prop('')
             };
 
-            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent};
+            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent,loading: loading};
 
             function submit(){
+                loading(true);
                 getStatistics(query)
                     .then(tableContent)
+                    .then(loading.bind(null, false))
                     .then(m.redraw);
             }
 
@@ -1257,6 +1261,7 @@
             var tableContent = ref.tableContent;
             var submit = ref.submit;
             var displayHelp = ref.displayHelp;
+            var loading = ref.loading;
 
             return m('.container.statistics', [
             m('h3', 'Statistics'),
@@ -1267,14 +1272,16 @@
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent() ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                    !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
                 m('.col-sm-12.p-a-2', statisticsInstructions())
             ]),
-            m('.row', [
-                statisticsTable({tableContent: tableContent})
+            m('.row.m-t-1', [
+                loading()
+                    ? m('.loader')
+                    : statisticsTable({tableContent: tableContent})
             ])
         ]);
     }

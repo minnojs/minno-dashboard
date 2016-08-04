@@ -337,8 +337,8 @@ adminRouter.route('/PITracking')
             }));
         }
 
-        var STATISTICS = data.map(function(row){return row.join(',');}).join('\n');
-        res.send(STATISTICS);
+        var STATISTICS = req.body.study === 'empty' ? '' : data.map(function(row){return row.join(',');}).join('\n');
+        res.end(STATISTICS);
     });
 
 
