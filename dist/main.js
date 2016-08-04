@@ -4748,7 +4748,7 @@
             var download ={
                 studyId: m.prop(''),
                 db: m.prop('test'),
-                startDate: m.prop(new Date(0)),
+                startDate: m.prop(daysAgo(3650)),
                 endDate: m.prop(new Date())
             };
 
