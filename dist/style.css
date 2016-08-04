@@ -426,6 +426,8 @@ a.no-decoration {
   .studies .studies-card {
     background: #D2EAF9;
     border-color: #D2EAF9; }
+  .studies .owner-icon {
+    margin-right: 5px; }
   .studies .study-row {
     background: #fff;
     padding: 6px;

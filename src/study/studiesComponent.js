@@ -2,6 +2,7 @@ export default mainComponent;
 import {load_studies} from './studyModel';
 import dropdown from 'utils/dropdown';
 import {do_create, do_delete, do_rename} from './studyActions';
+import classNames from 'utils/classNames';
 
 var mainComponent = {
     controller: function(){
@@ -89,9 +90,17 @@ var mainComponent = {
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
                                 m('.col-sm-3', [
-                                    m('.study-text', study.name),
-                                    !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
-                                    study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
+                                    m('i.fa.fa-fw.owner-icon', {
+                                        class: classNames({
+                                            'fa-globe': study.is_public,
+                                            'fa-users': !study.is_public && study.permission !== 'owner' 
+                                        }),
+                                        title: classNames({
+                                            'Public' : study.is_public,
+                                            'Collaboration' : !study.is_public && study.permission !== 'owner' 
+                                        })
+                                    }),
+                                    m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-5', [
                                     m('.study-text', study.last_modified)

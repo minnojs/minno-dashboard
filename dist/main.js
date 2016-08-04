@@ -358,6 +358,37 @@
         ask();
     }; };
 
+    // taken from here:
+    // https://github.com/JedWatson/classnames/blob/master/index.js
+    var hasOwn = {}.hasOwnProperty;
+
+    function classNames () {
+        var arguments$1 = arguments;
+
+        var classes = '';
+
+        for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments$1[i];
+            if (!arg) continue;
+
+            var argType = typeof arg;
+
+            if (argType === 'string' || argType === 'number') {
+                classes += ' ' + arg;
+            } else if (Array.isArray(arg)) {
+                classes += ' ' + classNames.apply(null, arg);
+            } else if (argType === 'object') {
+                for (var key in arg) {
+                    if (hasOwn.call(arg, key) && arg[key]) {
+                        classes += ' ' + key;
+                    }
+                }
+            }
+        }
+
+        return classes.substr(1);
+    }
+
     var mainComponent = {
         controller: function(){
             var ctrl = {
@@ -452,9 +483,17 @@
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
                                     m('.col-sm-3', [
-                                        m('.study-text', study.name),
-                                        !study.is_public ? '' :  m('span.label.label-warning.m-l-1', 'Public'),
-                                        study.is_public || study.permission === 'owner' ? '' :  m('span.label.label-info.m-l-1', 'Colaboration')
+                                        m('i.fa.fa-fw.owner-icon', {
+                                            class: classNames({
+                                                'fa-globe': study.is_public,
+                                                'fa-users': !study.is_public && study.permission !== 'owner' 
+                                            }),
+                                            title: classNames({
+                                                'Public' : study.is_public,
+                                                'Collaboration' : !study.is_public && study.permission !== 'owner' 
+                                            })
+                                        }),
+                                        m('.study-text', study.name)
                                     ]),
                                     m('.col-sm-5', [
                                         m('.study-text', study.last_modified)
@@ -2504,37 +2543,6 @@
             }
             return '<span class="' + cls + '">' + match + '</span>';
         });
-    }
-
-    // taken from here:
-    // https://github.com/JedWatson/classnames/blob/master/index.js
-    var hasOwn = {}.hasOwnProperty;
-
-    function classNames () {
-        var arguments$1 = arguments;
-
-        var classes = '';
-
-        for (var i = 0; i < arguments.length; i++) {
-            var arg = arguments$1[i];
-            if (!arg) continue;
-
-            var argType = typeof arg;
-
-            if (argType === 'string' || argType === 'number') {
-                classes += ' ' + arg;
-            } else if (Array.isArray(arg)) {
-                classes += ' ' + classNames.apply(null, arg);
-            } else if (argType === 'object') {
-                for (var key in arg) {
-                    if (hasOwn.call(arg, key) && arg[key]) {
-                        classes += ' ' + key;
-                    }
-                }
-            }
-        }
-
-        return classes.substr(1);
     }
 
     var END_LINE = '\n';
