@@ -1947,7 +1947,7 @@
     }; };
 
     var downloadFiles = function (study) { return function () {
-        var chosenFiles = study.getChosenFiles().map(function (f){ return f.name; });
+        var chosenFiles = study.getChosenFiles().map(function (f){ return f.path; });
         if (!chosenFiles.length) {
             messages.alert({
                 header:'Download Files',

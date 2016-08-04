@@ -188,7 +188,7 @@ export let deleteFiles = study => () => {
 };
 
 export let downloadFiles = (study) => () => {
-    let chosenFiles = study.getChosenFiles().map(f=>f.name);
+    let chosenFiles = study.getChosenFiles().map(f=>f.path);
     if (!chosenFiles.length) {
         messages.alert({
             header:'Download Files',
