@@ -160,7 +160,7 @@ export let createEmpty = (study, path = '') => () => {
 };
 
 export let deleteFiles = study => () => {
-    let chosenFiles = study.getChosenFiles().map(f=>f.path);
+    let chosenFiles = study.getChosenFiles();
     if (!chosenFiles.length) {
         messages.alert({
             header:'Remve Files',

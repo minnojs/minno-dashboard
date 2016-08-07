@@ -50,8 +50,22 @@ let studyPrototype = {
         return this.files().find(f => f.id === id);
     },
 
+    // makes sure not to return both a folder and its contents.
+    // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
     getChosenFiles(){
-        return this.files().filter(file => this.vm(file.id).isChosen() === 1); // do not include half chosen dirs
+        let vm = this.vm;
+        let rootFiles = this.files().filter(f => f.basePath === '/');
+        return getChosen(rootFiles);
+
+        function getChosen(files){
+            return files.reduce((response, file) => {
+                // a chosen file/dir does not need sub files to be checked
+                if (vm(file.id).isChosen() === 1) response.push(file);
+                // if not chosen, we need to look deeper
+                else response = response.concat(getChosen(file.files || []));
+                return response;
+            }, []);
+        }
     },
 
     addFile(file){
@@ -142,22 +156,19 @@ let studyPrototype = {
     },
 
     delFiles(files){
-        return fetchVoid(this.apiURL(), {method: 'delete', body: {files}})
+        let paths = files.map(f=>f.path);
+        return fetchVoid(this.apiURL(), {method: 'delete', body: {paths}})
             .then(() => {
-                let filesList = this.files()
-                    .filter(f => files.indexOf(f.path) === -1); // only exact matches here, the choice mechanism takes care of nested folders
+                let filesList = this.files() .filter(f => paths.indexOf(f.path) === -1); 
+                files.forEach(file => {
+                    let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+                    if (parent) {
+                        let index = parent.files.indexOf(file);
+                        parent.files.splice(index, 1);
+                    }
+                });
 
                 this.files(filesList);
-            });
-    },
-
-    del(fileId){
-        let file = this.getFile(fileId);
-        return file.del()
-            .then(() => {
-                let files = this.files()
-                    .filter(f => f.path.indexOf(file.path) !== 0); // all paths that start with the same path are deleted
-                this.files(files);
             });
     },
 

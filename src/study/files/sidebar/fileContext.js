@@ -70,7 +70,7 @@ let fileContext = (file, study) => {
             content: 'Are you sure you want to delete this file? This action is permanent!'
         })
         .then(ok => {
-            if (ok) return study.del(file.id);
+            if (ok) return study.delFiles([file]);
         })
         .then(m.redraw)
         .catch( err => {

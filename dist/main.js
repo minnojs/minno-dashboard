@@ -1586,10 +1586,22 @@
             return this.files().find(function (f) { return f.id === id; });
         },
 
+        // makes sure not to return both a folder and its contents.
+        // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
         getChosenFiles: function getChosenFiles(){
-            var this$1 = this;
+            var vm = this.vm;
+            var rootFiles = this.files().filter(function (f) { return f.basePath === '/'; });
+            return getChosen(rootFiles);
 
-            return this.files().filter(function (file) { return this$1.vm(file.id).isChosen() === 1; }); // do not include half chosen dirs
+            function getChosen(files){
+                return files.reduce(function (response, file) {
+                    // a chosen file/dir does not need sub files to be checked
+                    if (vm(file.id).isChosen() === 1) response.push(file);
+                    // if not chosen, we need to look deeper
+                    else response = response.concat(getChosen(file.files || []));
+                    return response;
+                }, []);
+            }
         },
 
         addFile: function addFile(file){
@@ -1691,24 +1703,19 @@
         delFiles: function delFiles(files){
             var this$1 = this;
 
-            return fetchVoid(this.apiURL(), {method: 'delete', body: {files: files}})
+            var paths = files.map(function (f){ return f.path; });
+            return fetchVoid(this.apiURL(), {method: 'delete', body: {paths: paths}})
                 .then(function () {
-                    var filesList = this$1.files()
-                        .filter(function (f) { return files.indexOf(f.path) === -1; }); // only exact matches here, the choice mechanism takes care of nested folders
+                    var filesList = this$1.files() .filter(function (f) { return paths.indexOf(f.path) === -1; }); 
+                    files.forEach(function (file) {
+                        var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+                        if (parent) {
+                            var index = parent.files.indexOf(file);
+                            parent.files.splice(index, 1);
+                        }
+                    });
 
                     this$1.files(filesList);
-                });
-        },
-
-        del: function del(fileId){
-            var this$1 = this;
-
-            var file = this.getFile(fileId);
-            return file.del()
-                .then(function () {
-                    var files = this$1.files()
-                        .filter(function (f) { return f.path.indexOf(file.path) !== 0; }); // all paths that start with the same path are deleted
-                    this$1.files(files);
                 });
         },
 
@@ -1967,7 +1974,7 @@
     };
 
     var deleteFiles = function (study) { return function () {
-        var chosenFiles = study.getChosenFiles().map(function (f){ return f.path; });
+        var chosenFiles = study.getChosenFiles();
         if (!chosenFiles.length) {
             messages.alert({
                 header:'Remve Files',
@@ -3603,7 +3610,7 @@
                 content: 'Are you sure you want to delete this file? This action is permanent!'
             })
             .then(function (ok) {
-                if (ok) return study.del(file.id);
+                if (ok) return study.delFiles([file]);
             })
             .then(m.redraw)
             .catch( function (err) {
