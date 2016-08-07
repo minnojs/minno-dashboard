@@ -1957,7 +1957,7 @@
     };
 
     var deleteFiles = function (study) { return function () {
-        var chosenFiles = study.getChosenFiles().map(function (f){ return f.name; });
+        var chosenFiles = study.getChosenFiles().map(function (f){ return f.path; });
         if (!chosenFiles.length) {
             messages.alert({
                 header:'Remve Files',
@@ -3647,15 +3647,18 @@
         }
     }; };
 
-    var node = function (file, args) { return m.component(nodeComponent, file, args); };
+    var node = function (args) { return m.component(nodeComponent, args); };
 
     var nodeComponent = {
-        controller: function (file) {
+        controller: function (ref) {
+            var file = ref.file;
+
             return {
                 isCurrent: m.route.param('fileID') === file.id
             };
         },
-        view: function (ctrl, file, ref) {
+        view: function (ctrl, ref) {
+            var file = ref.file;
             var folderHash = ref.folderHash;
             var study = ref.study;
 
@@ -3706,7 +3709,7 @@
                             })
                         }),
                         m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
-                        file.isDir ? folder(file.path + '/', {folderHash: folderHash, study: study}) : ''
+                        file.isDir ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
                     ])
                 ]
             );
@@ -3752,17 +3755,21 @@
     };
     };
 
-    var folder = function (path, args) { return m.component(folderComponent, path, args); };
+    var folder = function (args) {
+        args.key = args.path;
+        return m.component(folderComponent, args);
+    };
 
     var folderComponent = {
-        view: function view(ctrl, path, ref){
+        view: function view(ctrl, ref){
+            var path = ref.path;
             var folderHash = ref.folderHash;
             var study = ref.study;
 
             var files = folderHash[path] || [];
 
-            return m('.files',[
-                m('ul', files.map(function (file) { return node(file, {folderHash: folderHash, study: study}); }))
+            return m('.files', [
+                m('ul', files.map(function (file) { return node({key: file.id, file: file, folderHash: folderHash, study: study}); }))
             ]);
         }
     };
@@ -3788,7 +3795,7 @@
                 ]),
                 m('a.no-decoration', {href:("/editor/" + (study.id)), config:m.route}, study.name)
             ]),
-            folder('/', {folderHash: folderHash, study: study})
+            folder({path:'/',folderHash: folderHash, study: study})
         ]);
     };
 

@@ -193,23 +193,23 @@ router.route('/files/:studyId/file/:id/move')
 router.route('/files/:studyId/download')
     .post((req, res)=> res.json({url: '/test/iatSound.js'}));
 
-router.route('/files/:studyId/delete')
+router.route('/files/:studyId')
     .delete((req, res) => res.end())
 
-    router.route('/studies/:studyId/deploy')
-        .get((req,res) => res.json({
-            "have_rule_file":true,
-            "study_name": 'BIATGood1',
-            "folder":"yba\/BIATGood1\/",
-            "user_name":"yoav",
-            "researcher_email":"baranany@bgu.ac.il",
-            "researcher_name":"Yoav Bar-Ana",
-            "experiment_file":[
-                {"file_id":"noseklab.yba.BIATGood.0001", "file_name":"BIATGood1.expt.xml"},
-                {"file_id":"noseklab.yba.BIATGood.0001","file_name":"dBIATGood1.expt.xml"}
-            ],
-            "study_name":"BIATGood1"
-        }));
+router.route('/studies/:studyId/deploy')
+    .get((req,res) => res.json({
+        "have_rule_file":true,
+        "study_name": 'BIATGood1',
+        "folder":"yba\/BIATGood1\/",
+        "user_name":"yoav",
+        "researcher_email":"baranany@bgu.ac.il",
+        "researcher_name":"Yoav Bar-Ana",
+        "experiment_file":[
+            {"file_id":"noseklab.yba.BIATGood.0001", "file_name":"BIATGood1.expt.xml"},
+            {"file_id":"noseklab.yba.BIATGood.0001","file_name":"dBIATGood1.expt.xml"}
+        ],
+        "study_name":"BIATGood1"
+    }));
 
 adminRouter.route('/studyData')
     .post((req,res)=> {

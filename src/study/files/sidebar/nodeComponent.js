@@ -6,15 +6,15 @@ import {uploadFiles} from './fileActions';
 
 export default node;
 
-let node = (file, args) => m.component(nodeComponent, file, args);
+let node = (args) => m.component(nodeComponent, args);
 
 let nodeComponent = {
-    controller: (file) => {
+    controller: ({file}) => {
         return {
             isCurrent: m.route.param('fileID') === file.id
         };
     },
-    view: (ctrl, file, {folderHash, study}) => {
+    view: (ctrl, {file,folderHash, study}) => {
         let vm = study.vm(file.id); // vm is created by the studyModel
         return m('li.file-node',
             {
@@ -62,7 +62,7 @@ let nodeComponent = {
                         })
                     }),
                     m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},` ${file.name}`),
-                    file.isDir ? folder(file.path + '/', {folderHash, study}) : ''
+                    file.isDir ? folder({path: file.path + '/', folderHash, study}) : ''
                 ])
             ]
         );
