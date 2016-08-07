@@ -93,7 +93,7 @@ let choose = ({file, study}) => e => {
         .getParents(file)
         .sort((a,b) => a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1)
         .forEach(f => {
-            let files = f.files;
+            let files = f.files || [];
             let chosenCount = files.reduce((counter, f) => counter + isChosen(f)(), 0);
             isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
         });

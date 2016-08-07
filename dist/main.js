@@ -1592,6 +1592,17 @@
             return this.files().filter(function (file) { return this$1.vm(file.id).isChosen() === 1; }); // do not include half chosen dirs
         },
 
+        addFile: function addFile(file){
+            // update the file list
+            this.files().push(file);
+            // update the parent folder
+            var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+            if (parent) {
+                parent.files || (parent.files = []);
+                parent.files.push(file);
+            }
+        },
+
         createFile: function createFile(ref){
             var this$1 = this;
             var name = ref.name;
@@ -1609,13 +1620,12 @@
             var basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
             var dirExists = basePath === '' || this.files().some(function (file) { return file.isDir && file.path === basePath; });
             if (!dirExists) return Promise.reject({message: ("The directory \"" + basePath + "\" does not exist")});
-
             return fetchJson(this.apiURL('/file'), {method:'post', body: {name: name, content: content, isDir: isDir}})
                 .then(function (response) {
                     Object.assign(response, {studyId: this$1.id, content: content, path:name, isDir: isDir});
                     var file = fileFactory(response);
                     file.loaded = true;
-                    this$1.files().push(file);
+                    this$1.addFile(file);
                     return response;
                 })
                 .then(this.sort.bind(this));
@@ -1648,7 +1658,7 @@
                 .then(function (response) {
                     response.forEach(function (src) {
                         var file = fileFactory(Object.assign({studyId: this$1.id},src));
-                        this$1.files().push(file);
+                        this$1.addFile(file);
                     });
 
                     return response;
@@ -3744,7 +3754,7 @@
             .getParents(file)
             .sort(function (a,b) { return a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1; })
             .forEach(function (f) {
-                var files = f.files;
+                var files = f.files || [];
                 var chosenCount = files.reduce(function (counter, f) { return counter + isChosen(f)(); }, 0);
                 isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
             });
