@@ -157,7 +157,7 @@ let studyPrototype = {
 
     delFiles(files){
         let paths = files.map(f=>f.path);
-        return fetchVoid(this.apiURL(), {method: 'delete', body: {paths}})
+        return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
             .then(() => {
                 let filesList = this.files() .filter(f => paths.indexOf(f.path) === -1); 
                 files.forEach(file => {

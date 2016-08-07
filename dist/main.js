@@ -1704,7 +1704,7 @@
             var this$1 = this;
 
             var paths = files.map(function (f){ return f.path; });
-            return fetchVoid(this.apiURL(), {method: 'delete', body: {paths: paths}})
+            return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
                 .then(function () {
                     var filesList = this$1.files() .filter(function (f) { return paths.indexOf(f.path) === -1; }); 
                     files.forEach(function (file) {
