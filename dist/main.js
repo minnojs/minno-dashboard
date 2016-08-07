@@ -464,16 +464,15 @@
                 
                 m('.card.studies-card', [
                     m('.card-block', [
-                        m('.row', [
+                        m('.row', {key: '@@notid@@'}, [
                             m('.col-sm-3', [
-                                
                                 m('p.form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name')])
                             ]),
                             m('.col-sm-5', [
                                 m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
                             ]),
                             m('.col-sm-4', [
-                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), onkeyup: m.withAttr('value', globalSearch)})    
+                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})    
                             ])
                         ]),
 
