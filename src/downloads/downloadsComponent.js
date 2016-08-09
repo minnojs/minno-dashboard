@@ -80,7 +80,7 @@ const downloadsComponent = {
                             m('td', download.studyStatus == STATUS_RUNNING
                                 ? m('i.text-muted', 'Loading...')
                                 : download.fileSize
-                                    ? m('a', {href:download.studyUrl, download:true, target: '_blank'}, 'Download')
+                                    ? m('a', {href:download.studyUrl, download:download.studyId + '.zip', target: '_blank'}, 'Download')
                                     : m('i.text-muted', 'No Data')
                             ),
 
