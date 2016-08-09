@@ -4800,7 +4800,10 @@
                     var response = ctrl.validity();
                     var isValid = Object.keys(response).every(function (key) { return response[key]; });
 
-                    if (isValid) close(true);
+                    if (isValid) {
+                        download.endDate(endOfDay(download.endDate())); 
+                        close(true);
+                    }
                 },
                 cancel: function cancel() {
                     close(null);
@@ -4808,6 +4811,10 @@
             };
 
             return ctrl;
+
+            function endOfDay(date){
+                if (date) return new Date(date.setHours(23,59,59,999));
+            }
         },
         view: function view(ctrl){
             var download = ctrl.download;

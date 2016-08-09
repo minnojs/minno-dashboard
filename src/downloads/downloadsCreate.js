@@ -34,7 +34,10 @@ let createComponent = {
                 let response = ctrl.validity();
                 let isValid = Object.keys(response).every(key => response[key]);
 
-                if (isValid) close(true);
+                if (isValid) {
+                    download.endDate(endOfDay(download.endDate())); 
+                    close(true);
+                }
             },
             cancel() {
                 close(null);
@@ -42,6 +45,10 @@ let createComponent = {
         };
 
         return ctrl;
+
+        function endOfDay(date){
+            if (date) return new Date(date.setHours(23,59,59,999));
+        }
     },
     view(ctrl){
         let download = ctrl.download;
