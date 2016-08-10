@@ -6230,7 +6230,7 @@
 
                 textInput({isArea: true, label: m('span', 'Additional comments'),  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
                 !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Deploy')
+                m('button.btn.btn-primary', {onclick: submit}, 'Request Deploy')
             ]);
         }
     };
