@@ -580,6 +580,8 @@
             var showEmpty = ref.showEmpty;
             var startDate = ref.startDate;
             var endDate = ref.endDate;
+            var firstTask = ref.firstTask;
+            var lastTask = ref.lastTask;
 
             var baseUrl = (location.origin) + "/implicit";
             var post = {
@@ -590,8 +592,9 @@
                 task: task(),
                 since: parseDate(startDate()),
                 until: parseDate(endDate()),
-                refresh:'no',
-                endTask:'',
+                refresh: 'no',
+                startTask: firstTask(),
+                endTask: lastTask(),
                 filter:'',
                 studyc:sortstudy(),
                 taskc:sorttask(),
@@ -887,13 +890,13 @@
                     class: inputClass,
                     placeholder: placeholder,
                     value: prop(),
-                    onkeyup: m.withAttr('value', prop),
+                    oninput: m.withAttr('value', prop),
                     config: function (element, isInit) { return isFirst && isInit && element.focus(); }
                 })
                 : m('textarea.form-control', {
                     class: inputClass,
                     placeholder: placeholder,
-                    onkeyup: m.withAttr('value', prop),
+                    oninput: m.withAttr('value', prop),
                     rows: rows,
                     config: function (element, isInit) { return isFirst && isInit && element.focus(); }
                 } , [prop()]);
@@ -948,7 +951,7 @@
                 m('input.form-control', {
                     placeholder: placeholder,
                     value: text(),
-                    onkeyup: m.withAttr('value', text),
+                    oninput: m.withAttr('value', text),
                     disabled: !checked()
                 })
             ]);
@@ -4134,7 +4137,7 @@
                             config: focusConfig,
                             placeholder:'Rules file URL',
                             value: study.rulesUrl(),
-                            onkeyup: m.withAttr('value', study.rulesUrl),
+                            oninput: m.withAttr('value', study.rulesUrl),
                             class:inputClasses(validity.rulesUrl)
                         }),
                         m('p.text-muted.btn-toolbar', [
@@ -4147,7 +4150,7 @@
                         m('input.form-control', {
                             placeholder:'Auto pause file URL',
                             value: study.autopauseUrl(),
-                            onkeyup: m.withAttr('value', study.autopauseUrl),
+                            oninput: m.withAttr('value', study.autopauseUrl),
                             class:inputClasses(validity.autopauseUrl)
                         }),
                         m('p.text-muted.btn-toolbar', [
@@ -4163,7 +4166,7 @@
                             type:'number',
                             placeholder:'Target Sessions',
                             value: study.targetCompletions(),
-                            onkeyup: m.withAttr('value', study.targetCompletions),
+                            oninput: m.withAttr('value', study.targetCompletions),
                             onclick: m.withAttr('value', study.targetCompletions),
                             class:inputClasses(validity.targetCompletions)
                         }),
@@ -4175,7 +4178,7 @@
                             type:'email',
                             placeholder:'Email',
                             value: study.userEmail(),
-                            onkeyup: m.withAttr('value', study.userEmail),
+                            oninput: m.withAttr('value', study.userEmail),
                             class:inputClasses(validity.userEmail)
                         }),
                         validationView(validity.userEmail, 'This row is required and must be a valid Email')
@@ -4255,7 +4258,7 @@
                             config: focusConfig$1,
                             placeholder:'Study URL',
                             value: study.studyUrl(),
-                            onkeyup: m.withAttr('value', study.studyUrl),
+                            oninput: m.withAttr('value', study.studyUrl),
                             class:inputClasses(validity.studyUrl)
                         }),
                         validationView(validity.studyUrl, 'This row is required')
@@ -4460,7 +4463,7 @@
                         m('thead', [
                             m('tr', [
                                 m('th', {colspan:TABLE_WIDTH - 1}, [
-                                    m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                    m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                                 ]),
                                 m('th', [
                                     m('a.btn.btn-secondary', {href:'/pool/history', config:m.route}, [
@@ -4621,7 +4624,7 @@
                         m('tr', [
                             m('th.row', {colspan:8}, [
                                 m('.col-sm-4',
-                                    m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                    m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                                 ),
                                 m('.col-sm-8',
                                     dateRangePicker(ctrl),
@@ -4840,7 +4843,7 @@
                                     config: focusConfig$2,
                                     placeholder:'Study Id',
                                     value: download.studyId(),
-                                    onkeyup: m.withAttr('value', download.studyId),
+                                    oninput: m.withAttr('value', download.studyId),
                                     class:inputClasses(validity.studyId)
                                 }),
                                 validationView(validity.studyId, 'The study ID is required in order to request a download.')
@@ -5060,7 +5063,7 @@
                         ])
                     ]),
                     m('.col-sm-3',[
-                        m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                     ])
                 ]),
 
@@ -5278,7 +5281,7 @@
                             config: focusConfig$3,
                             placeholder:'Study Id',
                             value: downloadAccess.studyId(),
-                            onkeyup: m.withAttr('value', downloadAccess.studyId),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
                             class:inputClasses(validity.studyId)
                         }),
                         validationView(validity.studyId, 'The study ID is required in order to request access.')
@@ -5363,7 +5366,7 @@
                             config: focusConfig$4,
                             placeholder:'Study Id',
                             value: downloadAccess.studyId(),
-                            onkeyup: m.withAttr('value', downloadAccess.studyId),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
                             class:inputClasses(validity.studyId)
                         }),
                         m('label', 'Username'),
@@ -5371,7 +5374,7 @@
                             config: focusConfig$4,
                             placeholder:'Username',
                             value: downloadAccess.username(),
-                            onkeyup: m.withAttr('value', downloadAccess.username),
+                            oninput: m.withAttr('value', downloadAccess.username),
                             class:inputClasses(validity.username)
                         }),
                         validationView(validity.studyId, 'The study ID is required in order to grant access.'),
@@ -5457,7 +5460,7 @@
                             config: focusConfig$5,
                             placeholder:'Study Id',
                             value: downloadAccess.studyId(),
-                            onkeyup: m.withAttr('value', downloadAccess.studyId),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
                             class:inputClasses(validity.studyId)
                         }),
                         m('label', 'Username'),
@@ -5465,7 +5468,7 @@
                             config: focusConfig$5,
                             placeholder:'Username',
                             value: downloadAccess.username(),
-                            onkeyup: m.withAttr('value', downloadAccess.username),
+                            oninput: m.withAttr('value', downloadAccess.username),
                             class:inputClasses(validity.username)
                         }),
                         validationView(validity.studyId, 'The study ID is required in order to revoke access.'),
@@ -5639,7 +5642,7 @@
                                             ]) : ''
                                         ]),
                                         m('.col-xs-5.text-xs-left', [
-                                            m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                            m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                                         ])
                                     ])
                                 ])
@@ -5763,7 +5766,7 @@
                                     type:'username',
                                     placeholder: 'Username / Email',
                                     value: ctrl.username(),
-                                    onkeyup: m.withAttr('value', ctrl.username),
+                                    oninput: m.withAttr('value', ctrl.username),
                                     onchange: m.withAttr('value', ctrl.username),
                                     config: getStartValue(ctrl.username)
                                 }),
@@ -5771,7 +5774,7 @@
                                     type:'password',
                                     placeholder: 'Password',
                                     value: ctrl.password(),
-                                    onkeyup: m.withAttr('value', ctrl.password),
+                                    oninput: m.withAttr('value', ctrl.password),
                                     onchange: m.withAttr('value', ctrl.password),
                                     config: getStartValue(ctrl.password)
                                 })
@@ -6520,7 +6523,7 @@
                                         type:'username',
                                         placeholder: 'User name',
                                         value: ctrl.username(),
-                                        onkeyup: m.withAttr('value', ctrl.username),
+                                        oninput: m.withAttr('value', ctrl.username),
                                         onchange: m.withAttr('value', ctrl.username),
                                         config: getStartValue$1(ctrl.username)
                                     }
@@ -6530,7 +6533,7 @@
                                         type:'first_name',
                                         placeholder: 'first name',
                                         value: ctrl.first_name(),
-                                        onkeyup: m.withAttr('value', ctrl.first_name),
+                                        oninput: m.withAttr('value', ctrl.first_name),
                                         onchange: m.withAttr('value', ctrl.first_name),
                                         config: getStartValue$1(ctrl.first_name)
                                     }
@@ -6540,7 +6543,7 @@
                                             type:'last_name',
                                             placeholder: 'last name',
                                             value: ctrl.last_name(),
-                                            onkeyup: m.withAttr('value', ctrl.last_name),
+                                            oninput: m.withAttr('value', ctrl.last_name),
                                             onchange: m.withAttr('value', ctrl.last_name),
                                             config: getStartValue$1(ctrl.last_name)
                                         }
@@ -6550,7 +6553,7 @@
                                         type:'email',
                                         placeholder: 'email',
                                         value: ctrl.email(),
-                                        onkeyup: m.withAttr('value', ctrl.email),
+                                        oninput: m.withAttr('value', ctrl.email),
                                         onchange: m.withAttr('value', ctrl.email),
                                         config: getStartValue$1(ctrl.email)
                                     }
@@ -6604,7 +6607,7 @@
                     type:'password',
                     placeholder: 'Password',
                     value: ctrl.password(),
-                    onkeyup: m.withAttr('value', ctrl.password),
+                    oninput: m.withAttr('value', ctrl.password),
                     onchange: m.withAttr('value', ctrl.password),
                     config: getStartValue$2(ctrl.password)
                 }),
@@ -6613,7 +6616,7 @@
                     type:'password',
                     placeholder: 'Confirm password',
                     value: ctrl.confirm(),
-                    onkeyup: m.withAttr('value', ctrl.confirm),
+                    oninput: m.withAttr('value', ctrl.confirm),
                     onchange: m.withAttr('value', ctrl.confirm),
                     config: getStartValue$2(ctrl.confirm)
                 })
@@ -6704,7 +6707,7 @@
                     type:'email',
                     placeholder: 'New Email Address',
                     value: ctrl.email(),
-                    onkeyup: m.withAttr('value', ctrl.email),
+                    oninput: m.withAttr('value', ctrl.email),
                     onchange: m.withAttr('value', ctrl.email),
                     config: getStartValue$3(ctrl.email)
                 })
@@ -6880,7 +6883,7 @@
                                 type:'username',
                                 placeholder: 'Username / Email',
                                 value: ctrl.username(),
-                                onkeyup: m.withAttr('value', ctrl.username),
+                                oninput: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
                                 config: getStartValue$4(ctrl.username)
                             })

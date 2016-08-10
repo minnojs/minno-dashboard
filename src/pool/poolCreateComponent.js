@@ -61,7 +61,7 @@ let createComponent = {
                         config: focusConfig,
                         placeholder:'Study URL',
                         value: study.studyUrl(),
-                        onkeyup: m.withAttr('value', study.studyUrl),
+                        oninput: m.withAttr('value', study.studyUrl),
                         class:inputClasses(validity.studyUrl)
                     }),
                     validationView(validity.studyUrl, 'This row is required')

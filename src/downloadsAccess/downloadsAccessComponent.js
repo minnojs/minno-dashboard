@@ -68,7 +68,7 @@ let downloadsAccessComponent = {
                                         ]) : ''
                                     ]),
                                     m('.col-xs-5.text-xs-left', [
-                                        m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                        m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                                     ])
                                 ])
                             ])

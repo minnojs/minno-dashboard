@@ -51,7 +51,7 @@ let addComponent = {
                                     type:'username',
                                     placeholder: 'User name',
                                     value: ctrl.username(),
-                                    onkeyup: m.withAttr('value', ctrl.username),
+                                    oninput: m.withAttr('value', ctrl.username),
                                     onchange: m.withAttr('value', ctrl.username),
                                     config: getStartValue(ctrl.username)
                                 }
@@ -61,7 +61,7 @@ let addComponent = {
                                     type:'first_name',
                                     placeholder: 'first name',
                                     value: ctrl.first_name(),
-                                    onkeyup: m.withAttr('value', ctrl.first_name),
+                                    oninput: m.withAttr('value', ctrl.first_name),
                                     onchange: m.withAttr('value', ctrl.first_name),
                                     config: getStartValue(ctrl.first_name)
                                 }
@@ -71,7 +71,7 @@ let addComponent = {
                                         type:'last_name',
                                         placeholder: 'last name',
                                         value: ctrl.last_name(),
-                                        onkeyup: m.withAttr('value', ctrl.last_name),
+                                        oninput: m.withAttr('value', ctrl.last_name),
                                         onchange: m.withAttr('value', ctrl.last_name),
                                         config: getStartValue(ctrl.last_name)
                                     }
@@ -81,7 +81,7 @@ let addComponent = {
                                     type:'email',
                                     placeholder: 'email',
                                     value: ctrl.email(),
-                                    onkeyup: m.withAttr('value', ctrl.email),
+                                    oninput: m.withAttr('value', ctrl.email),
                                     onchange: m.withAttr('value', ctrl.email),
                                     config: getStartValue(ctrl.email)
                                 }

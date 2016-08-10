@@ -6,7 +6,7 @@ export let emil_body = ctrl => m('.card.card-inverse.col-md-4', [
                 type:'email',
                 placeholder: 'New Email Address',
                 value: ctrl.email(),
-                onkeyup: m.withAttr('value', ctrl.email),
+                oninput: m.withAttr('value', ctrl.email),
                 onchange: m.withAttr('value', ctrl.email),
                 config: getStartValue(ctrl.email)
             })

@@ -53,7 +53,7 @@ let loginComponent = {
                                 type:'username',
                                 placeholder: 'Username / Email',
                                 value: ctrl.username(),
-                                onkeyup: m.withAttr('value', ctrl.username),
+                                oninput: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
                                 config: getStartValue(ctrl.username)
                             }),
@@ -61,7 +61,7 @@ let loginComponent = {
                                 type:'password',
                                 placeholder: 'Password',
                                 value: ctrl.password(),
-                                onkeyup: m.withAttr('value', ctrl.password),
+                                oninput: m.withAttr('value', ctrl.password),
                                 onchange: m.withAttr('value', ctrl.password),
                                 config: getStartValue(ctrl.password)
                             })

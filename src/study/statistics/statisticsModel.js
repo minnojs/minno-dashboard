@@ -17,7 +17,7 @@ export let getStatistics = query => {
     /**
      * Parses the query as we build it locally and creates an appropriate post for the server
      **/
-    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate}){
+    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate, firstTask, lastTask}){
         let baseUrl = `${location.origin}/implicit`;
         let post = {
             db: source().match(/^(.*?):/)[1], // before colon
@@ -27,8 +27,9 @@ export let getStatistics = query => {
             task: task(),
             since: parseDate(startDate()),
             until: parseDate(endDate()),
-            refresh:'no',
-            endTask:'',
+            refresh: 'no',
+            startTask: firstTask(),
+            endTask: lastTask(),
             filter:'',
             studyc:sortstudy(),
             taskc:sorttask(),

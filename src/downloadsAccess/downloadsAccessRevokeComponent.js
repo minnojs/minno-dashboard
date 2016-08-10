@@ -64,7 +64,7 @@ let revokeComponent = {
                         config: focusConfig,
                         placeholder:'Study Id',
                         value: downloadAccess.studyId(),
-                        onkeyup: m.withAttr('value', downloadAccess.studyId),
+                        oninput: m.withAttr('value', downloadAccess.studyId),
                         class:inputClasses(validity.studyId)
                     }),
                     m('label', 'Username'),
@@ -72,7 +72,7 @@ let revokeComponent = {
                         config: focusConfig,
                         placeholder:'Username',
                         value: downloadAccess.username(),
-                        onkeyup: m.withAttr('value', downloadAccess.username),
+                        oninput: m.withAttr('value', downloadAccess.username),
                         class:inputClasses(validity.username)
                     }),
                     validationView(validity.studyId, 'The study ID is required in order to revoke access.'),

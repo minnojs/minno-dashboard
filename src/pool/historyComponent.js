@@ -30,7 +30,7 @@ let poolComponent = {
                     m('tr', [
                         m('th.row', {colspan:8}, [
                             m('.col-sm-4',
-                                m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                             ),
                             m('.col-sm-8',
                                 dateRangePicker(ctrl),

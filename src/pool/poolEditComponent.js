@@ -92,7 +92,7 @@ let editComponent = {
                         config: focusConfig,
                         placeholder:'Rules file URL',
                         value: study.rulesUrl(),
-                        onkeyup: m.withAttr('value', study.rulesUrl),
+                        oninput: m.withAttr('value', study.rulesUrl),
                         class:inputClasses(validity.rulesUrl)
                     }),
                     m('p.text-muted.btn-toolbar', [
@@ -105,7 +105,7 @@ let editComponent = {
                     m('input.form-control', {
                         placeholder:'Auto pause file URL',
                         value: study.autopauseUrl(),
-                        onkeyup: m.withAttr('value', study.autopauseUrl),
+                        oninput: m.withAttr('value', study.autopauseUrl),
                         class:inputClasses(validity.autopauseUrl)
                     }),
                     m('p.text-muted.btn-toolbar', [
@@ -121,7 +121,7 @@ let editComponent = {
                         type:'number',
                         placeholder:'Target Sessions',
                         value: study.targetCompletions(),
-                        onkeyup: m.withAttr('value', study.targetCompletions),
+                        oninput: m.withAttr('value', study.targetCompletions),
                         onclick: m.withAttr('value', study.targetCompletions),
                         class:inputClasses(validity.targetCompletions)
                     }),
@@ -133,7 +133,7 @@ let editComponent = {
                         type:'email',
                         placeholder:'Email',
                         value: study.userEmail(),
-                        onkeyup: m.withAttr('value', study.userEmail),
+                        oninput: m.withAttr('value', study.userEmail),
                         class:inputClasses(validity.userEmail)
                     }),
                     validationView(validity.userEmail, 'This row is required and must be a valid Email')

@@ -6,7 +6,7 @@ export let password_body = ctrl => m('.card.card-inverse.col-md-4', [
                 type:'password',
                 placeholder: 'Password',
                 value: ctrl.password(),
-                onkeyup: m.withAttr('value', ctrl.password),
+                oninput: m.withAttr('value', ctrl.password),
                 onchange: m.withAttr('value', ctrl.password),
                 config: getStartValue(ctrl.password)
             }),
@@ -15,7 +15,7 @@ export let password_body = ctrl => m('.card.card-inverse.col-md-4', [
                 type:'password',
                 placeholder: 'Confirm password',
                 value: ctrl.confirm(),
-                onkeyup: m.withAttr('value', ctrl.confirm),
+                oninput: m.withAttr('value', ctrl.confirm),
                 onchange: m.withAttr('value', ctrl.confirm),
                 config: getStartValue(ctrl.confirm)
             })

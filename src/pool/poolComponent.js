@@ -42,7 +42,7 @@ let poolComponent = {
                     m('thead', [
                         m('tr', [
                             m('th', {colspan:TABLE_WIDTH - 1}, [
-                                m('input.form-control', {placeholder: 'Global Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                                m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                             ]),
                             m('th', [
                                 m('a.btn.btn-secondary', {href:'/pool/history', config:m.route}, [

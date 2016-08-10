@@ -41,7 +41,7 @@ let  maybeInputComponent = {
             m('input.form-control', {
                 placeholder: placeholder,
                 value: text(),
-                onkeyup: m.withAttr('value', text),
+                oninput: m.withAttr('value', text),
                 disabled: !checked()
             })
         ]);

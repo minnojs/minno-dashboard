@@ -74,7 +74,7 @@ let createComponent = {
                                 config: focusConfig,
                                 placeholder:'Study Id',
                                 value: download.studyId(),
-                                onkeyup: m.withAttr('value', download.studyId),
+                                oninput: m.withAttr('value', download.studyId),
                                 class:inputClasses(validity.studyId)
                             }),
                             validationView(validity.studyId, 'The study ID is required in order to request a download.')

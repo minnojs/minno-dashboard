@@ -51,7 +51,7 @@ const downloadsComponent = {
                     ])
                 ]),
                 m('.col-sm-3',[
-                    m('input.form-control', {placeholder: 'Search ...', onkeyup: m.withAttr('value', ctrl.globalSearch)})
+                    m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
                 ])
             ]),
 

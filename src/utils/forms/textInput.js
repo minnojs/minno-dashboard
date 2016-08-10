@@ -15,13 +15,13 @@ let textInputComponent  = {
                 class: inputClass,
                 placeholder: placeholder,
                 value: prop(),
-                onkeyup: m.withAttr('value', prop),
+                oninput: m.withAttr('value', prop),
                 config: (element, isInit) => isFirst && isInit && element.focus()
             })
             : m('textarea.form-control', {
                 class: inputClass,
                 placeholder: placeholder,
-                onkeyup: m.withAttr('value', prop),
+                oninput: m.withAttr('value', prop),
                 rows,
                 config: (element, isInit) => isFirst && isInit && element.focus()
             } , [prop()]);

@@ -31,7 +31,7 @@ let recoveryComponent = {
                             type:'username',
                             placeholder: 'Username / Email',
                             value: ctrl.username(),
-                            onkeyup: m.withAttr('value', ctrl.username),
+                            oninput: m.withAttr('value', ctrl.username),
                             onchange: m.withAttr('value', ctrl.username),
                             config: getStartValue(ctrl.username)
                         })
