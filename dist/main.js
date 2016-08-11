@@ -755,14 +755,26 @@
         view: function(ctrl, args){
             return m('.date-range', {config: pikadayRange.config(args)}, [
                 m('.figure', [
-                    m('strong','Start Date'),
-                    m('br'),
+                    m('.row', [
+                        m('.col-sm-6', [
+                            m('strong','Start Date')
+                        ]),
+                        m('.col-sm-6.text-xs-right', [
+                            args.startDate().toLocaleDateString()
+                        ])
+                    ]),
                     m('.figure')
                 ]),
                 m.trust('&nbsp;'),
                 m('.figure', [
-                    m('strong','End Date'),
-                    m('br'),
+                    m('.row', [
+                        m('.col-sm-6', [
+                            m('strong','End Date')
+                        ]),
+                        m('.col-sm-6.text-xs-right', [
+                            args.endDate().toLocaleDateString()
+                        ])
+                    ]),
                     m('.figure')
                 ])
             ]);
@@ -792,8 +804,8 @@
                     startPicker.setDate(startDate());
                     endPicker.setDate(endDate());
 
-                    element.children[0].children[2].appendChild(startPicker.el);
-                    element.children[1].children[2].appendChild(endPicker.el);
+                    element.children[0].children[1].appendChild(startPicker.el);
+                    element.children[1].children[1].appendChild(endPicker.el);
 
                     ctx.onunload = function () {
                         startPicker.destroy();
@@ -1109,7 +1121,7 @@
     var colWidth = 3;
     var SOURCES = {
         'Research pool - Current studies'   : 'Research:Current',
-        'Research pool - Past studies'      : 'Research:History',
+    //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
         'All studies'                       : 'Both:Any'
@@ -1246,7 +1258,7 @@
                     m('thead', [
                         m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
                     ]),
-                    m('tbody', tableContent().data.map(function (row) { return m('tr', row.map(function (column) { return m('td', column); })); }))
+                    m('tbody', tableContent().data.map(function (row) { return m('tr', !row.length ? '' : row.map(function (column) { return m('td', column); })); }))
                 ])
             ]);
         }

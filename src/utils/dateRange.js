@@ -36,14 +36,26 @@ let pikadayRange = {
     view: function(ctrl, args){
         return m('.date-range', {config: pikadayRange.config(args)}, [
             m('.figure', [
-                m('strong','Start Date'),
-                m('br'),
+                m('.row', [
+                    m('.col-sm-6', [
+                        m('strong','Start Date')
+                    ]),
+                    m('.col-sm-6.text-xs-right', [
+                        args.startDate().toLocaleDateString()
+                    ])
+                ]),
                 m('.figure')
             ]),
             m.trust('&nbsp;'),
             m('.figure', [
-                m('strong','End Date'),
-                m('br'),
+                m('.row', [
+                    m('.col-sm-6', [
+                        m('strong','End Date')
+                    ]),
+                    m('.col-sm-6.text-xs-right', [
+                        args.endDate().toLocaleDateString()
+                    ])
+                ]),
                 m('.figure')
             ])
         ]);
@@ -70,8 +82,8 @@ let pikadayRange = {
                 startPicker.setDate(startDate());
                 endPicker.setDate(endDate());
 
-                element.children[0].children[2].appendChild(startPicker.el);
-                element.children[1].children[2].appendChild(endPicker.el);
+                element.children[0].children[1].appendChild(startPicker.el);
+                element.children[1].children[1].appendChild(endPicker.el);
 
                 ctx.onunload = () => {
                     startPicker.destroy();
