@@ -1590,6 +1590,7 @@
         },
 
         // makes sure not to return both a folder and its contents.
+        // This is important mainly for server side clarity (don't delete or download both a folder and its content)
         // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
         getChosenFiles: function getChosenFiles(){
             var vm = this.vm;
@@ -3831,8 +3832,9 @@
     }
 
     function getCurrentState(study){
+        var vm = study.vm;
         var filesCount = study.files().length;
-        var chosenCount = study.getChosenFiles().length;
+        var chosenCount = study.files().reduce(function (result, file) { return vm(file.id).isChosen() ? result + 1 : result; }, 0);
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 

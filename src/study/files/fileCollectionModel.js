@@ -51,6 +51,7 @@ let studyPrototype = {
     },
 
     // makes sure not to return both a folder and its contents.
+    // This is important mainly for server side clarity (don't delete or download both a folder and its content)
     // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
     getChosenFiles(){
         let vm = this.vm;

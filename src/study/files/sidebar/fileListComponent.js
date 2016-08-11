@@ -39,7 +39,8 @@ function choose(currentState, study){
 }
 
 function getCurrentState(study){
+    let vm = study.vm;
     let filesCount = study.files().length;
-    let chosenCount = study.getChosenFiles().length;
+    let chosenCount = study.files().reduce((result, file) => vm(file.id).isChosen() ? result + 1 : result, 0);
     return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
 }
