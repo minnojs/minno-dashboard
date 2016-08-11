@@ -23,6 +23,7 @@ var port = process.env.PORT || 8080;        // set our port
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
 var adminRouter = express.Router();
+var implicitRouter = express.Router();
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
@@ -341,7 +342,10 @@ adminRouter.route('/PITracking')
         res.end(STATISTICS);
     });
 
-
+implicitRouter.route('/PiManager')
+    .post(function(req,res) {
+        res.json(1)
+    });
 
 
 
@@ -349,6 +353,7 @@ adminRouter.route('/PITracking')
 // all of our routes will be prefixed with /dashboard
 app.use('/dashboard/dashboard', router);
 app.use('/dashboard', adminRouter);
+app.use('/implicit', implicitRouter);
 app.use('/implicit/user/yba/wizards', express.static('fixtures/wizards'));
 app.use('/implicit/common/all/js/pip/0.3', express.static('../pip'));
 app.use('/implicit/common/all/js/quest/0.0', express.static('../quest'));
