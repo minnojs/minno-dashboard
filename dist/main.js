@@ -3098,6 +3098,7 @@
         var isJs = file.type === 'js';
         var hasChanged = file.hasChanged();
         var isExpt = /\.expt\.xml$/.test(file.path);
+        var isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
         var amdMatch = amdReg.exec(file.content());
         var APItype = amdMatch && amdMatch[1];
 
@@ -3158,6 +3159,10 @@
                 
                 !isExpt ? '' :  m('a.btn.btn-secondary', {href: ("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit\//, ''))), target: '_blank', title:'Play this task'},[
                     m('strong.fa.fa-play')
+                ]),
+
+                !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
+                    m('strong.fa.fa-eye')
                 ]),
 
                 m('a.btn.btn-secondary', {onclick: hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[

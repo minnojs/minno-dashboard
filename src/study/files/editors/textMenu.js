@@ -12,6 +12,7 @@ let textMenuView = ({mode, file, study, observer}) => {
     let isJs = file.type === 'js';
     let hasChanged = file.hasChanged();
     let isExpt = /\.expt\.xml$/.test(file.path);
+    let isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
     let amdMatch = amdReg.exec(file.content());
     let APItype = amdMatch && amdMatch[1];
 
@@ -72,6 +73,10 @@ let textMenuView = ({mode, file, study, observer}) => {
             
             !isExpt ? '' :  m('a.btn.btn-secondary', {href: `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit\//, '')}`, target: '_blank', title:'Play this task'},[
                 m('strong.fa.fa-play')
+            ]),
+
+            !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
+                m('strong.fa.fa-eye')
             ]),
 
             m('a.btn.btn-secondary', {onclick: hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
