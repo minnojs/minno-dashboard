@@ -71,7 +71,7 @@ const downloadsComponent = {
                     ])
                 ]),
                 m('tbody', [
-                    list().length === 0
+                    ctrl.loaded && list().length === 0
                         ? m('tr.table-info', [
                             m('td.text-xs-center', {colspan: TABLE_WIDTH}, 'There are no downloads running yet')
                         ])
