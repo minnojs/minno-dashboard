@@ -13,6 +13,7 @@ const downloadsComponent = {
         let cancelDownload = m.prop(false);
 
         const ctrl = {
+            loaded:false,
             list,
             cancelDownload,
             create,
@@ -25,12 +26,13 @@ const downloadsComponent = {
             error: m.prop('')
         };
 
-        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error});
+        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
 
         return ctrl;
     },
 
     view(ctrl) {
+        if (!ctrl.loaded) return m('.loader');
         let list = ctrl.list;
 
         if (ctrl.error()) return m('.downloads', [

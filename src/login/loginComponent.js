@@ -53,12 +53,14 @@ let loginComponent = {
                                 type:'username',
                                 placeholder: 'Username / Email',
                                 value: ctrl.username(),
+                                name: 'username',
                                 oninput: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
                                 config: getStartValue(ctrl.username)
                             }),
                             m('input.form-control', {
                                 type:'password',
+                                name:'password',
                                 placeholder: 'Password',
                                 value: ctrl.password(),
                                 oninput: m.withAttr('value', ctrl.password),

@@ -13,7 +13,7 @@ let layout = route => {
     return {
         controller(){
             const ctrl = {
-                isloggedin: false,
+                isloggedin: true,
                 role: m.prop(''),
                 doLogout,
                 timer:m.prop(0)
@@ -81,6 +81,9 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                         ]),
+                        // m('li.nav-item',[
+                        //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
+                        // ]),
                         ctrl.role()!='SU'
                         ?
                         ''

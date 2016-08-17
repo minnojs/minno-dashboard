@@ -1,7 +1,6 @@
 import {get_removal_list} from './removalListModel';
 import sortTable from 'utils/sortTable';
 
-const TABLE_WIDTH = 8;
 export default removalListComponent;
 let thConfig = (prop, current) => ({'data-sort-by':prop, class: current() === prop ? 'active' : ''});
 

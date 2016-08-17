@@ -76,7 +76,7 @@ let deployComponent = {
             .then(m.redraw);
         }
     },
-    view({form, ctrl, submit, studyId}){
+    view({form, ctrl, submit}){
         if (ctrl.sent) return m('.deploy.centrify',[
             m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
             m('h5', ['The Deploy form was sent successfully ', m('a', {href:'/deployList', config: m.route}, 'View Deploy Requests')]),

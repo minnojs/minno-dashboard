@@ -9,7 +9,7 @@ let fabComponent = {
             m('a.fab-button', {tooltip:'Request Change', href: `/studyChangeRequest/${studyId}`, config:m.route}, 'C'),
             m('a.fab-button', {tooltip:'Request Deploy', href: `/deploy/${studyId}`, config:m.route}, 'D'),
             m('a.fab-button', {tooltip:'Edit', href: `/editor/${studyId}`, config:m.route}, m('i.fa.fa-edit'))
-        ]),  
-        m('.fab-button.fab-main', {tooltip:'Actions'}, m('i.fa.fa-lg.fa-bolt'))  
+        ]),
+        m('.fab-button.fab-main', {tooltip:'Actions'}, m('i.fa.fa-lg.fa-bolt'))
     ])
 };

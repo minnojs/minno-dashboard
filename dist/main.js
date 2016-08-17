@@ -66,6 +66,7 @@
 
     var baseUrl            = urlPrefix + "dashboard";
     var studyUrl           = urlPrefix + "dashboard/studies";
+    var tagsUrl            = urlPrefix + "dashboard/tags";
     var url            = urlPrefix + "StudyData";
     var baseUrl$1            = urlPrefix + "dashboard";
     var STATISTICS_URL      = urlPrefix + "PITracking";
@@ -301,6 +302,48 @@
 
     };
 
+    function tag_url(tag_id)
+    {
+        return (tagsUrl + "/" + (encodeURIComponent(tag_id)));
+    }
+
+    function study_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
+    }
+
+
+    var get_tags = function () { return fetchJson(tagsUrl, {
+        method: 'get'
+    }); };
+
+
+    var get_tags_for_study = function (study_id) { return fetchJson(study_url(study_id), {
+        method: 'get'
+    }); };
+
+    var remove_tag = function (tag_id) { return fetchJson(tag_url(tag_id), {
+        method: 'delete'
+    }); };
+
+
+
+    var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
+        method: 'post',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
+    var edit_tag = function (tag_id, tag_text, tag_color) { return fetchJson(tag_url(tag_id), {
+        method: 'put',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
+    //
+    //
+    // export let make_pulic = (study_id, is_public) => fetchJson(public_url(study_id), {
+    //     method: 'post',
+    //     body: {is_public}
+    // });
+
     var do_create = function () {
         var study_name = m.prop('');
         var error = m.prop('');
@@ -325,6 +368,19 @@
         ask();
     };
 
+    var do_tags = function (study_id, callback) { return function () {
+        var tags = m.prop([]);
+
+        get_tags_for_study(study_id)
+            .then(function (response) {
+                tags(response.tags);
+                messages.confirm({header:'Tags', content:[tags().map(function (tag) { return [
+                        m('p', [m('i.fa.fa-fw.fa-check-square-o'), tag.text])
+                    ]; }
+                )]});
+            });
+    }; };
+
     var do_delete = function (study_id, callback) { return function () { return messages.confirm({header:'Delete study', content:'Are you sure?'})
         .then(function (response) {
             if (response) delete_study(study_id)
@@ -333,6 +389,7 @@
                 .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
                 .then(m.redraw);
         }); }; };
+
 
     var do_rename = function (study_id, name, callback) { return function () {
         var study_name = m.prop(name);
@@ -353,7 +410,7 @@
                 error(e.message);
                 ask();
             }); };
-                    
+
         // activate creation
         ask();
     }; };
@@ -502,6 +559,9 @@
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     study.permission !== 'owner' ? '' : [
+                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
+                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                    ]),
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                         ]),
@@ -5044,6 +5104,7 @@
             var cancelDownload = m.prop(false);
 
             var ctrl = {
+                loaded:false,
                 list: list,
                 cancelDownload: cancelDownload,
                 create: create$1,
@@ -5056,12 +5117,13 @@
                 error: m.prop('')
             };
 
-            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error});
+            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
 
             return ctrl;
         },
 
         view: function view(ctrl) {
+            if (!ctrl.loaded) return m('.loader');
             var list = ctrl.list;
 
             if (ctrl.error()) return m('.downloads', [
@@ -5785,12 +5847,14 @@
                                     type:'username',
                                     placeholder: 'Username / Email',
                                     value: ctrl.username(),
+                                    name: 'username',
                                     oninput: m.withAttr('value', ctrl.username),
                                     onchange: m.withAttr('value', ctrl.username),
                                     config: getStartValue(ctrl.username)
                                 }),
                                 m('input.form-control', {
                                     type:'password',
+                                    name:'password',
                                     placeholder: 'Password',
                                     value: ctrl.password(),
                                     oninput: m.withAttr('value', ctrl.password),
@@ -5917,31 +5981,31 @@
                 m('.loader')
                 :
                 m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                m('thead', [
-                    m('tr', [
-                        m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$5('FILE_NAMES',ctrl.sortBy), 'File names'),
-                        m('th', thConfig$5('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
-                        m('th', thConfig$5('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
-                        m('th', thConfig$5('STATUS',ctrl.sortBy), 'Status'),
-                        m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
+                    m('thead', [
+                        m('tr', [
+                            m('th', thConfig$5('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                            m('th', thConfig$5('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                            m('th', thConfig$5('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                            m('th', thConfig$5('FILE_NAMES',ctrl.sortBy), 'File names'),
+                            m('th', thConfig$5('TARGET_SESSIONS',ctrl.sortBy), 'Target sessions'),
+                            m('th', thConfig$5('STUDY_SHOWFILES_LINK',ctrl.sortBy), 'Study showfiles link'),
+                            m('th', thConfig$5('STATUS',ctrl.sortBy), 'Status'),
+                            m('th', thConfig$5('COMMENTS',ctrl.sortBy), 'Comments')
+                        ])
+                    ]),
+                    m('tbody', [
+                        ctrl.list().map(function (study) { return m('tr', [
+                            m('td', study.CREATION_DATE),
+                            m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                            m('td', study.RESEARCHER_NAME),
+                            m('td', study.FILE_NAMES),
+                            m('td', study.TARGET_SESSIONS),
+                            m('td', m('a', {href:study.STUDY_SHOWFILES_LINK}, study.STUDY_SHOWFILES_LINK)),
+                            m('td', study.STATUS),
+                            m('td', study.COMMENTS)
+                        ]); })
                     ])
-                ]),
-                m('tbody', [
-                    ctrl.list().map(function (study) { return m('tr', [
-                        m('td', study.CREATION_DATE),
-                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
-                        m('td', study.RESEARCHER_NAME),
-                        m('td', study.FILE_NAMES),
-                        m('td', study.TARGET_SESSIONS),
-                        m('td', m('a', {href:study.STUDY_SHOWFILES_LINK}, study.STUDY_SHOWFILES_LINK)),
-                        m('td', study.STATUS),
-                        m('td', study.COMMENTS)
-                    ]); })
-                ])
-            ]);
+                ]);
         }
     };
 
@@ -6164,7 +6228,6 @@
             var form = ref.form;
             var ctrl = ref.ctrl;
             var submit = ref.submit;
-            var studyId = ref.studyId;
 
             if (ctrl.sent) return m('.deploy.centrify',[
                 m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -7085,7 +7148,206 @@
         }
     };
 
-    var routes = { 
+    var tagsComponent = {
+        controller: function controller(){
+            var ctrl = {
+                tags:m.prop(),
+                tag_text:m.prop(''),
+                tag_color:m.prop(''),
+                loaded:false,
+                error:m.prop(''),
+                remove: remove,
+                add: add,
+                edit: edit
+
+            };
+            function load() {
+                get_tags()
+                    .then(function (response) {
+                        ctrl.tags(response.tags);
+                        ctrl.loaded = true;
+                    })
+                    .catch(function (error) {
+                        ctrl.error(error.message);
+                    }).then(m.redraw);
+
+            }
+            function remove(tag_id){
+                messages.confirm({header:'Delete tag', content:'Are you sure?'})
+                    .then(function (response) {
+                        if (response)
+                            remove_tag(tag_id)
+                                .then(function (){
+                                    load();
+                                })
+                                .catch(function (error) {
+                                    ctrl.error(error.message);
+                                })
+                                .then(m.redraw);
+                    });
+            }
+
+            function edit(tag_id, tag_text, tag_color){
+                ctrl.tag_text(tag_text);
+                ctrl.tag_color(tag_color);
+
+                messages.confirm({
+
+                    header:'Edit tag',
+                    content: m.component({view: function () { return m('p', [
+                        m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
+
+                        m('p',[
+                            m('span',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
+                            m('span',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
+                            m('span',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
+                            m('span',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
+                            m('span',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
+                            m('span',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
+                            m('span',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
+                            m('span',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
+                            m('span',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
+                            m('span',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
+                        ]),
+
+                        m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
+
+                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
+                    ]); }
+                    })})
+                    .then(function (response) {
+                        if (response)
+                            edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color)
+                                .then(function (){
+                                    ctrl.error('');
+                                    ctrl.tag_text('');
+                                    ctrl.tag_color('');
+                                    load();
+                                })
+                                .catch(function (error) {
+                                    ctrl.error(error.message);
+                                    edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
+                                })
+                                .then(m.redraw);
+                    });
+            }
+            
+            function add(){
+                ctrl.tag_color('FFFFFF');
+                messages.confirm({
+                    header:'Add a new tag',
+                    content: m.component({view: function () { return m('p', [
+                        m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
+                            m('span',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
+                            m('span',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
+                            m('span',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
+                            m('span',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
+                            m('span',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
+                            m('span',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
+                        ]),
+                        m('p',[
+                            m('span',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
+                            m('span',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
+                            m('span',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
+                            m('span',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
+                            m('span',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
+                            m('span',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
+                        ]),
+
+                        m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
+
+                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
+                    ]); }
+                    })})
+                    .then(function (response) {
+                        if (response)
+                            add_tag(ctrl.tag_text, ctrl.tag_color)
+                                .then(function (){
+                                    ctrl.error('');
+                                    ctrl.tag_text('');
+                                    ctrl.tag_color('');
+                                    load();
+                                })
+                                .catch(function (error) {
+                                    ctrl.error(error.message);
+                                    add();
+                                })
+                                .then(m.redraw);
+                    });
+            }
+            load();
+            return ctrl;
+        },
+        view: function view(ctrl){
+            return  !ctrl.loaded
+                ?
+                m('.loader')
+                :
+                m('.container', [
+                    m('.row',[
+                        m('.col-sm-7', [
+                            m('h3', 'Tags')
+                        ]),
+                        m('.col-sm-1', [
+                            m('button.btn.btn-success.btn-sm.m-r-1', {onclick:ctrl.add}, [
+                                m('i.fa.fa-plus'), '  Add new tag'
+                            ])
+                        ])
+                    ]),
+                    
+                    m('table', {class:'table table-striped table-hover'}, [
+                        m('tbody', [
+                            ctrl.tags().map(function (tag) { return m('tr', [
+                                m('td.h3', m('span.strong',  {style: {'background-color': '#'+tag.color, 'border': '1px solid'}}, tag.text)),
+                                m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.edit(tag.id, tag.text, tag.color);}}, 'Edit')),
+                                m('td', m('button.btn.btn-danger', {onclick:function() {ctrl.remove(tag.id);}}, 'Remove'))
+                            ]); })
+
+                        ])
+                    ])
+                ]);
+        }
+    };
+
+    var routes = {
+        '/tags':  tagsComponent,
         '/recovery':  recoveryComponent,
         '/activation/:code':  activationComponent,
         '/change_password':  changePasswordComponent,
@@ -7116,7 +7378,7 @@
         return {
             controller: function controller(){
                 var ctrl = {
-                    isloggedin: false,
+                    isloggedin: true,
                     role: m.prop(''),
                     doLogout: doLogout,
                     timer:m.prop(0)
@@ -7184,6 +7446,9 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),
+                            // m('li.nav-item',[
+                            //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
+                            // ]),
                             ctrl.role()!='SU'
                             ?
                             ''

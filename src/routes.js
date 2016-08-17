@@ -18,9 +18,11 @@ import settingsComponent from './changePassword/settingsComponent';
 import resetPasswordComponent from './changePassword/resetPasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
 import sharingComponent from 'study/sharing/sharingComponent';
+import tagsComponent from 'tags/tagsComponent';
 export default routes;
 
-let routes = { 
+let routes = {
+    '/tags':  tagsComponent,
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
     '/change_password':  settingsComponent,

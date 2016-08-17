@@ -1,5 +1,6 @@
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
+import {get_tags_for_study} from '../tags/tagsModel';
 
 export let do_create = () => {
     let study_name = m.prop('');
@@ -25,6 +26,21 @@ export let do_create = () => {
     ask();
 };
 
+export let do_tags = (study_id, callback) => () =>
+{
+    let tags = m.prop([]);
+
+    get_tags_for_study(study_id)
+        .then(response => {
+            tags(response.tags);
+            messages.confirm({header:'Tags', content:[tags().map(tag =>
+                [
+                    m('p', [m('i.fa.fa-fw.fa-check-square-o'), tag.text])
+                ]
+            )]});
+        });
+};
+
 export let do_delete = (study_id, callback) => () => messages.confirm({header:'Delete study', content:'Are you sure?'})
     .then(response => {
         if (response) delete_study(study_id)
@@ -33,6 +49,7 @@ export let do_delete = (study_id, callback) => () => messages.confirm({header:'D
             .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
             .then(m.redraw);
     });
+
 
 export let do_rename = (study_id, name, callback) => () => {
     let study_name = m.prop(name);
@@ -53,7 +70,7 @@ export let do_rename = (study_id, name, callback) => () => {
             error(e.message);
             ask();
         });
-                
+
     // activate creation
     ask();
 };
