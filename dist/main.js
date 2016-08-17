@@ -559,9 +559,9 @@
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
-                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
-                                                    ]),
+                                                        m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                        ]),
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                         ]),
@@ -4998,6 +4998,7 @@
         var list = ref.list;
         var cancel = ref.cancel;
         var error = ref.error;
+        var loaded = ref.loaded;
 
         return getAllDownloads()
             .then(list)
@@ -5007,6 +5008,7 @@
                 }
             })
             .catch(error)
+            .then(function(){loaded(true);})
             .then(m.redraw);
     }
 
@@ -5101,10 +5103,12 @@
     var downloadsComponent = {
         controller: function controller(){
             var list = m.prop([]);
+            var loaded = m.prop(false);
+
             var cancelDownload = m.prop(false);
 
             var ctrl = {
-                loaded:false,
+                loaded: loaded,
                 list: list,
                 cancelDownload: cancelDownload,
                 create: create$1,
@@ -5117,14 +5121,15 @@
                 error: m.prop('')
             };
 
-            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
-
+            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
             return ctrl;
         },
 
         view: function view(ctrl) {
-            if (!ctrl.loaded)
+
+            if (!ctrl.loaded())
                 return m('.loader');
+
             var list = ctrl.list;
 
             if (ctrl.error()) return m('.downloads', [
@@ -5162,7 +5167,7 @@
                         ])
                     ]),
                     m('tbody', [
-                        ctrl.loaded && list().length === 0
+                        list().length === 0
                             ? m('tr.table-info', [
                                 m('td.text-xs-center', {colspan: TABLE_WIDTH$1}, 'There are no downloads running yet')
                             ])
@@ -5667,6 +5672,7 @@
         controller: function () {
             var ctrl = {
                 play: play$2,
+                loaded: m.prop(false),
                 remove: remove$2,
                 create: create$2,
                 grant: grant,
@@ -5682,11 +5688,15 @@
             getAllOpenRequests()
                 .then(ctrl.list)
                 .catch(ctrl.error)
+                .then(function(){ctrl.loaded(true);})
                 .then(m.redraw);
 
             return ctrl;
         },
         view: function (ctrl) {
+            if (!ctrl.loaded())
+                return m('.loader');
+
             var list = ctrl.list;
             return m('.downloadAccess', [
                 m('h3', 'Data Download Access Requests'),

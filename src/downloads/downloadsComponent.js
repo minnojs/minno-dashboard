@@ -10,10 +10,12 @@ const statusLabelsMap = {}; // defined at the bottom of this file
 const downloadsComponent = {
     controller(){
         let list = m.prop([]);
+        let loaded = m.prop(false);
+
         let cancelDownload = m.prop(false);
 
         const ctrl = {
-            loaded:false,
+            loaded,
             list,
             cancelDownload,
             create,
@@ -26,14 +28,15 @@ const downloadsComponent = {
             error: m.prop('')
         };
 
-        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
-
+        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
         return ctrl;
     },
 
     view(ctrl) {
-        if (!ctrl.loaded)
+
+        if (!ctrl.loaded())
             return m('.loader');
+
         let list = ctrl.list;
 
         if (ctrl.error()) return m('.downloads', [
@@ -71,7 +74,7 @@ const downloadsComponent = {
                     ])
                 ]),
                 m('tbody', [
-                    ctrl.loaded && list().length === 0
+                    list().length === 0
                         ? m('tr.table-info', [
                             m('td.text-xs-center', {colspan: TABLE_WIDTH}, 'There are no downloads running yet')
                         ])

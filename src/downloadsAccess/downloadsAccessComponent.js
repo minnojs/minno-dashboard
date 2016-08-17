@@ -11,6 +11,7 @@ let downloadsAccessComponent = {
     controller: () => {
         const ctrl = {
             play: play,
+            loaded: m.prop(false),
             remove: remove,
             create: create,
             grant: grant,
@@ -26,11 +27,15 @@ let downloadsAccessComponent = {
         getAllOpenRequests()
             .then(ctrl.list)
             .catch(ctrl.error)
+            .then(function(){ctrl.loaded(true);})
             .then(m.redraw);
 
         return ctrl;
     },
     view: ctrl => {
+        if (!ctrl.loaded())
+            return m('.loader');
+
         let list = ctrl.list;
         return m('.downloadAccess', [
             m('h3', 'Data Download Access Requests'),

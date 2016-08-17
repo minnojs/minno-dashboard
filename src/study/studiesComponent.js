@@ -109,9 +109,9 @@ var mainComponent = {
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 study.permission !== 'owner' ? '' : [
-                                                m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
-                                                    m('i.fa.fa-fw.fa-tags'), ' Tags'
-                                                ]),
+                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
+                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                    ]),
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                     ]),
