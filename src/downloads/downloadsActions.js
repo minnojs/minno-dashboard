@@ -8,17 +8,15 @@ const DURATION = 5000;
  */
 
 export let recursiveGetAll = debounce(getAll, DURATION);
-export function getAll({list, cancel, error, loaded}){
+export function getAll({list, cancel, error}){
     return getAllDownloads()
         .then(list)
         .then(response => {
             if (!cancel() && response.some(download => download.studyStatus === STATUS_RUNNING)) {
-                recursiveGetAll({list, cancel, error, loaded});
-                ;
+                recursiveGetAll({list, cancel, error});
             }
         })
         .catch(error)
-        .then(loaded = true)
         .then(m.redraw);
 }
 

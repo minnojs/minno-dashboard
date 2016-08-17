@@ -26,7 +26,7 @@ const downloadsComponent = {
             error: m.prop('')
         };
 
-        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
+        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
 
         return ctrl;
     },
