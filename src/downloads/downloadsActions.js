@@ -14,10 +14,11 @@ export function getAll({list, cancel, error, loaded}){
         .then(response => {
             if (!cancel() && response.some(download => download.studyStatus === STATUS_RUNNING)) {
                 recursiveGetAll({list, cancel, error, loaded});
-                loaded = true;
+                ;
             }
         })
         .catch(error)
+        .then(loaded = true)
         .then(m.redraw);
 }
 
