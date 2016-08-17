@@ -4998,14 +4998,12 @@
         var list = ref.list;
         var cancel = ref.cancel;
         var error = ref.error;
-        var loaded = ref.loaded;
 
         return getAllDownloads()
             .then(list)
             .then(function (response) {
                 if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
-                    recursiveGetAll({list: list, cancel: cancel, error: error, loaded: loaded});
-                    loaded = true;
+                    recursiveGetAll({list: list, cancel: cancel, error: error});
                 }
             })
             .catch(error)
@@ -5119,7 +5117,7 @@
                 error: m.prop('')
             };
 
-            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
+            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
 
             return ctrl;
         },
