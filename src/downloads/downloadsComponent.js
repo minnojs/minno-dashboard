@@ -26,13 +26,14 @@ const downloadsComponent = {
             error: m.prop('')
         };
 
-        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
+        getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
 
         return ctrl;
     },
 
     view(ctrl) {
-        if (!ctrl.loaded) return m('.loader');
+        if (!ctrl.loaded)
+            return m('.loader');
         let list = ctrl.list;
 
         if (ctrl.error()) return m('.downloads', [

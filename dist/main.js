@@ -4998,12 +4998,14 @@
         var list = ref.list;
         var cancel = ref.cancel;
         var error = ref.error;
+        var loaded = ref.loaded;
 
         return getAllDownloads()
             .then(list)
             .then(function (response) {
                 if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
-                    recursiveGetAll({list: list, cancel: cancel, error: error});
+                    recursiveGetAll({list: list, cancel: cancel, error: error, loaded: loaded});
+                    loaded = true;
                 }
             })
             .catch(error)
@@ -5117,13 +5119,14 @@
                 error: m.prop('')
             };
 
-            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error}).then(ctrl.loaded=true);
+            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
 
             return ctrl;
         },
 
         view: function view(ctrl) {
-            if (!ctrl.loaded) return m('.loader');
+            if (!ctrl.loaded)
+                return m('.loader');
             var list = ctrl.list;
 
             if (ctrl.error()) return m('.downloads', [
