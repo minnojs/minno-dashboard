@@ -3,8 +3,10 @@ import {load_studies} from './studyModel';
 import dropdown from 'utils/dropdown';
 import {do_create, do_delete, do_rename, do_tags} from './studyActions';
 import classNames from 'utils/classNames';
+import formatDate from 'utils/formatDate';
 
 var mainComponent = {
+
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
@@ -12,6 +14,7 @@ var mainComponent = {
             globalSearch: m.prop(''),
             permissionChoice: m.prop('all'),
             loaded:false,
+            order_by_name: true,
             loadStudies,
             sort_studies_by_name,
             sort_studies_by_date
@@ -28,11 +31,13 @@ var mainComponent = {
 
         }
         function sort_studies_by_name2(study1, study2){
+            ctrl.order_by_name = true;
 
             return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
         }
 
         function sort_studies_by_date2(study1, study2){
+            ctrl.order_by_name = false;
             return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
         }
 
@@ -45,7 +50,7 @@ var mainComponent = {
 
 
     },
-    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name}){
+    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name, order_by_name}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
@@ -72,11 +77,16 @@ var mainComponent = {
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', {key: '@@notid@@'}, [
-                        m('.col-sm-3', [
-                            m('p.form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name')])
+                        m('p.col-sm-6', [
+
+
+                            m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
+                            m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
+
                         ]),
-                        m('.col-sm-5', [
-                            m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
+                        m('p.col-sm-2', [
+                            m('form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed ')]),
+                            m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                         ]),
                         m('.col-sm-4', [
                             m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})    
@@ -88,7 +98,7 @@ var mainComponent = {
                         .filter(searchFilter(globalSearch()))
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
-                                m('.col-sm-3', [
+                                m('.col-sm-2', [
                                     m('i.fa.fa-fw.owner-icon', {
                                         class: classNames({
                                             'fa-globe': study.is_public,
@@ -101,15 +111,20 @@ var mainComponent = {
                                     }),
                                     m('.study-text', study.name)
                                 ]),
-                                m('.col-sm-5', [
-                                    m('.study-text', study.last_modified)
-                                ]),
                                 m('.col-sm-4', [
+                                    study.tags.map(tag=>
+                                        m('button',  {style: {'background-color': '#' + tag.COLOR, 'border': '1px solid', margin: '1px'}}, tag.TEXT)
+                                    )
+                                ]),
+                                m('.col-sm-5', [
+                                    m('.study-text', formatDate(new Date(study.last_modified)))
+                                ]),
+                                m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
+                                                    m('a.dropdown-item', {onclick: do_tags(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [

@@ -1,6 +1,6 @@
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
-import {get_tags_for_study} from '../tags/tagsModel';
+import {get_tags_for_study, toogle_tag_to_study} from '../tags/tagsModel';
 
 export let do_create = () => {
     let study_name = m.prop('');
@@ -26,18 +26,36 @@ export let do_create = () => {
     ask();
 };
 
+
+
+
 export let do_tags = (study_id, callback) => () =>
 {
     let tags = m.prop([]);
-
     get_tags_for_study(study_id)
         .then(response => {
             tags(response.tags);
-            messages.confirm({header:'Tags', content:[tags().map(tag =>
-                [
-                    m('p', [m('i.fa.fa-fw.fa-check-square-o'), tag.text])
-                ]
-            )]});
+            messages.alert({header:'Tags', content:[
+                m('input.form-control', {placeholder: 'Search ...'}),
+                m('button.btn.btn-success.btn-sm', [
+                    m('i.fa.fa-plus'), '  Add new tad'
+                ]),
+                tags().sort(function (tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}).map(tag =>
+                    [
+                        m('p',
+                            [m('input', {
+                                type: 'checkbox',
+                                checked: tag.used,
+                                onclick: function(){
+                                    tag.used = !tag.used;
+                                    toogle_tag_to_study(study_id, tag.id, tag.used)
+                                    .then(callback);
+                                }
+
+                            }), tag.text])
+                    ]
+                )
+            ]});
         });
 };
 

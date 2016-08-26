@@ -81,9 +81,9 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                         ]),
-                        // m('li.nav-item',[
-                        //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
-                        // ]),
+                        m('li.nav-item',[
+                            m('a.nav-link',{href:'/tags', config:m.route},'Tags')
+                        ]),
                         ctrl.role()!='SU'
                         ?
                         ''

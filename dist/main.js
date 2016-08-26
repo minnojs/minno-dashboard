@@ -312,6 +312,25 @@
     }
 
 
+    function study_tag_url(study_id, tag_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags/" + (encodeURIComponent(tag_id)));
+    }
+
+    var toogle_tag_to_study = function (study_id, tag_id, used) {
+        if(used)
+            return add_tag_to_study(study_id, tag_id);
+        return delete_tag_from_study(study_id, tag_id);
+    };
+
+    var add_tag_to_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
+        method: 'post'
+    }); };
+
+
+    var delete_tag_from_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
+        method: 'delete'
+    }); };
+
     var get_tags = function () { return fetchJson(tagsUrl, {
         method: 'get'
     }); };
@@ -325,8 +344,6 @@
         method: 'delete'
     }); };
 
-
-
     var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
         method: 'post',
         body: {tag_text: tag_text, tag_color: tag_color}
@@ -337,12 +354,49 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    //
-    //
-    // export let make_pulic = (study_id, is_public) => fetchJson(public_url(study_id), {
-    //     method: 'post',
-    //     body: {is_public}
-    // });
+    var view_create = function (ctrl) {
+        return   m('p', [
+
+            m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
+            m('p',[
+                m('button',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
+                m('button',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
+                m('button',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
+                m('button',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
+                m('button',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
+                m('button',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
+            ]),
+            m('p',[
+                m('button',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
+                m('button',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
+                m('button',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
+                m('button',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
+                m('button',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
+                m('button',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
+            ]),
+            m('p',[
+                m('button',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
+                m('button',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
+                m('button',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
+                m('button',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
+                m('button',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
+                m('button',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
+            ]),
+            m('p',[
+                m('button',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
+                m('button',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
+                m('button',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
+                m('button',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
+                m('button',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
+                m('button',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
+            ]),
+
+            m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
+
+            m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
+
+        ])
+    }
 
     var do_create = function () {
         var study_name = m.prop('');
@@ -368,16 +422,34 @@
         ask();
     };
 
+
+
+
     var do_tags = function (study_id, callback) { return function () {
         var tags = m.prop([]);
-
         get_tags_for_study(study_id)
             .then(function (response) {
                 tags(response.tags);
-                messages.confirm({header:'Tags', content:[tags().map(function (tag) { return [
-                        m('p', [m('i.fa.fa-fw.fa-check-square-o'), tag.text])
-                    ]; }
-                )]});
+                messages.alert({header:'Tags', content:[
+                    m('input.form-control', {placeholder: 'Search ...'}),
+                    m('button.btn.btn-success.btn-sm', [
+                        m('i.fa.fa-plus'), '  Add new tad'
+                    ]),
+                    tags().sort(function (tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}).map(function (tag) { return [
+                            m('p',
+                                [m('input', {
+                                    type: 'checkbox',
+                                    checked: tag.used,
+                                    onclick: function(){
+                                        tag.used = !tag.used;
+                                        toogle_tag_to_study(study_id, tag.id, tag.used)
+                                        .then(callback);
+                                    }
+
+                                }), tag.text])
+                        ]; }
+                    )
+                ]});
             });
     }; };
 
@@ -446,7 +518,13 @@
         return classes.substr(1);
     }
 
+    function formatDate(date){
+        var pad = function (num) { return num < 10 ? '0' + num : num; };
+        return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
+    }
+
     var mainComponent = {
+
         controller: function(){
             var ctrl = {
                 studies:m.prop([]),
@@ -454,6 +532,7 @@
                 globalSearch: m.prop(''),
                 permissionChoice: m.prop('all'),
                 loaded:false,
+                order_by_name: true,
                 loadStudies: loadStudies,
                 sort_studies_by_name: sort_studies_by_name,
                 sort_studies_by_date: sort_studies_by_date
@@ -470,11 +549,13 @@
 
             }
             function sort_studies_by_name2(study1, study2){
+                ctrl.order_by_name = true;
 
                 return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
             }
 
             function sort_studies_by_date2(study1, study2){
+                ctrl.order_by_name = false;
                 return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
             }
 
@@ -495,6 +576,7 @@
             var loadStudies = ref.loadStudies;
             var sort_studies_by_date = ref.sort_studies_by_date;
             var sort_studies_by_name = ref.sort_studies_by_name;
+            var order_by_name = ref.order_by_name;
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
@@ -522,11 +604,16 @@
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', {key: '@@notid@@'}, [
-                            m('.col-sm-3', [
-                                m('p.form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name')])
+                            m('p.col-sm-6', [
+
+
+                                m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
+                                m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
+
                             ]),
-                            m('.col-sm-5', [
-                                m('p.form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed')])
+                            m('p.col-sm-2', [
+                                m('form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed ')]),
+                                m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                             ]),
                             m('.col-sm-4', [
                                 m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})    
@@ -538,7 +625,7 @@
                             .filter(searchFilter(globalSearch()))
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
-                                    m('.col-sm-3', [
+                                    m('.col-sm-2', [
                                         m('i.fa.fa-fw.owner-icon', {
                                             class: classNames({
                                                 'fa-globe': study.is_public,
@@ -551,15 +638,19 @@
                                         }),
                                         m('.study-text', study.name)
                                     ]),
-                                    m('.col-sm-5', [
-                                        m('.study-text', study.last_modified)
-                                    ]),
                                     m('.col-sm-4', [
+                                        study.tags.map(function (tag){ return m('button',  {style: {'background-color': '#' + tag.COLOR, 'border': '1px solid', margin: '1px'}}, tag.TEXT); }
+                                        )
+                                    ]),
+                                    m('.col-sm-5', [
+                                        m('.study-text', formatDate(new Date(study.last_modified)))
+                                    ]),
+                                    m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     study.permission !== 'owner' ? '' : [
-                                                        m('a.dropdown-item', {onclick: do_tags(study.id, study.name, loadStudies)}, [
+                                                        m('a.dropdown-item', {onclick: do_tags(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                         ]),
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
@@ -4500,11 +4591,6 @@
         method: 'get'
     }); };
 
-    function formatDate(date){
-        var pad = function (num) { return num < 10 ? '0' + num : num; };
-        return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
-    }
-
     var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
     var TABLE_WIDTH = 8;
 
@@ -7205,46 +7291,7 @@
                 messages.confirm({
 
                     header:'Edit tag',
-                    content: m.component({view: function () { return m('p', [
-                        m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
-
-                        m('p',[
-                            m('span',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
-                            m('span',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
-                            m('span',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
-                            m('span',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
-                            m('span',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
-                            m('span',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
-                            m('span',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
-                            m('span',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
-                            m('span',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
-                            m('span',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
-                        ]),
-
-                        m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
-
-                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
-                    ]); }
+                    content: m.component({view: function () { return view_create(ctrl); }
                     })})
                     .then(function (response) {
                         if (response)
@@ -7262,50 +7309,13 @@
                                 .then(m.redraw);
                     });
             }
-            
+
             function add(){
+                ctrl.tag_text('');
                 ctrl.tag_color('FFFFFF');
                 messages.confirm({
                     header:'Add a new tag',
-                    content: m.component({view: function () { return m('p', [
-                        m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
-                            m('span',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
-                            m('span',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
-                            m('span',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
-                            m('span',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
-                            m('span',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
-                            m('span',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
-                        ]),
-                        m('p',[
-                            m('span',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
-                            m('span',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
-                            m('span',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
-                            m('span',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
-                            m('span',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
-                            m('span',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
-                        ]),
-
-                        m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
-
-                        m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
-                    ]); }
+                    content: m.component({view: function () { return view_create(ctrl); }
                     })})
                     .then(function (response) {
                         if (response)
@@ -7346,7 +7356,7 @@
                     m('table', {class:'table table-striped table-hover'}, [
                         m('tbody', [
                             ctrl.tags().map(function (tag) { return m('tr', [
-                                m('td.h3', m('span.strong',  {style: {'background-color': '#'+tag.color, 'border': '1px solid'}}, tag.text)),
+                                m('td.h3', m('button.strong',  {style: {'background-color': '#'+tag.color, 'border': '1px solid'}}, tag.text)),
                                 m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.edit(tag.id, tag.text, tag.color);}}, 'Edit')),
                                 m('td', m('button.btn.btn-danger', {onclick:function() {ctrl.remove(tag.id);}}, 'Remove'))
                             ]); })
@@ -7457,9 +7467,9 @@
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),
-                            // m('li.nav-item',[
-                            //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
-                            // ]),
+                            m('li.nav-item',[
+                                m('a.nav-link',{href:'/tags', config:m.route},'Tags')
+                            ]),
                             ctrl.role()!='SU'
                             ?
                             ''
