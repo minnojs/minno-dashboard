@@ -13,7 +13,7 @@ export function getAll({list, cancel, error, loaded}){
         .then(list)
         .then(response => {
             if (!cancel() && response.some(download => download.studyStatus === STATUS_RUNNING)) {
-                recursiveGetAll({list, cancel, error});
+                recursiveGetAll({list, cancel, error, loaded});
             }
         })
         .catch(error)
@@ -78,7 +78,7 @@ function doRemove(download, list){
  * Create download
  */
 
-export function create(list, cancel){
+export function create(list, cancel, loaded){
     let output = m.prop();
     return createMessage({output})
         .then(response => {
@@ -93,7 +93,7 @@ export function create(list, cancel){
                     .catch(reportError('Error creating download'))
                     .then(cancel.bind(null, false))
                     .then(() => {
-                        getAll({list, cancel});
+                        getAll({list, cancel, loaded});
                     });
             }
         });

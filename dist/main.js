@@ -5082,7 +5082,7 @@
             .then(list)
             .then(function (response) {
                 if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
-                    recursiveGetAll({list: list, cancel: cancel, error: error});
+                    recursiveGetAll({list: list, cancel: cancel, error: error, loaded: loaded});
                 }
             })
             .catch(error)
@@ -5147,7 +5147,7 @@
      * Create download
      */
 
-    function create$1(list, cancel){
+    function create$1(list, cancel, loaded){
         var output = m.prop();
         return createMessage$1({output: output})
             .then(function (response) {
@@ -5162,7 +5162,7 @@
                         .catch(reportError$1('Error creating download'))
                         .then(cancel.bind(null, false))
                         .then(function () {
-                            getAll({list: list, cancel: cancel});
+                            getAll({list: list, cancel: cancel, loaded: loaded});
                         });
                 }
             });
@@ -5223,7 +5223,7 @@
                         m('h3', 'Data Download')
                     ]),
                     m('.col-sm-3',[
-                        m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
+                        m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload, ctrl.loaded)}, [
                             m('i.fa.fa-plus'), ' Request Data'
                         ])
                     ]),

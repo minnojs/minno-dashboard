@@ -52,7 +52,7 @@ const downloadsComponent = {
                     m('h3', 'Data Download')
                 ]),
                 m('.col-sm-3',[
-                    m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload)}, [
+                    m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload, ctrl.loaded)}, [
                         m('i.fa.fa-plus'), ' Request Data'
                     ])
                 ]),
