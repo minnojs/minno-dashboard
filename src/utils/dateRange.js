@@ -34,29 +34,20 @@ let pikaday = {
 
 let pikadayRange = {
     view: function(ctrl, args){
-        return m('.date-range', {config: pikadayRange.config(args)}, [
-            m('.figure', [
-                m('.row', [
-                    m('.col-sm-6', [
-                        m('strong','Start Date')
-                    ]),
-                    m('.col-sm-6.text-xs-right', [
-                        args.startDate().toLocaleDateString()
-                    ])
-                ]),
-                m('.figure')
+        return m('.row.form-group.date-range', {config: pikadayRange.config(args)}, [
+            m('.col-sm-6', [
+                m('label','Start Date'),
+                m('label.input-group',[
+                    m('.input-group-addon', m('i.fa.fa-fw.fa-calendar')),
+                    m('input.form-control')
+                ])
             ]),
-            m.trust('&nbsp;'),
-            m('.figure', [
-                m('.row', [
-                    m('.col-sm-6', [
-                        m('strong','End Date')
-                    ]),
-                    m('.col-sm-6.text-xs-right', [
-                        args.endDate().toLocaleDateString()
-                    ])
-                ]),
-                m('.figure')
+            m('.col-sm-6', [
+                m('label','End Date'),
+                m('label.input-group',[
+                    m('.input-group-addon', m('i.fa.fa-fw.fa-calendar')),
+                    m('input.form-control')
+                ])
             ])
         ]);
     },
@@ -71,24 +62,31 @@ let pikadayRange = {
             if (!areDatesEqual(startDate, startPicker) || !areDatesEqual(endDate, endPicker)) update(); 
 
             function setup(){
+                let startElement = element.children[0].children[1].children[1];
                 startPicker = ctx.startPicker = new Pikaday({
-                    onSelect: onSelect(startDate)
+                    onSelect: onSelect(startDate),
+                    field: startElement 
                 });
-
+                startElement.addEventListener('keyup', onKeydown(startPicker));
+                
+                let endElement = element.children[1].children[1].children[1];
                 endPicker = ctx.endPicker = new Pikaday({
-                    onSelect: onSelect(endDate)
+                    onSelect: onSelect(endDate),
+                    field: endElement
                 });
+                endElement.addEventListener('keyup', onKeydown(endPicker));
 
                 startPicker.setDate(startDate());
                 endPicker.setDate(endDate());
-
-                element.children[0].children[1].appendChild(startPicker.el);
-                element.children[1].children[1].appendChild(endPicker.el);
 
                 ctx.onunload = () => {
                     startPicker.destroy();
                     endPicker.destroy();
                 };
+            }
+
+            function onKeydown(picker){
+                return e => e.keyCode === 13 && picker.isVisible() && e.stopPropagation();
             }
 
             function onSelect(prop){

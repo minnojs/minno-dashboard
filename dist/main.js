@@ -904,29 +904,20 @@
 
     var pikadayRange = {
         view: function(ctrl, args){
-            return m('.date-range', {config: pikadayRange.config(args)}, [
-                m('.figure', [
-                    m('.row', [
-                        m('.col-sm-6', [
-                            m('strong','Start Date')
-                        ]),
-                        m('.col-sm-6.text-xs-right', [
-                            args.startDate().toLocaleDateString()
-                        ])
-                    ]),
-                    m('.figure')
+            return m('.row.form-group.date-range', {config: pikadayRange.config(args)}, [
+                m('.col-sm-6', [
+                    m('label','Start Date'),
+                    m('label.input-group',[
+                        m('.input-group-addon', m('i.fa.fa-fw.fa-calendar')),
+                        m('input.form-control')
+                    ])
                 ]),
-                m.trust('&nbsp;'),
-                m('.figure', [
-                    m('.row', [
-                        m('.col-sm-6', [
-                            m('strong','End Date')
-                        ]),
-                        m('.col-sm-6.text-xs-right', [
-                            args.endDate().toLocaleDateString()
-                        ])
-                    ]),
-                    m('.figure')
+                m('.col-sm-6', [
+                    m('label','End Date'),
+                    m('label.input-group',[
+                        m('.input-group-addon', m('i.fa.fa-fw.fa-calendar')),
+                        m('input.form-control')
+                    ])
                 ])
             ]);
         },
@@ -944,24 +935,31 @@
                 if (!areDatesEqual(startDate, startPicker) || !areDatesEqual(endDate, endPicker)) update(); 
 
                 function setup(){
+                    var startElement = element.children[0].children[1].children[1];
                     startPicker = ctx.startPicker = new Pikaday({
-                        onSelect: onSelect(startDate)
+                        onSelect: onSelect(startDate),
+                        field: startElement 
                     });
-
+                    startElement.addEventListener('keyup', onKeydown(startPicker));
+                    
+                    var endElement = element.children[1].children[1].children[1];
                     endPicker = ctx.endPicker = new Pikaday({
-                        onSelect: onSelect(endDate)
+                        onSelect: onSelect(endDate),
+                        field: endElement
                     });
+                    endElement.addEventListener('keyup', onKeydown(endPicker));
 
                     startPicker.setDate(startDate());
                     endPicker.setDate(endDate());
-
-                    element.children[0].children[1].appendChild(startPicker.el);
-                    element.children[1].children[1].appendChild(endPicker.el);
 
                     ctx.onunload = function () {
                         startPicker.destroy();
                         endPicker.destroy();
                     };
+                }
+
+                function onKeydown(picker){
+                    return function (e) { return e.keyCode === 13 && picker.isVisible() && e.stopPropagation(); };
                 }
 
                 function onSelect(prop){
@@ -1288,63 +1286,58 @@
             var form = ref.form;
             var query = ref$1.query;
 
-            return m('.row', [
-                m('.col-sm-6', [
-                    //sourceComponent({label:'Source', studyType: query.studyType, studyDb: query.studyDb, form}),
-                    selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
-                    textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
-                    textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth}),
-                    m('.form-group.row', [
-                        m('.col-sm-3', [
-                            m('label.form-control-label', 'Show by')
-                        ]),
-                        m('.col-sm-9.pull-right', [
-                            m('.btn-group.btn-group-sm', [
-                                button(query.sortstudy, 'Study'),
-                                button(query.sorttask, 'Task'),
-                                m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
-                                    'Time',
-                                    m('.time-card', [
-                                        m('.card', [
-                                            m('.card-header', 'Time filter'),
-                                            m('.card-block.c-inputs-stacked', [
-                                                radioButton(query.sorttime, 'None'),
-                                                radioButton(query.sorttime, 'Days'),
-                                                radioButton(query.sorttime, 'Weeks'),
-                                                radioButton(query.sorttime, 'Months'),
-                                                radioButton(query.sorttime, 'Years')
-                                            ])
+            return m('.col-sm-12', [
+                selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
+                textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
+                textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth}),
+                m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Show by')
+                    ]),
+                    m('.col-sm-9.pull-right', [
+                        m('.btn-group.btn-group-sm', [
+                            button(query.sortstudy, 'Study'),
+                            button(query.sorttask, 'Task'),
+                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                                'Time',
+                                m('.time-card', [
+                                    m('.card', [
+                                        m('.card-header', 'Time filter'),
+                                        m('.card-block.c-inputs-stacked', [
+                                            radioButton(query.sorttime, 'None'),
+                                            radioButton(query.sorttime, 'Days'),
+                                            radioButton(query.sorttime, 'Weeks'),
+                                            radioButton(query.sorttime, 'Months'),
+                                            radioButton(query.sorttime, 'Years')
                                         ])
                                     ])
-                                ]),
-                                button(query.sortgroup, 'Data Group')
-                            ]),
-                            m('.btn-group.btn-group-sm.pull-right', [
-                                button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
-                            ])
-                        ])
-                    ]),
-                    m('.form-group.row', [
-                        m('.col-sm-3', [
-                            m('label.form-control-label', 'Compute completions')
-                        ]),
-                        m('.col-sm-9', [
-                            m('.row', [
-                                m('.col-sm-5', [
-                                    m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
-                                ]),
-                                m('.col-sm-1', [
-                                    m('.form-control-static', 'to')
-                                ]),
-                                m('.col-sm-5', [
-                                    m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
                                 ])
-                            ])
+                            ]),
+                            button(query.sortgroup, 'Data Group')
+                        ]),
+                        m('.btn-group.btn-group-sm.pull-right', [
+                            button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
                         ])
                     ])
                 ]),
-                m('.col-sm-6', [
-                    dateRangePicker({startDate:query.startDate, endDate: query.endDate})
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Compute completions')
+                    ]),
+                    m('.col-sm-9', [
+                        m('.row', [
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
+                            ]),
+                            m('.col-sm-1', [
+                                m('.form-control-static', 'to')
+                            ]),
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
+                            ])
+                        ])
+                    ])
                 ])
             ]);
         
@@ -4784,26 +4777,26 @@
             var list = ctrl.list;
             return m('.pool', [
                 m('h2', 'Pool history'),
+                m('.row', {colspan:8}, [
+                    m('.col-sm-3',[
+                        m('label', 'Search'),
+                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                    ]),
+                    m('.col-sm-4',[
+                        dateRangePicker(ctrl)
+                    ]),
+                    m('.col-sm-5',[
+                        m('label', m.trust('&nbsp')),
+                        m('.text-muted.btn-toolbar', [
+                            dayButtonView(ctrl, 'Last 7 Days', 7),
+                            dayButtonView(ctrl, 'Last 30 Days', 30),
+                            dayButtonView(ctrl, 'Last 90 Days', 90),
+                            dayButtonView(ctrl, 'All time', 3650)
+                        ])
+                    ])
+                ]) ,
                 m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                     m('thead', [
-                        m('tr', [
-                            m('th.row', {colspan:8}, [
-                                m('.col-sm-4',
-                                    m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                                ),
-                                m('.col-sm-8',
-                                    dateRangePicker(ctrl),
-                                    m('.btn-group-vertical.history-button-group',[
-                                        dayButtonView(ctrl, 'Last 7 Days', 7),
-                                        dayButtonView(ctrl, 'Last 30 Days', 30),
-                                        dayButtonView(ctrl, 'Last 90 Days', 90),
-                                        dayButtonView(ctrl, 'All times', 3650)
-                                    ])
-
-
-                                )
-                            ])
-                        ]),
                         m('tr', [
                             m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
                             m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
@@ -5027,14 +5020,13 @@
                     m('.row', [
                         m('.col-sm-12', [
                             m('.form-group', [
-                                m('label', 'Date Range'),
+                                dateRangePicker(download),
                                 m('p.text-muted.btn-toolbar', [
                                     dayButtonView$1(download, 'Last 7 Days', 7),
                                     dayButtonView$1(download, 'Last 30 Days', 30),
                                     dayButtonView$1(download, 'Last 90 Days', 90),
                                     dayButtonView$1(download, 'All time', 3650)
-                                ]),
-                                m('.text-xs-center', dateRangePicker(download))
+                                ])
                             ])
                         ])
                     ])

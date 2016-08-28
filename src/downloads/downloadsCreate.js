@@ -93,14 +93,13 @@ let createComponent = {
                 m('.row', [
                     m('.col-sm-12', [
                         m('.form-group', [
-                            m('label', 'Date Range'),
+                            dateRangePicker(download),
                             m('p.text-muted.btn-toolbar', [
                                 dayButtonView(download, 'Last 7 Days', 7),
                                 dayButtonView(download, 'Last 30 Days', 30),
                                 dayButtonView(download, 'Last 90 Days', 90),
                                 dayButtonView(download, 'All time', 3650)
-                            ]),
-                            m('.text-xs-center', dateRangePicker(download))
+                            ])
                         ])
                     ])
                 ])

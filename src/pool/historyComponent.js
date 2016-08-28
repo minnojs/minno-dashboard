@@ -25,26 +25,26 @@ let poolComponent = {
         let list = ctrl.list;
         return m('.pool', [
             m('h2', 'Pool history'),
+            m('.row', {colspan:8}, [
+                m('.col-sm-3',[
+                    m('label', 'Search'),
+                    m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                ]),
+                m('.col-sm-4',[
+                    dateRangePicker(ctrl)
+                ]),
+                m('.col-sm-5',[
+                    m('label', m.trust('&nbsp')),
+                    m('.text-muted.btn-toolbar', [
+                        dayButtonView(ctrl, 'Last 7 Days', 7),
+                        dayButtonView(ctrl, 'Last 30 Days', 30),
+                        dayButtonView(ctrl, 'Last 90 Days', 90),
+                        dayButtonView(ctrl, 'All time', 3650)
+                    ])
+                ])
+            ]) ,
             m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
                 m('thead', [
-                    m('tr', [
-                        m('th.row', {colspan:8}, [
-                            m('.col-sm-4',
-                                m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                            ),
-                            m('.col-sm-8',
-                                dateRangePicker(ctrl),
-                                m('.btn-group-vertical.history-button-group',[
-                                    dayButtonView(ctrl, 'Last 7 Days', 7),
-                                    dayButtonView(ctrl, 'Last 30 Days', 30),
-                                    dayButtonView(ctrl, 'Last 90 Days', 90),
-                                    dayButtonView(ctrl, 'All times', 3650)
-                                ])
-
-
-                            )
-                        ])
-                    ]),
                     m('tr', [
                         m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
                         m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
