@@ -34,11 +34,17 @@ router.get('/is_loggedin', (req,res) => res.json({"timeoutInSeconds":3600,"role"
 
 router.get('/studies', (req,res)=>{
     res.json({studies: [
-        {id:'asd1', name:'Study 1', permission: 'owner'},
-        {id:'asd2', name:'Study 2', is_public: true},
-        {id:'asd3', name:'Study 3', permission: 'read_only'}
+        {id:'asd1', name:'Study 1', permission: 'owner', tags: createTags()},
+        {id:'asd2', name:'Study 2', is_public: true, tags:[]},
+        {id:'asd3', name:'Study 3', permission: 'read_only', tags: createTags()}
     ]});
 });
+function createTags(){
+    var tags = [];
+    while (0.6 > Math.random()) tags.push({COLOR:Math.floor(Math.random()*16777215).toString(16) , TEXT: randText()});
+    return tags;
+}
+function randText(){return (0|Math.random()*9e6).toString(36);}
 
 router
     .get('/studies/:id', (req,res)=>res.json(1))

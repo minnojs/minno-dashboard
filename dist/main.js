@@ -395,8 +395,8 @@
 
             m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
 
-        ])
-    }
+        ]);
+    };
 
     var do_create = function () {
         var study_name = m.prop('');
