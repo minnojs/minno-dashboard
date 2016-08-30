@@ -688,9 +688,15 @@ th[data-sort-by].active:before {
   box-shadow: none;
   border-radius: 3px; }
 
-.pika-single {
-  height: 237px;
-  z-index: 1100; }
+.pika-title .pika-label {
+  border: 1px solid #ccc;
+  border-radius: 0.2rem;
+  padding: .25rem .75rem; }
+  .pika-title .pika-label:first-child {
+    margin-right: 0.25rem; }
+  .pika-title .pika-label:hover {
+    border-color: #adadad;
+    background-color: #e6e6e6; }
 
 .is-dragover {
   outline: 2px dashed #92b0b3;
