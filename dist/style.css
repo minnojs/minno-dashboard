@@ -7,7 +7,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   color: #818a91;
   font-size: 70%; }
 
-.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool {
+.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool, .tags-page {
   padding-top: 1em; }
 
 a.no-decoration {
@@ -104,6 +104,14 @@ a.no-decoration {
 
 .table.table-nowrap th {
   white-space: nowrap; }
+
+.custom-controls-stacked .custom-control {
+  display: inline; }
+
+.custom-controls-stacked .custom-control:after {
+  display: block;
+  margin-bottom: .25rem;
+  content: ''; }
 
 .navbar {
   background: #2882b5; }
@@ -475,6 +483,19 @@ a.no-decoration {
   color: initial;
   font-size: 12px;
   font-family: initial; }
+
+.study-tag {
+  display: inline-block;
+  padding: .25em .4em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  color: #000;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25rem;
+  margin-left: .25rem; }
 
 th[data-sort-by]:before {
   content: "\f0dc";

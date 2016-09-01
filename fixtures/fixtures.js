@@ -41,16 +41,30 @@ router.get('/studies', (req,res)=>{
 });
 function createTags(){
     var tags = [];
-    while (0.6 > Math.random()) tags.push({COLOR:Math.floor(Math.random()*16777215).toString(16) , TEXT: randText()});
+    while (0.6 > Math.random()) tags.push(randomTag());
     return tags;
 }
 function randText(){return (0|Math.random()*9e6).toString(36);}
+function randomTag(args){return {id: Math.random(), color:Math.floor(Math.random()*16777215).toString(16) , text: randText(), used: args && args.hasUsed && Math.random() > 0.5};}
 
 router
     .get('/studies/:id', (req,res)=>res.json(1))
     .delete('/studies/:id', (req,res)=>res.json(1))
     .post('/studies/:id', (req,res)=>res.json(1))
     .put('/studies/:id', (req,res)=>res.json(1));
+
+/*
+ * Tags
+ */
+router.get('/studies/:studyId/tags', (req,res)=>{
+    var tags = [];
+    while (0.9 > Math.random()) tags.push(randomTag({hasUsed:true}));
+    res.json({tags:tags});
+});
+
+router.get('/tags', (req,res)=> res.json({tags:createTags()}));
+router.post('/tags', (req,res)=> res.json(randomTag()));
+router.delete('/tags/:tagId', (req,res)=> res.json(1));
 
 router.get('/studies/:studyId/collaboration', (req,res)=>{
     res.json({

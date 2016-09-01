@@ -1,6 +1,6 @@
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
-import {get_tags_for_study, toogle_tag_to_study} from '../tags/tagsModel';
+import studyTagsComponent from './studyTagsComponent';
 
 export let do_create = () => {
     let study_name = m.prop('');
@@ -26,50 +26,27 @@ export let do_create = () => {
     ask();
 };
 
-
-
-
-export let do_tags = (study_id, callback) => () =>
+export let do_tags = (study_id, callback) => e =>
 {
-    let tags = m.prop([]);
-    get_tags_for_study(study_id)
-        .then(response => {
-            tags(response.tags);
-            messages.alert({header:'Tags', content:[
-                m('input.form-control', {placeholder: 'Search ...'}),
-                m('button.btn.btn-success.btn-sm', [
-                    m('i.fa.fa-plus'), '  Add new tad'
-                ]),
-                tags().sort(function (tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}).map(tag =>
-                    [
-                        m('p',
-                            [m('input', {
-                                type: 'checkbox',
-                                checked: tag.used,
-                                onclick: function(){
-                                    tag.used = !tag.used;
-                                    toogle_tag_to_study(study_id, tag.id, tag.used)
-                                    .then(callback);
-                                }
+    e.preventDefault();
+    messages.alert({header:'Tags', content: studyTagsComponent({study_id, callback})});
+};
 
-                            }), tag.text])
-                    ]
-                )
-            ]});
+export let do_delete = (study_id, callback) => e => {
+    e.preventDefault();
+    return messages.confirm({header:'Delete study', content:'Are you sure?'})
+        .then(response => {
+            if (response) delete_study(study_id)
+                .then(callback)
+                .then(m.redraw)
+                .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
+                .then(m.redraw);
         });
 };
 
-export let do_delete = (study_id, callback) => () => messages.confirm({header:'Delete study', content:'Are you sure?'})
-    .then(response => {
-        if (response) delete_study(study_id)
-            .then(callback)
-            .then(m.redraw)
-            .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
-            .then(m.redraw);
-    });
 
-
-export let do_rename = (study_id, name, callback) => () => {
+export let do_rename = (study_id, name, callback) => e => {
+    e.preventDefault();
     let study_name = m.prop(name);
     let error = m.prop('');
 

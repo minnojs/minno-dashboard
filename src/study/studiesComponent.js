@@ -78,8 +78,6 @@ var mainComponent = {
                 m('.card-block', [
                     m('.row', {key: '@@notid@@'}, [
                         m('p.col-sm-6', [
-
-
                             m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
                             m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
 
@@ -112,9 +110,7 @@ var mainComponent = {
                                     m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-4', [
-                                    study.tags.map(tag=>
-                                        m('button',  {style: {'background-color': '#' + tag.COLOR, 'border': '1px solid', margin: '1px'}}, tag.TEXT)
-                                    )
+                                    study.tags.map(normalize_tags).map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
                                 ]),
                                 m('.col-sm-5', [
                                     m('.study-text', formatDate(new Date(study.last_modified)))
@@ -124,7 +120,7 @@ var mainComponent = {
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_tags(study.id, loadStudies)}, [
+                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.tags, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
@@ -170,10 +166,18 @@ function routeConfig(el, isInit, ctx, vdom) {
         let el = e.currentTarget;
 
         if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+        if (e.defaultPrevented) return;
 
         e.preventDefault();
         if (e.target.tagName === 'A' && e.target !== el) return;
 
         m.route(el.search.slice(1));
     }
+}
+
+function normalize_tags(tag){
+    console.warn('This data should be fixed server side!!');
+    tag.color = tag.color || tag.COLOR;
+    tag.text = tag.text || tag.TEXT;
+    return tag;
 }

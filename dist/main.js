@@ -230,7 +230,7 @@
                     m('h4', opts.header),
                     m('p.card-text', opts.content),
                     m('.text-xs-right.btn-toolbar',[
-                        m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
                     ])
                 ];
             },
@@ -243,8 +243,8 @@
                     m('h4', opts.header),
                     m('p.card-text', opts.content),
                     m('.text-xs-right.btn-toolbar',[
-                        m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
-                        m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
                     ])
                 ];
             },
@@ -274,14 +274,13 @@
                         })
                     ]),
                     m('.text-xs-right.btn-toolbar',[
-                        m('a.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
-                        m('a.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
                     ])
                 ];
             }
         }
     };
-
 
     // set message max height, so that content can scroll within it.
     var maxHeight = function (element, isInitialized, ctx) {
@@ -299,7 +298,6 @@
         function onResize(){
             element.style.maxHeight = document.documentElement.clientHeight * 0.9 + 'px';
         }
-
     };
 
     function tag_url(tag_id)
@@ -316,7 +314,7 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags/" + (encodeURIComponent(tag_id)));
     }
 
-    var toogle_tag_to_study = function (study_id, tag_id, used) {
+    var toggle_tag_to_study = function (study_id, tag_id, used) {
         if(used)
             return add_tag_to_study(study_id, tag_id);
         return delete_tag_from_study(study_id, tag_id);
@@ -354,49 +352,78 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    var view_create = function (ctrl) {
-        return   m('p', [
+    function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
 
-            m('input.form-control', {placeholder: 'tag_text', value: ctrl.tag_text(), oninput: m.withAttr('value', ctrl.tag_text)}),
-            m('p',[
-                m('button',  {style: {'background-color': '#E7E7E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E7E7E7');}}, ' A '),
-                m('button',  {style: {'background-color': '#B6CFF5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B6CFF5');}}, ' A '),
-                m('button',  {style: {'background-color': '#98D7E4', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('98D7E4');}}, ' A '),
-                m('button',  {style: {'background-color': '#E3D7FF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('E3D7FF');}}, ' A '),
-                m('button',  {style: {'background-color': '#FBD3E0', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBD3E0');}}, ' A '),
-                m('button',  {style: {'background-color': '#F2B2A8', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F2B2A8');}}, ' A ')
-            ]),
-            m('p',[
-                m('button',  {style: {'background-color': '#C2C2C2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('C2C2C2');}}, ' A '),
-                m('button',  {style: {'background-color': '#4986E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('4986E7');}}, ' A '),
-                m('button',  {style: {'background-color': '#2DA2BB', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('2DA2BB');}}, ' A '),
-                m('button',  {style: {'background-color': '#B99AFF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B99AFF');}}, ' A '),
-                m('button',  {style: {'background-color': '#F691B2', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('F691B2');}}, ' A '),
-                m('button',  {style: {'background-color': '#FB4C2F', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FB4C2F');}}, ' A ')
-            ]),
-            m('p',[
-                m('button',  {style: {'background-color': '#FFC8AF', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFC8AF');}}, ' A '),
-                m('button',  {style: {'background-color': '#FFDEB5', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFDEB5');}}, ' A '),
-                m('button',  {style: {'background-color': '#FBE9E7', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FBE9E7');}}, ' A '),
-                m('button',  {style: {'background-color': '#FDEDC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FDEDC1');}}, ' A '),
-                m('button',  {style: {'background-color': '#B3EFD3', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('B3EFD3');}}, ' A '),
-                m('button',  {style: {'background-color': '#A2DCC1', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('A2DCC1');}}, ' A ')
-            ]),
-            m('p',[
-                m('button',  {style: {'background-color': '#FF7537', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FF7537');}}, ' A '),
-                m('button',  {style: {'background-color': '#FFAD46', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('FFAD46');}}, ' A '),
-                m('button',  {style: {'background-color': '#EBDBDE', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('EBDBDE');}}, ' A '),
-                m('button',  {style: {'background-color': '#CCA6AC', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('CCA6AC');}}, ' A '),
-                m('button',  {style: {'background-color': '#42D692', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('42D692');}}, ' A '),
-                m('button',  {style: {'background-color': '#16A765', 'border': '1px solid'}, onclick: function(){ctrl.tag_color('16A765');}}, ' A ')
+    var studyTagsComponent$1 = {
+        controller: function controller(ref){
+            var study_id = ref.study_id;
+
+            var tagName = m.prop('');
+            var tags = m.prop([]);
+            var loaded = m.prop(false);
+            var error = m.prop(null);
+
+            get_tags_for_study(study_id)
+                .then(function (response) { return tags(response.tags); })
+                .then(function (t) { return tags(t.concat(t).concat(t).concat(t)); })
+                .catch(error)
+                .then(loaded.bind(null, true))
+                .then(m.redraw);
+
+            return {tagName: tagName, tags: tags, loaded: loaded, error: error};
+        },
+        view: function (ref, ref$1) {
+            var tagName = ref.tagName;
+            var tags = ref.tags;
+            var loaded = ref.loaded;
+            var error = ref.error;
+            var study_id = ref$1.study_id;
+            var callback = ref$1.callback;
+
+            return m('div', [
+            m('.input-group.m-b-1', [
+                m('input.form-control', {
+                    placeholder: 'Filter Tags',
+                    value: tagName(),
+                    oninput: m.withAttr('value', tagName)
+                }),
+                m('span.input-group-btn', [
+                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags), disabled: !tagName()}, [
+                        m('i.fa.fa-plus'),
+                        ' Create New'
+                    ])
+                ])
             ]),
 
-            m('span.h3',  {style: {'background-color': '#' + ctrl.tag_color()}}, ctrl.tag_text()),
+            loaded() ? '' : m('.loader'),
+            error() ? m('.alert.alert-warning', error().message): '',
+            loaded() && !tags().length ? m('.alert.alert-info', 'You have no tags yet') : '',
 
-            m('p', {class: ctrl.error()? 'alert alert-danger' : ''}, ctrl.error())
-
+            m('.custom-controls-stacked.pre-scrollable', tags().sort(sort_tags).filter(filter_tags(tagName())).map(function (tag) { return m('label.custom-control.custom-checkbox', [
+                m('input.custom-control-input', {
+                    type: 'checkbox',
+                    checked: tag.used,
+                    onclick: function(){
+                        tag.used = !tag.used;
+                        toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
+                    }
+                }), 
+                m('span.custom-control-indicator'),
+                m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#' + tag.color}}, tag.text)
+            ]); }))
         ]);
+    }
     };
+
+    function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
+    function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
+
+    function create_tag(study_id, tagName, tags){
+        return function () { return add_tag(tagName(), 'E7E7E7')
+            .then(function (response) { return tags().push(response); })
+            .then(tagName.bind(null, ''))
+            .then(m.redraw); };
+    }
 
     var do_create = function () {
         var study_name = m.prop('');
@@ -422,48 +449,26 @@
         ask();
     };
 
+    var do_tags = function (study_id, callback) { return function (e) {
+        e.preventDefault();
+        messages.alert({header:'Tags', content: studyTagsComponent({study_id: study_id, callback: callback})});
+    }; };
 
-
-
-    var do_tags = function (study_id, callback) { return function () {
-        var tags = m.prop([]);
-        get_tags_for_study(study_id)
+    var do_delete = function (study_id, callback) { return function (e) {
+        e.preventDefault();
+        return messages.confirm({header:'Delete study', content:'Are you sure?'})
             .then(function (response) {
-                tags(response.tags);
-                messages.alert({header:'Tags', content:[
-                    m('input.form-control', {placeholder: 'Search ...'}),
-                    m('button.btn.btn-success.btn-sm', [
-                        m('i.fa.fa-plus'), '  Add new tad'
-                    ]),
-                    tags().sort(function (tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}).map(function (tag) { return [
-                            m('p',
-                                [m('input', {
-                                    type: 'checkbox',
-                                    checked: tag.used,
-                                    onclick: function(){
-                                        tag.used = !tag.used;
-                                        toogle_tag_to_study(study_id, tag.id, tag.used)
-                                        .then(callback);
-                                    }
-
-                                }), tag.text])
-                        ]; }
-                    )
-                ]});
+                if (response) delete_study(study_id)
+                    .then(callback)
+                    .then(m.redraw)
+                    .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
+                    .then(m.redraw);
             });
     }; };
 
-    var do_delete = function (study_id, callback) { return function () { return messages.confirm({header:'Delete study', content:'Are you sure?'})
-        .then(function (response) {
-            if (response) delete_study(study_id)
-                .then(callback)
-                .then(m.redraw)
-                .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
-                .then(m.redraw);
-        }); }; };
 
-
-    var do_rename = function (study_id, name, callback) { return function () {
+    var do_rename = function (study_id, name, callback) { return function (e) {
+        e.preventDefault();
         var study_name = m.prop(name);
         var error = m.prop('');
 
@@ -605,8 +610,6 @@
                     m('.card-block', [
                         m('.row', {key: '@@notid@@'}, [
                             m('p.col-sm-6', [
-
-
                                 m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
                                 m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
 
@@ -639,8 +642,7 @@
                                         m('.study-text', study.name)
                                     ]),
                                     m('.col-sm-4', [
-                                        study.tags.map(function (tag){ return m('button',  {style: {'background-color': '#' + tag.COLOR, 'border': '1px solid', margin: '1px'}}, tag.TEXT); }
-                                        )
+                                        study.tags.map(normalize_tags).map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
                                     ]),
                                     m('.col-sm-5', [
                                         m('.study-text', formatDate(new Date(study.last_modified)))
@@ -650,7 +652,7 @@
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     study.permission !== 'owner' ? '' : [
-                                                        m('a.dropdown-item', {onclick: do_tags(study.id, loadStudies)}, [
+                                                        m('a.dropdown-item', {onclick: do_tags(study.id, study.tags, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                         ]),
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
@@ -696,12 +698,20 @@
             var el = e.currentTarget;
 
             if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+            if (e.defaultPrevented) return;
 
             e.preventDefault();
             if (e.target.tagName === 'A' && e.target !== el) return;
 
             m.route(el.search.slice(1));
         }
+    }
+
+    function normalize_tags(tag){
+        console.warn('This data should be fixed server side!!');
+        tag.color = tag.color || tag.COLOR;
+        tag.text = tag.text || tag.TEXT;
+        return tag;
     }
 
     var getStatistics = function (query) {
@@ -7237,6 +7247,86 @@
         }
     };
 
+    // it makes sense to use this for cotnrast:
+    // https://24ways.org/2010/calculating-color-contrast/
+
+    var editTag = function (args) { return m.component(editTagComponent, args); };
+
+    var editTagComponent = {
+        view: function (ctrl, ref) {
+            var tag_color = ref.tag_color;
+            var tag_text = ref.tag_text;
+            var error = ref.error;
+
+            return m('div', [
+            m('.form-group.row', [
+                m('.col-sm-3', [
+                    m('label.form-control-label', 'Tag name')
+                ]),
+                m('.col-sm-9', [
+                    m('input.form-control', {placeholder: 'tag_text', value: tag_text(), oninput: m.withAttr('value', tag_text)})
+                ])
+            ]),
+
+            m('.form-group.row', [
+                m('.col-sm-3', [
+                    m('label.form-control-label', 'Preview')
+                ]),
+                m('.col-sm-9.form-control-static', [
+                    !tag_text()
+                        ? m('small.text-muted', 'No tag name yet')
+                        : m('span.study-tag',  {style: {'background-color': '#'+tag_color()}}, tag_text())
+                ])
+            ]),
+
+            m('.form-group.row', [
+                m('.col-sm-3', [
+                    m('label.form-control-label', 'Color')
+                ]),
+                m('.col-sm-9', [
+                    m('div',[
+                        colorButton('E7E7E7', tag_color),
+                        colorButton('B6CFF5', tag_color),
+                        colorButton('98D7E4', tag_color),
+                        colorButton('E3D7FF', tag_color),
+                        colorButton('FBD3E0', tag_color),
+                        colorButton('F2B2A8', tag_color),
+                        colorButton('C2C2C2', tag_color),
+                        colorButton('4986E7', tag_color)
+                    ]),
+                    m('div', [
+                        colorButton('2DA2BB', tag_color),
+                        colorButton('B99AFF', tag_color),
+                        colorButton('F691B2', tag_color),
+                        colorButton('FB4C2F', tag_color),
+                        colorButton('FFC8AF', tag_color),
+                        colorButton('FFDEB5', tag_color),
+                        colorButton('FBE9E7', tag_color),
+                        colorButton('FDEDC1', tag_color)
+                    ]),
+                    m('div', [
+                        colorButton('B3EFD3', tag_color),
+                        colorButton('A2DCC1', tag_color),
+                        colorButton('FF7537', tag_color),
+                        colorButton('FFAD46', tag_color),
+                        colorButton('EBDBDE', tag_color),
+                        colorButton('CCA6AC', tag_color),
+                        colorButton('42D692', tag_color),
+                        colorButton('16A765', tag_color)
+                    ])
+                ])
+            ]),
+
+
+            m('p', {class: error()? 'alert alert-danger' : ''}, error())
+        ]);
+    }
+    };
+
+    function colorButton(color, prop){
+        return m('button',  {style: {'background-color': ("#" + color)}, onclick: prop.bind(null, color)}, ' A ');
+    }
+
     var tagsComponent = {
         controller: function controller(){
             var ctrl = {
@@ -7248,8 +7338,8 @@
                 remove: remove,
                 add: add,
                 edit: edit
-
             };
+
             function load() {
                 get_tags()
                     .then(function (response) {
@@ -7259,47 +7349,46 @@
                     .catch(function (error) {
                         ctrl.error(error.message);
                     }).then(m.redraw);
-
             }
+
             function remove(tag_id){
-                messages.confirm({header:'Delete tag', content:'Are you sure?'})
+                return function () { return messages.confirm({header:'Delete tag', content:'Are you sure?'})
                     .then(function (response) {
                         if (response)
                             remove_tag(tag_id)
-                                .then(function (){
-                                    load();
-                                })
+                                .then(load)
                                 .catch(function (error) {
                                     ctrl.error(error.message);
                                 })
                                 .then(m.redraw);
-                    });
+                    }); };
             }
 
             function edit(tag_id, tag_text, tag_color){
-                ctrl.tag_text(tag_text);
-                ctrl.tag_color(tag_color);
+                return function () {
+                    ctrl.tag_text(tag_text);
+                    ctrl.tag_color(tag_color);
 
-                messages.confirm({
-
-                    header:'Edit tag',
-                    content: m.component({view: function () { return view_create(ctrl); }
-                    })})
-                    .then(function (response) {
-                        if (response)
-                            edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color)
-                                .then(function (){
-                                    ctrl.error('');
-                                    ctrl.tag_text('');
-                                    ctrl.tag_color('');
-                                    load();
-                                })
-                                .catch(function (error) {
-                                    ctrl.error(error.message);
-                                    edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
-                                })
-                                .then(m.redraw);
-                    });
+                    messages.confirm({
+                        header:'Edit tag',
+                        content: editTag(ctrl)
+                    })
+                        .then(function (response) {
+                            if (response)
+                                edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color)
+                            .then(function (){
+                                ctrl.error('');
+                                ctrl.tag_text('');
+                                ctrl.tag_color('');
+                                load();
+                            })
+                            .catch(function (error) {
+                                ctrl.error(error.message);
+                                edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
+                            })
+                            .then(m.redraw);
+                        });
+                };
             }
 
             function add(){
@@ -7307,55 +7396,74 @@
                 ctrl.tag_color('FFFFFF');
                 messages.confirm({
                     header:'Add a new tag',
-                    content: m.component({view: function () { return view_create(ctrl); }
-                    })})
+                    content: editTag(ctrl)
+                })
                     .then(function (response) {
-                        if (response)
-                            add_tag(ctrl.tag_text, ctrl.tag_color)
-                                .then(function (){
-                                    ctrl.error('');
-                                    ctrl.tag_text('');
-                                    ctrl.tag_color('');
-                                    load();
-                                })
-                                .catch(function (error) {
-                                    ctrl.error(error.message);
-                                    add();
-                                })
-                                .then(m.redraw);
+                        if (response) add_tag(ctrl.tag_text, ctrl.tag_color)
+                            .then(function (){
+                                ctrl.error('');
+                                ctrl.tag_text('');
+                                ctrl.tag_color('');
+                                load();
+                            })
+                            .catch(function (error) {
+                                ctrl.error(error.message);
+                                add(); // retry
+                            })
+                            .then(m.redraw);
                     });
             }
+
             load();
             return ctrl;
         },
-        view: function view(ctrl){
-            return  !ctrl.loaded
-                ?
-                m('.loader')
-                :
-                m('.container', [
-                    m('.row',[
-                        m('.col-sm-7', [
-                            m('h3', 'Tags')
-                        ]),
-                        m('.col-sm-1', [
-                            m('button.btn.btn-success.btn-sm.m-r-1', {onclick:ctrl.add}, [
-                                m('i.fa.fa-plus'), '  Add new tag'
-                            ])
-                        ])
-                    ]),
-                    
-                    m('table', {class:'table table-striped table-hover'}, [
-                        m('tbody', [
-                            ctrl.tags().map(function (tag) { return m('tr', [
-                                m('td.h3', m('button.strong',  {style: {'background-color': '#'+tag.color, 'border': '1px solid'}}, tag.text)),
-                                m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.edit(tag.id, tag.text, tag.color);}}, 'Edit')),
-                                m('td', m('button.btn.btn-danger', {onclick:function() {ctrl.remove(tag.id);}}, 'Remove'))
-                            ]); })
+        view: function view(ref){
+            var loaded = ref.loaded;
+            var add = ref.add;
+            var tags = ref.tags;
+            var edit = ref.edit;
+            var remove = ref.remove;
 
+            if (!loaded) return m('.loader');
+
+            return m('.container.tags-page', [
+                m('.row',[
+                    m('.col-sm-7', [
+                        m('h3', 'Tags')
+                    ]),
+                    m('.col-sm-5', [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:add}, [
+                            m('i.fa.fa-plus'), '  Create new tag'
                         ])
                     ])
-                ]);
+                ]),
+
+                !tags().length
+                    ? m('.alert.alert-info', 'You have no tags yet') 
+                    : m('.row', [
+                        m('.list-group.col-sm-6', [
+                            tags().map(function (tag) { return m('.list-group-item', [
+                                m('.row', [
+                                    m('.col-sm-6', [
+                                        m('span.study-tag',  {style: {'background-color': '#'+tag.color}}, tag.text)
+                                    ]),
+                                    m('.col-sm-6', [
+                                        m('btn-group', [
+                                            m('a.btn.btn-sm.btn-secondary', {onclick:edit(tag.id, tag.text, tag.color)}, [
+                                                m('i.fa.fa-edit'),
+                                                ' Edit'
+                                            ]),
+                                            m('a.btn.btn-sm.btn-secondary', {onclick:remove(tag.id)}, [
+                                                m('i.fa.fa-remove'),
+                                                ' Remove'
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ]); })
+                        ])
+                    ])
+            ]);
         }
     };
 

@@ -15,7 +15,7 @@ $navbar-height: 54px;
 h1, h2, h3, h4, h5 {font-weight: 300}
 h1 small, h2 small, h3 small, h4 small, h5 small {font-weight: 200; color: #818a91; font-size:70%}
 
-.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool {
+.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool, .tags-page {
     padding-top: 1em;
 }
 
@@ -107,7 +107,12 @@ a.no-decoration {text-decoration: none; color:inherit}
 }
 
 .table.table-nowrap th {white-space:nowrap}
-
+.custom-controls-stacked .custom-control{display:inline}
+.custom-controls-stacked .custom-control:after {
+    display:block;
+    margin-bottom: .25rem;
+    content: '';
+}
 
 @import "./navbar";
 @import "./loader";
