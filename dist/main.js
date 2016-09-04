@@ -365,7 +365,6 @@
 
             get_tags_for_study(study_id)
                 .then(function (response) { return tags(response.tags); })
-                .then(function (t) { return tags(t.concat(t).concat(t).concat(t)); })
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);

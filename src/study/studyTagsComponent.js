@@ -10,7 +10,6 @@ let studyTagsComponent = {
 
         get_tags_for_study(study_id)
             .then(response => tags(response.tags))
-            .then(t => tags(t.concat(t).concat(t).concat(t)))
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
