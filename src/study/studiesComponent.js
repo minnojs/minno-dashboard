@@ -28,8 +28,8 @@ var mainComponent = {
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
-
         }
+        
         function sort_studies_by_name2(study1, study2){
             ctrl.order_by_name = true;
 
@@ -120,7 +120,7 @@ var mainComponent = {
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_tags(study.id, study.tags, loadStudies)}, [
+                                                    m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [

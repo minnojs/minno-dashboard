@@ -26,8 +26,7 @@ export let do_create = () => {
     ask();
 };
 
-export let do_tags = (study_id, callback) => e =>
-{
+export let do_tags = ({study_id, callback}) => e => {
     e.preventDefault();
     messages.alert({header:'Tags', content: studyTagsComponent({study_id, callback})});
 };

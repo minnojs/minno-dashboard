@@ -61,6 +61,8 @@ router.get('/studies/:studyId/tags', (req,res)=>{
     while (0.9 > Math.random()) tags.push(randomTag({hasUsed:true}));
     res.json({tags:tags});
 });
+router.post('/studies/:studyId/tags/:tagId', (req,res)=>res.json(1));
+router.delete('/studies/:studyId/tags/:tagId', (req,res)=>res.json(1));
 
 router.get('/tags', (req,res)=> res.json({tags:createTags()}));
 router.post('/tags', (req,res)=> res.json(randomTag()));
