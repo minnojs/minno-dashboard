@@ -110,7 +110,7 @@ var mainComponent = {
                                     m('.study-text', study.name)
                                 ]),
                                 m('.col-sm-4', [
-                                    study.tags.map(normalize_tags).map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
+                                    study.tags.map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
                                 ]),
                                 m('.col-sm-5', [
                                     m('.study-text', formatDate(new Date(study.last_modified)))
@@ -173,11 +173,4 @@ function routeConfig(el, isInit, ctx, vdom) {
 
         m.route(el.search.slice(1));
     }
-}
-
-function normalize_tags(tag){
-    console.warn('This data should be fixed server side!!');
-    tag.color = tag.color || tag.COLOR;
-    tag.text = tag.text || tag.TEXT;
-    return tag;
 }
