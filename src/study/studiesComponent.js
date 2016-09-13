@@ -1,5 +1,7 @@
 export default mainComponent;
 import {load_studies} from './studyModel';
+import {get_tags} from 'tags/tagsModel';
+
 import dropdown from 'utils/dropdown';
 import {do_create, do_delete, do_rename, do_tags} from './studyActions';
 import classNames from 'utils/classNames';
@@ -10,6 +12,7 @@ var mainComponent = {
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
+            tags:m.prop([]),
             user_name:m.prop(''),
             globalSearch: m.prop(''),
             permissionChoice: m.prop('all'),
@@ -20,8 +23,8 @@ var mainComponent = {
             sort_studies_by_date
         };
 
+        loadTags();
         loadStudies();
-        return ctrl;
         function loadStudies() {
             load_studies()
                 .then(response => response.studies.sort(sort_studies_by_name2))
@@ -29,7 +32,14 @@ var mainComponent = {
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
         }
-        
+        function loadTags() {
+            get_tags()
+                .then(response => response.tags)
+                .then(ctrl.tags)
+                .then(m.redraw);
+        }
+
+        return ctrl;
         function sort_studies_by_name2(study1, study2){
             ctrl.order_by_name = true;
 
@@ -50,9 +60,23 @@ var mainComponent = {
 
 
     },
-    view({loaded, studies, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name, order_by_name}){
+    view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name, order_by_name}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
+            m('.col.p-t-1.pull-left',
+                tags().map(tag =>  m('i',m('label.custom-control.custom-checkbox', [
+
+                        m('input.custom-control-input', {
+                            type: 'checkbox',
+                            checked: tag.used,
+                            onclick: function(){
+                                tag.used = !tag.used;
+                            }
+                        }),
+                        m('span.custom-control-indicator'),
+                        m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#ffffff'}}, tag.text)
+                ])))
+            ),
             m('.row.p-t-1', [
                 m('.col-sm-6', [
                     m('h3', 'My Studies')
@@ -73,7 +97,7 @@ var mainComponent = {
                     ])
                 ])
             ]),
-            
+
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', {key: '@@notid@@'}, [
@@ -87,11 +111,12 @@ var mainComponent = {
                             m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                         ]),
                         m('.col-sm-4', [
-                            m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})    
+                            m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
                         ])
                     ]),
 
                     studies()
+                        .filter(tagFilter(tags().filter(uesedFilter()).map(tag=>tag.text)))
                         .filter(permissionFilter(permissionChoice()))
                         .filter(searchFilter(globalSearch()))
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
@@ -100,11 +125,11 @@ var mainComponent = {
                                     m('i.fa.fa-fw.owner-icon', {
                                         class: classNames({
                                             'fa-globe': study.is_public,
-                                            'fa-users': !study.is_public && study.permission !== 'owner' 
+                                            'fa-users': !study.is_public && study.permission !== 'owner'
                                         }),
                                         title: classNames({
                                             'Public' : study.is_public,
-                                            'Collaboration' : !study.is_public && study.permission !== 'owner' 
+                                            'Collaboration' : !study.is_public && study.permission !== 'owner'
                                         })
                                     }),
                                     m('.study-text', study.name)
@@ -153,6 +178,17 @@ let permissionFilter = permission => study => {
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
     return study.permission === permission;
 };
+
+let tagFilter = tags => study => {
+    if (tags.length==0)
+        return true;
+    return study.tags.map(tag=>tag.text).some(tag => tags.indexOf(tag) != -1);
+};
+
+let uesedFilter = () => tag => {
+    return tag.used;
+};
+
 
 let searchFilter = searchTerm => study => !study.name || study.name.match(new RegExp(searchTerm, 'i'));
 

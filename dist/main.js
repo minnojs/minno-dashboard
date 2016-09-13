@@ -94,16 +94,58 @@
 
     var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
+    function tag_url(tag_id)
+    {
+        return (tagsUrl + "/" + (encodeURIComponent(tag_id)));
+    }
+
+    function study_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
+    }
+
+
+    function study_tag_url(study_id, tag_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags/" + (encodeURIComponent(tag_id)));
+    }
+
+    var toggle_tag_to_study = function (study_id, tag_id, used) {
+        if(used)
+            return add_tag_to_study(study_id, tag_id);
+        return delete_tag_from_study(study_id, tag_id);
+    };
+
+    var add_tag_to_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
+        method: 'post'
+    }); };
+
+
+    var delete_tag_from_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
+        method: 'delete'
+    }); };
+
+    var get_tags = function () { return fetchJson(tagsUrl, {
+        method: 'get'
+    }); };
+
+
+    var get_tags_for_study = function (study_id) { return fetchJson(study_url(study_id), {
+        method: 'get'
+    }); };
+
+    var remove_tag = function (tag_id) { return fetchJson(tag_url(tag_id), {
+        method: 'delete'
+    }); };
+
+    var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
+        method: 'post',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
+    var edit_tag = function (tag_id, tag_text, tag_color) { return fetchJson(tag_url(tag_id), {
+        method: 'put',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -300,58 +342,6 @@
         }
     };
 
-    function tag_url(tag_id)
-    {
-        return (tagsUrl + "/" + (encodeURIComponent(tag_id)));
-    }
-
-    function study_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
-    }
-
-
-    function study_tag_url(study_id, tag_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags/" + (encodeURIComponent(tag_id)));
-    }
-
-    var toggle_tag_to_study = function (study_id, tag_id, used) {
-        if(used)
-            return add_tag_to_study(study_id, tag_id);
-        return delete_tag_from_study(study_id, tag_id);
-    };
-
-    var add_tag_to_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
-        method: 'post'
-    }); };
-
-
-    var delete_tag_from_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
-        method: 'delete'
-    }); };
-
-    var get_tags = function () { return fetchJson(tagsUrl, {
-        method: 'get'
-    }); };
-
-
-    var get_tags_for_study = function (study_id) { return fetchJson(study_url(study_id), {
-        method: 'get'
-    }); };
-
-    var remove_tag = function (tag_id) { return fetchJson(tag_url(tag_id), {
-        method: 'delete'
-    }); };
-
-    var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
-        method: 'post',
-        body: {tag_text: tag_text, tag_color: tag_color}
-    }); };
-
-    var edit_tag = function (tag_id, tag_text, tag_color) { return fetchJson(tag_url(tag_id), {
-        method: 'put',
-        body: {tag_text: tag_text, tag_color: tag_color}
-    }); };
-
     function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
 
     var studyTagsComponent$1 = {
@@ -380,19 +370,20 @@
             var callback = ref$1.callback;
 
             return m('div', [
-            m('.input-group.m-b-1', [
+            m('.input-group', [
                 m('input.form-control', {
                     placeholder: 'Filter Tags',
                     value: tagName(),
                     oninput: m.withAttr('value', tagName)
                 }),
                 m('span.input-group-btn', [
-                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags), disabled: !tagName()}, [
+                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error), disabled: !tagName()}, [
                         m('i.fa.fa-plus'),
                         ' Create New'
                     ])
                 ])
             ]),
+            m('.small.text-muted.m-b-1', 'Use this text field to filter your tags. Click "Create New" to turn a filter into a new tag'),
 
             loaded() ? '' : m('.loader'),
             error() ? m('.alert.alert-warning', error().message): '',
@@ -417,10 +408,11 @@
     function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
     function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
 
-    function create_tag(study_id, tagName, tags){
+    function create_tag(study_id, tagName, tags, error){
         return function () { return add_tag(tagName(), 'E7E7E7')
             .then(function (response) { return tags().push(response); })
             .then(tagName.bind(null, ''))
+            .catch(error)
             .then(m.redraw); };
     }
 
@@ -537,6 +529,7 @@
         controller: function(){
             var ctrl = {
                 studies:m.prop([]),
+                tags:m.prop([]),
                 user_name:m.prop(''),
                 globalSearch: m.prop(''),
                 permissionChoice: m.prop('all'),
@@ -547,8 +540,8 @@
                 sort_studies_by_date: sort_studies_by_date
             };
 
+            loadTags();
             loadStudies();
-            return ctrl;
             function loadStudies() {
                 load_studies()
                     .then(function (response) { return response.studies.sort(sort_studies_by_name2); })
@@ -556,7 +549,14 @@
                     .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
             }
-            
+            function loadTags() {
+                get_tags()
+                    .then(function (response) { return response.tags; })
+                    .then(ctrl.tags)
+                    .then(m.redraw);
+            }
+
+            return ctrl;
             function sort_studies_by_name2(study1, study2){
                 ctrl.order_by_name = true;
 
@@ -580,6 +580,7 @@
         view: function view(ref){
             var loaded = ref.loaded;
             var studies = ref.studies;
+            var tags = ref.tags;
             var permissionChoice = ref.permissionChoice;
             var globalSearch = ref.globalSearch;
             var loadStudies = ref.loadStudies;
@@ -589,6 +590,20 @@
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
+                m('.col.p-t-1.pull-left',
+                    tags().map(function (tag) { return m('i',m('label.custom-control.custom-checkbox', [
+
+                            m('input.custom-control-input', {
+                                type: 'checkbox',
+                                checked: tag.used,
+                                onclick: function(){
+                                    tag.used = !tag.used;
+                                }
+                            }),
+                            m('span.custom-control-indicator'),
+                            m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#ffffff'}}, tag.text)
+                    ])); })
+                ),
                 m('.row.p-t-1', [
                     m('.col-sm-6', [
                         m('h3', 'My Studies')
@@ -609,7 +624,7 @@
                         ])
                     ])
                 ]),
-                
+
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', {key: '@@notid@@'}, [
@@ -623,11 +638,12 @@
                                 m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                             ]),
                             m('.col-sm-4', [
-                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})    
+                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
                             ])
                         ]),
 
                         studies()
+                            .filter(tagFilter(tags().filter(uesedFilter()).map(function (tag){ return tag.text; })))
                             .filter(permissionFilter(permissionChoice()))
                             .filter(searchFilter(globalSearch()))
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
@@ -636,11 +652,11 @@
                                         m('i.fa.fa-fw.owner-icon', {
                                             class: classNames({
                                                 'fa-globe': study.is_public,
-                                                'fa-users': !study.is_public && study.permission !== 'owner' 
+                                                'fa-users': !study.is_public && study.permission !== 'owner'
                                             }),
                                             title: classNames({
                                                 'Public' : study.is_public,
-                                                'Collaboration' : !study.is_public && study.permission !== 'owner' 
+                                                'Collaboration' : !study.is_public && study.permission !== 'owner'
                                             })
                                         }),
                                         m('.study-text', study.name)
@@ -689,6 +705,17 @@
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
         return study.permission === permission;
     }; };
+
+    var tagFilter = function (tags) { return function (study) {
+        if (tags.length==0)
+            return true;
+        return study.tags.map(function (tag){ return tag.text; }).some(function (tag) { return tags.indexOf(tag) != -1; });
+    }; };
+
+    var uesedFilter = function () { return function (tag) {
+        return tag.used;
+    }; };
+
 
     var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
 
@@ -1188,15 +1215,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1810,7 +1828,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3572,21 +3590,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3646,8 +3649,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3829,7 +3830,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4211,10 +4211,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4366,10 +4362,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
