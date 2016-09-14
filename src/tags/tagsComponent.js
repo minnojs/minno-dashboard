@@ -70,7 +70,7 @@ let tagsComponent = {
 
         function add(){
             ctrl.tag_text('');
-            ctrl.tag_color('FFFFFF');
+            ctrl.tag_color('E7E7E7');
             messages.confirm({
                 header:'Add a new tag',
                 content: editTag(ctrl)

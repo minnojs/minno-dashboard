@@ -63,20 +63,6 @@ var mainComponent = {
     view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name, order_by_name}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
-            m('.col.p-t-1.pull-left',
-                tags().map(tag =>  m('i',m('label.custom-control.custom-checkbox', [
-
-                        m('input.custom-control-input', {
-                            type: 'checkbox',
-                            checked: tag.used,
-                            onclick: function(){
-                                tag.used = !tag.used;
-                            }
-                        }),
-                        m('span.custom-control-indicator'),
-                        m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#ffffff'}}, tag.text)
-                ])))
-            ),
             m('.row.p-t-1', [
                 m('.col-sm-6', [
                     m('h3', 'My Studies')
@@ -100,6 +86,22 @@ var mainComponent = {
 
             m('.card.studies-card', [
                 m('.card-block', [
+                    m('.row',
+                    [
+                        tags().map(tag =>  m('i',m('label.custom-control.custom-checkbox', [
+
+                            m('input.custom-control-input', {
+                                type: 'checkbox',
+                                checked: tag.used,
+                                onclick: function(){
+                                    tag.used = !tag.used;
+                                }
+                            }),
+                            m('span.custom-control-indicator'),
+                            m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
+                        ])))
+                    ]
+                    ),
                     m('.row', {key: '@@notid@@'}, [
                         m('p.col-sm-6', [
                             m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
@@ -144,10 +146,11 @@ var mainComponent = {
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                    m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                ]),
+
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
-                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
-                                                    ]),
                                                     m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                     ]),

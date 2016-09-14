@@ -146,16 +146,6 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -600,20 +590,6 @@
 
             if (!loaded) return m('.loader');
             return m('.container.studies', [
-                m('.col.p-t-1.pull-left',
-                    tags().map(function (tag) { return m('i',m('label.custom-control.custom-checkbox', [
-
-                            m('input.custom-control-input', {
-                                type: 'checkbox',
-                                checked: tag.used,
-                                onclick: function(){
-                                    tag.used = !tag.used;
-                                }
-                            }),
-                            m('span.custom-control-indicator'),
-                            m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#ffffff'}}, tag.text)
-                    ])); })
-                ),
                 m('.row.p-t-1', [
                     m('.col-sm-6', [
                         m('h3', 'My Studies')
@@ -637,6 +613,22 @@
 
                 m('.card.studies-card', [
                     m('.card-block', [
+                        m('.row',
+                        [
+                            tags().map(function (tag) { return m('i',m('label.custom-control.custom-checkbox', [
+
+                                m('input.custom-control-input', {
+                                    type: 'checkbox',
+                                    checked: tag.used,
+                                    onclick: function(){
+                                        tag.used = !tag.used;
+                                    }
+                                }),
+                                m('span.custom-control-indicator'),
+                                m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
+                            ])); })
+                        ]
+                        ),
                         m('.row', {key: '@@notid@@'}, [
                             m('p.col-sm-6', [
                                 m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
@@ -681,10 +673,11 @@
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                    m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                    ]),
+
                                                     study.permission !== 'owner' ? '' : [
-                                                        m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
-                                                            m('i.fa.fa-fw.fa-tags'), ' Tags'
-                                                        ]),
                                                         m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                         ]),
@@ -1225,15 +1218,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -3609,21 +3593,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3683,8 +3652,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3866,7 +3833,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4248,10 +4214,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4403,10 +4365,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7427,7 +7385,7 @@
 
             function add(){
                 ctrl.tag_text('');
-                ctrl.tag_color('FFFFFF');
+                ctrl.tag_color('E7E7E7');
                 messages.confirm({
                     header:'Add a new tag',
                     content: editTag(ctrl)
