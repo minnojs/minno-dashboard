@@ -86,8 +86,7 @@ var mainComponent = {
 
             m('.card.studies-card', [
                 m('.card-block', [
-                    m('.row',
-                    [
+                    m('.row', [
                         tags().map(tag =>  m('i',m('label.custom-control.custom-checkbox', [
 
                             m('input.custom-control-input', {
@@ -100,17 +99,19 @@ var mainComponent = {
                             m('span.custom-control-indicator'),
                             m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
                         ])))
-                    ]
-                    ),
+                    ]),
                     m('.row', {key: '@@notid@@'}, [
                         m('p.col-sm-6', [
-                            m('form-control-static',{onclick:sort_studies_by_name},[m('strong', 'Study Name ')]),
-                            m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
-
+                            m('form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
+                                m('strong', 'Study Name '),
+                                m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
+                            ])
                         ]),
                         m('p.col-sm-2', [
-                            m('form-control-static',{onclick:sort_studies_by_date},[m('strong', ' Last Changed ')]),
-                            m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
+                            m('form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
+                                m('strong', ' Last Changed '),
+                                m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
+                            ])
                         ]),
                         m('.col-sm-4', [
                             m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
