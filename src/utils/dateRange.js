@@ -86,7 +86,13 @@ let pikadayRange = {
             }
 
             function onKeydown(picker){
-                return e => e.keyCode === 13 && picker.isVisible() && e.stopPropagation();
+                return e => {
+                    if (e.keyCode === 13 && picker.isVisible()) e.stopPropagation();
+                    if (e.keyCode === 27 && picker.isVisible()) {
+                        e.stopPropagation();
+                        picker.hide();
+                    }
+                };
             }
 
             function onSelect(prop){
