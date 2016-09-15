@@ -146,6 +146,16 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1218,6 +1228,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1831,7 +1850,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -2006,6 +2025,7 @@
 
 
     var moveFile = function (file,study) { return function () {
+        var isFocused = file.id === m.route.param('fileId');
         var newPath = m.prop(file.path);
         return messages.prompt({
             header: 'Move/Rename File',
@@ -2030,7 +2050,8 @@
         }
 
         function redirect(response){
-            m.route(("/editor/" + (study.id) + "/file/" + (file.id))); 
+            // redirect only if the file is chosen, otherwise we can stay right here...
+            if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id))); 
             return response;
         }
     }; };
@@ -2163,9 +2184,11 @@
 
     var deleteFiles = function (study) { return function () {
         var chosenFiles = study.getChosenFiles();
+        var isFocused = chosenFiles.some(function (file) { return file.id === m.route.param('fileId'); });
+
         if (!chosenFiles.length) {
             messages.alert({
-                header:'Remve Files',
+                header:'Remove Files',
                 content: 'There are no files selected'
             });
             return;
@@ -2181,11 +2204,18 @@
 
         function doDelete(){
             study.delFiles(chosenFiles)
-                .then(m.redraw)
+                .then(redirect)
                 .catch(function (err) { return messages.alert({
                     header: 'Failed to delete files:',
                     content: err.message
-                }); });
+                }); })
+                .then(m.redraw);
+        }
+
+        function redirect(response){
+            // redirect only if the file is chosen, otherwise we can stay right here...
+            if (isFocused) m.route(("/editor/" + (study.id))); 
+            return response;
         }
     }; };
 
@@ -3422,7 +3452,7 @@
         controller: function(ref) {
             var study = ref.study;
 
-            var id = m.route.param('fileID');
+            var id = m.route.param('fileId');
             var file = study.getFile(id);
             var ctrl = {file: file,study: study};
 
@@ -3593,6 +3623,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3652,6 +3697,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3781,24 +3828,31 @@
         }
 
         function deleteFile(){
+            var isFocused = file.id === m.route.param('fileId');
+
             messages.confirm({
                 header:['Delete ',m('small', file.name)],
                 content: 'Are you sure you want to delete this file? This action is permanent!'
             })
             .then(function (ok) {
-                if (ok) return study.delFiles([file]);
-            })
-            .then(m.redraw)
-            .catch( function (err) {
-                err.response.json()
-                    .then(function (response) {
-                        messages.alert({
-                            header: 'Delete failed:',
-                            content: response.message
-                        });
-                    });
-                return err;
+                if (ok) return doDelete();
             });
+
+            function doDelete(){
+                study.delFiles([file])
+                    .then(redirect)
+                    .catch(function (err) { return messages.alert({
+                        header: 'Failed to delete file:',
+                        content: err.message
+                    }); })
+                    .then(m.redraw);
+            }
+
+            function redirect(response){
+                // redirect only if the file is chosen, otherwise we can stay right here...
+                if (isFocused) m.route(("/editor/" + (study.id))); 
+                return response;
+            }
         } // end delete file
     };
 
@@ -3833,6 +3887,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -3846,7 +3901,7 @@
             var file = ref.file;
 
             return {
-                isCurrent: m.route.param('fileID') === file.id
+                isCurrent: m.route.param('fileId') === file.id
             };
         },
         view: function (ctrl, ref) {
@@ -4214,6 +4269,10 @@
         }
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4365,6 +4424,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7476,7 +7539,7 @@
         '/studies' : mainComponent,
         '/studies/statistics' : statisticsComponent,
         '/editor/:studyId': editorLayoutComponent,
-        '/editor/:studyId/:resource/:fileID': editorLayoutComponent,
+        '/editor/:studyId/:resource/:fileId': editorLayoutComponent,
         '/pool': poolComponent,
         '/pool/history': poolComponent$1,
         '/downloads': downloadsComponent,

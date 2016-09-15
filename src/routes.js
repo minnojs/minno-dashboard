@@ -38,7 +38,7 @@ let routes = {
     '/studies' : studiesComponent,
     '/studies/statistics' : statisticsComponent,
     '/editor/:studyId': filesComponent,
-    '/editor/:studyId/:resource/:fileID': filesComponent,
+    '/editor/:studyId/:resource/:fileId': filesComponent,
     '/pool': poolComponent,
     '/pool/history': historyComponent,
     '/downloads': downloadsComponent,

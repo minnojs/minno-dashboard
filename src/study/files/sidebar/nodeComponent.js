@@ -11,7 +11,7 @@ let node = (args) => m.component(nodeComponent, args);
 let nodeComponent = {
     controller: ({file}) => {
         return {
-            isCurrent: m.route.param('fileID') === file.id
+            isCurrent: m.route.param('fileId') === file.id
         };
     },
     view: (ctrl, {file,folderHash, study}) => {

@@ -12,6 +12,7 @@ export let uploadFiles = (path,study) => files => {
 
 
 export let moveFile = (file,study) => () => {
+    let isFocused = file.id === m.route.param('fileId');
     let newPath = m.prop(file.path);
     return messages.prompt({
         header: 'Move/Rename File',
@@ -36,7 +37,8 @@ export let moveFile = (file,study) => () => {
     }
 
     function redirect(response){
-        m.route(`/editor/${study.id}/file/${file.id}`); 
+        // redirect only if the file is chosen, otherwise we can stay right here...
+        if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`); 
         return response;
     }
 };
@@ -161,9 +163,11 @@ export let createEmpty = (study, path = '') => () => {
 
 export let deleteFiles = study => () => {
     let chosenFiles = study.getChosenFiles();
+    let isFocused = chosenFiles.some(file => file.id === m.route.param('fileId'));
+
     if (!chosenFiles.length) {
         messages.alert({
-            header:'Remve Files',
+            header:'Remove Files',
             content: 'There are no files selected'
         });
         return;
@@ -179,11 +183,18 @@ export let deleteFiles = study => () => {
 
     function doDelete(){
         study.delFiles(chosenFiles)
-            .then(m.redraw)
+            .then(redirect)
             .catch(err => messages.alert({
                 header: 'Failed to delete files:',
                 content: err.message
-            }));
+            }))
+            .then(m.redraw);
+    }
+
+    function redirect(response){
+        // redirect only if the file is chosen, otherwise we can stay right here...
+        if (isFocused) m.route(`/editor/${study.id}`); 
+        return response;
     }
 };
 

@@ -65,23 +65,30 @@ let fileContext = (file, study) => {
     }
 
     function deleteFile(){
+        let isFocused = file.id === m.route.param('fileId');
+
         messages.confirm({
             header:['Delete ',m('small', file.name)],
             content: 'Are you sure you want to delete this file? This action is permanent!'
         })
         .then(ok => {
-            if (ok) return study.delFiles([file]);
-        })
-        .then(m.redraw)
-        .catch( err => {
-            err.response.json()
-                .then(response => {
-                    messages.alert({
-                        header: 'Delete failed:',
-                        content: response.message
-                    });
-                });
-            return err;
+            if (ok) return doDelete();
         });
+
+        function doDelete(){
+            study.delFiles([file])
+                .then(redirect)
+                .catch(err => messages.alert({
+                    header: 'Failed to delete file:',
+                    content: err.message
+                }))
+                .then(m.redraw);
+        }
+
+        function redirect(response){
+            // redirect only if the file is chosen, otherwise we can stay right here...
+            if (isFocused) m.route(`/editor/${study.id}`); 
+            return response;
+        }
     } // end delete file
 };
