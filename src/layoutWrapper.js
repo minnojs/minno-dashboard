@@ -18,15 +18,16 @@ let layout = route => {
                 doLogout,
                 timer:m.prop(0)
             };
-
             is_loggedin();
-
             function is_loggedin(){
                 getAuth().then((response) => {
                     ctrl.role(response.role);
                     ctrl.isloggedin = response.isloggedin;
                     if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                         m.route('/login');
+                    if(ctrl.role()=='CU' && m.route() == '/studies')
+                        m.route('/downloads');
+
 
                     timer = response.timeoutInSeconds;
                     run_countdown();
@@ -63,8 +64,12 @@ let layout = route => {
         view(ctrl){
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                 m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                    m('a.navbar-brand', {href:baseUrl}, 'Dashboard'),
+                    m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                     m('ul.nav.navbar-nav',[
+                        ctrl.role()=='CU'
+                         ?
+                        ''
+                        :
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                         ]),
@@ -78,6 +83,10 @@ let layout = route => {
                                 ])
                             ])
                         ]),
+                        ctrl.role()=='CU'
+                        ?
+                        ''
+                        :
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                         ]),

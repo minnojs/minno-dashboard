@@ -146,6 +146,16 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1225,6 +1235,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -3611,6 +3630,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3670,6 +3704,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3858,6 +3894,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4239,6 +4276,10 @@
         }
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4390,6 +4431,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -6835,7 +6880,7 @@
             var ctrl = {
                 password: m.prop(''),
                 confirm: m.prop(''),
-                error: m.prop(''),
+                password_error: m.prop(''),
                 activated:false,
                 do_set_password: do_set_password
             };
@@ -6843,8 +6888,8 @@
             is_activation_code(m.route.param('code'))
             .catch(function () {
                 m.route('/');
-            })
-            .then(m.redraw);
+            });
+
             return ctrl;
 
             function do_set_password(){
@@ -6853,7 +6898,7 @@
                         ctrl.activated = true;
                     })
                     .catch(function (response) {
-                        ctrl.error(response.message);
+                        ctrl.password_error(response.message);
                     })
                     .then(m.redraw);
             }
@@ -7230,14 +7275,14 @@
                 ?
                 m('.loader')
                 :
-                m('.container', [
+                m('.container.sharing', [
                     m('.row',[
                         m('.col-sm-7', [
                             m('h3', [ctrl.study_name(), ': Sharing'])
                         ]),
                         m('.col-sm-5', [
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
-                                m('i.fa.fa-plus'), '  Add new collaboration'
+                                m('i.fa.fa-plus'), '  Add a new collaborator'
                             ]),
                             m('button.btn.btn-secondary.btn-sm', {onclick:function() {ctrl.do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                         ])
@@ -7521,15 +7566,16 @@
                     doLogout: doLogout,
                     timer:m.prop(0)
                 };
-
                 is_loggedin();
-
                 function is_loggedin(){
                     getAuth().then(function (response) {
                         ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
                         if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
                             m.route('/login');
+                        if(ctrl.role()=='CU' && m.route() == '/studies')
+                            m.route('/downloads');
+
 
                         timer = response.timeoutInSeconds;
                         run_countdown();
@@ -7566,8 +7612,12 @@
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                     m('nav.navbar.navbar-dark.navbar-fixed-top', [
-                        m('a.navbar-brand', {href:baseUrl}, 'Dashboard'),
+                        m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
+                            ctrl.role()=='CU'
+                             ?
+                            ''
+                            :
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                             ]),
@@ -7581,6 +7631,10 @@
                                     ])
                                 ])
                             ]),
+                            ctrl.role()=='CU'
+                            ?
+                            ''
+                            :
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/pool', config:m.route},'Pool')
                             ]),

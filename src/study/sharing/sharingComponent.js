@@ -100,14 +100,14 @@ let collaborationComponent = {
             ?
             m('.loader')
             :
-            m('.container', [
+            m('.container.sharing', [
                 m('.row',[
                     m('.col-sm-7', [
                         m('h3', [ctrl.study_name(), ': Sharing'])
                     ]),
                     m('.col-sm-5', [
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
-                            m('i.fa.fa-plus'), '  Add new collaboration'
+                            m('i.fa.fa-plus'), '  Add a new collaborator'
                         ]),
                         m('button.btn.btn-secondary.btn-sm', {onclick:function() {ctrl.do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                     ])

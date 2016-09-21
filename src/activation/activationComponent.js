@@ -9,7 +9,7 @@ let activationComponent = {
         const ctrl = {
             password: m.prop(''),
             confirm: m.prop(''),
-            error: m.prop(''),
+            password_error: m.prop(''),
             activated:false,
             do_set_password
         };
@@ -17,8 +17,8 @@ let activationComponent = {
         is_activation_code(m.route.param('code'))
         .catch(() => {
             m.route('/');
-        })
-        .then(m.redraw);
+        });
+
         return ctrl;
 
         function do_set_password(){
@@ -27,7 +27,7 @@ let activationComponent = {
                     ctrl.activated = true;
                 })
                 .catch(response => {
-                    ctrl.error(response.message);
+                    ctrl.password_error(response.message);
                 })
                 .then(m.redraw);
         }
