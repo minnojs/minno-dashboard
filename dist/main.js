@@ -311,14 +311,19 @@
              * where:
              *   any Prop(any value)
              */
-            prompt: function (opts) {
-                if ( opts === void 0 ) opts={};
+            prompt: function (ref) {
+                if ( ref === void 0 ) ref={prop:noop};
+                var prop = ref.prop;
+                var header = ref.header;
+                var content = ref.content;
+                var postContent = ref.postContent;
+                var okText = ref.okText;
+                var cancelText = ref.cancelText;
 
                 var close = function (response) { return messages.close.bind(null, response); };
-                var prop = opts.prop || noop;
                 return [
-                    m('h4', opts.header),
-                    m('.card-text', opts.content),
+                    m('h4', header),
+                    m('.card-text', content),
                     m('.card-block', [
                         m('input.form-control', {
                             key: 'prompt',
@@ -329,9 +334,10 @@
                             }
                         })
                     ]),
+                    m('.card-text', postContent),
                     m('.text-xs-right.btn-toolbar',[
-                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
-                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, cancelText || 'Cancel'),
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, okText || 'OK')
                     ])
                 ];
             }
@@ -2047,6 +2053,7 @@
         var newPath = m.prop(file.path);
         return messages.prompt({
             header: 'Move/Rename File',
+            postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
             prop: newPath
         })
             .then(function (response) {

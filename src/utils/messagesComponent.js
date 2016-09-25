@@ -100,12 +100,11 @@ let messages = {
          * where:
          *   any Prop(any value)
          */
-        prompt: (opts={}) => {
+        prompt: ({prop, header, content, postContent, okText, cancelText}={prop:noop}) => {
             let close = response => messages.close.bind(null, response);
-            let prop = opts.prop || noop;
             return [
-                m('h4', opts.header),
-                m('.card-text', opts.content),
+                m('h4', header),
+                m('.card-text', content),
                 m('.card-block', [
                     m('input.form-control', {
                         key: 'prompt',
@@ -116,9 +115,10 @@ let messages = {
                         }
                     })
                 ]),
+                m('.card-text', postContent),
                 m('.text-xs-right.btn-toolbar',[
-                    m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.okText || 'Cancel'),
-                    m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                    m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, cancelText || 'Cancel'),
+                    m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, okText || 'OK')
                 ])
             ];
         }
