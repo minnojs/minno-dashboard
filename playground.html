@@ -68,7 +68,8 @@
 	<script src="../bower_components/requirejs/require.js"></script>
 	<script type="text/javascript">
 		require.config({
-			baseUrl: 'js'
+			baseUrl: 'js',
+            urlArgs: "bust=" +  (new Date()).getTime()
 		});
 
 		window.activate = function(file){

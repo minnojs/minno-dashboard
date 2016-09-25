@@ -15,6 +15,7 @@ export let moveFile = (file,study) => () => {
     let newPath = m.prop(file.path);
     return messages.prompt({
         header: 'Move/Rename File',
+        postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
         prop: newPath
     })
         .then(response => {
