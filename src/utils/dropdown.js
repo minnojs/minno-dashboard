@@ -28,7 +28,7 @@ let dropdownComponent = {
     config: isOpen => (element, isInit, ctx) => {
         if (!isInit) {
             // this is a bit memory intensive, but lets not preemptively optimse
-            // bootstrap do this with a backdrop
+            // bootstrap does this with a backdrop
             document.addEventListener('mousedown', onClick, false);
             ctx.onunload = () => document.removeEventListener('mousedown', onClick);
         }
@@ -38,9 +38,13 @@ let dropdownComponent = {
 
             // if we are within the dropdown do not close it
             // this is conditional to prevent IE problems
-            if (e.target.closest && e.target.closest('.dropdown') === element) return; 
+            if (e.target.closest && e.target.closest('.dropdown') === element && !hasClass(e.target, 'dropdown-onclick')) return true;
             isOpen(false);
             m.redraw();
+        }
+
+        function hasClass(el, selector){
+            return ( (' ' + el.className + ' ').replace(/[\n\t\r]/g, ' ').indexOf(' ' + selector + ' ') > -1 );
         }
     }
 };

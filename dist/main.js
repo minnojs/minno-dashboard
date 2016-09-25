@@ -180,7 +180,7 @@
         config: function (isOpen) { return function (element, isInit, ctx) {
             if (!isInit) {
                 // this is a bit memory intensive, but lets not preemptively optimse
-                // bootstrap do this with a backdrop
+                // bootstrap does this with a backdrop
                 document.addEventListener('mousedown', onClick, false);
                 ctx.onunload = function () { return document.removeEventListener('mousedown', onClick); };
             }
@@ -190,9 +190,13 @@
 
                 // if we are within the dropdown do not close it
                 // this is conditional to prevent IE problems
-                if (e.target.closest && e.target.closest('.dropdown') === element) return; 
+                if (e.target.closest && e.target.closest('.dropdown') === element && !hasClass(e.target, 'dropdown-onclick')) return true;
                 isOpen(false);
                 m.redraw();
+            }
+
+            function hasClass(el, selector){
+                return ( (' ' + el.className + ' ').replace(/[\n\t\r]/g, ' ').indexOf(' ' + selector + ' ') > -1 );
             }
         }; }
     };
@@ -684,15 +688,15 @@
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, callback: loadStudies})}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
 
                                                     study.permission !== 'owner' ? '' : [
-                                                        m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                         ]),
-                                                        m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-exchange'), ' Rename'
                                                         ])
                                                     ],
@@ -1764,6 +1768,7 @@
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
                     this$1.name = study.study_name;
+                    this$1.baseUrl = study.base_url;
                     var files = flattenFiles(study.files)
                         .map(assignStudyId(this$1.id))
                         .map(fileFactory);
@@ -1857,7 +1862,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -2030,7 +2035,6 @@
             .then(m.redraw);
     }; };
 
-
     var moveFile = function (file,study) { return function () {
         var isFocused = file.id === m.route.param('fileId');
         var newPath = m.prop(file.path);
@@ -2099,38 +2103,6 @@
                 header: 'Error Saving:',
                 content: err.message
             }); });
-    }; };
-
-    var copyUrl = function (url) { return function () {
-        var input = document.createElement('input');
-        input.value = url;
-        document.body.appendChild(input);
-        input.select();
-        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
-            messages.alert({
-                header: 'Copy URL',
-                content: m('.card-block', [
-                    m('.form-group', [
-                        m('label', 'Copy Url by clicking Ctrl + C'),
-                        m('input.form-control', {
-                            config: function (el) { return el.select(); },
-                            value: url
-                        })
-                    ])
-                ])
-            });
-        }
-
-        try {
-            document.execCommand('copy');
-        } catch(err){
-            messages.alert({
-                header: 'Copy URL',
-                content: 'Copying the URL has failed.'
-            });
-        }
-
-        input.parentNode.removeChild(input);
     }; };
 
 
@@ -3777,6 +3749,39 @@
         'Typical': '/implicit/user/yba/wizards/typicalmgr.js'
     };
 
+    var copyUrl = function (url) { return function () {
+        console.log('co')
+        var input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
+            messages.alert({
+                header: 'Copy URL',
+                content: m('.card-block', [
+                    m('.form-group', [
+                        m('label', 'Copy Url by clicking Ctrl + C'),
+                        m('input.form-control', {
+                            config: function (el) { return el.select(); },
+                            value: url
+                        })
+                    ])
+                ])
+            });
+        }
+
+        try {
+            document.execCommand('copy');
+        } catch(err){
+            messages.alert({
+                header: 'Copy URL',
+                content: 'Copying the URL has failed.'
+            });
+        }
+
+        input.parentNode.removeChild(input);
+    }; };
+
     var fileContext = function (file, study) {
         var path = !file ? '/' : file.isDir ? file.path : file.basePath;
         var isReadonly = study.isReadonly;
@@ -4106,7 +4111,8 @@
                     m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                     m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
-                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
+                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
+                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy URL'])
                 ]})
             ])
         ]);

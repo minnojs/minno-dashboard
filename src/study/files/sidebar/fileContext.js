@@ -1,9 +1,10 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
-import {createDir, createEmpty, moveFile, copyUrl} from './fileActions';
+import {createDir, createEmpty, moveFile} from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';
+import copyUrl from 'utils/copyUrl';
 export default fileContext;
 
 

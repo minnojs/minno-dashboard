@@ -3,6 +3,7 @@ import fileContext from './fileContext';
 import {uploadFiles} from './fileActions';
 import dropdown from 'utils/dropdown';
 import {do_delete, do_rename} from '../../studyActions';
+import copyUrl from 'utils/copyUrl';
 export default sidebarButtons;
 
 let sidebarButtons = ({study}) => {
@@ -38,7 +39,8 @@ let sidebarButtons = ({study}) => {
                 m('a.dropdown-item', { href: `/deploy/${studyId}`, config: m.route }, 'Request Deploy'),
                 m('a.dropdown-item', { href: `/studyChangeRequest/${studyId}`, config: m.route }, 'Request Change'),
                 m('a.dropdown-item', { href: `/studyRemoval/${studyId}`, config: m.route }, 'Request Removal'),
-                m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
+                m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
+                m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy URL'])
             ]})
         ])
     ]);

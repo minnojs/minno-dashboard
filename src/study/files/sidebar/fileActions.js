@@ -10,7 +10,6 @@ export let uploadFiles = (path,study) => files => {
         .then(m.redraw);
 };
 
-
 export let moveFile = (file,study) => () => {
     let isFocused = file.id === m.route.param('fileId');
     let newPath = m.prop(file.path);
@@ -79,38 +78,6 @@ export let save = file => () => {
             header: 'Error Saving:',
             content: err.message
         }));
-};
-
-export let copyUrl = url => () => {
-    let input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
-        messages.alert({
-            header: 'Copy URL',
-            content: m('.card-block', [
-                m('.form-group', [
-                    m('label', 'Copy Url by clicking Ctrl + C'),
-                    m('input.form-control', {
-                        config: el => el.select(),
-                        value: url
-                    })
-                ])
-            ])
-        });
-    }
-
-    try {
-        document.execCommand('copy');
-    } catch(err){
-        messages.alert({
-            header: 'Copy URL',
-            content: 'Copying the URL has failed.'
-        });
-    }
-
-    input.parentNode.removeChild(input);
 };
 
 

@@ -147,15 +147,15 @@ var mainComponent = {
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                m('a.dropdown-item', {onclick: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, callback: loadStudies})}, [
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
 
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item', {onclick: do_delete(study.id, loadStudies)}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-remove'), ' Delete'
                                                     ]),
-                                                    m('a.dropdown-item', {onclick: do_rename(study.id, study.name, loadStudies)}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-exchange'), ' Rename'
                                                     ])
                                                 ],

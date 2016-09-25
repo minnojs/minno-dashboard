@@ -15,6 +15,7 @@ let studyPrototype = {
                 this.loaded = true;
                 this.isReadonly = study.is_readonly;
                 this.name = study.study_name;
+                this.baseUrl = study.base_url;
                 let files = flattenFiles(study.files)
                     .map(assignStudyId(this.id))
                     .map(fileFactory);
