@@ -605,17 +605,38 @@
             if (!loaded) return m('.loader');
             return m('.container.studies', [
                 m('.row.p-t-1', [
-                    m('.col-sm-6', [
+                    m('.col-sm-4', [
                         m('h3', 'My Studies')
                     ]),
 
-                    m('.col-sm-6', [
+                    m('.col-sm-8', [
                         m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
+                        m('.pull-right.m-r-1', [
+                            dropdown({toggleSelector:'button.btn.btn-sm.btn-secondary.dropdown-toggle', toggleContent: [m('i.fa.fa-tags'), ' Tags'], elements:[
+                                m('h6.dropdown-header', 'Filter by tags'),
+                                !tags().length
+                                    ? m('em.dropdown-header', 'You do not have any tags yet')
+                                    : tags().map(function (tag) { return m('a.dropdown-item',m('label.custom-control.custom-checkbox', [
+                                        m('input.custom-control-input', {
+                                            type: 'checkbox',
+                                            checked: tag.used,
+                                            onclick: function(){
+                                                tag.used = !tag.used;
+                                            }
+                                        }),
+                                        m('span.custom-control-indicator'),
+                                        m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
+                                    ])); }),
+                                m('.dropdown-divider'),
+                                m('a.dropdown-item', { href: "/tags", config: m.route }, 'Manage tags')
+                            ]})
+                        ]),
+
                         m('.input-group.pull-right.m-r-1', [
-                            m('select.c-select.form-control.form-control-sm', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
+                            m('select.c-select.form-control.frm-control-sm', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
                                 m('option', {value:'collaboration'}, 'Show only studies shared with me'),
@@ -627,29 +648,15 @@
 
                 m('.card.studies-card', [
                     m('.card-block', [
-                        m('.row', [
-                            tags().map(function (tag) { return m('i',m('label.custom-control.custom-checkbox', [
-
-                                m('input.custom-control-input', {
-                                    type: 'checkbox',
-                                    checked: tag.used,
-                                    onclick: function(){
-                                        tag.used = !tag.used;
-                                    }
-                                }),
-                                m('span.custom-control-indicator'),
-                                m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
-                            ])); })
-                        ]),
                         m('.row', {key: '@@notid@@'}, [
-                            m('p.col-sm-6', [
-                                m('form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
+                            m('.col-sm-6', [
+                                m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
                                     m('strong', 'Study Name '),
                                     m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
                                 ])
                             ]),
-                            m('p.col-sm-2', [
-                                m('form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
+                            m('.col-sm-2', [
+                                m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
                                     m('strong', ' Last Changed '),
                                     m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                                 ])
@@ -3750,7 +3757,6 @@
     };
 
     var copyUrl = function (url) { return function () {
-        console.log('co')
         var input = document.createElement('input');
         input.value = url;
         document.body.appendChild(input);

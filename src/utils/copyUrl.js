@@ -3,7 +3,6 @@ import messages from 'utils/messagesComponent';
 export default copyUrl;
 
 let copyUrl = url => () => {
-    console.log('co')
     let input = document.createElement('input');
     input.value = url;
     document.body.appendChild(input);
