@@ -1,6 +1,6 @@
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
-import studyTagsComponent from './studyTagsComponent';
+import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
 export let do_create = () => {

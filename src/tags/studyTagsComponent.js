@@ -1,4 +1,4 @@
-import { toggle_tag_to_study, add_tag, get_tags_for_study} from '../tags/tagsModel';
+import { toggle_tag_to_study, add_tag, get_tags_for_study} from './tagsModel';
 export default args => m.component(studyTagsComponent, args);
 
 let studyTagsComponent = {
