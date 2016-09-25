@@ -104,24 +104,11 @@
     }
 
 
-    function study_tag_url(study_id, tag_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags/" + (encodeURIComponent(tag_id)));
-    }
-
-    var toggle_tag_to_study = function (study_id, tag_id, used) {
-        if(used)
-            return add_tag_to_study(study_id, tag_id);
-        return delete_tag_from_study(study_id, tag_id);
-    };
-
-    var add_tag_to_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
-        method: 'post'
+    var update_tags_in_study = function (study_id, tags) { return fetchJson(study_url(study_id), {
+        method: 'put',
+        body: {tags: tags}
     }); };
 
-
-    var delete_tag_from_study = function (study_id, tag_id) { return fetchJson(study_tag_url(study_id, tag_id), {
-        method: 'delete'
-    }); };
 
     var get_tags = function () { return fetchJson(tagsUrl, {
         method: 'get'
@@ -360,10 +347,10 @@
 
     var studyTagsComponent$1 = {
         controller: function controller(ref){
+            var tags = ref.tags;
             var study_id = ref.study_id;
 
             var tagName = m.prop('');
-            var tags = m.prop([]);
             var loaded = m.prop(false);
             var error = m.prop(null);
 
@@ -409,7 +396,8 @@
                     checked: tag.used,
                     onclick: function(){
                         tag.used = !tag.used;
-                        toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
+                        tag.changed = !tag.changed;
+                        // toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
                     }
                 }), 
                 m('span.custom-control-indicator'),
@@ -460,9 +448,16 @@
 
         return function (e) {
         e.preventDefault();
-        messages.alert({header:'Tags', content: studyTagsComponent({study_id: study_id, callback: callback})});
+        var  filter_tags = function (){return function (tag) { return tag.changed; };}
+        var tags = m.prop([]);
+        messages.confirm({header:'Tags', content: studyTagsComponent({tags: tags, study_id: study_id, callback: callback})})
+            .then(function (response) {
+                if (response)
+                    update_tags_in_study(study_id, tags().filter(filter_tags()).map(function (tag){ return (({id: tag.id, used: tag.used})); })).then(callback);
+        });
     };
     };
+
 
     var do_delete = function (study_id, callback) { return function (e) {
         e.preventDefault();
@@ -695,7 +690,7 @@
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies})}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
 
@@ -1869,7 +1864,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -5984,15 +5979,16 @@
             return ctrl;
 
             function loginAction(){
-                login(ctrl.username, ctrl.password)
-                    .then(function () {
-                        m.route('/');
-                    })
-                    .catch(function (response) {
-                        ctrl.error(response.message);
-                        m.redraw();
-                    })
-                ;
+                if(ctrl.username() && ctrl.password())
+                    login(ctrl.username, ctrl.password)
+                        .then(function () {
+                            m.route('/');
+                        })
+                        .catch(function (response) {
+                            ctrl.error(response.message);
+                            m.redraw();
+                        })
+                    ;
             }
 
             function is_loggedin(){

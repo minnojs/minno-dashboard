@@ -23,10 +23,15 @@ export let toggle_tag_to_study = (study_id, tag_id, used) => {
     return delete_tag_from_study(study_id, tag_id);
 };
 
+export let update_tags_in_study = (study_id, tags) => fetchJson(study_url(study_id), {
+    method: 'put',
+    body: {tags}
+});
+
+
 export let add_tag_to_study = (study_id, tag_id) => fetchJson(study_tag_url(study_id, tag_id), {
     method: 'post'
 });
-
 
 export let delete_tag_from_study = (study_id, tag_id) => fetchJson(study_tag_url(study_id, tag_id), {
     method: 'delete'

@@ -2,9 +2,8 @@ import { toggle_tag_to_study, add_tag, get_tags_for_study} from '../tags/tagsMod
 export default args => m.component(studyTagsComponent, args);
 
 let studyTagsComponent = {
-    controller({study_id}){
+    controller({tags, study_id}){
         let tagName = m.prop('');
-        let tags = m.prop([]);
         let loaded = m.prop(false);
         let error = m.prop(null);
 
@@ -42,7 +41,8 @@ let studyTagsComponent = {
                 checked: tag.used,
                 onclick: function(){
                     tag.used = !tag.used;
-                    toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
+                    tag.changed = !tag.changed;
+                    // toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
                 }
             }), 
             m('span.custom-control-indicator'),

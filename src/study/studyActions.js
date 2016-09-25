@@ -1,6 +1,7 @@
 import messages from 'utils/messagesComponent';
 import {create_study, delete_study, rename_study} from './studyModel';
 import studyTagsComponent from './studyTagsComponent';
+import {update_tags_in_study} from '../tags/tagsModel';
 
 export let do_create = () => {
     let study_name = m.prop('');
@@ -28,8 +29,15 @@ export let do_create = () => {
 
 export let do_tags = ({study_id, callback}) => e => {
     e.preventDefault();
-    messages.alert({header:'Tags', content: studyTagsComponent({study_id, callback})});
+    let  filter_tags = ()=>{return tag => tag.changed;}
+    let tags = m.prop([]);
+    messages.confirm({header:'Tags', content: studyTagsComponent({tags, study_id, callback})})
+        .then(function (response) {
+            if (response)
+                update_tags_in_study(study_id, tags().filter(filter_tags()).map(tag=>(({id: tag.id, used: tag.used})))).then(callback);
+    });
 };
+
 
 export let do_delete = (study_id, callback) => e => {
     e.preventDefault();

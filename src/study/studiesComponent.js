@@ -154,7 +154,7 @@ var mainComponent = {
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, callback: loadStudies})}, [
+                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies})}, [
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
 

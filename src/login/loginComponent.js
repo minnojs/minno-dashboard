@@ -17,15 +17,16 @@ let loginComponent = {
         return ctrl;
 
         function loginAction(){
-            login(ctrl.username, ctrl.password)
-                .then(() => {
-                    m.route('/');
-                })
-                .catch(response => {
-                    ctrl.error(response.message);
-                    m.redraw();
-                })
-            ;
+            if(ctrl.username() && ctrl.password())
+                login(ctrl.username, ctrl.password)
+                    .then(() => {
+                        m.route('/');
+                    })
+                    .catch(response => {
+                        ctrl.error(response.message);
+                        m.redraw();
+                    })
+                ;
         }
 
         function is_loggedin(){
