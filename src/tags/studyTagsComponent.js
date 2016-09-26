@@ -1,4 +1,4 @@
-import { toggle_tag_to_study, add_tag, get_tags_for_study} from './tagsModel';
+import {add_tag, get_tags_for_study} from './tagsModel';
 export default args => m.component(studyTagsComponent, args);
 
 let studyTagsComponent = {
@@ -15,7 +15,7 @@ let studyTagsComponent = {
 
         return {tagName, tags, loaded, error};
     },
-    view: ({tagName, tags, loaded, error}, {study_id, callback}) => m('div', [
+    view: ({tagName, tags, loaded, error}, {study_id}) => m('div', [
         m('.input-group', [
             m('input.form-control', {
                 placeholder: 'Filter Tags',
@@ -42,7 +42,6 @@ let studyTagsComponent = {
                 onclick: function(){
                     tag.used = !tag.used;
                     tag.changed = !tag.changed;
-                    // toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
                 }
             }), 
             m('span.custom-control-indicator'),

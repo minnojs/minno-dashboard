@@ -23,19 +23,18 @@ export let do_create = () => {
             ask();
         });
 
-    // activate creation
     ask();
 };
 
 export let do_tags = ({study_id, callback}) => e => {
     e.preventDefault();
-    let  filter_tags = ()=>{return tag => tag.changed;}
+    let  filter_tags = ()=>{return tag => tag.changed;};
     let tags = m.prop([]);
     messages.confirm({header:'Tags', content: studyTagsComponent({tags, study_id, callback})})
         .then(function (response) {
             if (response)
                 update_tags_in_study(study_id, tags().filter(filter_tags()).map(tag=>(({id: tag.id, used: tag.used})))).then(callback);
-    });
+        });
 };
 
 

@@ -2,7 +2,6 @@ import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
 import spinner from 'utils/spinnerComponent';
 import {getAuth, logout} from 'login/authModel';
-import {baseUrl} from 'modelUrls';
 
 export default layout;
 

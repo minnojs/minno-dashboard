@@ -374,7 +374,6 @@
             var loaded = ref.loaded;
             var error = ref.error;
             var study_id = ref$1.study_id;
-            var callback = ref$1.callback;
 
             return m('div', [
             m('.input-group', [
@@ -403,7 +402,6 @@
                     onclick: function(){
                         tag.used = !tag.used;
                         tag.changed = !tag.changed;
-                        // toggle_tag_to_study(study_id, tag.id, tag.used).then(callback);
                     }
                 }), 
                 m('span.custom-control-indicator'),
@@ -444,7 +442,6 @@
                 ask();
             }); };
 
-        // activate creation
         ask();
     };
 
@@ -454,13 +451,13 @@
 
         return function (e) {
         e.preventDefault();
-        var  filter_tags = function (){return function (tag) { return tag.changed; };}
+        var  filter_tags = function (){return function (tag) { return tag.changed; };};
         var tags = m.prop([]);
         messages.confirm({header:'Tags', content: studyTagsComponent({tags: tags, study_id: study_id, callback: callback})})
             .then(function (response) {
                 if (response)
                     update_tags_in_study(study_id, tags().filter(filter_tags()).map(function (tag){ return (({id: tag.id, used: tag.used})); })).then(callback);
-        });
+            });
     };
     };
 
