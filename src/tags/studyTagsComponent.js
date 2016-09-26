@@ -1,7 +1,7 @@
 import {add_tag, get_tags_for_study} from './tagsModel';
 export default args => m.component(studyTagsComponent, args);
 
-let studyTagsComponent = {
+let studyTagsComponent = { 
     controller({tags, study_id}){
         let tagName = m.prop('');
         let loaded = m.prop(false);
