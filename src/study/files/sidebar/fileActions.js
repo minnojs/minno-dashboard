@@ -1,4 +1,5 @@
 import messages from 'utils/messagesComponent';
+import downloadUrl from 'utils/downloadUrl';
 
 export let uploadFiles = (path,study) => files => {
     study
@@ -166,7 +167,7 @@ export let deleteFiles = study => () => {
     }
 };
 
-export let downloadFiles = (study) => () => {
+export let downloadChosenFiles = (study) => () => {
     let chosenFiles = study.getChosenFiles().map(f=>f.path);
     if (!chosenFiles.length) {
         messages.alert({
@@ -177,6 +178,18 @@ export let downloadFiles = (study) => () => {
     }
 
     study.downloadFiles(chosenFiles)
+        .then(url => downloadUrl(url, study.name))
+        .catch(err => messages.alert({
+            header: 'Failed to download files:',
+            content: err.message
+        }));
+};
+
+export let downloadFile = (study, file) => () => {
+    if (!file.isDir) return downloadUrl(file.url, file.name);
+
+    let childrenList = study.getChildren(file).map(f => f.path);
+    study.downloadFiles(childrenList)
         .catch(err => messages.alert({
             header: 'Failed to download files:',
             content: err.message

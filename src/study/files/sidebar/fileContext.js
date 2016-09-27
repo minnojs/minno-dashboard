@@ -1,7 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import downloadUrl from 'utils/downloadUrl';
-import {createDir, createEmpty, moveFile} from './fileActions';
+import {createDir, createEmpty, moveFile, downloadFile} from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';
 import copyUrl from 'utils/copyUrl';
@@ -32,7 +31,7 @@ let fileContext = (file, study) => {
 
         menu = menu.concat([
             {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: isReadonly || file.content() == file.sourceContent()},
-            {icon:'fa-download', text:'Download', action: downloadFile},
+            {icon:'fa-download', text:'Download', action: downloadFile(study, file)},
             {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
             isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
             isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
@@ -59,10 +58,6 @@ let fileContext = (file, study) => {
     function refreshFile(){
         file.content(file.sourceContent());
         m.redraw();
-    }
-
-    function downloadFile(){
-        return downloadUrl(file.url, file.name);
     }
 
     function deleteFile(){

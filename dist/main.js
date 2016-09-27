@@ -351,7 +351,7 @@
 
     function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
 
-    var studyTagsComponent$1 = {
+    var studyTagsComponent$1 = { 
         controller: function controller(ref){
             var tags = ref.tags;
             var study_id = ref.study_id;
@@ -1740,24 +1740,6 @@
         }
     };
 
-    // download support according to modernizer
-    var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
-
-    var downloadLink = function (url, name) {
-        if (downloadSupport){
-            var link = document.createElement('a');
-            link.href = url;
-            link.download = name;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } else {
-            var win = window.open(url, '_blank');
-            win.focus();
-        }
-    };
-
     var studyPrototype = {
         apiURL: function apiURL(path){
             if ( path === void 0 ) path = '';
@@ -1801,8 +1783,6 @@
             function spreadFile(file){
                 return [file].concat(flattenFiles(file.files));
             }
-
-
         },
 
         getFile: function getFile(id){
@@ -1867,7 +1847,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -1917,11 +1897,13 @@
             }
         },
 
+        /*
+         * @param files [Array] a list of file.path to download
+         * @returns url [String] the download url
+         */
         downloadFiles: function downloadFiles(files){
-            var this$1 = this;
-
             return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
-                .then(function (response) { return downloadLink((baseUrl + "/download?path=" + (response.zip_file) + "&study=_PATH"), this$1.name); });
+                .then(function (response) { return (baseUrl + "/download?path=" + (response.zip_file) + "&study=_PATH"); });
         },
 
         delFiles: function delFiles(files){
@@ -2029,6 +2011,24 @@
         m('i.fa.fa-file.fa-5x'),
         m('h5', 'Unknow file type')
     ]); };
+
+    // download support according to modernizer
+    var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
+
+    var downloadLink = function (url, name) {
+        if (downloadSupport){
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            var win = window.open(url, '_blank');
+            win.focus();
+        }
+    };
 
     var uploadFiles = function (path,study) { return function (files) {
         study
@@ -2204,7 +2204,7 @@
         }
     }; };
 
-    var downloadFiles = function (study) { return function () {
+    var downloadChosenFiles = function (study) { return function () {
         var chosenFiles = study.getChosenFiles().map(function (f){ return f.path; });
         if (!chosenFiles.length) {
             messages.alert({
@@ -2215,6 +2215,18 @@
         }
 
         study.downloadFiles(chosenFiles)
+            .then(function (url) { return downloadLink(url, study.name); })
+            .catch(function (err) { return messages.alert({
+                header: 'Failed to download files:',
+                content: err.message
+            }); });
+    }; };
+
+    var downloadFile$1 = function (study, file) { return function () {
+        if (!file.isDir) return downloadLink(file.url, file.name);
+
+        var childrenList = study.getChildren(file).map(function (f) { return f.path; });
+        study.downloadFiles(childrenList)
             .catch(function (err) { return messages.alert({
                 header: 'Failed to download files:',
                 content: err.message
@@ -3811,7 +3823,7 @@
 
             menu = menu.concat([
                 {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: isReadonly || file.content() == file.sourceContent()},
-                {icon:'fa-download', text:'Download', action: downloadFile},
+                {icon:'fa-download', text:'Download', action: downloadFile$1(study, file)},
                 {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
                 isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
@@ -3838,10 +3850,6 @@
         function refreshFile(){
             file.content(file.sourceContent());
             m.redraw();
-        }
-
-        function downloadFile(){
-            return downloadLink(file.url, file.name);
         }
 
         function deleteFile(){
@@ -4095,7 +4103,7 @@
                 m('a.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', onclick: readonly || deleteFiles(study), title: 'Delete selected files'}, [
                     m('i.fa.fa-close')
                 ]),
-                m('a.btn.btn-secondary.btn-sm', {onclick: downloadFiles(study), title: 'Download selected files'}, [
+                m('a.btn.btn-secondary.btn-sm', {onclick: downloadChosenFiles(study), title: 'Download selected files'}, [
                     m('i.fa.fa-download')
                 ]),
                 m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [

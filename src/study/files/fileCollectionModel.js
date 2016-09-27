@@ -1,6 +1,5 @@
 import {fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
-import downloadUrl from 'utils/downloadUrl';
 export default studyFactory;
 import {baseUrl} from 'modelUrls';
 
@@ -43,8 +42,6 @@ let studyPrototype = {
         function spreadFile(file){
             return [file].concat(flattenFiles(file.files));
         }
-
-
     },
 
     getFile(id){
@@ -152,9 +149,13 @@ let studyPrototype = {
         }
     },
 
+    /*
+     * @param files [Array] a list of file.path to download
+     * @returns url [String] the download url
+     */
     downloadFiles(files){
         return fetchJson(this.apiURL(), {method: 'post', body: {files}})
-            .then(response => downloadUrl(`${baseUrl}/download?path=${response.zip_file}&study=_PATH`, this.name));
+            .then(response => `${baseUrl}/download?path=${response.zip_file}&study=_PATH`);
     },
 
     delFiles(files){
