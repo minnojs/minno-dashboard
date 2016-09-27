@@ -133,16 +133,6 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -351,28 +341,29 @@
 
     function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
 
-    var studyTagsComponent$1 = { 
+    var studyTagsComponent$1 = {
         controller: function controller(ref){
+            var loadTags = ref.loadTags;
             var tags = ref.tags;
             var study_id = ref.study_id;
 
             var tagName = m.prop('');
             var loaded = m.prop(false);
             var error = m.prop(null);
-
             get_tags_for_study(study_id)
                 .then(function (response) { return tags(response.tags); })
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {tagName: tagName, tags: tags, loaded: loaded, error: error};
+            return {tagName: tagName, tags: tags, loaded: loaded, error: error, loadTags: loadTags};
         },
         view: function (ref, ref$1) {
             var tagName = ref.tagName;
             var tags = ref.tags;
             var loaded = ref.loaded;
             var error = ref.error;
+            var loadTags = ref.loadTags;
             var study_id = ref$1.study_id;
 
             return m('div', [
@@ -383,7 +374,7 @@
                     oninput: m.withAttr('value', tagName)
                 }),
                 m('span.input-group-btn', [
-                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error), disabled: !tagName()}, [
+                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error, loadTags), disabled: !tagName()}, [
                         m('i.fa.fa-plus'),
                         ' Create New'
                     ])
@@ -414,10 +405,11 @@
     function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
     function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
 
-    function create_tag(study_id, tagName, tags, error){
+    function create_tag(study_id, tagName, tags, error, callback){
         return function () { return add_tag(tagName(), 'E7E7E7')
             .then(function (response) { return tags().push(response); })
             .then(tagName.bind(null, ''))
+            .then(callback)
             .catch(error)
             .then(m.redraw); };
     }
@@ -447,13 +439,14 @@
 
     var do_tags = function (ref) {
         var study_id = ref.study_id;
+        var loadTags = ref.loadTags;
         var callback = ref.callback;
 
         return function (e) {
         e.preventDefault();
         var  filter_tags = function (){return function (tag) { return tag.changed; };};
         var tags = m.prop([]);
-        messages.confirm({header:'Tags', content: studyTagsComponent({tags: tags, study_id: study_id, callback: callback})})
+        messages.confirm({header:'Tags', content: studyTagsComponent({loadTags: loadTags, tags: tags, study_id: study_id, callback: callback})})
             .then(function (response) {
                 if (response)
                     update_tags_in_study(study_id, tags().filter(filter_tags()).map(function (tag){ return (({id: tag.id, used: tag.used})); })).then(callback);
@@ -548,6 +541,7 @@
                 loaded:false,
                 order_by_name: true,
                 loadStudies: loadStudies,
+                loadTags: loadTags,
                 sort_studies_by_name: sort_studies_by_name,
                 sort_studies_by_date: sort_studies_by_date
             };
@@ -561,6 +555,7 @@
                     .then(function (){ return ctrl.loaded = true; })
                     .then(m.redraw);
             }
+
             function loadTags() {
                 get_tags()
                     .then(function (response) { return response.tags; })
@@ -596,6 +591,7 @@
             var permissionChoice = ref.permissionChoice;
             var globalSearch = ref.globalSearch;
             var loadStudies = ref.loadStudies;
+            var loadTags = ref.loadTags;
             var sort_studies_by_date = ref.sort_studies_by_date;
             var sort_studies_by_name = ref.sort_studies_by_name;
             var order_by_name = ref.order_by_name;
@@ -693,7 +689,7 @@
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
                                                 study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies})}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
 
@@ -1244,15 +1240,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1847,7 +1834,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3620,21 +3607,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3694,8 +3666,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3912,7 +3882,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4295,10 +4264,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4450,10 +4415,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true

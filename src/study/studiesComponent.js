@@ -19,6 +19,7 @@ var mainComponent = {
             loaded:false,
             order_by_name: true,
             loadStudies,
+            loadTags,
             sort_studies_by_name,
             sort_studies_by_date
         };
@@ -32,6 +33,7 @@ var mainComponent = {
                 .then(()=>ctrl.loaded = true)
                 .then(m.redraw);
         }
+
         function loadTags() {
             get_tags()
                 .then(response => response.tags)
@@ -60,7 +62,7 @@ var mainComponent = {
 
 
     },
-    view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, sort_studies_by_date, sort_studies_by_name, order_by_name}){
+    view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, loadTags, sort_studies_by_date, sort_studies_by_name, order_by_name}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
@@ -154,7 +156,7 @@ var mainComponent = {
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
                                             study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies})}, [
+                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
 

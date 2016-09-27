@@ -1,21 +1,20 @@
 import {add_tag, get_tags_for_study} from './tagsModel';
 export default args => m.component(studyTagsComponent, args);
 
-let studyTagsComponent = { 
-    controller({tags, study_id}){
+let studyTagsComponent = {
+    controller({loadTags, tags, study_id}){
         let tagName = m.prop('');
         let loaded = m.prop(false);
         let error = m.prop(null);
-
         get_tags_for_study(study_id)
             .then(response => tags(response.tags))
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {tagName, tags, loaded, error};
+        return {tagName, tags, loaded, error, loadTags};
     },
-    view: ({tagName, tags, loaded, error}, {study_id}) => m('div', [
+    view: ({tagName, tags, loaded, error, loadTags}, {study_id}) => m('div', [
         m('.input-group', [
             m('input.form-control', {
                 placeholder: 'Filter Tags',
@@ -23,7 +22,7 @@ let studyTagsComponent = {
                 oninput: m.withAttr('value', tagName)
             }),
             m('span.input-group-btn', [
-                m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error), disabled: !tagName()}, [
+                m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error, loadTags), disabled: !tagName()}, [
                     m('i.fa.fa-plus'),
                     ' Create New'
                 ])
@@ -53,10 +52,16 @@ let studyTagsComponent = {
 function filter_tags(val){return tag => tag.text.indexOf(val) !== -1;}
 function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
 
-function create_tag(study_id, tagName, tags, error){
+function reload_tags()
+{
+    console.log(5);
+}
+
+function create_tag(study_id, tagName, tags, error, callback){
     return () => add_tag(tagName(), 'E7E7E7')
         .then(response => tags().push(response))
         .then(tagName.bind(null, ''))
+        .then(callback)
         .catch(error)
         .then(m.redraw);
 }

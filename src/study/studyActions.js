@@ -26,11 +26,11 @@ export let do_create = () => {
     ask();
 };
 
-export let do_tags = ({study_id, callback}) => e => {
+export let do_tags = ({study_id, loadTags, callback}) => e => {
     e.preventDefault();
     let  filter_tags = ()=>{return tag => tag.changed;};
     let tags = m.prop([]);
-    messages.confirm({header:'Tags', content: studyTagsComponent({tags, study_id, callback})})
+    messages.confirm({header:'Tags', content: studyTagsComponent({loadTags, tags, study_id, callback})})
         .then(function (response) {
             if (response)
                 update_tags_in_study(study_id, tags().filter(filter_tags()).map(tag=>(({id: tag.id, used: tag.used})))).then(callback);
