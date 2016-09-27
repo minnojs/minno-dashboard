@@ -2225,8 +2225,7 @@
     var downloadFile$1 = function (study, file) { return function () {
         if (!file.isDir) return downloadLink(file.url, file.name);
 
-        var childrenList = study.getChildren(file).map(function (f) { return f.path; });
-        study.downloadFiles(childrenList)
+        study.downloadFiles([file.url])
             .catch(function (err) { return messages.alert({
                 header: 'Failed to download files:',
                 content: err.message

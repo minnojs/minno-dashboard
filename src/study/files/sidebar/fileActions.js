@@ -188,8 +188,7 @@ export let downloadChosenFiles = (study) => () => {
 export let downloadFile = (study, file) => () => {
     if (!file.isDir) return downloadUrl(file.url, file.name);
 
-    let childrenList = study.getChildren(file).map(f => f.path);
-    study.downloadFiles(childrenList)
+    study.downloadFiles([file.url])
         .catch(err => messages.alert({
             header: 'Failed to download files:',
             content: err.message
