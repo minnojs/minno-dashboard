@@ -189,6 +189,7 @@ export let downloadFile = (study, file) => () => {
     if (!file.isDir) return downloadUrl(file.url, file.name);
 
     study.downloadFiles([file.path])
+        .then(url => downloadUrl(url, study.name))
         .catch(err => messages.alert({
             header: 'Failed to download files:',
             content: err.message

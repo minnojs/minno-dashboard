@@ -2226,6 +2226,7 @@
         if (!file.isDir) return downloadLink(file.url, file.name);
 
         study.downloadFiles([file.path])
+            .then(function (url) { return downloadLink(url, study.name); })
             .catch(function (err) { return messages.alert({
                 header: 'Failed to download files:',
                 content: err.message
