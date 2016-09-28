@@ -162,7 +162,10 @@ let studyPrototype = {
         let paths = files.map(f=>f.path);
         return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
             .then(() => {
-                let filesList = this.files() .filter(f => paths.indexOf(f.path) === -1); 
+                // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
+                let children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
+                // get all files not to be deleted
+                let filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
                 files.forEach(file => {
                     let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
                     if (parent) {
