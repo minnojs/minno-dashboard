@@ -32,12 +32,13 @@ let editorLayoutComponent = {
         }
 
         function onunload(e){
-            let leavingEditor = () => !/^\/editor\//.test(m.route());
-            if (leavingEditor() && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
+            let leavingEditor = !/^\/editor\//.test(m.route());
+            if (leavingEditor && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
                 e.preventDefault();
             } else {
                 window.removeEventListener('beforeunload', beforeunload);
             }
+            if (leavingEditor) study = null;
         }
     },
     view: ({study}) => {
