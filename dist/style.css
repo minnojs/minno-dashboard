@@ -452,7 +452,11 @@ a.no-decoration {
     .studies .study-row .study-text {
       color: #818a91;
       padding: .25em 0;
-      display: inline-block; }
+      display: inline-block;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; }
     .studies .study-row:hover {
       background: #4C93BE; }
       .studies .study-row:hover .study-text {
