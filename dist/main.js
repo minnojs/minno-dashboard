@@ -4025,13 +4025,14 @@
             var study = ref.study;
 
             var vm = study.vm(file.id); // vm is created by the studyModel
+            var hasChildren = !!(file.isDir && file.files && file.files.length);
             return m('li.file-node',
                 {
                     key: file.id,
                     class: classNames({
                         open : vm.isOpen()
                     }),
-                    onclick: file.isDir ? function () { return vm.isOpen(!vm.isOpen()); } : select(file),
+                    onclick: file.isDir ? toggleOpen(vm) : select(file),
                     oncontextmenu: fileContext(file, study),
                     config: file.isDir ? uploadConfig({onchange:uploadFiles(file.path, study)}) : null
                 },
@@ -4044,8 +4045,8 @@
                     }, m.trust('&nbsp;')),
                     m('i.fa.fa-fw', {
                         class: classNames({
-                            'fa-caret-right' : file.isDir && !vm.isOpen(),
-                            'fa-caret-down': file.isDir && vm.isOpen()
+                            'fa-caret-right' : hasChildren && !vm.isOpen(),
+                            'fa-caret-down': hasChildren && vm.isOpen()
                         })
                     }),
 
@@ -4070,13 +4071,23 @@
                                 'fa-folder-o': file.isDir
                             })
                         }),
+
+                        // file name
                         m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
-                        file.isDir ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
+
+                        // children
+                        hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
                     ])
                 ]
             );
         }
     };
+
+    var toggleOpen = function (vm) { return function (e) {
+        vm.isOpen(!vm.isOpen());
+        e.preventDefault();
+        e.stopPropagation();
+    }; };
 
     // select specific file and display it
     var select = function (file) { return function (e) {

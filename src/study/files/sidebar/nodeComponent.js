@@ -15,14 +15,15 @@ let nodeComponent = {
         };
     },
     view: (ctrl, {file,folderHash, study}) => {
-        let vm = study.vm(file.id); // vm is created by the studyModel
+        const vm = study.vm(file.id); // vm is created by the studyModel
+        const hasChildren = !!(file.isDir && file.files && file.files.length);
         return m('li.file-node',
             {
                 key: file.id,
                 class: classNames({
                     open : vm.isOpen()
                 }),
-                onclick: file.isDir ? () => vm.isOpen(!vm.isOpen()) : select(file),
+                onclick: file.isDir ? toggleOpen(vm) : select(file),
                 oncontextmenu: fileContext(file, study),
                 config: file.isDir ? uploadConfig({onchange:uploadFiles(file.path, study)}) : null
             },
@@ -35,8 +36,8 @@ let nodeComponent = {
                 }, m.trust('&nbsp;')),
                 m('i.fa.fa-fw', {
                     class: classNames({
-                        'fa-caret-right' : file.isDir && !vm.isOpen(),
-                        'fa-caret-down': file.isDir && vm.isOpen()
+                        'fa-caret-right' : hasChildren && !vm.isOpen(),
+                        'fa-caret-down': hasChildren && vm.isOpen()
                     })
                 }),
 
@@ -61,23 +62,33 @@ let nodeComponent = {
                             'fa-folder-o': file.isDir
                         })
                     }),
+
+                    // file name
                     m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},` ${file.name}`),
-                    file.isDir ? folder({path: file.path + '/', folderHash, study}) : ''
+
+                    // children
+                    hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash, study}) : ''
                 ])
             ]
         );
     }
 };
 
+const toggleOpen = vm => e => {
+    vm.isOpen(!vm.isOpen());
+    e.preventDefault();
+    e.stopPropagation();
+};
+
 // select specific file and display it
-let select = (file) => e => {
+const select = (file) => e => {
     e.stopPropagation();
     e.preventDefault();
     m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
 };
 
 // checkmark a file/folder
-let choose = ({file, study}) => e => {
+const choose = ({file, study}) => e => {
     e.stopPropagation();
     e.preventDefault();
 
