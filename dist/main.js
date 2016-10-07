@@ -1853,7 +1853,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -2039,6 +2039,75 @@
         }
     };
 
+    var moveFileComponent = function (args) { return m.component(component, args); };
+
+
+    var component = {
+        controller: function controller(ref){
+            var study = ref.study;
+
+            var dirs = study
+                .files()
+                .filter(function (file) { return file.isDir; })
+                .map(function (ref) {
+                    var name = ref.name;
+                    var basePath = ref.basePath;
+                    var path = ref.path;
+                    var id = ref.id;
+
+                    return ({name: name, basePath: basePath, path: path, id: id, isOpen: m.prop(study.vm(id).isOpen())});
+            })
+                .reduce(function (hash, dir){
+                    var path = dir.basePath;
+                    if (!hash[path]) hash[path] = [];
+                    hash[path].push(dir);
+                    return hash;
+                }, {'/': []});
+
+
+            var root = {isOpen: m.prop(true), name:'/', path: '/'};
+            return {root: root, dirs: dirs};
+        },
+        view: function view(ref, ref$1){
+            var dirs = ref.dirs;
+            var root = ref.root;
+            var newPath = ref$1.newPath;
+
+            return m('.card-block', [
+                m('p.card-text', [
+                    m('strong', 'Moving to: '),
+                    dirName(newPath())
+                ]),
+                m('.folders-well', [
+                    m('ul.list-unstyled', dirNode(root, dirs, newPath) )
+                ])
+            ]);
+        }
+    };
+
+
+    function dirNode(dir, dirs, newPath){
+        var children = dirs[dir.path.replace(/\/?$/, '/')]; // optionally add a backslash at the end
+        return m('li', [
+            m('i.fa.fa-fw', {
+                onclick: function () { return dir.isOpen(!dir.isOpen()); },
+                class: classNames({
+                    'fa-caret-right' : children && !dir.isOpen(),
+                    'fa-caret-down': children && dir.isOpen()
+                })
+            }),
+            m('span', {onclick: function () { return newPath(dir.path); }}, [
+                m('i.fa.fa-folder-o.m-r-1'),
+                dirName(dir.name)
+            ]),
+            !children || !dir.isOpen() ? '' : m('ul.bulletless', children.map(function (d) { return dirNode(d, dirs, newPath); }))
+        ]);
+    }
+
+    function dirName(name){
+        return name === '/' ? m('span.text-muted', 'Root Directory') : name;
+    }
+
     var uploadFiles = function (path,study) { return function (files) {
         study
             .uploadFiles(path, files)
@@ -2049,38 +2118,49 @@
             .then(m.redraw);
     }; };
 
-    var moveFile = function (file,study) { return function () {
-        var isFocused = file.id === m.route.param('fileId');
+    var moveFile = function (file, study) { return function () {
+        var newPath = m.prop(file.basePath);
+        messages.confirm({
+            header: 'Move File',
+            content: moveFileComponent({newPath: newPath, file: file, study: study})
+        })
+            .then(function (response) {
+                if (response && newPath() !== file.basePath) return moveAction(newPath() +'/'+ file.name, file,study);
+            });
+    }; };
+
+    var renameFile = function (file,study) { return function () {
         var newPath = m.prop(file.path);
         return messages.prompt({
-            header: 'Move/Rename File',
+            header: 'Rename File',
             postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
             prop: newPath
         })
             .then(function (response) {
-                if (response) return moveAction(file,study);
+                if (response) return moveAction(newPath(), file,study);
             });
+    }; };
 
-        function moveAction(file,study){
-            var def = file
-                .move(newPath(),study) // the actual movement
-                .then(redirect)
-                .catch(function (response) { return messages.alert({
-                    header: 'Move/Rename File',
-                    content: response.message
-                }); })
-                .then(m.redraw); // redraw after server response
+    function moveAction(newPath, file, study){
+        var isFocused = file.id === m.route.param('fileId');
+        var def = file
+        .move(newPath,study) // the actual movement
+        .then(redirect)
+        .catch(function (response) { return messages.alert({
+            header: 'Move/Rename File',
+            content: response.message
+        }); })
+        .then(m.redraw); // redraw after server response
 
-            m.redraw();
-            return def;
-        }
+        m.redraw();
+        return def;
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
             if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id))); 
             return response;
         }
-    }; };
+    }
 
     var playground;
     var play = function (file,study) { return function () {
@@ -3837,7 +3917,8 @@
                 isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
-                {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study), disabled: isReadonly }
+                {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
+                {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
             ]);
         }
 

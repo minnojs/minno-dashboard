@@ -151,6 +151,17 @@ files.push({id:'images', path:'images', url:'/test/images', isDir:true, files: [
         'url': '/test/images/bf14_nc.jpg'
     }
 ]});
+
+files.push({id:'par', path:'par', url:'/test/par', isDir:true, files: [
+    {id: 'sub', path: 'par/sub', url: '/test/par/sub', isDir: true, files: [
+        {
+            'id': 'wm1_nc.jpg',
+            'path': 'par/sub/wm1_nc.jpg',
+            'url': '/test/par/sub/wm1_nc.jpg'
+        }
+    ]}
+]});
+
 files.push({id:'someFile.grg', path:'someFile.grg', url:'/test/someFile.grg'});
 
 router.route('/files/:studyId')

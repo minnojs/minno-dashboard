@@ -1,5 +1,6 @@
 import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
+import moveFileComponent from './moveFileComponent';
 
 export let uploadFiles = (path,study) => files => {
     study
@@ -11,38 +12,49 @@ export let uploadFiles = (path,study) => files => {
         .then(m.redraw);
 };
 
-export let moveFile = (file,study) => () => {
-    let isFocused = file.id === m.route.param('fileId');
+export let moveFile = (file, study) => () => {
+    let newPath = m.prop(file.basePath);
+    messages.confirm({
+        header: 'Move File',
+        content: moveFileComponent({newPath, file, study})
+    })
+        .then(response => {
+            if (response && newPath() !== file.basePath) return moveAction(newPath() +'/'+ file.name, file,study);
+        });
+};
+
+export let renameFile = (file,study) => () => {
     let newPath = m.prop(file.path);
     return messages.prompt({
-        header: 'Move/Rename File',
+        header: 'Rename File',
         postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
         prop: newPath
     })
         .then(response => {
-            if (response) return moveAction(file,study);
+            if (response) return moveAction(newPath(), file,study);
         });
+};
 
-    function moveAction(file,study){
-        let def = file
-            .move(newPath(),study) // the actual movement
-            .then(redirect)
-            .catch(response => messages.alert({
-                header: 'Move/Rename File',
-                content: response.message
-            }))
-            .then(m.redraw); // redraw after server response
+function moveAction(newPath, file, study){
+    let isFocused = file.id === m.route.param('fileId');
+    let def = file
+    .move(newPath,study) // the actual movement
+    .then(redirect)
+    .catch(response => messages.alert({
+        header: 'Move/Rename File',
+        content: response.message
+    }))
+    .then(m.redraw); // redraw after server response
 
-        m.redraw();
-        return def;
-    }
+    m.redraw();
+    return def;
 
     function redirect(response){
         // redirect only if the file is chosen, otherwise we can stay right here...
         if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`); 
         return response;
     }
-};
+}
 
 let playground;
 export let play = (file,study) => () => {

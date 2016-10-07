@@ -113,6 +113,15 @@ a.no-decoration {
   margin-bottom: .25rem;
   content: ''; }
 
+.bulletless {
+  list-style-type: none;
+  list-style-image: none; }
+
+.folders-well {
+  border: 1px solid #e5e5e5;
+  border-radius: .25rem;
+  padding: 0.75rem 0.75rem 0 0.75rem; }
+
 .navbar {
   background: #2882b5; }
   .is-iframe .navbar {
