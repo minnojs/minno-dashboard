@@ -133,7 +133,7 @@ var mainComponent = {
                         .filter(searchFilter(globalSearch()))
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
-                                m('.col-sm-2', [
+                                m('.col-sm-3', [
                                     m('i.fa.fa-fw.owner-icon', {
                                         class: classNames({
                                             'fa-globe': study.is_public,
@@ -146,10 +146,10 @@ var mainComponent = {
                                     }),
                                     m('.study-text', study.name)
                                 ]),
-                                m('.col-sm-4', [
+                                m('.col-sm-3', [
                                     study.tags.map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
                                 ]),
-                                m('.col-sm-5', [
+                                m('.col-sm-3', [
                                     m('.study-text', formatDate(new Date(study.last_modified)))
                                 ]),
                                 m('.col-sm-1', [
