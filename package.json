@@ -11,8 +11,13 @@
     "watch:js": "rollup --config --sourcemap --watch",
     "css": "node-sass src/style/style.scss --output dist --source-map=true",
     "watch:css": "node-sass -w src/style --output dist --source-map=true",
+    "watch": "npm-run-all --parallel watch:*",
     "serve": "node fixtures/fixtures.js",
     "bundle": "npm-run-all --parallel js css",
+    "bust-cache": "sed -i'' -e \"s/\\(?v=\\)[0-9]*/\\1$(date +%s)/\" index.html",
+    "prebundle": "npm run bust-cache",
+    "prewatch": "npm run bust-cache",
+    "prestart": "npm run bust-cache",
     "start": "npm-run-all --parallel serve watch:*"
   },
   "author": "",
