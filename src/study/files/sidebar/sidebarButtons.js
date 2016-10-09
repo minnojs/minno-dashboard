@@ -40,7 +40,7 @@ let sidebarButtons = ({study}) => {
                 m('a.dropdown-item', { href: `/studyChangeRequest/${studyId}`, config: m.route }, 'Request Change'),
                 m('a.dropdown-item', { href: `/studyRemoval/${studyId}`, config: m.route }, 'Request Removal'),
                 m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
-                m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy URL'])
+                m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Study Path'])
             ]})
         ])
     ]);

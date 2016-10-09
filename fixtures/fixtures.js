@@ -159,6 +159,7 @@ router.route('/files/:studyId')
             res.json({
                 is_readonly: Math.random() < 0.1,
                 study_name: 'Cool name',
+                base_url: 'base url...',
                 files: files
             });
         }, 0);

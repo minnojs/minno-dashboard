@@ -3777,36 +3777,55 @@
     };
 
     var copyUrl = function (url) { return function () {
-        var input = document.createElement('input');
-        input.value = url;
-        document.body.appendChild(input);
-        input.select();
-        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)){
-            messages.alert({
-                header: 'Copy URL',
-                content: m('.card-block', [
-                    m('.form-group', [
-                        m('label', 'Copy Url by clicking Ctrl + C'),
-                        m('input.form-control', {
-                            config: function (el) { return el.select(); },
-                            value: url
-                        })
-                    ])
-                ])
-            });
-        }
-
-        try {
-            document.execCommand('copy');
-        } catch(err){
-            messages.alert({
-                header: 'Copy URL',
-                content: 'Copying the URL has failed.'
-            });
-        }
-
-        input.parentNode.removeChild(input);
+        messages.alert({
+            header: 'Copy URL',
+            content: m.component(copyComponent, {url: url})
+        });
     }; };
+
+    var copyComponent = {
+        controller: function (ref) {
+            var url = ref.url;
+
+            var copyFail = m.prop(false);
+            var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
+
+            return {autoCopy: autoCopy, copyFail: copyFail};
+        },
+        view: function (ref, ref$1) {
+            var autoCopy = ref.autoCopy;
+            var copyFail = ref.copyFail;
+            var url = ref$1.url;
+
+            return m('.card-block', [
+            m('.form-group', [
+                m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
+                m('label.input-group',[
+                    m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
+                    m('input.form-control', { config: function (el) { return el.select(); }, value: url })
+                ]),
+                !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
+            ])
+        ]);
+    }
+    };
+
+    function copy(text){
+        return new Promise(function (resolve, reject) {
+            var input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+
+            try {
+                document.execCommand('copy');
+            } catch(err){
+                reject(err);
+            }
+
+            input.parentNode.removeChild(input);
+        });
+    }
 
     var fileContext = function (file, study) {
         var path = !file ? '/' : file.isDir ? file.path : file.basePath;
@@ -4134,7 +4153,7 @@
                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                     m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
                     m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
-                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy URL'])
+                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Study Path'])
                 ]})
             ])
         ]);
