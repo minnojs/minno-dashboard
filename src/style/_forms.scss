@@ -3,6 +3,7 @@
 
 // fix post c-custom margin
 .c-inputs-stacked .c-input:last-child::after { display: none; }
+select.c-select {line-height: 1em;}
 
 .checkmarked {
     text-indent: -0.3em;

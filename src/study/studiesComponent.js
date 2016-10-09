@@ -97,7 +97,7 @@ var mainComponent = {
                     ]),
 
                     m('.input-group.pull-right.m-r-1', [
-                        m('select.c-select.form-control.frm-control-sm', {onchange: e => permissionChoice(e.target.value)}, [
+                        m('select.c-select.form-control', {onchange: e => permissionChoice(e.target.value)}, [
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
                             m('option', {value:'collaboration'}, 'Show only studies shared with me'),
