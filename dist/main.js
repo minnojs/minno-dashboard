@@ -1817,7 +1817,6 @@
         },
 
         addFile: function addFile(file){
-            // update the file list
             this.files().push(file);
             // update the parent folder
             var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
@@ -1869,38 +1868,29 @@
             }
         },
 
-        uploadFiles: function uploadFiles(path, files){
+        uploadFiles: function uploadFiles(ref){
             var this$1 = this;
+            var path = ref.path;
+            var files = ref.files;
+            var force = ref.force;
 
-            var paths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
             var formData = buildFormData(path === '/' ? '' : path, files);
-            // validation (make sure files do not already exist)
-            var exists = this.files().find(function (file) { return paths.includes(file.path); });
-            if (exists) return Promise.reject({message: ("The file \"" + (exists.path) + "\" already exists")});
+            formData.append('forceUpload', +force);
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
-                .then(function (response) {
-                    response.forEach(function (src) {
-                        var file = fileFactory(Object.assign({studyId: this$1.id},src));
-                        this$1.addFile(file);
-                    });
-
-                    return response;
-                })
+                .then(function (response) { return response.forEach(function (src) {
+                    var file = fileFactory(Object.assign({studyId: this$1.id},src));
+                    // if file already exists, remove it
+                    if (force && this$1.files().find(function (f) { return f.path === file.path; })) this$1.removeFiles([file]);
+                    this$1.addFile(file);
+                }); })
                 .then(this.sort.bind(this));
 
             function buildFormData(path, files) {
                 var formData = new FormData;
-                // formData.append('path', path);
-
-                // for (let file in files) {
-                //  formData.append('files', files[file]);
-                // }
-
                 for (var i = 0; i < files.length; i++) {
                     formData.append(i, files[i]);
                 }
-
                 return formData;
             }
         },
@@ -1919,21 +1909,25 @@
 
             var paths = files.map(function (f){ return f.path; });
             return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-                .then(function () {
-                    // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-                    var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
-                    // get all files not to be deleted
-                    var filesList = this$1.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
-                    files.forEach(function (file) {
-                        var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-                        if (parent) {
-                            var index = parent.files.indexOf(file);
-                            parent.files.splice(index, 1);
-                        }
-                    });
+                .then(function () { return this$1.removeFiles(files); });
+        },
 
-                    this$1.files(filesList);
-                });
+        removeFiles: function removeFiles(files){
+            var this$1 = this;
+
+            // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
+            var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
+            // get all files not to be deleted
+            var filesList = this.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
+            files.forEach(function (file) {
+                var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+                if (parent) {
+                    var index = parent.files.indexOf(file);
+                    parent.files.splice(index, 1);
+                }
+            });
+
+            this.files(filesList);
         },
 
         getParents: function getParents(file){
@@ -2111,13 +2105,28 @@
     }
 
     var uploadFiles = function (path,study) { return function (files) {
-        study
-            .uploadFiles(path, files)
-            .catch(function (response) { return messages.alert({
-                header: 'Upload File',
-                content: response.message
-            }); })
-            .then(m.redraw);
+        // validation (make sure files do not already exist)
+        var filePaths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
+        var exist = study.files().filter(function (file) { return filePaths.includes(file.path); }).map(function (f) { return f.path; });
+
+        if (!exist.length) return upload({force:false});
+        else return messages.confirm({
+            header: 'Upload Files', 
+            content: ("The file" + (exist.length > 1 ? 's' : '') + " \"" + (exist.join(', ')) + "\" already exists")
+        })
+            .then(function (response) { return response && upload({force:true}); });
+
+        function upload(ref) {
+            if ( ref === void 0 ) ref = {force:false};
+            var force = ref.force;
+
+            return study.uploadFiles({path: path, files: files, force: force})
+                .catch(function (response) { return messages.alert({
+                    header: 'Upload File',
+                    content: response.message
+                }); })
+                .then(m.redraw);
+        }
     }; };
 
     var moveFile = function (file, study) { return function () {

@@ -3,13 +3,25 @@ import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 
 export let uploadFiles = (path,study) => files => {
-    study
-        .uploadFiles(path, files)
-        .catch(response => messages.alert({
-            header: 'Upload File',
-            content: response.message
-        }))
-        .then(m.redraw);
+    // validation (make sure files do not already exist)
+    let filePaths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
+    let exist = study.files().filter(file => filePaths.includes(file.path)).map(f => f.path);
+
+    if (!exist.length) return upload({force:false});
+    else return messages.confirm({
+        header: 'Upload Files', 
+        content: `The file${exist.length > 1 ? 's' : ''} "${exist.join(', ')}" already exists`
+    })
+        .then(response => response && upload({force:true}));
+
+    function upload({force} = {force:false}) {
+        return study.uploadFiles({path, files, force})
+            .catch(response => messages.alert({
+                header: 'Upload File',
+                content: response.message
+            }))
+            .then(m.redraw);
+    }
 };
 
 export let moveFile = (file, study) => () => {
