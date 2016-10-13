@@ -1,6 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createEmpty, moveFile, renameFile, downloadFile} from './fileActions';
+import {createDir, createEmpty, moveFile, renameFile, downloadFile, resetFile} from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';
 import copyUrl from 'utils/copyUrl';
@@ -30,7 +30,7 @@ let fileContext = (file, study) => {
         if (!isReadonly) menu.push({separator:true});
 
         menu = menu.concat([
-            {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: isReadonly || file.content() == file.sourceContent()},
+            {icon:'fa-refresh', text: 'Refresh/Reset', action: resetFile(file), disabled: isReadonly || file.content() == file.sourceContent()},
             {icon:'fa-download', text:'Download', action: downloadFile(study, file)},
             {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
             isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
@@ -54,11 +54,6 @@ let fileContext = (file, study) => {
                 ? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
                 : {text, menu: mapWizardHash(value)};
         });
-    }
-
-    function refreshFile(){
-        file.content(file.sourceContent());
-        m.redraw();
     }
 
     function deleteFile(){

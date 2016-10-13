@@ -219,3 +219,5 @@ export let downloadFile = (study, file) => () => {
             content: err.message
         }));
 };
+
+export let resetFile = file => () => file.content(file.sourceContent());

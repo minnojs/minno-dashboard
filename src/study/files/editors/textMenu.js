@@ -1,5 +1,5 @@
 import classNames from 'utils/classNames';
-import {play, save} from '../sidebar/fileActions';
+import {play, save, resetFile} from '../sidebar/fileActions';
 import {pageSnippet, questSnippet, taskSnippet} from './snippetActions';
 
 export default textMenuView;
@@ -21,6 +21,12 @@ let textMenuView = ({mode, file, study, observer}) => {
             m('span',{class: file.hasChanged() ? '' : 'invisible'}, '*'),
             file.path
         ),
+
+        m('.btn-group.btn-group-sm.pull-xs-right', [
+            m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file sinse the last change'},[
+                m('strong.fa.fa-refresh')
+            ])
+        ]),
 
         m('.btn-group.btn-group-sm.pull-xs-right', [
             m('a.btn.btn-secondary', {href: `http://projectimplicit.github.io/PIquest/0.0/basics/overview.html`, target: '_blank', title:'API documentation'},[
