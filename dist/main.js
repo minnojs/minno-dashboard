@@ -133,16 +133,6 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1250,15 +1240,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1853,7 +1834,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3629,21 +3610,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3703,8 +3669,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3940,7 +3904,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4323,10 +4286,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4478,10 +4437,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7148,6 +7103,7 @@
     var recoveryComponent = {
         controller: function controller(){
             var ctrl = {
+                sent:false,
                 username: m.prop(''),
                 error: m.prop(''),
                 recoveryAction: recoveryAction
@@ -7159,11 +7115,18 @@
                     .catch(function (response) {
                         ctrl.error(response.message);
                     })
-                    .then(m.redraw);
+                    .then(function (){ctrl.sent = true; m.redraw()})
             }
         },
         view: function view(ctrl){
             return  m('.recovery.centrify', {config:fullHeight},[
+                ctrl.sent
+                    ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Recovery request successfully sent!')
+                    ]
+                    :
                 m('.card.card-inverse.col-md-4', [
                     m('.card-block',[
                         m('h4', 'Password Reset Request'),
@@ -7181,7 +7144,7 @@
                         ]),
 
                         !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
+                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
                     ])
                 ])
             ]);
@@ -7619,7 +7582,7 @@
                     getAuth().then(function (response) {
                         ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
-                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
+                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code'))
                             m.route('/login');
                         if(ctrl.role()=='CU' && m.route() == '/studies')
                             m.route('/downloads');

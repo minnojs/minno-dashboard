@@ -22,7 +22,7 @@ let layout = route => {
                 getAuth().then((response) => {
                     ctrl.role(response.role);
                     ctrl.isloggedin = response.isloggedin;
-                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code'))
+                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code'))
                         m.route('/login');
                     if(ctrl.role()=='CU' && m.route() == '/studies')
                         m.route('/downloads');

@@ -5,6 +5,7 @@ export default recoveryComponent;
 let recoveryComponent = {
     controller(){
         const ctrl = {
+            sent:false,
             username: m.prop(''),
             error: m.prop(''),
             recoveryAction
@@ -16,11 +17,18 @@ let recoveryComponent = {
                 .catch(response => {
                     ctrl.error(response.message);
                 })
-                .then(m.redraw);
+                .then(()=>{ctrl.sent = true; m.redraw()})
         }
     },
     view(ctrl){
         return  m('.recovery.centrify', {config:fullHeight},[
+            ctrl.sent
+                ?
+                [
+                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                    m('h5', 'Recovery request successfully sent!')
+                ]
+                :
             m('.card.card-inverse.col-md-4', [
                 m('.card-block',[
                     m('h4', 'Password Reset Request'),
@@ -38,7 +46,7 @@ let recoveryComponent = {
                     ]),
 
                     !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.recovery},'Request')
+                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
                 ])
             ])
         ]);
