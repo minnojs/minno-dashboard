@@ -1718,7 +1718,9 @@
 
             // these are defined when calling checkSyntax
             syntaxValid     : undefined,
-            syntaxData      : undefined
+            syntaxData      : undefined,
+
+            undoManager     : m.prop() // a prop to keep track of the undo manager for this file
         });
 
         file.content(fileObj.content || '');
@@ -2370,6 +2372,7 @@
                     fullHeight(element, isInitialized, ctx);
 
                     require(['ace/ace'], function(ace){
+                        var undoManager = settings.undoManager || (function (u) { return u; });
                         ace.config.set('packaged', true);
                         ace.config.set('basePath', require.toUrl('ace'));
 
@@ -2407,7 +2410,9 @@
                         if(observer) observer.on('paste',paste );
                         
                         setContent();
-                        session.setUndoManager(new ace.UndoManager()); // reset undo manager so that ctrl+z doesn't erase file
+                        // reset undo manager so that ctrl+z doesn't erase file
+                        // save it so that it doesn't get lost when users navigate away
+                        session.setUndoManager(undoManager() || undoManager(new ace.UndoManager())); 
                         editor.focus();
                         
                         ctx.onunload = function () {
@@ -3521,7 +3526,17 @@
 
         var textMode = modeMap[file.type] || 'javascript';
         switch (ctrl.mode()){
-            case 'edit' : return ace({content:file.content, observer: observer, settings: {onSave: save(file), mode: textMode, jshintOptions: jshintOptions, isReadonly: study.isReadonly}});
+            case 'edit' : return ace({
+                content:file.content,
+                observer: observer,
+                settings: {
+                    onSave: save(file), 
+                    mode: textMode,
+                    jshintOptions: jshintOptions,
+                    isReadonly: study.isReadonly,
+                    undoManager: file.undoManager
+                }
+            });
             case 'validator': return validate({file: file});
             case 'syntax': return syntax({file: file});
         }
