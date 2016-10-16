@@ -405,6 +405,7 @@
     function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
     function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
 
+
     function create_tag(study_id, tagName, tags, error, callback){
         return function () { return add_tag(tagName(), 'E7E7E7')
             .then(function (response) { return tags().push(response); })
@@ -667,17 +668,19 @@
                             .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
                                     m('.col-sm-3', [
-                                        m('i.fa.fa-fw.owner-icon', {
-                                            class: classNames({
-                                                'fa-globe': study.is_public,
-                                                'fa-users': !study.is_public && study.permission !== 'owner'
+                                        m('.study-text', [
+                                            m('i.fa.fa-fw.owner-icon', {
+                                                class: classNames({
+                                                    'fa-globe': study.is_public,
+                                                    'fa-users': !study.is_public && study.permission !== 'owner'
+                                                }),
+                                                title: classNames({
+                                                    'Public' : study.is_public,
+                                                    'Collaboration' : !study.is_public && study.permission !== 'owner'
+                                                })
                                             }),
-                                            title: classNames({
-                                                'Public' : study.is_public,
-                                                'Collaboration' : !study.is_public && study.permission !== 'owner'
-                                            })
-                                        }),
-                                        m('.study-text', study.name)
+                                            study.name
+                                        ])
                                     ]),
                                     m('.col-sm-3', [
                                         study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
@@ -1697,7 +1700,9 @@
 
             // these are defined when calling checkSyntax
             syntaxValid     : undefined,
-            syntaxData      : undefined
+            syntaxData      : undefined,
+
+            undoManager     : m.prop() // a prop to keep track of the undo manager for this file
         });
 
         file.content(fileObj.content || '');
@@ -1796,7 +1801,6 @@
         },
 
         addFile: function addFile(file){
-            // update the file list
             this.files().push(file);
             // update the parent folder
             var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
@@ -1817,7 +1821,7 @@
 
             // validation (make sure file does not already exist)
             var exists = this.files().some(function (file) { return file.path === name; });
-            if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists")});
+            if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists2")});
 
             // validateion (make sure direcotry exists)
             var basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
@@ -1848,38 +1852,29 @@
             }
         },
 
-        uploadFiles: function uploadFiles(path, files){
+        uploadFiles: function uploadFiles(ref){
             var this$1 = this;
+            var path = ref.path;
+            var files = ref.files;
+            var force = ref.force;
 
-            var paths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
             var formData = buildFormData(path === '/' ? '' : path, files);
-            // validation (make sure files do not already exist)
-            var exists = this.files().find(function (file) { return paths.includes(file.path); });
-            if (exists) return Promise.reject({message: ("The file \"" + (exists.path) + "\" already exists")});
+            formData.append('forceUpload', +force);
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
-                .then(function (response) {
-                    response.forEach(function (src) {
-                        var file = fileFactory(Object.assign({studyId: this$1.id},src));
-                        this$1.addFile(file);
-                    });
-
-                    return response;
-                })
+                .then(function (response) { return response.forEach(function (src) {
+                    var file = fileFactory(Object.assign({studyId: this$1.id},src));
+                    // if file already exists, remove it
+                    if (force && this$1.files().find(function (f) { return f.path === file.path; })) this$1.removeFiles([file]);
+                    this$1.addFile(file);
+                }); })
                 .then(this.sort.bind(this));
 
             function buildFormData(path, files) {
                 var formData = new FormData;
-                // formData.append('path', path);
-
-                // for (let file in files) {
-                //  formData.append('files', files[file]);
-                // }
-
                 for (var i = 0; i < files.length; i++) {
                     formData.append(i, files[i]);
                 }
-
                 return formData;
             }
         },
@@ -1898,21 +1893,25 @@
 
             var paths = files.map(function (f){ return f.path; });
             return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-                .then(function () {
-                    // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-                    var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
-                    // get all files not to be deleted
-                    var filesList = this$1.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
-                    files.forEach(function (file) {
-                        var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-                        if (parent) {
-                            var index = parent.files.indexOf(file);
-                            parent.files.splice(index, 1);
-                        }
-                    });
+                .then(function () { return this$1.removeFiles(files); });
+        },
 
-                    this$1.files(filesList);
-                });
+        removeFiles: function removeFiles(files){
+            var this$1 = this;
+
+            // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
+            var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
+            // get all files not to be deleted
+            var filesList = this.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
+            files.forEach(function (file) {
+                var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+                if (parent) {
+                    var index = parent.files.indexOf(file);
+                    parent.files.splice(index, 1);
+                }
+            });
+
+            this.files(filesList);
         },
 
         getParents: function getParents(file){
@@ -2020,48 +2019,143 @@
         }
     };
 
+    var moveFileComponent = function (args) { return m.component(component, args); };
+
+
+    var component = {
+        controller: function controller(ref){
+            var study = ref.study;
+
+            var dirs = study
+                .files()
+                .filter(function (file) { return file.isDir; })
+                .map(function (ref) {
+                    var name = ref.name;
+                    var basePath = ref.basePath;
+                    var path = ref.path;
+                    var id = ref.id;
+
+                    return ({name: name, basePath: basePath, path: path, id: id, isOpen: m.prop(study.vm(id).isOpen())});
+            })
+                .reduce(function (hash, dir){
+                    var path = dir.basePath;
+                    if (!hash[path]) hash[path] = [];
+                    hash[path].push(dir);
+                    return hash;
+                }, {'/': []});
+
+
+            var root = {isOpen: m.prop(true), name:'/', path: '/'};
+            return {root: root, dirs: dirs};
+        },
+        view: function view(ref, ref$1){
+            var dirs = ref.dirs;
+            var root = ref.root;
+            var newPath = ref$1.newPath;
+
+            return m('.card-block', [
+                m('p.card-text', [
+                    m('strong', 'Moving to: '),
+                    dirName(newPath())
+                ]),
+                m('.folders-well', [
+                    m('ul.list-unstyled', dirNode(root, dirs, newPath) )
+                ])
+            ]);
+        }
+    };
+
+
+    function dirNode(dir, dirs, newPath){
+        var children = dirs[dir.path.replace(/\/?$/, '/')]; // optionally add a backslash at the end
+        return m('li', [
+            m('i.fa.fa-fw', {
+                onclick: function () { return dir.isOpen(!dir.isOpen()); },
+                class: classNames({
+                    'fa-caret-right' : children && !dir.isOpen(),
+                    'fa-caret-down': children && dir.isOpen()
+                })
+            }),
+            m('span', {onclick: function () { return newPath(dir.path); }}, [
+                m('i.fa.fa-folder-o.m-r-1'),
+                dirName(dir.name)
+            ]),
+            !children || !dir.isOpen() ? '' : m('ul.bulletless', children.map(function (d) { return dirNode(d, dirs, newPath); }))
+        ]);
+    }
+
+    function dirName(name){
+        return name === '/' ? m('span.text-muted', 'Root Directory') : name;
+    }
+
     var uploadFiles = function (path,study) { return function (files) {
-        study
-            .uploadFiles(path, files)
-            .catch(function (response) { return messages.alert({
-                header: 'Upload File',
-                content: response.message
-            }); })
-            .then(m.redraw);
+        // validation (make sure files do not already exist)
+        var filePaths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
+        var exist = study.files().filter(function (file) { return filePaths.includes(file.path); }).map(function (f) { return f.path; });
+
+        if (!exist.length) return upload({force:false});
+        else return messages.confirm({
+            header: 'Upload Files', 
+            content: ("The file" + (exist.length > 1 ? 's' : '') + " \"" + (exist.join(', ')) + "\" already exists")
+        })
+            .then(function (response) { return response && upload({force:true}); });
+
+        function upload(ref) {
+            if ( ref === void 0 ) ref = {force:false};
+            var force = ref.force;
+
+            return study.uploadFiles({path: path, files: files, force: force})
+                .catch(function (response) { return messages.alert({
+                    header: 'Upload File',
+                    content: response.message
+                }); })
+                .then(m.redraw);
+        }
     }; };
 
-    var moveFile = function (file,study) { return function () {
-        var isFocused = file.id === m.route.param('fileId');
+    var moveFile = function (file, study) { return function () {
+        var newPath = m.prop(file.basePath);
+        messages.confirm({
+            header: 'Move File',
+            content: moveFileComponent({newPath: newPath, file: file, study: study})
+        })
+            .then(function (response) {
+                if (response && newPath() !== file.basePath) return moveAction(newPath() +'/'+ file.name, file,study);
+            });
+    }; };
+
+    var renameFile = function (file,study) { return function () {
         var newPath = m.prop(file.path);
         return messages.prompt({
-            header: 'Move/Rename File',
+            header: 'Rename File',
             postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
             prop: newPath
         })
             .then(function (response) {
-                if (response) return moveAction(file,study);
+                if (response) return moveAction(newPath(), file,study);
             });
+    }; };
 
-        function moveAction(file,study){
-            var def = file
-                .move(newPath(),study) // the actual movement
-                .then(redirect)
-                .catch(function (response) { return messages.alert({
-                    header: 'Move/Rename File',
-                    content: response.message
-                }); })
-                .then(m.redraw); // redraw after server response
+    function moveAction(newPath, file, study){
+        var isFocused = file.id === m.route.param('fileId');
+        var def = file
+        .move(newPath,study) // the actual movement
+        .then(redirect)
+        .catch(function (response) { return messages.alert({
+            header: 'Move/Rename File',
+            content: response.message
+        }); })
+        .then(m.redraw); // redraw after server response
 
-            m.redraw();
-            return def;
-        }
+        m.redraw();
+        return def;
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
             if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id))); 
             return response;
         }
-    }; };
+    }
 
     var playground;
     var play = function (file,study) { return function () {
@@ -2223,6 +2317,8 @@
             }); });
     }; };
 
+    var resetFile = function (file) { return function () { return file.content(file.sourceContent()); }; };
+
     var ace = function (args) { return m.component(aceComponent, args); };
 
     var noop$1 = function(){};
@@ -2258,6 +2354,7 @@
                     fullHeight(element, isInitialized, ctx);
 
                     require(['ace/ace'], function(ace){
+                        var undoManager = settings.undoManager || (function (u) { return u; });
                         ace.config.set('packaged', true);
                         ace.config.set('basePath', require.toUrl('ace'));
 
@@ -2295,7 +2392,9 @@
                         if(observer) observer.on('paste',paste );
                         
                         setContent();
-                        session.setUndoManager(new ace.UndoManager()); // reset undo manager so that ctrl+z doesn't erase file
+                        // reset undo manager so that ctrl+z doesn't erase file
+                        // save it so that it doesn't get lost when users navigate away
+                        session.setUndoManager(undoManager() || undoManager(new ace.UndoManager())); 
                         editor.focus();
                         
                         ctx.onunload = function () {
@@ -3298,6 +3397,12 @@
             ),
 
             m('.btn-group.btn-group-sm.pull-xs-right', [
+                m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file sinse the last change'},[
+                    m('strong.fa.fa-refresh')
+                ])
+            ]),
+
+            m('.btn-group.btn-group-sm.pull-xs-right', [
                 m('a.btn.btn-secondary', {href: "http://projectimplicit.github.io/PIquest/0.0/basics/overview.html", target: '_blank', title:'API documentation'},[
                     m('strong.fa.fa-book'),
                     m('strong', ' Docs')
@@ -3403,7 +3508,17 @@
 
         var textMode = modeMap[file.type] || 'javascript';
         switch (ctrl.mode()){
-            case 'edit' : return ace({content:file.content, observer: observer, settings: {onSave: save(file), mode: textMode, jshintOptions: jshintOptions, isReadonly: study.isReadonly}});
+            case 'edit' : return ace({
+                content:file.content,
+                observer: observer,
+                settings: {
+                    onSave: save(file), 
+                    mode: textMode,
+                    jshintOptions: jshintOptions,
+                    isReadonly: study.isReadonly,
+                    undoManager: file.undoManager
+                }
+            });
             case 'validator': return validate({file: file});
             case 'syntax': return syntax({file: file});
         }
@@ -3814,13 +3929,14 @@
             if (!isReadonly) menu.push({separator:true});
 
             menu = menu.concat([
-                {icon:'fa-refresh', text: 'Refresh/Reset', action: refreshFile, disabled: isReadonly || file.content() == file.sourceContent()},
+                {icon:'fa-refresh', text: 'Refresh/Reset', action: resetFile(file), disabled: isReadonly || file.content() == file.sourceContent()},
                 {icon:'fa-download', text:'Download', action: downloadFile$1(study, file)},
                 {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
                 isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
-                {icon:'fa-exchange', text:'Move/Rename...', action: moveFile(file,study), disabled: isReadonly }
+                {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
+                {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
             ]);
         }
 
@@ -3837,11 +3953,6 @@
                     ? {text: text, action: createFromTemplate({study: study, path: path, url:value, templateName:text})}
                     : {text: text, menu: mapWizardHash(value)};
             });
-        }
-
-        function refreshFile(){
-            file.content(file.sourceContent());
-            m.redraw();
         }
 
         function deleteFile(){
@@ -3926,13 +4037,14 @@
             var study = ref.study;
 
             var vm = study.vm(file.id); // vm is created by the studyModel
+            var hasChildren = !!(file.isDir && file.files && file.files.length);
             return m('li.file-node',
                 {
                     key: file.id,
                     class: classNames({
                         open : vm.isOpen()
                     }),
-                    onclick: file.isDir ? function () { return vm.isOpen(!vm.isOpen()); } : select(file),
+                    onclick: file.isDir ? toggleOpen(vm) : select(file),
                     oncontextmenu: fileContext(file, study),
                     config: file.isDir ? uploadConfig({onchange:uploadFiles(file.path, study)}) : null
                 },
@@ -3945,8 +4057,8 @@
                     }, m.trust('&nbsp;')),
                     m('i.fa.fa-fw', {
                         class: classNames({
-                            'fa-caret-right' : file.isDir && !vm.isOpen(),
-                            'fa-caret-down': file.isDir && vm.isOpen()
+                            'fa-caret-right' : hasChildren && !vm.isOpen(),
+                            'fa-caret-down': hasChildren && vm.isOpen()
                         })
                     }),
 
@@ -3971,13 +4083,23 @@
                                 'fa-folder-o': file.isDir
                             })
                         }),
+
+                        // file name
                         m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
-                        file.isDir ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
+
+                        // children
+                        hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
                     ])
                 ]
             );
         }
     };
+
+    var toggleOpen = function (vm) { return function (e) {
+        vm.isOpen(!vm.isOpen());
+        e.preventDefault();
+        e.stopPropagation();
+    }; };
 
     // select specific file and display it
     var select = function (file) { return function (e) {
@@ -7115,7 +7237,7 @@
                     .catch(function (response) {
                         ctrl.error(response.message);
                     })
-                    .then(function (){ctrl.sent = true; m.redraw()})
+                    .then(function (){ctrl.sent = true; m.redraw();});
             }
         },
         view: function view(ctrl){

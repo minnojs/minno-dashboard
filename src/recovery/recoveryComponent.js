@@ -17,7 +17,7 @@ let recoveryComponent = {
                 .catch(response => {
                     ctrl.error(response.message);
                 })
-                .then(()=>{ctrl.sent = true; m.redraw()})
+                .then(()=>{ctrl.sent = true; m.redraw();});
         }
     },
     view(ctrl){

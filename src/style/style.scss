@@ -114,6 +114,17 @@ a.no-decoration {text-decoration: none; color:inherit}
     content: '';
 }
 
+.bulletless {
+    list-style-type:none;
+    list-style-image:none;
+}
+
+.folders-well {
+    border: 1px solid #e5e5e5;
+    border-radius: .25rem;
+    padding: 0.75rem 0.75rem 0 0.75rem;
+}
+
 @import "./navbar";
 @import "./loader";
 @import "./forms";

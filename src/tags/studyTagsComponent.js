@@ -52,10 +52,6 @@ let studyTagsComponent = {
 function filter_tags(val){return tag => tag.text.indexOf(val) !== -1;}
 function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
 
-function reload_tags()
-{
-    console.log(5);
-}
 
 function create_tag(study_id, tagName, tags, error, callback){
     return () => add_tag(tagName(), 'E7E7E7')

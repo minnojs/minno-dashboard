@@ -32,6 +32,7 @@ let aceComponent = {
                 fullHeight(element, isInitialized, ctx);
 
                 require(['ace/ace'], function(ace){
+                    let undoManager = settings.undoManager || (u => u);
                     ace.config.set('packaged', true);
                     ace.config.set('basePath', require.toUrl('ace'));
 
@@ -69,7 +70,9 @@ let aceComponent = {
                     if(observer) observer.on('paste',paste );
                     
                     setContent();
-                    session.setUndoManager(new ace.UndoManager()); // reset undo manager so that ctrl+z doesn't erase file
+                    // reset undo manager so that ctrl+z doesn't erase file
+                    // save it so that it doesn't get lost when users navigate away
+                    session.setUndoManager(undoManager() || undoManager(new ace.UndoManager())); 
                     editor.focus();
                     
                     ctx.onunload = () => {

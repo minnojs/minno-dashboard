@@ -43,7 +43,17 @@ let textEditorComponent = {
 let textContent = (ctrl, {file, study, observer}) => {
     let textMode = modeMap[file.type] || 'javascript';
     switch (ctrl.mode()){
-        case 'edit' : return ace({content:file.content, observer, settings: {onSave: save(file), mode: textMode, jshintOptions, isReadonly: study.isReadonly}});
+        case 'edit' : return ace({
+            content:file.content,
+            observer,
+            settings: {
+                onSave: save(file), 
+                mode: textMode,
+                jshintOptions,
+                isReadonly: study.isReadonly,
+                undoManager: file.undoManager
+            }
+        });
         case 'validator': return validatorComponent({file});
         case 'syntax': return syntaxComponent({file});
     }

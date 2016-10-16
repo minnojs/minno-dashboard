@@ -129,7 +129,9 @@ const fileFactory = fileObj => {
 
         // these are defined when calling checkSyntax
         syntaxValid     : undefined,
-        syntaxData      : undefined
+        syntaxData      : undefined,
+
+        undoManager     : m.prop() // a prop to keep track of the undo manager for this file
     });
 
     file.content(fileObj.content || '');

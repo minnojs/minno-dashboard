@@ -134,17 +134,19 @@ var mainComponent = {
                         .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
                                 m('.col-sm-3', [
-                                    m('i.fa.fa-fw.owner-icon', {
-                                        class: classNames({
-                                            'fa-globe': study.is_public,
-                                            'fa-users': !study.is_public && study.permission !== 'owner'
+                                    m('.study-text', [
+                                        m('i.fa.fa-fw.owner-icon', {
+                                            class: classNames({
+                                                'fa-globe': study.is_public,
+                                                'fa-users': !study.is_public && study.permission !== 'owner'
+                                            }),
+                                            title: classNames({
+                                                'Public' : study.is_public,
+                                                'Collaboration' : !study.is_public && study.permission !== 'owner'
+                                            })
                                         }),
-                                        title: classNames({
-                                            'Public' : study.is_public,
-                                            'Collaboration' : !study.is_public && study.permission !== 'owner'
-                                        })
-                                    }),
-                                    m('.study-text', study.name)
+                                        study.name
+                                    ])
                                 ]),
                                 m('.col-sm-3', [
                                     study.tags.map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
