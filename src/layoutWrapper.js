@@ -62,6 +62,10 @@ let layout = route => {
         },
         view(ctrl){
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
+                m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code')
+                ?
+                ''
+                :
                 m('nav.navbar.navbar-dark.navbar-fixed-top', [
                     m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                     m('ul.nav.navbar-nav',[
