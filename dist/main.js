@@ -133,6 +133,16 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1243,6 +1253,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1801,6 +1820,7 @@
         },
 
         addFile: function addFile(file){
+            // update the file list
             this.files().push(file);
             // update the parent folder
             var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
@@ -1821,7 +1841,7 @@
 
             // validation (make sure file does not already exist)
             var exists = this.files().some(function (file) { return file.path === name; });
-            if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists2")});
+            if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists")});
 
             // validateion (make sure direcotry exists)
             var basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
@@ -1852,29 +1872,38 @@
             }
         },
 
-        uploadFiles: function uploadFiles(ref){
+        uploadFiles: function uploadFiles(path, files){
             var this$1 = this;
-            var path = ref.path;
-            var files = ref.files;
-            var force = ref.force;
 
+            var paths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
             var formData = buildFormData(path === '/' ? '' : path, files);
-            formData.append('forceUpload', +force);
+            // validation (make sure files do not already exist)
+            var exists = this.files().find(function (file) { return paths.includes(file.path); });
+            if (exists) return Promise.reject({message: ("The file \"" + (exists.path) + "\" already exists")});
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
-                .then(function (response) { return response.forEach(function (src) {
-                    var file = fileFactory(Object.assign({studyId: this$1.id},src));
-                    // if file already exists, remove it
-                    if (force && this$1.files().find(function (f) { return f.path === file.path; })) this$1.removeFiles([file]);
-                    this$1.addFile(file);
-                }); })
+                .then(function (response) {
+                    response.forEach(function (src) {
+                        var file = fileFactory(Object.assign({studyId: this$1.id},src));
+                        this$1.addFile(file);
+                    });
+
+                    return response;
+                })
                 .then(this.sort.bind(this));
 
             function buildFormData(path, files) {
                 var formData = new FormData;
+                // formData.append('path', path);
+
+                // for (let file in files) {
+                //  formData.append('files', files[file]);
+                // }
+
                 for (var i = 0; i < files.length; i++) {
                     formData.append(i, files[i]);
                 }
+
                 return formData;
             }
         },
@@ -1893,25 +1922,21 @@
 
             var paths = files.map(function (f){ return f.path; });
             return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-                .then(function () { return this$1.removeFiles(files); });
-        },
+                .then(function () {
+                    // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
+                    var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
+                    // get all files not to be deleted
+                    var filesList = this$1.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
+                    files.forEach(function (file) {
+                        var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+                        if (parent) {
+                            var index = parent.files.indexOf(file);
+                            parent.files.splice(index, 1);
+                        }
+                    });
 
-        removeFiles: function removeFiles(files){
-            var this$1 = this;
-
-            // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-            var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
-            // get all files not to be deleted
-            var filesList = this.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
-            files.forEach(function (file) {
-                var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-                if (parent) {
-                    var index = parent.files.indexOf(file);
-                    parent.files.splice(index, 1);
-                }
-            });
-
-            this.files(filesList);
+                    this$1.files(filesList);
+                });
         },
 
         getParents: function getParents(file){
@@ -3725,6 +3750,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3784,6 +3824,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -4015,6 +4057,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4408,6 +4451,10 @@
         }
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4559,6 +4606,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7744,6 +7795,10 @@
             },
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
+                    m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code')
+                    ?
+                    ''
+                    :
                     m('nav.navbar.navbar-dark.navbar-fixed-top', [
                         m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
