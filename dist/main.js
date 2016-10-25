@@ -133,6 +133,16 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1242,6 +1252,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1837,7 +1856,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3724,6 +3743,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3783,6 +3817,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3995,6 +4031,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4065,7 +4102,7 @@
                         }),
 
                         // file name
-                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
+                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name) + "las;dflkja;sldkjf;alskdjf ;alskdj f;alskjdf;alskjd f;alskjdf ;alsdkjf ;alskjdf")),
 
                         // children
                         hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
@@ -4243,6 +4280,81 @@
         }
     };
 
+    var splitPane = function (args) { return m.component(splitComponent, args); };
+
+    var splitComponent = {
+        controller: function controller(ref){
+            var leftWidth = ref.leftWidth;
+
+            return {
+                parentWidth: m.prop(),
+                parentOffset: m.prop(),
+                leftWidth: leftWidth || m.prop('auto')
+            };
+        },
+
+        view: function view(ref, ref$1){
+            var parentWidth = ref.parentWidth;
+            var parentOffset = ref.parentOffset;
+            var leftWidth = ref.leftWidth;
+            var left = ref$1.left; if ( left === void 0 ) left = '';
+            var right = ref$1.right; if ( right === void 0 ) right = '';
+
+            return m('.split-pane', {config: config(parentWidth, parentOffset, leftWidth)}, [
+                m('.split-pane-col-left', {style: {flexBasis: leftWidth() + 'px'}}, left),
+                m('.split-pane-divider', {onmousedown: onmousedown(parentOffset, leftWidth)}),
+                m('.split-pane-col-right', right)
+            ]);
+        }
+    };
+
+    var config = function (parentWidth, parentLeft, leftWidth) { return function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            update();
+            if (leftWidth() === undefined) leftWidth(parentWidth()/6);
+        }
+
+        document.addEventListener('resize', update);
+        ctx.onunload = function () { return document.removeEventListener('resize', update); };
+        
+        function update(){
+            parentWidth(element.offsetWidth);
+            parentLeft(element.getBoundingClientRect().left);
+        }
+    }; };
+
+    var onmousedown = function (parentOffset, leftWidth) { return function () {
+        document.addEventListener('mouseup', mouseup);
+        document.addEventListener('mousemove', mousemove);
+
+        function mouseup() {
+            document.removeEventListener('mousemove', mousemove);
+            document.removeEventListener('mouseup', mousemove);
+        }
+
+        function mousemove(e){
+            leftWidth(e.pageX - parentOffset());
+            m.redraw();
+        }
+    }; };
+
+    var fullHeight$1 = function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            onResize();
+
+            window.addEventListener('resize', onResize, true);
+
+            ctx.onunload = function(){
+                window.removeEventListener('resize', onResize);
+            };
+
+        }
+
+        function onResize(){
+            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
+        }
+    };
+
     var study;
 
     var editorLayoutComponent = {
@@ -4282,20 +4394,24 @@
         view: function (ref) {
             var study = ref.study;
 
-            return m('.row.study', [
-                !study.loaded ? '' : [
-                    m('.col-md-2', [
-                        m.component(sidebarComponent, {study: study})
-                    ]),
-                    m('.col-md-10',[
-                        m.route.param('resource') === 'wizard'
-                            ? m.component(wizardComponent, {study: study})
-                            : m.component(fileEditorComponent, {study: study})
-                    ])
-                ]
+            return m('.study', {config: fullHeight$1},  [
+                !study.loaded ? '' : splitPane({
+                    leftWidth: leftWidth,
+                    left: m.component(sidebarComponent, {study: study}),
+                    right: m.route.param('resource') === 'wizard'
+                        ? m.component(wizardComponent, {study: study})
+                        : m.component(fileEditorComponent, {study: study})
+                })
             ]);
         }
     };
+
+    // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
+    // Essentially this is a global variable
+    function leftWidth(val){
+        if (arguments.length) localStorage.fileSidebarWidth = val;
+        return localStorage.fileSidebarWidth;
+    }
 
     var STATUS_RUNNING = 'R';
     var STATUS_PAUSED = 'P';
@@ -4388,6 +4504,10 @@
         }
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4539,6 +4659,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7720,7 +7844,7 @@
                     ?
                     ''
                     :
-                    m('nav.navbar.navbar-dark.navbar-fixed-top', [
+                    m('nav.navbar.navbar-dark', [
                         m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
                             ctrl.role()=='CU'
@@ -7774,12 +7898,13 @@
                     ]),
 
                     m('.main-content.container-fluid', [
-                        route
-                    ]),
+                        route,
 
-                    m.component(contextMenuComponent), // register context menu
-                    m.component(messages), // register modal
-                    m.component(spinner) // register spinner
+                        m.component(contextMenuComponent), // register context menu
+                        m.component(messages), // register modal
+                        m.component(spinner) // register spinner
+                    ])
+
                 ]);
             }
         };

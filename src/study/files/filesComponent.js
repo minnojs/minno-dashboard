@@ -3,6 +3,8 @@ import studyFactory from './fileCollectionModel';
 import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
+import splitPane from 'utils/splitPane';
+import fullheight from 'utils/fullheight';
 
 let study;
 
@@ -41,17 +43,21 @@ let editorLayoutComponent = {
         }
     },
     view: ({study}) => {
-        return m('.row.study', [
-            !study.loaded ? '' : [
-                m('.col-md-2', [
-                    m.component(sidebarComponent, {study})
-                ]),
-                m('.col-md-10',[
-                    m.route.param('resource') === 'wizard'
-                        ? m.component(wizardComponent, {study})
-                        : m.component(editorComponent, {study})
-                ])
-            ]
+        return m('.study', {config: fullheight},  [
+            !study.loaded ? '' : splitPane({
+                leftWidth,
+                left: m.component(sidebarComponent, {study}),
+                right: m.route.param('resource') === 'wizard'
+                    ? m.component(wizardComponent, {study})
+                    : m.component(editorComponent, {study})
+            })
         ]);
     }
 };
+
+// a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
+// Essentially this is a global variable
+function leftWidth(val){
+    if (arguments.length) localStorage.fileSidebarWidth = val;
+    return localStorage.fileSidebarWidth;
+}

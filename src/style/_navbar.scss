@@ -1,26 +1,32 @@
 $navbar-height: 54px;
 $navbar-background: #2882b5;
 
+html, body, .dasboard-root {height:100%;}
+.dashboard-root {display:flex; flex-direction:column;}
+
 .navbar {
-  background: $navbar-background; 
-  .is-iframe & {display:none}
-
-  .dropdown:hover .dropdown-menu { display:block; }
-  .nav-link { cursor: pointer;}
-  .dropdown-menu {
+    flex: 0 1 $navbar-height;
     border-radius:0;
-    border-color: darken($navbar-background, 0%);
-    background: lighten($navbar-background, 40%);
+    background: $navbar-background; 
 
-    // offset the dropdown
-    border-top-width: 8px;
-    border-top-color: $navbar-background;
+    .is-iframe & {display:none}
 
-    margin-top:0;
-    margin-left: -0.5rem;
-  }
-  .dropdown-menu.dropdown-menu-right {margin-right: -0.5rem;}
-  .dropdown-item:hover {background: lighten($navbar-background, 35%);}
+    .dropdown:hover .dropdown-menu { display:block; }
+    .nav-link { cursor: pointer;}
+    .dropdown-menu {
+        border-radius:0;
+        border-color: darken($navbar-background, 0%);
+        background: lighten($navbar-background, 40%);
+
+        // offset the dropdown
+        border-top-width: 8px;
+        border-top-color: $navbar-background;
+
+        margin-top:0;
+        margin-left: -0.5rem;
+    }
+    .dropdown-menu.dropdown-menu-right {margin-right: -0.5rem;}
+    .dropdown-item:hover {background: lighten($navbar-background, 35%);}
 }
 
 .nav-item.active {
@@ -28,6 +34,6 @@ $navbar-background: #2882b5;
 }
 
 .main-content {
-	padding-top: $navbar-height + 1;
-	.is-iframe & {padding-top:0}
+    flex: 1 1 auto;
+    width:100%;
 }
