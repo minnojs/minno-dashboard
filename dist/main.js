@@ -2121,7 +2121,8 @@
         if (!exist.length) return upload({force:false});
         else return messages.confirm({
             header: 'Upload Files', 
-            content: ("The file" + (exist.length > 1 ? 's' : '') + " \"" + (exist.join(', ')) + "\" already exists")
+            content: ("The file" + (exist.length > 1 ? 's' : '') + " \"" + (exist.join(', ')) + "\" already exists, do you want to overwrite " + (exist.length > 1 ? 'them' : 'it') + "?"),
+            okText: 'Overwrite'
         })
             .then(function (response) { return response && upload({force:true}); });
 

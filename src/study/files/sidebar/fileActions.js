@@ -10,7 +10,8 @@ export let uploadFiles = (path,study) => files => {
     if (!exist.length) return upload({force:false});
     else return messages.confirm({
         header: 'Upload Files', 
-        content: `The file${exist.length > 1 ? 's' : ''} "${exist.join(', ')}" already exists`
+        content: `The file${exist.length > 1 ? 's' : ''} "${exist.join(', ')}" already exists, do you want to overwrite ${exist.length > 1 ? 'them' : 'it'}?`,
+        okText: 'Overwrite'
     })
         .then(response => response && upload({force:true}));
 
