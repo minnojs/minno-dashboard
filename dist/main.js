@@ -4128,7 +4128,7 @@
                         }),
 
                         // file name
-                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name) + "las;dflkja;sldkjf;alskdjf ;alskdj f;alskjdf;alskjd f;alskjdf ;alsdkjf ;alskjdf")),
+                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
 
                         // children
                         hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
