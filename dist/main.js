@@ -1311,7 +1311,7 @@
 
             return m('.c-inputs-stacked', Object.keys(values)
                 .map(function (key) { return m('label.c-input.c-radio', [
-                    m('input', {type:'radio', checked: values[key] === prop(), onchange: prop.bind(null, values[key])}),
+                    m('input', {type:'radio', checked: values[key] === prop() || Object.keys(values).length===1, onchange: prop.bind(null, values[key])}),
                     m('span.c-indicator'),
                     key
                 ]); }));
@@ -1858,7 +1858,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -4128,7 +4128,7 @@
                         }),
 
                         // file name
-                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name))),
+                        m('span',{class:classNames({'font-weight-bold':file.hasChanged()})},(" " + (file.name) + "las;dflkja;sldkjf;alskdjf ;alskdj f;alskjdf;alskjd f;alskjdf ;alsdkjf ;alskjdf")),
 
                         // children
                         hasChildren && vm.isOpen() ? folder({path: file.path + '/', folderHash: folderHash, study: study}) : ''
@@ -4306,6 +4306,81 @@
         }
     };
 
+    var splitPane = function (args) { return m.component(splitComponent, args); };
+
+    var splitComponent = {
+        controller: function controller(ref){
+            var leftWidth = ref.leftWidth;
+
+            return {
+                parentWidth: m.prop(),
+                parentOffset: m.prop(),
+                leftWidth: leftWidth || m.prop('auto')
+            };
+        },
+
+        view: function view(ref, ref$1){
+            var parentWidth = ref.parentWidth;
+            var parentOffset = ref.parentOffset;
+            var leftWidth = ref.leftWidth;
+            var left = ref$1.left; if ( left === void 0 ) left = '';
+            var right = ref$1.right; if ( right === void 0 ) right = '';
+
+            return m('.split-pane', {config: config(parentWidth, parentOffset, leftWidth)}, [
+                m('.split-pane-col-left', {style: {flexBasis: leftWidth() + 'px'}}, left),
+                m('.split-pane-divider', {onmousedown: onmousedown(parentOffset, leftWidth)}),
+                m('.split-pane-col-right', right)
+            ]);
+        }
+    };
+
+    var config = function (parentWidth, parentLeft, leftWidth) { return function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            update();
+            if (leftWidth() === undefined) leftWidth(parentWidth()/6);
+        }
+
+        document.addEventListener('resize', update);
+        ctx.onunload = function () { return document.removeEventListener('resize', update); };
+        
+        function update(){
+            parentWidth(element.offsetWidth);
+            parentLeft(element.getBoundingClientRect().left);
+        }
+    }; };
+
+    var onmousedown = function (parentOffset, leftWidth) { return function () {
+        document.addEventListener('mouseup', mouseup);
+        document.addEventListener('mousemove', mousemove);
+
+        function mouseup() {
+            document.removeEventListener('mousemove', mousemove);
+            document.removeEventListener('mouseup', mousemove);
+        }
+
+        function mousemove(e){
+            leftWidth(e.pageX - parentOffset());
+            m.redraw();
+        }
+    }; };
+
+    var fullHeight$1 = function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            onResize();
+
+            window.addEventListener('resize', onResize, true);
+
+            ctx.onunload = function(){
+                window.removeEventListener('resize', onResize);
+            };
+
+        }
+
+        function onResize(){
+            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
+        }
+    };
+
     var study;
 
     var editorLayoutComponent = {
@@ -4345,20 +4420,24 @@
         view: function (ref) {
             var study = ref.study;
 
-            return m('.row.study', [
-                !study.loaded ? '' : [
-                    m('.col-md-2', [
-                        m.component(sidebarComponent, {study: study})
-                    ]),
-                    m('.col-md-10',[
-                        m.route.param('resource') === 'wizard'
-                            ? m.component(wizardComponent, {study: study})
-                            : m.component(fileEditorComponent, {study: study})
-                    ])
-                ]
+            return m('.study', {config: fullHeight$1},  [
+                !study.loaded ? '' : splitPane({
+                    leftWidth: leftWidth,
+                    left: m.component(sidebarComponent, {study: study}),
+                    right: m.route.param('resource') === 'wizard'
+                        ? m.component(wizardComponent, {study: study})
+                        : m.component(fileEditorComponent, {study: study})
+                })
             ]);
         }
     };
+
+    // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
+    // Essentially this is a global variable
+    function leftWidth(val){
+        if (arguments.length) localStorage.fileSidebarWidth = val;
+        return localStorage.fileSidebarWidth;
+    }
 
     var STATUS_RUNNING = 'R';
     var STATUS_PAUSED = 'P';
@@ -7799,7 +7878,7 @@
                     ?
                     ''
                     :
-                    m('nav.navbar.navbar-dark.navbar-fixed-top', [
+                    m('nav.navbar.navbar-dark', [
                         m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
                             ctrl.role()=='CU'
@@ -7853,12 +7932,13 @@
                     ]),
 
                     m('.main-content.container-fluid', [
-                        route
-                    ]),
+                        route,
 
-                    m.component(contextMenuComponent), // register context menu
-                    m.component(messages), // register modal
-                    m.component(spinner) // register spinner
+                        m.component(contextMenuComponent), // register context menu
+                        m.component(messages), // register modal
+                        m.component(spinner) // register spinner
+                    ])
+
                 ]);
             }
         };

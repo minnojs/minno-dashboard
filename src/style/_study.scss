@@ -54,7 +54,7 @@
     }
 
     .sidebar {
-        position: fixed;
+        height:100%;
         width: inherit;
         overflow-y: auto;
         top: $navbar-height;
@@ -86,4 +86,25 @@
     vertical-align: baseline;
     border-radius: .25rem;
     margin-left: .25rem;
+} 
+
+.split-pane {
+    height: 100%; 
+    display:flex;
+
+    &-col-right {
+        flex: 1 1 auto;    
+        min-width: 0;
+    }
+
+    &-col-left {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+   &-divider {
+       flex: 0 1 3px;
+       cursor: col-resize;	
+       background: $navbar-background;
+   }
 }

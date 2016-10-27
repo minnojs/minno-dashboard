@@ -66,7 +66,7 @@ let layout = route => {
                 ?
                 ''
                 :
-                m('nav.navbar.navbar-dark.navbar-fixed-top', [
+                m('nav.navbar.navbar-dark', [
                     m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                     m('ul.nav.navbar-nav',[
                         ctrl.role()=='CU'
@@ -120,12 +120,13 @@ let layout = route => {
                 ]),
 
                 m('.main-content.container-fluid', [
-                    route
-                ]),
+                    route,
 
-                m.component(contextMenu), // register context menu
-                m.component(messages), // register modal
-                m.component(spinner) // register spinner
+                    m.component(contextMenu), // register context menu
+                    m.component(messages), // register modal
+                    m.component(spinner) // register spinner
+                ])
+
             ]);
         }
     };

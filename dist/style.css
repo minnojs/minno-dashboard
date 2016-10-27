@@ -122,7 +122,16 @@ a.no-decoration {
   border-radius: .25rem;
   padding: 0.75rem 0.75rem 0 0.75rem; }
 
+html, body, .dasboard-root {
+  height: 100%; }
+
+.dashboard-root {
+  display: flex;
+  flex-direction: column; }
+
 .navbar {
+  flex: 0 1 54px;
+  border-radius: 0;
   background: #2882b5; }
   .is-iframe .navbar {
     display: none; }
@@ -147,9 +156,8 @@ a.no-decoration {
   background: #1f648b; }
 
 .main-content {
-  padding-top: 55px; }
-  .is-iframe .main-content {
-    padding-top: 0; }
+  flex: 1 1 auto;
+  width: 100%; }
 
 .loader,
 .loader:before,
@@ -480,7 +488,7 @@ select.c-select {
     float: left; }
 
 .study .sidebar {
-  position: fixed;
+  height: 100%;
   width: inherit;
   overflow-y: auto;
   top: 54px;
@@ -512,6 +520,20 @@ select.c-select {
   vertical-align: baseline;
   border-radius: .25rem;
   margin-left: .25rem; }
+
+.split-pane {
+  height: 100%;
+  display: flex; }
+  .split-pane-col-right {
+    flex: 1 1 auto;
+    min-width: 0; }
+  .split-pane-col-left {
+    flex: 0 1 auto;
+    min-width: 0; }
+  .split-pane-divider {
+    flex: 0 1 3px;
+    cursor: col-resize;
+    background: #2882b5; }
 
 th[data-sort-by]:before {
   content: "\f0dc";
