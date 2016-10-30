@@ -4,7 +4,7 @@ import editorComponent from './editorComponent';
 import wizardComponent from './wizardComponent';
 import sidebarComponent from './sidebar/sidebarComponent';
 import splitPane from 'utils/splitPane';
-import fullheight from 'utils/fullheight';
+import fullheight from 'utils/fullHeight';
 
 let study;
 

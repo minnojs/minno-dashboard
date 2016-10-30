@@ -1858,7 +1858,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -4365,23 +4365,6 @@
         }
     }; };
 
-    var fullHeight$1 = function (element, isInitialized, ctx) {
-        if (!isInitialized){
-            onResize();
-
-            window.addEventListener('resize', onResize, true);
-
-            ctx.onunload = function(){
-                window.removeEventListener('resize', onResize);
-            };
-
-        }
-
-        function onResize(){
-            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-        }
-    };
-
     var study;
 
     var editorLayoutComponent = {
@@ -4421,7 +4404,7 @@
         view: function (ref) {
             var study = ref.study;
 
-            return m('.study', {config: fullHeight$1},  [
+            return m('.study', {config: fullHeight},  [
                 !study.loaded ? '' : splitPane({
                     leftWidth: leftWidth,
                     left: m.component(sidebarComponent, {study: study}),
@@ -7917,6 +7900,9 @@
                                 m('.dropdown', [
                                     m('a.nav-link', 'Admin'),
                                     m('.dropdown-menu', [
+                                        m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
+                                        m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Remova lList'),
+                                        m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
                                         m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                     ])
                                 ])
