@@ -68,7 +68,6 @@ let studyPrototype = {
     },
 
     addFile(file){
-        // update the file list
         this.files().push(file);
         // update the parent folder
         let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
@@ -115,36 +114,24 @@ let studyPrototype = {
         }
     },
 
-    uploadFiles(path, files){
-        let paths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
+    uploadFiles({path, files, force}){
         let formData = buildFormData(path === '/' ? '' : path, files);
-        // validation (make sure files do not already exist)
-        let exists = this.files().find(file => paths.includes(file.path));
-        if (exists) return Promise.reject({message: `The file "${exists.path}" already exists`});
+        formData.append('forceUpload', +force);
 
         return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:formData})
-            .then(response => {
-                response.forEach(src => {
-                    let file = fileFactory(Object.assign({studyId: this.id},src));
-                    this.addFile(file);
-                });
-
-                return response;
-            })
+            .then(response => response.forEach(src => {
+                let file = fileFactory(Object.assign({studyId: this.id},src));
+                // if file already exists, remove it
+                if (force && this.files().find(f => f.path === file.path)) this.removeFiles([file]);
+                this.addFile(file);
+            }))
             .then(this.sort.bind(this));
 
         function buildFormData(path, files) {
             var formData = new FormData;
-            // formData.append('path', path);
-
-            // for (let file in files) {
-            //  formData.append('files', files[file]);
-            // }
-
             for (let i = 0; i < files.length; i++) {
                 formData.append(i, files[i]);
             }
-
             return formData;
         }
     },
@@ -161,21 +148,23 @@ let studyPrototype = {
     delFiles(files){
         let paths = files.map(f=>f.path);
         return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-            .then(() => {
-                // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-                let children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
-                // get all files not to be deleted
-                let filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
-                files.forEach(file => {
-                    let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
-                    if (parent) {
-                        let index = parent.files.indexOf(file);
-                        parent.files.splice(index, 1);
-                    }
-                });
+            .then(() => this.removeFiles(files));
+    },
 
-                this.files(filesList);
-            });
+    removeFiles(files){
+        // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
+        let children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
+        // get all files not to be deleted
+        let filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
+        files.forEach(file => {
+            let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+            if (parent) {
+                let index = parent.files.indexOf(file);
+                parent.files.splice(index, 1);
+            }
+        });
+
+        this.files(filesList);
     },
 
     getParents(file){
