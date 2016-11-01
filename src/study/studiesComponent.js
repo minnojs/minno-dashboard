@@ -3,7 +3,7 @@ import {load_studies} from './studyModel';
 import {get_tags} from 'tags/tagsModel';
 
 import dropdown from 'utils/dropdown';
-import {do_create, do_delete, do_rename, do_tags} from './studyActions';
+import {do_duplicate, do_create, do_delete, do_rename, do_tags} from './studyActions';
 import classNames from 'utils/classNames';
 import formatDate from 'utils/formatDate';
 
@@ -168,6 +168,9 @@ var mainComponent = {
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                                                    ]),
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, loadStudies)}, [
+                                                        m('i.fa.fa-fw.fa-clone'), ' Duplicate'
                                                     ])
                                                 ],
 

@@ -25,12 +25,15 @@ let filePrototype = {
     },
 
     save(){
-        return fetchVoid(this.apiUrl(), {
+
+
+        return fetchJson(this.apiUrl(), {
             method:'put',
-            body: {content: this.content}
+            body: {content: this.content, last_modify:this.last_modify}
         })
             .then(response => {
                 this.sourceContent(this.content()); // update source content
+                this.last_modify = response.last_modify;
                 return response;
             });
     },
@@ -120,6 +123,7 @@ const fileFactory = fileObj => {
 
     Object.assign(file, fileObj, {
         id          : fileObj.id,
+        last_modify : fileObj.last_modify,
         sourceContent       : m.prop(fileObj.content || ''),
         content         : contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 

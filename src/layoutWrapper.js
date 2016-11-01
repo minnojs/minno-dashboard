@@ -105,7 +105,7 @@ let layout = route => {
                                 m('a.nav-link', 'Admin'),
                                 m('.dropdown-menu', [
                                     m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
-                                    m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Remova lList'),
+                                    m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
                                     m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
                                     m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                 ])

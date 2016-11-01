@@ -1,5 +1,5 @@
 import messages from 'utils/messagesComponent';
-import {create_study, delete_study, rename_study} from './studyModel';
+import {duplicate_study, create_study, delete_study, rename_study} from './studyModel';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
@@ -65,6 +65,31 @@ export let do_rename = (study_id, name, callback) => e => {
     }).then(response => response && rename());
 
     let rename = () => rename_study(study_id, study_name)
+        .then(callback.bind(null, study_name()))
+        .then(m.redraw)
+        .catch(e => {
+            error(e.message);
+            ask();
+        });
+
+    // activate creation
+    ask();
+};
+
+export let do_duplicate= (study_id, name, callback) => e => {
+    e.preventDefault();
+    let study_name = m.prop(name);
+    let error = m.prop('');
+
+    let ask = () => messages.confirm({
+        header:'New Name',
+        content: m('div', [
+            m('input.form-control', {placeholder: 'Enter Study Name', value: '', onchange: m.withAttr('value', study_name)}),
+            !error() ? '' : m('p.alert.alert-danger', error())
+        ])
+    }).then(response => response && duplicate());
+
+    let duplicate= () => duplicate_study(study_id, study_name)
         .then(callback.bind(null, study_name()))
         .then(m.redraw)
         .catch(e => {
