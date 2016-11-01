@@ -4387,12 +4387,14 @@
             }
 
             function onunload(e){
-                var leavingEditor = function () { return !/^\/editor\//.test(m.route()); };
-                if (leavingEditor() && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
+                var leavingEditor = !/^\/editor\//.test(m.route());
+                if (leavingEditor && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
                     e.preventDefault();
                 } else {
                     window.removeEventListener('beforeunload', beforeunload);
                 }
+
+                if (leavingEditor) study = null;
             }
         },
         view: function (ref) {
