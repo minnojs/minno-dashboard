@@ -23,7 +23,7 @@ let textMenuView = ({mode, file, study, observer}) => {
         ),
 
         m('.btn-group.btn-group-sm.pull-xs-right', [
-            m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file sinse the last change'},[
+            m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file since the last change'},[
                 m('strong.fa.fa-refresh')
             ])
         ]),
