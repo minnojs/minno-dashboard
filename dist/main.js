@@ -78,6 +78,10 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)));
     }
 
+    function get_duplicate_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
+    }
+
     /*CRUD*/
     var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
 
@@ -87,6 +91,11 @@
     }); };
 
     var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+    var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
         method: 'put',
         body: {study_name: study_name}
     }); };
@@ -133,16 +142,6 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -504,6 +503,31 @@
         ask();
     }; };
 
+    var do_duplicate= function (study_id, name, callback) { return function (e) {
+        e.preventDefault();
+        var study_name = m.prop(name);
+        var error = m.prop('');
+
+        var ask = function () { return messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control', {placeholder: 'Enter Study Name', value: '', onchange: m.withAttr('value', study_name)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])
+        }).then(function (response) { return response && duplicate(); }); };
+
+        var duplicate= function () { return duplicate_study(study_id, study_name)
+            .then(callback.bind(null, study_name()))
+            .then(m.redraw)
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            }); };
+
+        // activate creation
+        ask();
+    }; };
+
     // taken from here:
     // https://github.com/JedWatson/classnames/blob/master/index.js
     var hasOwn = {}.hasOwnProperty;
@@ -708,10 +732,13 @@
 
                                                     study.permission !== 'owner' ? '' : [
                                                         m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
-                                                            m('i.fa.fa-fw.fa-remove'), ' Delete'
+                                                            m('i.fa.fa-fw.fa-remove'), ' Delete Study'
                                                         ]),
                                                         m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
-                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
+                                                        ]),
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                                                         ])
                                                     ],
 
@@ -1253,15 +1280,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1606,12 +1624,15 @@
         save: function save(){
             var this$1 = this;
 
-            return fetchVoid(this.apiUrl(), {
+
+
+            return fetchJson(this.apiUrl(), {
                 method:'put',
-                body: {content: this.content}
+                body: {content: this.content, last_modify:this.last_modify}
             })
                 .then(function (response) {
                     this$1.sourceContent(this$1.content()); // update source content
+                    this$1.last_modify = response.last_modify;
                     return response;
                 });
         },
@@ -1710,6 +1731,7 @@
 
         Object.assign(file, fileObj, {
             id          : fileObj.id,
+            last_modify : fileObj.last_modify,
             sourceContent       : m.prop(fileObj.content || ''),
             content         : contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 
@@ -1857,7 +1879,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3745,21 +3767,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3819,8 +3826,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -4052,7 +4057,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4266,10 +4270,13 @@
                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), right: true,  elements: [
                     readonly ? '' : [
                         m('a.dropdown-item', {onclick: do_delete(study.id, function () { return m.route('/studies'); })}, [
-                            m('i.fa.fa-fw.fa-remove'), ' Delete'
+                            m('i.fa.fa-fw.fa-remove'), ' Delete study'
                         ]),
                         m('a.dropdown-item', {onclick: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
-                            m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                            m('i.fa.fa-fw.fa-exchange'), ' Rename study'
+                        ]),
+                        m('a.dropdown-item.dropdown-onclick', {onclick: do_duplicate(study.id, study.name, function (name) { return study.name = name; })}, [
+                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                         ])
                     ],
                     m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
@@ -4510,10 +4517,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4665,10 +4668,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7897,7 +7896,7 @@
                                     m('a.nav-link', 'Admin'),
                                     m('.dropdown-menu', [
                                         m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
-                                        m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Remova lList'),
+                                        m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
                                         m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
                                         m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
                                     ])

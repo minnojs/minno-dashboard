@@ -164,13 +164,13 @@ var mainComponent = {
 
                                                 study.permission !== 'owner' ? '' : [
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
-                                                        m('i.fa.fa-fw.fa-remove'), ' Delete'
+                                                        m('i.fa.fa-fw.fa-remove'), ' Delete Study'
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
-                                                        m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                                                        m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, loadStudies)}, [
-                                                        m('i.fa.fa-fw.fa-clone'), ' Duplicate'
+                                                        m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                                                     ])
                                                 ],
 

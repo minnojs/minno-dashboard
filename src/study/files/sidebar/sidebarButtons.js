@@ -2,7 +2,7 @@ import {deleteFiles, downloadChosenFiles} from './fileActions';
 import fileContext from './fileContext';
 import {uploadFiles} from './fileActions';
 import dropdown from 'utils/dropdown';
-import {do_delete, do_rename} from '../../studyActions';
+import {do_delete, do_rename, do_duplicate} from '../../studyActions';
 import copyUrl from 'utils/copyUrl';
 export default sidebarButtons;
 
@@ -30,10 +30,13 @@ let sidebarButtons = ({study}) => {
             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), right: true,  elements: [
                 readonly ? '' : [
                     m('a.dropdown-item', {onclick: do_delete(study.id, () => m.route('/studies'))}, [
-                        m('i.fa.fa-fw.fa-remove'), ' Delete'
+                        m('i.fa.fa-fw.fa-remove'), ' Delete study'
                     ]),
                     m('a.dropdown-item', {onclick: do_rename(study.id, study.name, name => study.name = name)}, [
-                        m('i.fa.fa-fw.fa-exchange'), ' Rename'
+                        m('i.fa.fa-fw.fa-exchange'), ' Rename study'
+                    ]),
+                    m('a.dropdown-item.dropdown-onclick', {onclick: do_duplicate(study.id, study.name, name => study.name = name)}, [
+                        m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                     ])
                 ],
                 m('a.dropdown-item', { href: `/deploy/${studyId}`, config: m.route }, 'Request Deploy'),
