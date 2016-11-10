@@ -14,27 +14,28 @@ let textEditor = args => m.component(textEditorComponent, args);
 
 let textEditorComponent = {
     controller: function({file}){
+        const err = m.prop();
         file.loaded || file.get()
-            .then(m.redraw)
-            .catch(m.redraw);
+            .catch(err)
+            .then(m.redraw);
 
-        let ctrl = {mode:m.prop('edit'), observer: observerFactory()};
+        let ctrl = {mode:m.prop('edit'), observer: observerFactory(), err};
 
         return ctrl;
     },
 
     view: function(ctrl, {file,study}){
-        let observer = ctrl.observer;
+        const {observer, err, mode} = ctrl;
 
         if (!file.loaded) return m('.loader');
 
         if (file.error) return m('div', {class:'alert alert-danger'}, [
             m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-            `The file "${file.path}" was not found`
+            `The file "${file.path}" was not found (${err() ? err().message : 'please try to refresh the page'}).`
         ]);
 
         return m('.editor', [
-            textMenu({mode: ctrl.mode, file, study, observer}),
+            textMenu({mode, file, study, observer}),
             textContent(ctrl, {file,observer, study})
         ]);
     }

@@ -24,9 +24,9 @@ let editors = {
 
 let fileEditorComponent = {
     controller: function({study}) {
-        var id = m.route.param('fileId');
-        var file = study.getFile(id);
-        var ctrl = {file,study};
+        const id = m.route.param('fileId');
+        const file = study.getFile(id);
+        const ctrl = {file,study};
 
         return ctrl;
     },
