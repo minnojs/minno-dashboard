@@ -109,6 +109,11 @@ var files = isMac
             id: 'exp.xml',
             path: 'exp.xml',
             url: '/test/exp.xml'
+        },
+        {
+            id: 'study.expt.xml',
+            path: 'study.expt.xml',
+            url: '/test/study.expt.xml'
         }
     ]
     : [

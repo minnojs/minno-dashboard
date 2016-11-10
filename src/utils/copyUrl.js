@@ -5,7 +5,8 @@ export default copyUrl;
 let copyUrl = url => () => {
     messages.alert({
         header: 'Copy URL',
-        content: m.component(copyComponent, {url})
+        content: m.component(copyComponent, {url}),
+        okText: 'Done'
     });
 };
 

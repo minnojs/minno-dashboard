@@ -1,4 +1,5 @@
 import classNames from 'utils/classNames';
+import copyUrl from 'utils/copyUrl';
 import {play, save, resetFile} from '../sidebar/fileActions';
 import {pageSnippet, questSnippet, taskSnippet} from './snippetActions';
 
@@ -15,6 +16,7 @@ let textMenuView = ({mode, file, study, observer}) => {
     let isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
     let amdMatch = amdReg.exec(file.content());
     let APItype = amdMatch && amdMatch[1];
+    const launchUrl = `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`;
 
     return m('.btn-toolbar.editor-menu', [
         m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
@@ -77,9 +79,14 @@ let textMenuView = ({mode, file, study, observer}) => {
                 m('strong.fa.fa-play')
             ]),
             
-            !isExpt ? '' :  m('a.btn.btn-secondary', {href: `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, target: '_blank', title:'Play this task'},[
-                m('strong.fa.fa-play')
-            ]),
+            !isExpt ? '' :  [
+                m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+                    m('strong.fa.fa-play')
+                ]),
+                m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
+                    m('strong.fa.fa-link')
+                ])
+            ],
 
             !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
                 m('strong.fa.fa-eye')
