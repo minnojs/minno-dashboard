@@ -83,7 +83,7 @@ let textMenuView = ({mode, file, study, observer}) => {
                 m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
                     m('strong.fa.fa-play')
                 ]),
-                m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy launch study URL'},[
+                m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
                     m('strong.fa.fa-link')
                 ])
             ],
