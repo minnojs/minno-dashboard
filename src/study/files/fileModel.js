@@ -16,6 +16,8 @@ let filePrototype = {
                 this.content(content);
                 this.loaded = true;
                 this.error = false;
+                this.last_modify = response.last_modify;
+
             })
             .catch(reason => {
                 this.loaded = true;
@@ -123,7 +125,6 @@ const fileFactory = fileObj => {
 
     Object.assign(file, fileObj, {
         id          : fileObj.id,
-        last_modify : fileObj.last_modify,
         sourceContent       : m.prop(fileObj.content || ''),
         content         : contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 

@@ -142,6 +142,16 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1280,6 +1290,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1582,6 +1601,354 @@
         element.setAttribute('download', filename);
     }; };
 
+    var getStatistics$1 = function (query) {
+        return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+            .then(function (response) {
+                var csv = response ? CSVToArray$1(response) : [[]];
+                return {
+                    study: query.study(),
+                    file: response,
+                    headers: csv.shift(),
+                    data: csv,
+                    query: Object.assign(query) // clone the query so that we can get back to it in the future
+                };
+            });
+
+        /**
+         * Parses the query as we build it locally and creates an appropriate post for the server
+         **/
+        function parseQuery(ref){
+            var source = ref.source;
+            var study = ref.study;
+            var task = ref.task;
+            var sortstudy = ref.sortstudy;
+            var sorttask = ref.sorttask;
+            var sortgroup = ref.sortgroup;
+            var sorttime = ref.sorttime;
+            var showEmpty = ref.showEmpty;
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
+            var firstTask = ref.firstTask;
+            var lastTask = ref.lastTask;
+
+            var baseUrl = (location.origin) + "/implicit";
+            var post = {
+                Schema: source().match(/^(.*?):/)[1], // before colon
+                studyId: study(),
+                startDate: parseDate(startDate()),
+                endDate: parseDate(endDate()),
+                startTask: firstTask(),
+                endTask: lastTask(),
+                Timeframe: sorttime()
+            };
+            return post;
+
+            function parseDate(date){
+                if (!date) return;
+                return ((date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
+            }
+        } 
+    };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    function CSVToArray$1( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+            );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+                ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+
+            }
+
+            var strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                    );
+
+            } else {
+
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    }
+    /* eslint-enable */
+
+    var statisticsForm$1 = function (args) { return m.component(statisticsFormComponent$1, args); };
+    var colWidth$1 = 3;
+    var SOURCES$1 = {
+        'Research pool - Current studies'   : 'Research:Current',
+    //    'Research pool - Past studies'      : 'Research:History',
+        'All research - Pool and lab'       : 'Research:Any',
+        'Demo studies'                      : 'Demo:Any',
+        'All studies'                       : 'Both:Any'
+    };
+
+    var statisticsFormComponent$1 = {
+        controller: function controller(){
+            var form = formFactory();
+
+            return {form: form};
+        },
+        view: function view(ref, ref$1){
+            var form = ref.form;
+            var query = ref$1.query;
+
+            return m('.col-sm-12', [
+                selectInput({label: 'Source', prop: query.source, values: SOURCES$1, form: form, colWidth: colWidth$1}),
+                textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth$1}),
+                textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth$1}),
+                m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Show by')
+                    ]),
+                    m('.col-sm-9.pull-right', [
+                        m('.btn-group.btn-group-sm', [
+                            button$1(query.sortstudy, 'Study'),
+                            button$1(query.sorttask, 'Task'),
+                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'All' ? 'active' : ''}, [
+                                'Time',
+                                m('.time-card', [
+                                    m('.card', [
+                                        m('.card-header', 'Time filter'),
+                                        m('.card-block.c-inputs-stacked', [
+                                            radioButton$1(query.sorttime, 'All'),
+                                            radioButton$1(query.sorttime, 'Days'),
+                                            radioButton$1(query.sorttime, 'Weeks'),
+                                            radioButton$1(query.sorttime, 'Months'),
+                                            radioButton$1(query.sorttime, 'Years')
+                                        ])
+                                    ])
+                                ])
+                            ]),
+                            button$1(query.sortgroup, 'Data Group')
+                        ]),
+                        m('.btn-group.btn-group-sm.pull-right', [
+                            button$1(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                        ])
+                    ])
+                ]),
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Compute completions')
+                    ]),
+                    m('.col-sm-9', [
+                        m('.row', [
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
+                            ]),
+                            m('.col-sm-1', [
+                                m('.form-control-static', 'to')
+                            ]),
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
+                            ])
+                        ])
+                    ])
+                ])
+            ]);
+        
+        
+        }
+    };
+
+    var button$1 = function (prop, text, title) {
+        if ( title === void 0 ) title = '';
+
+        return m('a.btn.btn-secondary', {
+        class: prop() ? 'active' : '',
+        onclick: function () { return prop(!prop()); },
+        title: title
+    }, text);
+    };
+
+    var radioButton$1 = function (prop, text) { return m('label.c-input.c-radio', [
+        m('input.form-control[type=radio]', {
+            onclick: prop.bind(null, text),
+            checked: prop() == text
+        }),
+        m('span.c-indicator'),
+        text
+    ]); };
+
+    var statisticsTable$1 = function (args) { return m.component(statisticsTableComponent$1, args); };
+
+    var statisticsTableComponent$1 = {
+        controller: function controller(){
+            return {sortBy: m.prop()};
+        },
+        view: function view(ref, ref$1){
+            var sortBy = ref.sortBy;
+            var tableContent = ref$1.tableContent;
+
+            var content = tableContent();
+            if (!content) return m('div'); 
+            if (!content.file) return m('.col-sm-12', [
+                m('.alert.alert-info', 'There was no data found for this request')            
+            ]);
+
+            var list = m.prop(content.data);
+            
+            return m('.col-sm-12', [
+                m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
+                    m('thead', [
+                        m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
+                    ]),
+                    m('tbody', tableContent().data.map(function (row) { return m('tr', !row.length ? '' : row.map(function (column) { return m('td', column); })); }))
+                ])
+            ]);
+        }
+    };
+
+    var statisticsInstructions$1 = function () { return m('.text-muted', [
+        m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
+        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies.'),
+        m('p', 'You can also use the Task box to enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks.'),
+        m('p', 'You can also choose how you want the data displayed, using the "Show by" options. If you click "Study", you will see data from each study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated by task.  The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.  '),
+        m('p', 'You can define how completion rate is calculated by entering text to "First task" and "Last task". Only sessions that visited those tasks would be used for the calculation.'),
+        m('p', 'When you choose to show the results by date, you will see all the studies that have at least one session in the requested date range, separated by day, week, month or year. This will also show dates with zero sessions. If you want to hide rows with zero sessions, select the "Hide empty" option.')
+    ]); };
+
+    var statisticsComponent$1 = {
+        controller: function controller(){
+            var displayHelp = m.prop(false);
+            var tableContent = m.prop();
+            var loading = m.prop(false);
+            var query = {
+                source: m.prop('Research:Current'),
+                startDate: m.prop(firstDayInPreviousMonth(new Date())),
+                endDate: m.prop(new Date()),
+                study: m.prop(''),
+                task: m.prop(''),
+                studyType: m.prop('Both'),
+                studydb: m.prop('Any'),
+                sortstudy: m.prop(true),
+                sorttask: m.prop(false),
+                sortgroup: m.prop(false),
+                sorttime: m.prop('All'),
+                showEmpty: m.prop(false),
+                firstTask: m.prop(''),
+                lastTask: m.prop('')
+            };
+
+            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent,loading: loading};
+
+            function submit(){
+                loading(true);
+                getStatistics$1(query)
+                    .then(tableContent)
+                    .then(loading.bind(null, false))
+                    .then(m.redraw);
+            }
+
+            function firstDayInPreviousMonth(yourDate) {
+                return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
+            }
+        },
+        view: function (ref) {
+            var query = ref.query;
+            var tableContent = ref.tableContent;
+            var submit = ref.submit;
+            var displayHelp = ref.displayHelp;
+            var loading = ref.loading;
+
+            return m('.container.statistics', [
+            m('h3', 'Statistics'),
+            m('.row', [
+                statisticsForm$1({query: query})
+            ]),
+            m('.row', [
+                m('.col-sm-12',[
+                    m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
+                    m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                    !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                ])
+            ]),
+            !displayHelp() ? '' : m('.row', [
+                m('.col-sm-12.p-a-2', statisticsInstructions$1())
+            ]),
+            m('.row.m-t-1', [
+                loading()
+                    ? m('.loader')
+                    : statisticsTable$1({tableContent: tableContent})
+            ])
+        ]);
+    }
+    };
+
+    var downloadFile$1 = function (filename, text) { return function (element) {
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+    }; };
+
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
         // See http://jshint.com/docs/ for more details
@@ -1616,6 +1983,8 @@
                     this$1.content(content);
                     this$1.loaded = true;
                     this$1.error = false;
+                    this$1.last_modify = response.last_modify;
+
                 })
                 .catch(function (reason) {
                     this$1.loaded = true;
@@ -1734,7 +2103,6 @@
 
         Object.assign(file, fileObj, {
             id          : fileObj.id,
-            last_modify : fileObj.last_modify,
             sourceContent       : m.prop(fileObj.content || ''),
             content         : contentProvider.call(file, fileObj.content || ''), // custom m.prop, alows checking syntax on change
 
@@ -2351,7 +2719,7 @@
             }); });
     }; };
 
-    var downloadFile$1 = function (study, file) { return function () {
+    var downloadFile$2 = function (study, file) { return function () {
         if (!file.isDir) return downloadLink(file.url, file.name);
 
         study.downloadFiles([file.path])
@@ -3770,6 +4138,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -3829,6 +4212,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -3975,7 +4360,7 @@
 
             menu = menu.concat([
                 {icon:'fa-refresh', text: 'Refresh/Reset', action: resetFile(file), disabled: isReadonly || file.content() == file.sourceContent()},
-                {icon:'fa-download', text:'Download', action: downloadFile$1(study, file)},
+                {icon:'fa-download', text:'Download', action: downloadFile$2(study, file)},
                 {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
                 isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
@@ -4060,6 +4445,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4520,6 +4906,10 @@
         }
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4671,6 +5061,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -7790,6 +8184,8 @@
         '/login': loginComponent,
         '/studies' : mainComponent,
         '/studies/statistics' : statisticsComponent,
+        '/studies/statistics_new' : statisticsComponent$1,
+
         '/editor/:studyId': editorLayoutComponent,
         '/editor/:studyId/:resource/:fileId': editorLayoutComponent,
         '/pool': poolComponent,
