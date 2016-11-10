@@ -2929,6 +2929,58 @@
         });
     }
 
+    var copyUrl = function (url) { return function () {
+        messages.alert({
+            header: 'Copy URL',
+            content: m.component(copyComponent, {url: url}),
+            okText: 'Done'
+        });
+    }; };
+
+    var copyComponent = {
+        controller: function (ref) {
+            var url = ref.url;
+
+            var copyFail = m.prop(false);
+            var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
+
+            return {autoCopy: autoCopy, copyFail: copyFail};
+        },
+        view: function (ref, ref$1) {
+            var autoCopy = ref.autoCopy;
+            var copyFail = ref.copyFail;
+            var url = ref$1.url;
+
+            return m('.card-block', [
+            m('.form-group', [
+                m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
+                m('label.input-group',[
+                    m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
+                    m('input.form-control', { config: function (el) { return el.select(); }, value: url })
+                ]),
+                !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
+            ])
+        ]);
+    }
+    };
+
+    function copy(text){
+        return new Promise(function (resolve, reject) {
+            var input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+
+            try {
+                document.execCommand('copy');
+            } catch(err){
+                reject(err);
+            }
+
+            input.parentNode.removeChild(input);
+        });
+    }
+
     var END_LINE = '\n';
     var TAB = '\t';
     var indent = function (str, tab) {
@@ -3453,6 +3505,7 @@
         var isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
         var amdMatch = amdReg.exec(file.content());
         var APItype = amdMatch && amdMatch[1];
+        var launchUrl = "https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''));
 
         return m('.btn-toolbar.editor-menu', [
             m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
@@ -3515,9 +3568,14 @@
                     m('strong.fa.fa-play')
                 ]),
                 
-                !isExpt ? '' :  m('a.btn.btn-secondary', {href: ("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), target: '_blank', title:'Play this task'},[
-                    m('strong.fa.fa-play')
-                ]),
+                !isExpt ? '' :  [
+                    m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+                        m('strong.fa.fa-play')
+                    ]),
+                    m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy launch study URL'},[
+                        m('strong.fa.fa-link')
+                    ])
+                ],
 
                 !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
                     m('strong.fa.fa-eye')
@@ -3558,7 +3616,7 @@
 
             if (file.error) return m('div', {class:'alert alert-danger'}, [
                 m('strong',{class:'glyphicon glyphicon-exclamation-sign'}),
-                ("The file \"" + (file.path) + "\" was not found (" + (err().message) + ").")
+                ("The file \"" + (file.path) + "\" was not found (" + (err() ? err().message : 'please try to refresh the page') + ").")
             ]);
 
             return m('.editor', [
@@ -3939,57 +3997,6 @@
         'Typical': '/implicit/user/yba/wizards/typicalmgr.js'
     };
 
-    var copyUrl = function (url) { return function () {
-        messages.alert({
-            header: 'Copy URL',
-            content: m.component(copyComponent, {url: url})
-        });
-    }; };
-
-    var copyComponent = {
-        controller: function (ref) {
-            var url = ref.url;
-
-            var copyFail = m.prop(false);
-            var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
-
-            return {autoCopy: autoCopy, copyFail: copyFail};
-        },
-        view: function (ref, ref$1) {
-            var autoCopy = ref.autoCopy;
-            var copyFail = ref.copyFail;
-            var url = ref$1.url;
-
-            return m('.card-block', [
-            m('.form-group', [
-                m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
-                m('label.input-group',[
-                    m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
-                    m('input.form-control', { config: function (el) { return el.select(); }, value: url })
-                ]),
-                !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
-            ])
-        ]);
-    }
-    };
-
-    function copy(text){
-        return new Promise(function (resolve, reject) {
-            var input = document.createElement('input');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-
-            try {
-                document.execCommand('copy');
-            } catch(err){
-                reject(err);
-            }
-
-            input.parentNode.removeChild(input);
-        });
-    }
-
     var fileContext = function (file, study) {
         var path = !file ? '/' : file.isDir ? file.path : file.basePath;
         var isReadonly = study.isReadonly;
@@ -4326,7 +4333,7 @@
                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                     m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
                     m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
-                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Study Path'])
+                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Base URL'])
                 ]})
             ])
         ]);
