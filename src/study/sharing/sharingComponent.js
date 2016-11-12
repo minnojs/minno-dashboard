@@ -49,8 +49,8 @@ let collaborationComponent = {
                 content: m.component({view: () => m('p', [
                     m('p', 'Enter collaborator\'s user name:'),
                     m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
-                    m('select.form-control', {value:'Permission', onchange: m.withAttr('value',ctrl.permission)}, [
-                        m('option',{disabled: true}, 'Permission'),
+                    m('select.form-control', {value:ctrl.permission(), onchange: m.withAttr('value',ctrl.permission)}, [
+                        m('option',{value:'', disabled: true}, 'Permission'),
                         m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
                         m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
                     ]),
@@ -100,7 +100,7 @@ let collaborationComponent = {
             ?
             m('.loader')
             :
-            m('.container.sharing', [
+            m('.container', [
                 m('.row',[
                     m('.col-sm-7', [
                         m('h3', [ctrl.study_name(), ': Sharing'])
