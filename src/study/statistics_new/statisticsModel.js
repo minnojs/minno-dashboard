@@ -20,13 +20,13 @@ export let getStatistics = query => {
     function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate, firstTask, lastTask}){
         let baseUrl = `${location.origin}/implicit`;
         let post = {
-            Schema: source().match(/^(.*?):/)[1], // before colon
+            schema: source().match(/^(.*?):/)[1], // before colon
             studyId: study(),
             startDate: parseDate(startDate()),
             endDate: parseDate(endDate()),
             startTask: firstTask(),
             endTask: lastTask(),
-            Timeframe: sorttime()
+            timeframe: sorttime()
         };
         return post;
 

@@ -23,7 +23,8 @@ let statisticsComponent = {
             sorttime: m.prop('All'),
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
-            lastTask: m.prop('')
+            lastTask: m.prop(''),
+            rows:m.prop([]),
         };
 
         return {query, submit, displayHelp, tableContent,loading};
