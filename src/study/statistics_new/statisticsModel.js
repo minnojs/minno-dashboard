@@ -26,7 +26,8 @@ export let getStatistics = query => {
             endDate: parseDate(endDate()),
             startTask: firstTask(),
             endTask: lastTask(),
-            timeframe: sorttime()
+            timeframe: sorttime(),
+            extended:sorttask()
         };
         return post;
 
