@@ -142,16 +142,6 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -1290,15 +1280,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1604,14 +1585,7 @@
     var getStatistics$1 = function (query) {
         return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
             .then(function (response) {
-                var csv = response ? CSVToArray$1(response) : [[]];
-                return {
-                    study: query.study(),
-                    file: response,
-                    headers: csv.shift(),
-                    data: csv,
-                    query: Object.assign(query) // clone the query so that we can get back to it in the future
-                };
+                return response;
             });
 
         /**
@@ -1658,89 +1632,6 @@
     // This will parse a delimited string into an array of
     // arrays. The default delimiter is the comma, but this
     // can be overriden in the second argument.
-    function CSVToArray$1( strData, strDelimiter ){
-        // Check to see if the delimiter is defined. If not,
-        // then default to comma.
-        strDelimiter = (strDelimiter || ",");
-
-        // Create a regular expression to parse the CSV values.
-        var objPattern = new RegExp(
-            (
-                // Delimiters.
-                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-                // Quoted fields.
-                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-                // Standard fields.
-                "([^\"\\" + strDelimiter + "\\r\\n]*))"
-            ),
-            "gi"
-            );
-
-
-        // Create an array to hold our data. Give the array
-        // a default empty first row.
-        var arrData = [[]];
-
-        // Create an array to hold our individual pattern
-        // matching groups.
-        var arrMatches = null;
-
-
-        // Keep looping over the regular expression matches
-        // until we can no longer find a match.
-        while (arrMatches = objPattern.exec( strData )){
-
-            // Get the delimiter that was found.
-            var strMatchedDelimiter = arrMatches[ 1 ];
-
-            // Check to see if the given delimiter has a length
-            // (is not the start of string) and if it matches
-            // field delimiter. If id does not, then we know
-            // that this delimiter is a row delimiter.
-            if (
-                strMatchedDelimiter.length &&
-                strMatchedDelimiter !== strDelimiter
-                ){
-
-                // Since we have reached a new row of data,
-                // add an empty row to our data array.
-                arrData.push( [] );
-
-            }
-
-            var strMatchedValue;
-
-            // Now that we have our delimiter out of the way,
-            // let's check to see which kind of value we
-            // captured (quoted or unquoted).
-            if (arrMatches[ 2 ]){
-
-                // We found a quoted value. When we capture
-                // this value, unescape any double quotes.
-                strMatchedValue = arrMatches[ 2 ].replace(
-                    new RegExp( "\"\"", "g" ),
-                    "\""
-                    );
-
-            } else {
-
-                // We found a non-quoted value.
-                strMatchedValue = arrMatches[ 3 ];
-
-            }
-
-
-            // Now that we have our value string, let's add
-            // it to the data array.
-            arrData[ arrData.length - 1 ].push( strMatchedValue );
-        }
-
-        // Return the parsed data.
-        return( arrData );
-    }
-    /* eslint-enable */
 
     var statisticsForm$1 = function (args) { return m.component(statisticsFormComponent$1, args); };
     var colWidth$1 = 3;
@@ -1852,18 +1743,37 @@
 
             var content = tableContent();
             if (!content) return m('div'); 
-            if (!content.file) return m('.col-sm-12', [
-                m('.alert.alert-info', 'There was no data found for this request')            
+            if (!content.data) return m('.col-sm-12', [
+                m('.alert.alert-info', 'There was no data found for this request')
             ]);
 
             var list = m.prop(content.data);
-            
+            console.log(list());
+            list().map(function (row) { return console.log(row); });
             return m('.col-sm-12', [
                 m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                     m('thead', [
-                        m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
+                        m('tr.table-default', [
+                            m('th',{'data-sort-by':'studyName', class: sortBy() === 'studyName' ? 'active' : ''}, 'studyName'),
+                            m('th',{'data-sort-by':'taskName', class: sortBy() === 'taskName' ? 'active' : ''}, 'taskName'),
+                            m('th',{'data-sort-by':'date', class: sortBy() === 'date' ? 'active' : ''}, 'date'),
+                            m('th',{'data-sort-by':'starts', class: sortBy() === 'starts' ? 'active' : ''}, 'starts'),
+                            m('th',{'data-sort-by':'completes', class: sortBy() === 'completes' ? 'active' : ''}, 'completes'),
+                            m('th',{'data-sort-by':'schema', class: sortBy() === 'schema' ? 'active' : ''}, 'schema')
+                        ])
                     ]),
-                    m('tbody', tableContent().data.map(function (row) { return m('tr', !row.length ? '' : row.map(function (column) { return m('td', column); })); }))
+                    m('tbody', [
+                        list().map(function (row) { return m('tr.table-default', [
+                            m('td', row.studyName),
+                            m('td', row.taskName),
+                            m('td', row.date),
+                            m('td', row.starts),
+                            m('td', row.completes),
+                            m('td', row.schema)
+                        ]); }
+                        )
+
+                    ]),
                 ])
             ]);
         }
@@ -1881,7 +1791,8 @@
     var statisticsComponent$1 = {
         controller: function controller(){
             var displayHelp = m.prop(false);
-            var tableContent = m.prop();
+            var tableContent = m.prop([]);
+
             var loading = m.prop(false);
             var query = {
                 source: m.prop('Research:Current'),
@@ -1931,7 +1842,7 @@
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
@@ -4201,21 +4112,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -4275,8 +4171,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -4457,7 +4351,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -4918,10 +4811,6 @@
         }
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5073,10 +4962,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true

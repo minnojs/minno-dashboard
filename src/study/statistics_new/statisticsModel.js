@@ -4,14 +4,7 @@ import {statisticsUrl as STATISTICS_URL} from 'modelUrls';
 export let getStatistics = query => {
     return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
         .then(response => {
-            let csv = response ? CSVToArray(response) : [[]];
-            return {
-                study: query.study(),
-                file: response,
-                headers: csv.shift(),
-                data: csv,
-                query: Object.assign(query) // clone the query so that we can get back to it in the future
-            };
+            return response;
         });
 
     /**

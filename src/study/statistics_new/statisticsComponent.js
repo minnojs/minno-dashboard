@@ -7,7 +7,8 @@ export default statisticsComponent;
 let statisticsComponent = {
     controller(){
         let displayHelp = m.prop(false);
-        let tableContent = m.prop();
+        let tableContent = m.prop([]);
+
         let loading = m.prop(false);
         let query = {
             source: m.prop('Research:Current'),
@@ -50,7 +51,7 @@ let statisticsComponent = {
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                 m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
+                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
