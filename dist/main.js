@@ -1594,24 +1594,20 @@
         function parseQuery(ref){
             var source = ref.source;
             var study = ref.study;
-            var task = ref.task;
-            var sortstudy = ref.sortstudy;
             var sorttask = ref.sorttask;
-            var sortgroup = ref.sortgroup;
             var sorttime = ref.sorttime;
-            var showEmpty = ref.showEmpty;
             var startDate = ref.startDate;
             var endDate = ref.endDate;
             var firstTask = ref.firstTask;
             var lastTask = ref.lastTask;
 
-            var baseUrl = (location.origin) + "/implicit";
             var post = {
                 schema: source().match(/^(.*?):/)[1], // before colon
                 studyId: study(),
                 startDate: parseDate(startDate()),
                 endDate: parseDate(endDate()),
                 startTask: firstTask(),
+                sorttask: sorttask(),
                 endTask: lastTask(),
                 timeframe: sorttime(),
                 extended:sorttask()
@@ -1740,44 +1736,52 @@
         view: function view(ref, ref$1){
             var sortBy = ref.sortBy;
             var tableContent = ref$1.tableContent;
+            var query = ref$1.query;
 
             var content = tableContent();
-            if (!content) return m('div'); 
+            if (!content) return m('div');
             if (!content.data) return m('.col-sm-12', [
                 m('.alert.alert-info', 'There was no data found for this request')
             ]);
 
             var list = m.prop(content.data);
-            console.log(list());
-            list().map(function (row) { return console.log(row); });
+
             return m('.col-sm-12', [
                 m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                     m('thead', [
                         m('tr.table-default', [
-                            m('th',{'data-sort-by':'studyName', class: sortBy() === 'studyName' ? 'active' : ''}, 'studyName'),
-                            m('th',{'data-sort-by':'taskName', class: sortBy() === 'taskName' ? 'active' : ''}, 'taskName'),
-                            m('th',{'data-sort-by':'date', class: sortBy() === 'date' ? 'active' : ''}, 'date'),
-                            m('th',{'data-sort-by':'starts', class: sortBy() === 'starts' ? 'active' : ''}, 'starts'),
-                            m('th',{'data-sort-by':'completes', class: sortBy() === 'completes' ? 'active' : ''}, 'completes'),
-                            m('th',{'data-sort-by':'schema', class: sortBy() === 'schema' ? 'active' : ''}, 'schema')
+                            th_option(sortBy, 'studyName', 'studyName'),
+                            !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
+                            th_option(sortBy, 'date', 'date'),
+                            th_option(sortBy, 'starts', 'starts'),
+                            th_option(sortBy, 'completes', 'completes'),
+                            !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
                         ])
                     ]),
                     m('tbody', [
-                        list().map(function (row) { return m('tr.table-default', [
+                        list().map(function (row) { return query.showEmpty() && row.starts===0
+                        ?
+                        ''
+                        :
+                        m('tr.table-default', [
                             m('td', row.studyName),
-                            m('td', row.taskName),
+                            !query.sorttask2() ? '' : m('td', row.taskName),
                             m('td', row.date),
                             m('td', row.starts),
                             m('td', row.completes),
-                            m('td', row.schema)
+                            !query.sortgroup() ? '' : m('td', row.schema)
                         ]); }
                         )
 
-                    ]),
+                    ])
                 ])
             ]);
         }
     };
+
+    var th_option = function (sortBy, sortByTxt, text) { return m('th', {
+        'data-sort-by':sortByTxt, class: sortBy() === sortByTxt ? 'active' : ''
+    }, text); };
 
     var statisticsInstructions$1 = function () { return m('.text-muted', [
         m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
@@ -1791,7 +1795,7 @@
     var statisticsComponent$1 = {
         controller: function controller(){
             var displayHelp = m.prop(false);
-            var tableContent = m.prop([]);
+            var tableContent = m.prop('');
 
             var loading = m.prop(false);
             var query = {
@@ -1804,12 +1808,13 @@
                 studydb: m.prop('Any'),
                 sortstudy: m.prop(true),
                 sorttask: m.prop(false),
+                sorttask2: m.prop(false),
                 sortgroup: m.prop(false),
                 sorttime: m.prop('All'),
                 showEmpty: m.prop(false),
                 firstTask: m.prop(''),
                 lastTask: m.prop(''),
-                rows:m.prop([]),
+                rows:m.prop([])
             };
 
             return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent,loading: loading};
@@ -1819,6 +1824,7 @@
                 getStatistics$1(query)
                     .then(tableContent)
                     .then(loading.bind(null, false))
+                    .then(query.sorttask2(query.sorttask()))
                     .then(m.redraw);
             }
 
@@ -1842,7 +1848,7 @@
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((query.study()) + ".csv"), tableContent(), query)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
@@ -1851,14 +1857,28 @@
             m('.row.m-t-1', [
                 loading()
                     ? m('.loader')
-                    : statisticsTable$1({tableContent: tableContent})
+                    : statisticsTable$1({tableContent: tableContent, query: query})
             ])
         ]);
     }
     };
 
-    var downloadFile$1 = function (filename, text) { return function (element) {
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    var downloadFile$1 = function (filename, text, query) { return function (element) {
+        var json = text.data;
+        console.log(query.sorttask2());
+        var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
+
+        var replacer = function(key, value) { return value === null ? '' : value }
+        var csv = json.map(function(row){
+            return fields.map(function(fieldName){
+                return JSON.stringify(row[fieldName], replacer);
+            }).join(',')
+        })
+        csv.unshift(fields.join(',')); // add header column
+
+        console.log(csv.join('\r\n'));
+
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
         element.setAttribute('download', filename);
     }; };
 

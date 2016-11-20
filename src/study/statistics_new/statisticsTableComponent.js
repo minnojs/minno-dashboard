@@ -7,42 +7,50 @@ let statisticsTableComponent = {
     controller(){
         return {sortBy: m.prop()};
     },
-    view({sortBy}, {tableContent}){
+    view({sortBy}, {tableContent, query}){
         let content = tableContent();
-        if (!content) return m('div'); 
+        if (!content) return m('div');
         if (!content.data) return m('.col-sm-12', [
             m('.alert.alert-info', 'There was no data found for this request')
         ]);
 
         let list = m.prop(content.data);
-        console.log(list());
-        list().map(row => console.log(row));
+
         return m('.col-sm-12', [
             m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                 m('thead', [
                     m('tr.table-default', [
-                        m('th',{'data-sort-by':'studyName', class: sortBy() === 'studyName' ? 'active' : ''}, 'studyName'),
-                        m('th',{'data-sort-by':'taskName', class: sortBy() === 'taskName' ? 'active' : ''}, 'taskName'),
-                        m('th',{'data-sort-by':'date', class: sortBy() === 'date' ? 'active' : ''}, 'date'),
-                        m('th',{'data-sort-by':'starts', class: sortBy() === 'starts' ? 'active' : ''}, 'starts'),
-                        m('th',{'data-sort-by':'completes', class: sortBy() === 'completes' ? 'active' : ''}, 'completes'),
-                        m('th',{'data-sort-by':'schema', class: sortBy() === 'schema' ? 'active' : ''}, 'schema')
+                        th_option(sortBy, 'studyName', 'studyName'),
+                        !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
+                        th_option(sortBy, 'date', 'date'),
+                        th_option(sortBy, 'starts', 'starts'),
+                        th_option(sortBy, 'completes', 'completes'),
+                        !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
                     ])
                 ]),
                 m('tbody', [
                     list().map(row =>
+                    query.showEmpty() && row.starts===0
+                    ?
+                    ''
+                    :
                     m('tr.table-default', [
                         m('td', row.studyName),
-                        m('td', row.taskName),
+                        !query.sorttask2() ? '' : m('td', row.taskName),
                         m('td', row.date),
                         m('td', row.starts),
                         m('td', row.completes),
-                        m('td', row.schema)
+                        !query.sortgroup() ? '' : m('td', row.schema)
                     ])
                     )
 
-                ]),
+                ])
             ])
         ]);
     }
 };
+
+let th_option = (sortBy, sortByTxt, text) => m('th', {
+    'data-sort-by':sortByTxt, class: sortBy() === sortByTxt ? 'active' : ''
+}, text);
+

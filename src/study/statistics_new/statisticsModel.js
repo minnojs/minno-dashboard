@@ -10,14 +10,14 @@ export let getStatistics = query => {
     /**
      * Parses the query as we build it locally and creates an appropriate post for the server
      **/
-    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate, firstTask, lastTask}){
-        let baseUrl = `${location.origin}/implicit`;
+    function parseQuery({source, study, sorttask, sorttime, startDate, endDate, firstTask, lastTask}){
         let post = {
             schema: source().match(/^(.*?):/)[1], // before colon
             studyId: study(),
             startDate: parseDate(startDate()),
             endDate: parseDate(endDate()),
             startTask: firstTask(),
+            sorttask: sorttask(),
             endTask: lastTask(),
             timeframe: sorttime(),
             extended:sorttask()

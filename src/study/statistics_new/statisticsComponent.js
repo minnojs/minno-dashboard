@@ -7,7 +7,7 @@ export default statisticsComponent;
 let statisticsComponent = {
     controller(){
         let displayHelp = m.prop(false);
-        let tableContent = m.prop([]);
+        let tableContent = m.prop('');
 
         let loading = m.prop(false);
         let query = {
@@ -20,12 +20,13 @@ let statisticsComponent = {
             studydb: m.prop('Any'),
             sortstudy: m.prop(true),
             sorttask: m.prop(false),
+            sorttask2: m.prop(false),
             sortgroup: m.prop(false),
             sorttime: m.prop('All'),
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
             lastTask: m.prop(''),
-            rows:m.prop([]),
+            rows:m.prop([])
         };
 
         return {query, submit, displayHelp, tableContent,loading};
@@ -35,6 +36,7 @@ let statisticsComponent = {
             getStatistics(query)
                 .then(tableContent)
                 .then(loading.bind(null, false))
+                .then(query.sorttask2(query.sorttask()))
                 .then(m.redraw);
         }
 
@@ -51,7 +53,7 @@ let statisticsComponent = {
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                 m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
+                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${query.study()}.csv`, tableContent(), query)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
@@ -60,12 +62,26 @@ let statisticsComponent = {
         m('.row.m-t-1', [
             loading()
                 ? m('.loader')
-                : statisticsTable({tableContent})
+                : statisticsTable({tableContent, query})
         ])
     ])
 };
 
-let downloadFile = (filename, text) => element => {
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+let downloadFile = (filename, text, query) => element => {
+    var json = text.data;
+    console.log(query.sorttask2());
+    var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
+
+    var replacer = function(key, value) { return value === null ? '' : value }
+    var csv = json.map(function(row){
+        return fields.map(function(fieldName){
+            return JSON.stringify(row[fieldName], replacer);
+        }).join(',')
+    })
+    csv.unshift(fields.join(',')); // add header column
+
+    console.log(csv.join('\r\n'));
+
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
     element.setAttribute('download', filename);
 };
