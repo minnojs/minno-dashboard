@@ -22,7 +22,6 @@ let statisticsFormComponent = {
         return m('.col-sm-12', [
             selectInput({label: 'Source', prop: query.source, values: SOURCES, form, colWidth}),
             textInput({label:'Study', prop: query.study , form, colWidth}),
-            textInput({label:'Task', prop: query.task , form, colWidth}),
             m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
             m('.form-group.row', [
                 m('.col-sm-3', [
@@ -47,10 +46,11 @@ let statisticsFormComponent = {
                                 ])
                             ])
                         ]),
-                        button(query.sortgroup, 'Data Group')
                     ]),
                     m('.btn-group.btn-group-sm.pull-right', [
-                        button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                        button(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),
+                        button(query.sortgroup, 'Show Data Group')
+
                     ])
                 ])
             ]),
