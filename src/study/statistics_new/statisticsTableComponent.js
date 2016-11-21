@@ -1,4 +1,6 @@
 import sortTable from 'utils/sortTable';
+import formatDate from 'utils/formatDate';
+
 export default statisticsTable;
 
 let statisticsTable = args => m.component(statisticsTableComponent, args);
@@ -37,7 +39,7 @@ let statisticsTableComponent = {
                     m('tr.table-default', [
                         m('td', row.studyName),
                         !query.sorttask2() ? '' : m('td', row.taskName),
-                        query.sorttime2()==='All' ? '' : m('td', row.date),
+                        query.sorttime2()==='All' ? '' : m('td', formatDate(new Date(row.date))),
                         m('td', row.starts),
                         m('td', row.completes),
                         !query.sortgroup() ? '' : m('td', row.schema)
