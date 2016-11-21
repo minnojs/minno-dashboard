@@ -1752,7 +1752,7 @@
                         m('tr.table-default', [
                             th_option(sortBy, 'studyName', 'studyName'),
                             !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
-                            th_option(sortBy, 'date', 'date'),
+                            query.sorttime2()==='All' ? '' : th_option(sortBy, 'date', 'date'),
                             th_option(sortBy, 'starts', 'starts'),
                             th_option(sortBy, 'completes', 'completes'),
                             !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
@@ -1766,7 +1766,7 @@
                         m('tr.table-default', [
                             m('td', row.studyName),
                             !query.sorttask2() ? '' : m('td', row.taskName),
-                            m('td', row.date),
+                            query.sorttime2()==='All' ? '' : m('td', row.date),
                             m('td', row.starts),
                             m('td', row.completes),
                             !query.sortgroup() ? '' : m('td', row.schema)
@@ -1811,6 +1811,7 @@
                 sorttask2: m.prop(false),
                 sortgroup: m.prop(false),
                 sorttime: m.prop('All'),
+                sorttime2: m.prop('All'),
                 showEmpty: m.prop(false),
                 firstTask: m.prop(''),
                 lastTask: m.prop(''),
@@ -1825,6 +1826,7 @@
                     .then(tableContent)
                     .then(loading.bind(null, false))
                     .then(query.sorttask2(query.sorttask()))
+                    .then(query.sorttime2(query.sorttime()))
                     .then(m.redraw);
             }
 
@@ -1865,8 +1867,7 @@
 
     var downloadFile$1 = function (filename, text, query) { return function (element) {
         var json = text.data;
-        console.log(query.sorttask2());
-        var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
+        var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
 
         var replacer = function(key, value) { return value === null ? '' : value }
         var csv = json.map(function(row){
@@ -1876,7 +1877,6 @@
         })
         csv.unshift(fields.join(',')); // add header column
 
-        console.log(csv.join('\r\n'));
 
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
         element.setAttribute('download', filename);

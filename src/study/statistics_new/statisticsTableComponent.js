@@ -22,7 +22,7 @@ let statisticsTableComponent = {
                     m('tr.table-default', [
                         th_option(sortBy, 'studyName', 'studyName'),
                         !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
-                        th_option(sortBy, 'date', 'date'),
+                        query.sorttime2()==='All' ? '' : th_option(sortBy, 'date', 'date'),
                         th_option(sortBy, 'starts', 'starts'),
                         th_option(sortBy, 'completes', 'completes'),
                         !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
@@ -37,7 +37,7 @@ let statisticsTableComponent = {
                     m('tr.table-default', [
                         m('td', row.studyName),
                         !query.sorttask2() ? '' : m('td', row.taskName),
-                        m('td', row.date),
+                        query.sorttime2()==='All' ? '' : m('td', row.date),
                         m('td', row.starts),
                         m('td', row.completes),
                         !query.sortgroup() ? '' : m('td', row.schema)

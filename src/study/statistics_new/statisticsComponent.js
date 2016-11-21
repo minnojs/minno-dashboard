@@ -23,6 +23,7 @@ let statisticsComponent = {
             sorttask2: m.prop(false),
             sortgroup: m.prop(false),
             sorttime: m.prop('All'),
+            sorttime2: m.prop('All'),
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
             lastTask: m.prop(''),
@@ -37,6 +38,7 @@ let statisticsComponent = {
                 .then(tableContent)
                 .then(loading.bind(null, false))
                 .then(query.sorttask2(query.sorttask()))
+                .then(query.sorttime2(query.sorttime()))
                 .then(m.redraw);
         }
 
@@ -69,8 +71,7 @@ let statisticsComponent = {
 
 let downloadFile = (filename, text, query) => element => {
     var json = text.data;
-    console.log(query.sorttask2());
-    var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
+    var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
 
     var replacer = function(key, value) { return value === null ? '' : value }
     var csv = json.map(function(row){
@@ -80,7 +81,6 @@ let downloadFile = (filename, text, query) => element => {
     })
     csv.unshift(fields.join(',')); // add header column
 
-    console.log(csv.join('\r\n'));
 
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
     element.setAttribute('download', filename);
