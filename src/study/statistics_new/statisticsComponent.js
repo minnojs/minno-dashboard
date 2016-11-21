@@ -71,6 +71,8 @@ let statisticsComponent = {
 
 let downloadFile = (filename, text, query) => element => {
     var json = text.data;
+    json = !query.showEmpty() ? json : json.filter(row => row.starts !== 0);
+
     var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
 
     var replacer = function(key, value) { return value === null ? '' : value }

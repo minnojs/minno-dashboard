@@ -1867,6 +1867,8 @@
 
     var downloadFile$1 = function (filename, text, query) { return function (element) {
         var json = text.data;
+        json = !query.showEmpty() ? json : json.filter(function (row) { return row.starts !== 0; });
+
         var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
 
         var replacer = function(key, value) { return value === null ? '' : value }

@@ -32,7 +32,7 @@ let statisticsTableComponent = {
                 ]),
                 m('tbody', [
                     list().map(row =>
-                    query.showEmpty() && row.starts===0
+                        query.showEmpty() && row.starts===0
                     ?
                     ''
                     :
