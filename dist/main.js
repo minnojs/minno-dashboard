@@ -4599,13 +4599,13 @@
             m('.btn-group.btn-group-sm', [
                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), elements: [
                     readonly ? '' : [
-                        m('a.dropdown-item', {onclick: do_delete(study.id, function () { return m.route('/studies'); })}, [
+                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, function () { return m.route('/studies'); })}, [
                             m('i.fa.fa-fw.fa-remove'), ' Delete study'
                         ]),
-                        m('a.dropdown-item', {onclick: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
+                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
                             m('i.fa.fa-fw.fa-exchange'), ' Rename study'
                         ]),
-                        m('a.dropdown-item', {onclick: do_duplicate(study.id, study.name, function () { return m.route('/studies'); })}, [
+                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, function () { return m.route('/studies'); })}, [
                             m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                         ])
                     ],
@@ -4613,7 +4613,7 @@
                     m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                     m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
                     m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
-                    m('a.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Base URL'])
+                    m('button.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Base URL'])
                 ]})
             ]),
             m('.btn-group.btn-group-sm', [
