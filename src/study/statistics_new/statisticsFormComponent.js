@@ -45,7 +45,7 @@ let statisticsFormComponent = {
                                     ])
                                 ])
                             ])
-                        ]),
+                        ])
                     ]),
                     m('.btn-group.btn-group-sm.pull-right', [
                         button(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),

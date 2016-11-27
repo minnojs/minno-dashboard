@@ -20,7 +20,7 @@ let sidebarButtons = ({study}) => {
                     m('button.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, name => study.name = name)}, [
                         m('i.fa.fa-fw.fa-exchange'), ' Rename study'
                     ]),
-                    m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, () => m.route('/studies'))}, [
+                    m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                     ])
                 ],

@@ -169,7 +169,7 @@ var mainComponent = {
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
                                                     ]),
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, loadStudies)}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                                                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                                                     ])
                                                 ],
