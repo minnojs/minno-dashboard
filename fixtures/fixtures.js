@@ -160,7 +160,7 @@ files.push({id:'images', path:'images', url:'/test/images', isDir:true, files: [
 files.push({id:'par', path:'par', url:'/test/par', isDir:true, files: [
     {id: 'sub', path: 'par/sub', url: '/test/par/sub', isDir: true, files: [
         {
-            'id': 'wm1_nc.jpg',
+            'id': 'wm1_ncasdf.jpg',
             'path': 'par/sub/wm1_nc.jpg',
             'url': '/test/par/sub/wm1_nc.jpg'
         }
