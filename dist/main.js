@@ -4511,16 +4511,6 @@
             .getChildren(file)
             .forEach(function (f) { return isChosen(f)(lastState === 1 ? 0 : 1); }); // update vm for each child
 
-        // update parent folders
-        study
-            .getParents(file)
-            .sort(function (a,b) { return a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1; })
-            .forEach(function (f) {
-                var files = f.files || [];
-                var chosenCount = files.reduce(function (counter, f) { return counter + isChosen(f)(); }, 0);
-                isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
-            });
-
         function isChosen(file){
             return study.vm(file.id).isChosen;
         }

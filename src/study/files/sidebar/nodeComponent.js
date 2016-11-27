@@ -99,16 +99,6 @@ const choose = ({file, study}) => e => {
         .getChildren(file)
         .forEach(f => isChosen(f)(lastState === 1 ? 0 : 1)); // update vm for each child
 
-    // update parent folders
-    study
-        .getParents(file)
-        .sort((a,b) => a.path.length === b.path.length ? 0 : a.path.length < b.path.length ? 1 : -1)
-        .forEach(f => {
-            let files = f.files || [];
-            let chosenCount = files.reduce((counter, f) => counter + isChosen(f)(), 0);
-            isChosen(f)(chosenCount === 0 ? 0 : chosenCount === files.length ? 1 : -1);
-        });
-
     function isChosen(file){
         return study.vm(file.id).isChosen;
     }
