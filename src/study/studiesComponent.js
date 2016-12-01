@@ -3,7 +3,7 @@ import {load_studies} from './studyModel';
 import {get_tags} from 'tags/tagsModel';
 
 import dropdown from 'utils/dropdown';
-import {do_duplicate, do_create, do_delete, do_rename, do_tags} from './studyActions';
+import {do_lock, do_duplicate, do_create, do_delete, do_rename, do_tags} from './studyActions';
 import classNames from 'utils/classNames';
 import formatDate from 'utils/formatDate';
 
@@ -163,10 +163,10 @@ var mainComponent = {
                                                 ]),
 
                                                 study.permission !== 'owner' ? '' : [
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
+                                                    study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-remove'), ' Delete Study'
                                                     ]),
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
+                                                    study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
@@ -174,9 +174,13 @@ var mainComponent = {
                                                     ])
                                                 ],
 
-                                                m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
-                                                m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),
-                                                m('a.dropdown-item', { href: `/studyRemoval/${study.id}`, config: m.route }, 'Request Removal'),
+                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study.id, study.is_locked)}, [
+                                                    m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
+                                                ]),
+
+                                                study.is_locked ? '' : m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
+                                                study.is_locked ? '' : m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),
+                                                study.is_locked ? '' : m('a.dropdown-item', { href: `/studyRemoval/${study.id}`, config: m.route }, 'Request Removal'),
                                                 m('a.dropdown-item', { href: `/sharing/${study.id}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                                             ]})
                                         ])

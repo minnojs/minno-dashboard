@@ -74,739 +74,6 @@
     var activation1_url      = urlPrefix + "dashboard/activation";
     var url$2 = urlPrefix + "DownloadsAccess";
 
-    function get_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)));
-    }
-
-    function get_duplicate_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
-    }
-
-    /*CRUD*/
-    var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
-
-    var create_study = function (study_name) { return fetchJson(studyUrl, {
-        method: 'post',
-        body: {study_name: study_name}
-    }); };
-
-    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
-        method: 'put',
-        body: {study_name: study_name}
-    }); };
-
-    var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
-        method: 'put',
-        body: {study_name: study_name}
-    }); };
-
-
-    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
-
-    function tag_url(tag_id)
-    {
-        return (tagsUrl + "/" + (encodeURIComponent(tag_id)));
-    }
-
-    function study_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
-    }
-
-
-    var update_tags_in_study = function (study_id, tags) { return fetchJson(study_url(study_id), {
-        method: 'put',
-        body: {tags: tags}
-    }); };
-
-
-    var get_tags = function () { return fetchJson(tagsUrl, {
-        method: 'get'
-    }); };
-
-
-    var get_tags_for_study = function (study_id) { return fetchJson(study_url(study_id), {
-        method: 'get'
-    }); };
-
-    var remove_tag = function (tag_id) { return fetchJson(tag_url(tag_id), {
-        method: 'delete'
-    }); };
-
-    var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
-        method: 'post',
-        body: {tag_text: tag_text, tag_color: tag_color}
-    }); };
-
-    var edit_tag = function (tag_id, tag_text, tag_color) { return fetchJson(tag_url(tag_id), {
-        method: 'put',
-        body: {tag_text: tag_text, tag_color: tag_color}
-    }); };
-
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
-    var dropdown = function (args) { return m.component(dropdownComponent, args); };
-
-    var dropdownComponent = {
-        controller: function controller(){
-            var isOpen = m.prop(false);
-            return {isOpen: isOpen};
-        },
-
-        view: function view(ref, ref$1){
-            var isOpen = ref.isOpen;
-            var toggleSelector = ref$1.toggleSelector;
-            var toggleContent = ref$1.toggleContent;
-            var elements = ref$1.elements;
-            var right = ref$1.right;
-
-            return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
-                m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
-                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
-            ]);
-        },
-
-        config: function (isOpen) { return function (element, isInit, ctx) {
-            if (!isInit) {
-                // this is a bit memory intensive, but lets not preemptively optimse
-                // bootstrap does this with a backdrop
-                document.addEventListener('mousedown', onClick, false);
-                ctx.onunload = function () { return document.removeEventListener('mousedown', onClick); };
-            }
-
-            function onClick(e){
-                if (!isOpen()) return;
-
-                // if we are within the dropdown do not close it
-                // this is conditional to prevent IE problems
-                if (e.target.closest && e.target.closest('.dropdown') === element && !hasClass(e.target, 'dropdown-onclick')) return true;
-                isOpen(false);
-                m.redraw();
-            }
-
-            function hasClass(el, selector){
-                return ( (' ' + el.className + ' ').replace(/[\n\t\r]/g, ' ').indexOf(' ' + selector + ' ') > -1 );
-            }
-        }; }
-    };
-
-    var noop = function (){};
-
-    var messages = {
-        vm: {isOpen: false},
-
-        open: function (type, opts) {
-            if ( opts === void 0 ) opts={};
-
-            var promise = new Promise(function (resolve, reject) {
-                messages.vm = {resolve: resolve,reject: reject,type: type, opts: opts, isOpen:true};
-            });
-            m.redraw();
-
-            return promise;
-        },
-
-        close: function (response) {
-            var vm = messages.vm;
-            vm.isOpen = false;
-            if (typeof vm.resolve === 'function') vm.resolve(response);
-            m.redraw();
-        },
-
-        custom: function (opts){ return messages.open('custom', opts); },
-        alert: function (opts) { return messages.open('alert', opts); },
-        confirm: function (opts) { return messages.open('confirm', opts); },
-        prompt: function (opts) { return messages.open('prompt', opts); },
-
-        view: function () {
-            var vm = messages.vm;
-            var close = messages.close.bind(null, null);
-            var stopPropagation = function (e) { return e.stopPropagation(); };
-            return m('#messages.backdrop', [
-                !vm || !vm.isOpen
-                    ? ''
-                    :[
-                        m('.overlay', {config:messages.config(vm.opts)}),
-                        m('.backdrop-content', {onclick:close}, [
-                            m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config:maxHeight}, [
-                                m('.card-block', {onclick: stopPropagation}, [
-                                    messages.views[vm.type](vm.opts)
-                                ])
-                            ])
-                        ])
-                    ]
-            ]);
-
-        },
-
-        config: function (opts) {
-            return function (element, isInitialized, context) {
-                if (!isInitialized) {
-                    var handleKey = function(e) {
-                        if (e.keyCode == 27) {
-                            messages.close(null);
-                        }
-                        if (e.keyCode == 13 && !opts.preventEnterSubmits) {
-                            messages.close(true);
-                        }
-                    };
-
-                    document.body.addEventListener('keyup', handleKey);
-
-                    context.onunload = function() {
-                        document.body.removeEventListener('keyup', handleKey);
-                    };
-                }
-            };
-        },
-
-        views: {
-            custom: function (opts) {
-                if ( opts === void 0 ) opts={};
-
-                return opts.content;
-    },
-
-            alert: function (opts) {
-                if ( opts === void 0 ) opts={};
-
-                var close = function (response) { return messages.close.bind(null, response); };
-                return [
-                    m('h4', opts.header),
-                    m('p.card-text', opts.content),
-                    m('.text-xs-right.btn-toolbar',[
-                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
-                    ])
-                ];
-            },
-
-            confirm: function (opts) {
-                if ( opts === void 0 ) opts={};
-
-                var close = function (response) { return messages.close.bind(null, response); };
-                return [
-                    m('h4', opts.header),
-                    m('p.card-text', opts.content),
-                    m('.text-xs-right.btn-toolbar',[
-                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
-                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
-                    ])
-                ];
-            },
-
-            /**
-             * Promise prompt(Object opts{header: String, content: String, name: Prop})
-             *
-             * where:
-             *   any Prop(any value)
-             */
-            prompt: function (ref) {
-                if ( ref === void 0 ) ref={prop:noop};
-                var prop = ref.prop;
-                var header = ref.header;
-                var content = ref.content;
-                var postContent = ref.postContent;
-                var okText = ref.okText;
-                var cancelText = ref.cancelText;
-
-                var close = function (response) { return messages.close.bind(null, response); };
-                return [
-                    m('h4', header),
-                    m('.card-text', content),
-                    m('.card-block', [
-                        m('input.form-control', {
-                            key: 'prompt',
-                            value: prop(),
-                            onchange: m.withAttr('value', prop),
-                            config: function (element, isInitialized) {
-                                if (!isInitialized) setTimeout(function () { return element.focus(); });
-                            }
-                        })
-                    ]),
-                    m('.card-text', postContent),
-                    m('.text-xs-right.btn-toolbar',[
-                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, cancelText || 'Cancel'),
-                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, okText || 'OK')
-                    ])
-                ];
-            }
-        }
-    };
-
-    // set message max height, so that content can scroll within it.
-    var maxHeight = function (element, isInitialized, ctx) {
-        if (!isInitialized){
-            onResize();
-
-            window.addEventListener('resize', onResize, true);
-
-            ctx.onunload = function(){
-                window.removeEventListener('resize', onResize);
-            };
-
-        }
-
-        function onResize(){
-            element.style.maxHeight = document.documentElement.clientHeight * 0.9 + 'px';
-        }
-    };
-
-    function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
-
-    var studyTagsComponent$1 = {
-        controller: function controller(ref){
-            var loadTags = ref.loadTags;
-            var tags = ref.tags;
-            var study_id = ref.study_id;
-
-            var tagName = m.prop('');
-            var loaded = m.prop(false);
-            var error = m.prop(null);
-            get_tags_for_study(study_id)
-                .then(function (response) { return tags(response.tags); })
-                .catch(error)
-                .then(loaded.bind(null, true))
-                .then(m.redraw);
-
-            return {tagName: tagName, tags: tags, loaded: loaded, error: error, loadTags: loadTags};
-        },
-        view: function (ref, ref$1) {
-            var tagName = ref.tagName;
-            var tags = ref.tags;
-            var loaded = ref.loaded;
-            var error = ref.error;
-            var loadTags = ref.loadTags;
-            var study_id = ref$1.study_id;
-
-            return m('div', [
-            m('.input-group', [
-                m('input.form-control', {
-                    placeholder: 'Filter Tags',
-                    value: tagName(),
-                    oninput: m.withAttr('value', tagName)
-                }),
-                m('span.input-group-btn', [
-                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error, loadTags), disabled: !tagName()}, [
-                        m('i.fa.fa-plus'),
-                        ' Create New'
-                    ])
-                ])
-            ]),
-            m('.small.text-muted.m-b-1', 'Use this text field to filter your tags. Click "Create New" to turn a filter into a new tag'),
-
-            loaded() ? '' : m('.loader'),
-            error() ? m('.alert.alert-warning', error().message): '',
-            loaded() && !tags().length ? m('.alert.alert-info', 'You have no tags yet') : '',
-
-            m('.custom-controls-stacked.pre-scrollable', tags().sort(sort_tags).filter(filter_tags(tagName())).map(function (tag) { return m('label.custom-control.custom-checkbox', [
-                m('input.custom-control-input', {
-                    type: 'checkbox',
-                    checked: tag.used,
-                    onclick: function(){
-                        tag.used = !tag.used;
-                        tag.changed = !tag.changed;
-                    }
-                }), 
-                m('span.custom-control-indicator'),
-                m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#' + tag.color}}, tag.text)
-            ]); }))
-        ]);
-    }
-    };
-
-    function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
-    function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
-
-
-    function create_tag(study_id, tagName, tags, error, callback){
-        return function () { return add_tag(tagName(), 'E7E7E7')
-            .then(function (response) { return tags().push(response); })
-            .then(tagName.bind(null, ''))
-            .then(callback)
-            .catch(error)
-            .then(m.redraw); };
-    }
-
-    var do_create = function () {
-        var study_name = m.prop('');
-        var error = m.prop('');
-
-        var ask = function () { return messages.prompt({
-            header:'New Study', 
-            content: m('div', [
-                m('p', 'Enter Study Name:'),
-                !error() ? '' : m('p.alert.alert-danger', error())
-            ]),
-            prop: study_name
-        }).then(function (response) { return response && create(); }); };
-        
-        var create = function () { return create_study(study_name)
-            .then(function (response) { return m.route('/editor/'+response.study_id); })
-            .catch(function (e) {
-                error(e.message);
-                ask();
-            }); };
-
-        ask();
-    };
-
-    var do_tags = function (ref) {
-        var study_id = ref.study_id;
-        var loadTags = ref.loadTags;
-        var callback = ref.callback;
-
-        return function (e) {
-        e.preventDefault();
-        var  filter_tags = function (){return function (tag) { return tag.changed; };};
-        var tags = m.prop([]);
-        messages.confirm({header:'Tags', content: studyTagsComponent({loadTags: loadTags, tags: tags, study_id: study_id, callback: callback})})
-            .then(function (response) {
-                if (response)
-                    update_tags_in_study(study_id, tags().filter(filter_tags()).map(function (tag){ return (({id: tag.id, used: tag.used})); })).then(callback);
-            });
-    };
-    };
-
-
-    var do_delete = function (study_id, callback) { return function (e) {
-        e.preventDefault();
-        return messages.confirm({header:'Delete study', content:'Are you sure?'})
-            .then(function (response) {
-                if (response) delete_study(study_id)
-                    .then(callback)
-                    .then(m.redraw)
-                    .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
-                    .then(m.redraw);
-            });
-    }; };
-
-
-    var do_rename = function (study_id, name, callback) { return function (e) {
-        e.preventDefault();
-        var study_name = m.prop(name);
-        var error = m.prop('');
-
-        var ask = function () { return messages.confirm({
-            header:'New Name',
-            content: m('div', [
-                m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
-                !error() ? '' : m('p.alert.alert-danger', error())
-            ])
-        }).then(function (response) { return response && rename(); }); };
-
-        var rename = function () { return rename_study(study_id, study_name)
-            .then(callback.bind(null, study_name()))
-            .then(m.redraw)
-            .catch(function (e) {
-                error(e.message);
-                ask();
-            }); };
-
-        // activate creation
-        ask();
-    }; };
-
-    var do_duplicate= function (study_id, name, callback) { return function (e) {
-        e.preventDefault();
-        var study_name = m.prop(name);
-        var error = m.prop('');
-
-        var ask = function () { return messages.confirm({
-            header:'New Name',
-            content: m('div', [
-                m('input.form-control', {placeholder: 'Enter Study Name', value: '', onchange: m.withAttr('value', study_name)}),
-                !error() ? '' : m('p.alert.alert-danger', error())
-            ])
-        }).then(function (response) { return response && duplicate(); }); };
-
-        var duplicate= function () { return duplicate_study(study_id, study_name)
-            .then(function (response) { return m.route('/editor/'+response.study_id); })
-            .then(m.redraw)
-            .catch(function (e) {
-                error(e.message);
-                ask();
-            }); };
-
-        // activate creation
-        ask();
-    }; };
-
-    // taken from here:
-    // https://github.com/JedWatson/classnames/blob/master/index.js
-    var hasOwn = {}.hasOwnProperty;
-
-    function classNames () {
-        var arguments$1 = arguments;
-
-        var classes = '';
-
-        for (var i = 0; i < arguments.length; i++) {
-            var arg = arguments$1[i];
-            if (!arg) continue;
-
-            var argType = typeof arg;
-
-            if (argType === 'string' || argType === 'number') {
-                classes += ' ' + arg;
-            } else if (Array.isArray(arg)) {
-                classes += ' ' + classNames.apply(null, arg);
-            } else if (argType === 'object') {
-                for (var key in arg) {
-                    if (hasOwn.call(arg, key) && arg[key]) {
-                        classes += ' ' + key;
-                    }
-                }
-            }
-        }
-
-        return classes.substr(1);
-    }
-
-    function formatDate(date){
-        var pad = function (num) { return num < 10 ? '0' + num : num; };
-        return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
-    }
-
-    var mainComponent = {
-
-        controller: function(){
-            var ctrl = {
-                studies:m.prop([]),
-                tags:m.prop([]),
-                user_name:m.prop(''),
-                globalSearch: m.prop(''),
-                permissionChoice: m.prop('all'),
-                loaded:false,
-                order_by_name: true,
-                loadStudies: loadStudies,
-                loadTags: loadTags,
-                sort_studies_by_name: sort_studies_by_name,
-                sort_studies_by_date: sort_studies_by_date
-            };
-
-            loadTags();
-            loadStudies();
-            function loadStudies() {
-                load_studies()
-                    .then(function (response) { return response.studies.sort(sort_studies_by_name2); })
-                    .then(ctrl.studies)
-                    .then(function (){ return ctrl.loaded = true; })
-                    .then(m.redraw);
-            }
-
-            function loadTags() {
-                get_tags()
-                    .then(function (response) { return response.tags; })
-                    .then(ctrl.tags)
-                    .then(m.redraw);
-            }
-
-            return ctrl;
-            function sort_studies_by_name2(study1, study2){
-                ctrl.order_by_name = true;
-
-                return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
-            }
-
-            function sort_studies_by_date2(study1, study2){
-                ctrl.order_by_name = false;
-                return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
-            }
-
-            function sort_studies_by_date(){
-                ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
-            }
-            function sort_studies_by_name(){
-                ctrl.studies(ctrl.studies().sort(sort_studies_by_name2));
-            }
-
-
-        },
-        view: function view(ref){
-            var loaded = ref.loaded;
-            var studies = ref.studies;
-            var tags = ref.tags;
-            var permissionChoice = ref.permissionChoice;
-            var globalSearch = ref.globalSearch;
-            var loadStudies = ref.loadStudies;
-            var loadTags = ref.loadTags;
-            var sort_studies_by_date = ref.sort_studies_by_date;
-            var sort_studies_by_name = ref.sort_studies_by_name;
-            var order_by_name = ref.order_by_name;
-
-            if (!loaded) return m('.loader');
-            return m('.container.studies', [
-                m('.row.p-t-1', [
-                    m('.col-sm-4', [
-                        m('h3', 'My Studies')
-                    ]),
-
-                    m('.col-sm-8', [
-                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
-                            m('i.fa.fa-plus'), '  Add new study'
-                        ]),
-
-                        m('.pull-right.m-r-1', [
-                            dropdown({toggleSelector:'button.btn.btn-sm.btn-secondary.dropdown-toggle', toggleContent: [m('i.fa.fa-tags'), ' Tags'], elements:[
-                                m('h6.dropdown-header', 'Filter by tags'),
-                                !tags().length
-                                    ? m('em.dropdown-header', 'You do not have any tags yet')
-                                    : tags().map(function (tag) { return m('a.dropdown-item',m('label.custom-control.custom-checkbox', [
-                                        m('input.custom-control-input', {
-                                            type: 'checkbox',
-                                            checked: tag.used,
-                                            onclick: function(){
-                                                tag.used = !tag.used;
-                                            }
-                                        }),
-                                        m('span.custom-control-indicator'),
-                                        m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
-                                    ])); }),
-                                m('.dropdown-divider'),
-                                m('a.dropdown-item', { href: "/tags", config: m.route }, 'Manage tags')
-                            ]})
-                        ]),
-
-                        m('.input-group.pull-right.m-r-1', [
-                            m('select.c-select.form-control', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
-                                m('option', {value:'all'}, 'Show all my studies'),
-                                m('option', {value:'owner'}, 'Show only studies I created'),
-                                m('option', {value:'collaboration'}, 'Show only studies shared with me'),
-                                m('option', {value:'public'}, 'Show public studies')
-                            ])
-                        ])
-                    ])
-                ]),
-
-                m('.card.studies-card', [
-                    m('.card-block', [
-                        m('.row', {key: '@@notid@@'}, [
-                            m('.col-sm-6', [
-                                m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
-                                    m('strong', 'Study Name '),
-                                    m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
-                                ])
-                            ]),
-                            m('.col-sm-2', [
-                                m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
-                                    m('strong', ' Last Changed '),
-                                    m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
-                                ])
-                            ]),
-                            m('.col-sm-4', [
-                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
-                            ])
-                        ]),
-
-                        studies()
-                            .filter(tagFilter(tags().filter(uesedFilter()).map(function (tag){ return tag.text; })))
-                            .filter(permissionFilter(permissionChoice()))
-                            .filter(searchFilter(globalSearch()))
-                            .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
-                                m('.row.study-row', [
-                                    m('.col-sm-3', [
-                                        m('.study-text', [
-                                            m('i.fa.fa-fw.owner-icon', {
-                                                class: classNames({
-                                                    'fa-globe': study.is_public,
-                                                    'fa-users': !study.is_public && study.permission !== 'owner'
-                                                }),
-                                                title: classNames({
-                                                    'Public' : study.is_public,
-                                                    'Collaboration' : !study.is_public && study.permission !== 'owner'
-                                                })
-                                            }),
-                                            study.name
-                                        ])
-                                    ]),
-                                    m('.col-sm-3', [
-                                        study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
-                                    ]),
-                                    m('.col-sm-3', [
-                                        m('.study-text', formatDate(new Date(study.last_modified)))
-                                    ]),
-                                    m('.col-sm-1', [
-                                        m('.btn-toolbar.pull-right', [
-                                            m('.btn-group.btn-group-sm', [
-                                                study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
-                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
-                                                    ]),
-
-                                                    study.permission !== 'owner' ? '' : [
-                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
-                                                            m('i.fa.fa-fw.fa-remove'), ' Delete Study'
-                                                        ]),
-                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
-                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
-                                                        ]),
-                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, loadStudies)}, [
-                                                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
-                                                        ])
-                                                    ],
-
-                                                    m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
-                                                    m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
-                                                    m('a.dropdown-item', { href: ("/studyRemoval/" + (study.id)), config: m.route }, 'Request Removal'),
-                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
-                                                ]})
-                                            ])
-                                        ])
-                                    ])
-                                ])
-                            ]); })
-                    ])
-                ])
-            ]);
-        }
-    };
-
-    var permissionFilter = function (permission) { return function (study) {
-        if(permission === 'all') return !study.is_public;
-        if(permission === 'public') return study.is_public;
-        if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
-        return study.permission === permission;
-    }; };
-
-    var tagFilter = function (tags) { return function (study) {
-        if (tags.length==0)
-            return true;
-        return study.tags.map(function (tag){ return tag.text; }).some(function (tag) { return tags.indexOf(tag) != -1; });
-    }; };
-
-    var uesedFilter = function () { return function (tag) {
-        return tag.used;
-    }; };
-
-
-    var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
-
-    function routeConfig(el, isInit, ctx, vdom) {
-
-        el.href = location.pathname + '?' + vdom.attrs.href;
-
-        if (!isInit) el.addEventListener('click', route);
-
-        function route(e){
-            var el = e.currentTarget;
-
-            if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
-            if (e.defaultPrevented) return;
-
-            e.preventDefault();
-            if (e.target.tagName === 'A' && e.target !== el) return;
-
-            m.route(el.search.slice(1));
-        }
-    }
-
     var getStatistics = function (query) {
         return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
             .then(function (response) {
@@ -1643,7 +910,7 @@
     var statisticsForm$1 = function (args) { return m.component(statisticsFormComponent$1, args); };
     var colWidth$1 = 3;
     var SOURCES$1 = {
-        'Research pool - Current studies'   : 'Research:Current',
+        'Research pool - Current studies'   : 'Pool:Current',
     //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
@@ -1686,7 +953,7 @@
                                         ])
                                     ])
                                 ])
-                            ]),
+                            ])
                         ]),
                         m('.btn-group.btn-group-sm.pull-right', [
                             button$1(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),
@@ -1737,6 +1004,11 @@
         m('span.c-indicator'),
         text
     ]); };
+
+    function formatDate(date){
+        var pad = function (num) { return num < 10 ? '0' + num : num; };
+        return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
+    }
 
     var statisticsTable$1 = function (args) { return m.component(statisticsTableComponent$1, args); };
 
@@ -1882,18 +1154,2084 @@
 
         var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
 
-        var replacer = function(key, value) { return value === null ? '' : value }
+        var replacer = function(key, value) { return value === null ? '' : value;};
         var csv = json.map(function(row){
             return fields.map(function(fieldName){
                 return JSON.stringify(row[fieldName], replacer);
-            }).join(',')
-        })
+            }).join(',');
+        });
         csv.unshift(fields.join(',')); // add header column
 
 
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
         element.setAttribute('download', filename);
     }; };
+
+    var STATUS_RUNNING = 'R';
+    var STATUS_PAUSED = 'P';
+    var STATUS_STOP = 'S';
+
+    function createStudy(study){
+        var body = Object.assign({
+            action:'insertRulesTable',
+            creationDate: new Date(),
+            studyStatus: STATUS_RUNNING
+        }, study);
+
+        return fetchJson(url, {method: 'post', body: body})
+            .then(interceptErrors);
+    }
+
+    function updateStudy(study){
+        var body = Object.assign({
+            action:'updateRulesTable'
+        }, study);
+
+        return  fetchJson(url, {method: 'post',body:body})
+            .then(interceptErrors);
+    }
+
+    function updateStatus(study, status){
+        var body = Object.assign({
+            action:'updateStudyStatus'
+        }, study,{studyStatus: status});
+
+        return  fetchJson(url, {method: 'post',body:body})
+            .then(interceptErrors);
+    }
+
+    function getAllPoolStudies(){
+        return fetchJson(url, {method:'post', body: {action:'getAllPoolStudies'}})
+            .then(interceptErrors);
+    }
+
+    function getLast100PoolUpdates(){
+        return fetchJson(url, {method:'post', body: {action:'getLast100PoolUpdates'}})
+            .then(interceptErrors);
+    }
+
+    function getStudyId(study){
+        var body = Object.assign({
+            action:'getStudyId'
+        }, study);
+
+        return  fetchJson(url, {method: 'post',body:body});
+    }
+
+    function resetStudy(study){
+        return fetchJson(url, {method:'post', body: Object.assign({action:'resetCompletions'}, study)})
+            .then(interceptErrors);
+    }
+
+    function interceptErrors(response){
+        if (!response.error){
+            return response;
+        }
+
+        var errors = {
+            1: 'This ID already exists.',
+            2: 'The study could not be found.',
+            3: 'The rule file could not be found.',
+            4: 'The rules file does not fit the "research" schema.'
+        };
+
+        return Promise.reject({message: errors[response.error]});
+    }
+
+    var noop = function (){};
+
+    var messages = {
+        vm: {isOpen: false},
+
+        open: function (type, opts) {
+            if ( opts === void 0 ) opts={};
+
+            var promise = new Promise(function (resolve, reject) {
+                messages.vm = {resolve: resolve,reject: reject,type: type, opts: opts, isOpen:true};
+            });
+            m.redraw();
+
+            return promise;
+        },
+
+        close: function (response) {
+            var vm = messages.vm;
+            vm.isOpen = false;
+            if (typeof vm.resolve === 'function') vm.resolve(response);
+            m.redraw();
+        },
+
+        custom: function (opts){ return messages.open('custom', opts); },
+        alert: function (opts) { return messages.open('alert', opts); },
+        confirm: function (opts) { return messages.open('confirm', opts); },
+        prompt: function (opts) { return messages.open('prompt', opts); },
+
+        view: function () {
+            var vm = messages.vm;
+            var close = messages.close.bind(null, null);
+            var stopPropagation = function (e) { return e.stopPropagation(); };
+            return m('#messages.backdrop', [
+                !vm || !vm.isOpen
+                    ? ''
+                    :[
+                        m('.overlay', {config:messages.config(vm.opts)}),
+                        m('.backdrop-content', {onclick:close}, [
+                            m('.card', {class: vm.opts.wide ? 'col-sm-8' : 'col-sm-5', config:maxHeight}, [
+                                m('.card-block', {onclick: stopPropagation}, [
+                                    messages.views[vm.type](vm.opts)
+                                ])
+                            ])
+                        ])
+                    ]
+            ]);
+
+        },
+
+        config: function (opts) {
+            return function (element, isInitialized, context) {
+                if (!isInitialized) {
+                    var handleKey = function(e) {
+                        if (e.keyCode == 27) {
+                            messages.close(null);
+                        }
+                        if (e.keyCode == 13 && !opts.preventEnterSubmits) {
+                            messages.close(true);
+                        }
+                    };
+
+                    document.body.addEventListener('keyup', handleKey);
+
+                    context.onunload = function() {
+                        document.body.removeEventListener('keyup', handleKey);
+                    };
+                }
+            };
+        },
+
+        views: {
+            custom: function (opts) {
+                if ( opts === void 0 ) opts={};
+
+                return opts.content;
+    },
+
+            alert: function (opts) {
+                if ( opts === void 0 ) opts={};
+
+                var close = function (response) { return messages.close.bind(null, response); };
+                return [
+                    m('h4', opts.header),
+                    m('p.card-text', opts.content),
+                    m('.text-xs-right.btn-toolbar',[
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                    ])
+                ];
+            },
+
+            confirm: function (opts) {
+                if ( opts === void 0 ) opts={};
+
+                var close = function (response) { return messages.close.bind(null, response); };
+                return [
+                    m('h4', opts.header),
+                    m('p.card-text', opts.content),
+                    m('.text-xs-right.btn-toolbar',[
+                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, opts.cancelText || 'Cancel'),
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, opts.okText || 'OK')
+                    ])
+                ];
+            },
+
+            /**
+             * Promise prompt(Object opts{header: String, content: String, name: Prop})
+             *
+             * where:
+             *   any Prop(any value)
+             */
+            prompt: function (ref) {
+                if ( ref === void 0 ) ref={prop:noop};
+                var prop = ref.prop;
+                var header = ref.header;
+                var content = ref.content;
+                var postContent = ref.postContent;
+                var okText = ref.okText;
+                var cancelText = ref.cancelText;
+
+                var close = function (response) { return messages.close.bind(null, response); };
+                return [
+                    m('h4', header),
+                    m('.card-text', content),
+                    m('.card-block', [
+                        m('input.form-control', {
+                            key: 'prompt',
+                            value: prop(),
+                            onchange: m.withAttr('value', prop),
+                            config: function (element, isInitialized) {
+                                if (!isInitialized) setTimeout(function () { return element.focus(); });
+                            }
+                        })
+                    ]),
+                    m('.card-text', postContent),
+                    m('.text-xs-right.btn-toolbar',[
+                        m('button.btn.btn-secondary.btn-sm', {onclick:close(null)}, cancelText || 'Cancel'),
+                        m('button.btn.btn-primary.btn-sm', {onclick:close(true)}, okText || 'OK')
+                    ])
+                ];
+            }
+        }
+    };
+
+    // set message max height, so that content can scroll within it.
+    var maxHeight = function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            onResize();
+
+            window.addEventListener('resize', onResize, true);
+
+            ctx.onunload = function(){
+                window.removeEventListener('resize', onResize);
+            };
+
+        }
+
+        function onResize(){
+            element.style.maxHeight = document.documentElement.clientHeight * 0.9 + 'px';
+        }
+    };
+
+    var spinner = {
+        display: m.prop(false),
+        show: function show(response){
+            spinner.display(true);
+            m.redraw();
+            return response;
+        },
+        hide: function hide(response){
+            spinner.display(false);
+            m.redraw();
+            return response;
+        },
+        view: function view(){
+            return m('.backdrop', {hidden:!spinner.display()}, // spinner.show()
+                m('.overlay'),
+                m('.backdrop-content.spinner.icon.fa.fa-cog.fa-spin')
+            );
+        }
+    };
+
+    // taken from here:
+    // https://github.com/JedWatson/classnames/blob/master/index.js
+    var hasOwn = {}.hasOwnProperty;
+
+    function classNames () {
+        var arguments$1 = arguments;
+
+        var classes = '';
+
+        for (var i = 0; i < arguments.length; i++) {
+            var arg = arguments$1[i];
+            if (!arg) continue;
+
+            var argType = typeof arg;
+
+            if (argType === 'string' || argType === 'number') {
+                classes += ' ' + arg;
+            } else if (Array.isArray(arg)) {
+                classes += ' ' + classNames.apply(null, arg);
+            } else if (argType === 'object') {
+                for (var key in arg) {
+                    if (hasOwn.call(arg, key) && arg[key]) {
+                        classes += ' ' + key;
+                    }
+                }
+            }
+        }
+
+        return classes.substr(1);
+    }
+
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
+    var editMessage = function (args) { return messages.custom({
+        content: m.component(editComponent, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+    var editComponent = {
+        controller: function controller(ref){
+            var input = ref.input;
+            var output = ref.output;
+            var close = ref.close;
+
+            var study = ['rulesUrl', 'targetCompletions', 'autopauseUrl', 'userEmail'].reduce(function (study, prop){
+                study[prop] = m.prop(input[prop] || '');
+                return study;
+            }, {});
+
+            // export study to calling component
+            output(study);
+
+
+            var ctrl = {
+                study: study,
+                submitAttempt: false,
+                validity: function validity(){
+                    var isEmail = function (str)  { return /\S+@\S+\.\S+/.test(str); };
+                    var isNormalInteger = function (str) { return /^\+?(0|[1-9]\d*)$/.test(str); };
+
+                    var response = {
+                        rulesUrl: study.rulesUrl(),
+                        targetCompletions: isNormalInteger(study.targetCompletions()),
+                        autopauseUrl: study.autopauseUrl(),
+                        userEmail: isEmail(study.userEmail())
+
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+
+                    if (isValid) {
+                        study.targetCompletions(+study.targetCompletions());// targetCompletions should be cast as a number
+                        close(true);
+                    }
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+        },
+        view: function view(ctrl, ref){
+            var input = ref.input;
+
+            var study = ctrl.study;
+            var validity = ctrl.validity();
+            var miniButtonView = function (prop, name, url) { return m('button.btn.btn-secondary.btn-sm', {onclick: prop.bind(null,url)}, name); };
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Study Editor'),
+                m('.card-block', [
+                    m('.form-group', [
+                        m('label', 'Study ID'),
+                        m('p',[
+                            m('strong.form-control-static', input.studyId)
+                        ])
+
+                    ]),
+                    m('.form-group', [
+                        m('label', 'Study URL'),
+                        m('p',[
+                            m('strong.form-control-static', input.studyUrl)
+                        ])
+                    ]),
+
+                    m('.form-group', {class:groupClasses(validity.rulesUrl)}, [
+                        m('label', 'Rules File URL'),
+                        m('input.form-control', {
+                            config: focusConfig,
+                            placeholder:'Rules file URL',
+                            value: study.rulesUrl(),
+                            oninput: m.withAttr('value', study.rulesUrl),
+                            class:inputClasses(validity.rulesUrl)
+                        }),
+                        m('p.text-muted.btn-toolbar', [
+                            miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')
+                        ]),
+                        validationView(validity.rulesUrl, 'This row is required')
+                    ]),
+                    m('.form-group', {class:groupClasses(validity.autopauseUrl)}, [
+                        m('label', 'Auto-pause file URL'),
+                        m('input.form-control', {
+                            placeholder:'Auto pause file URL',
+                            value: study.autopauseUrl(),
+                            oninput: m.withAttr('value', study.autopauseUrl),
+                            class:inputClasses(validity.autopauseUrl)
+                        }),
+                        m('p.text-muted.btn-toolbar', [
+                            miniButtonView(study.autopauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'),
+                            miniButtonView(study.autopauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'),
+                            miniButtonView(study.autopauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')
+                        ]),
+                        validationView(validity.autopauseUrl, 'This row is required')
+                    ]),
+                    m('.form-group', {class:groupClasses(validity.targetCompletions)}, [
+                        m('label','Target number of sessions'),
+                        m('input.form-control', {
+                            type:'number',
+                            placeholder:'Target Sessions',
+                            value: study.targetCompletions(),
+                            oninput: m.withAttr('value', study.targetCompletions),
+                            onclick: m.withAttr('value', study.targetCompletions),
+                            class:inputClasses(validity.targetCompletions)
+                        }),
+                        validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')
+                    ]),
+                    m('.form-group', {class:groupClasses(validity.userEmail)}, [
+                        m('label','User Email'),
+                        m('input.form-control', {
+                            type:'email',
+                            placeholder:'Email',
+                            value: study.userEmail(),
+                            oninput: m.withAttr('value', study.userEmail),
+                            class:inputClasses(validity.userEmail)
+                        }),
+                        validationView(validity.userEmail, 'This row is required and must be a valid Email')
+                    ])
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
+    var createMessage = function (args) { return messages.custom({
+        content: m.component(createComponent, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+    var createComponent = {
+        controller: function controller(ref){
+            var output = ref.output;
+            var close = ref.close;
+
+            var study = output({
+                studyUrl: m.prop('')
+            });
+
+            var ctrl = {
+                study: study,
+                submitAttempt: false,
+                validity: function validity(){
+                    var response = {
+                        studyUrl: study.studyUrl()
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+                    if (isValid) close(true);
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+        },
+        view: function view(ctrl){
+            var study = ctrl.study;
+            var validity = ctrl.validity();
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Create Study'),
+                m('.card-block', [
+                    m('.form-group', {class:groupClasses(validity.studyUrl)}, [
+                        m('label', 'Study URL'),
+                        m('input.form-control', {
+                            config: focusConfig$1,
+                            placeholder:'Study URL',
+                            value: study.studyUrl(),
+                            oninput: m.withAttr('value', study.studyUrl),
+                            class:inputClasses(validity.studyUrl)
+                        }),
+                        validationView(validity.studyUrl, 'This row is required')
+                    ])
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'Proceed')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig$1 = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    function play(study){
+        return messages.confirm({
+            header: 'Continue Study:',
+            content: ("Are you sure you want to continue \"" + (study.studyId) + "\"?")
+        })
+        .then(function (response) {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_RUNNING)
+                    .then(function (){ return study.studyStatus = STATUS_RUNNING; })
+                    .catch(reportError('Continue Study'))
+                    .then(studyPending(study, false));
+            }
+        });
+    }
+
+    function pause(study){
+        return messages.confirm({
+            header: 'Pause Study:',
+            content: ("Are you sure you want to pause \"" + (study.studyId) + "\"?")
+        })
+        .then(function (response) {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_PAUSED)
+                    .then(function (){ return study.studyStatus = STATUS_PAUSED; })
+                    .catch(reportError('Pause Study'))
+                    .then(studyPending(study, false));
+            }
+        });
+    }
+
+    var remove  = function (study, list) {
+        return messages.confirm({
+            header: 'Remove Study:',
+            content: ("Are you sure you want to remove \"" + (study.studyId) + "\" from the pool?")
+        })
+        .then(function (response) {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_STOP)
+                    .then(function () { return list(list().filter(function (el) { return el !== study; })); })
+                    .catch(reportError('Remove Study'))
+                    .then(studyPending(study, false));
+            }
+        });
+    };
+
+    var edit  = function (input) {
+        var output = m.prop();
+        return editMessage({input: input, output: output})
+            .then(function (response) {
+                if (response) {
+                    studyPending(input, true)();
+                    var study = Object.assign({}, input, unPropify(output()));
+                    return updateStudy(study)
+                        .then(function () { return Object.assign(input, study); }) // update study in view
+                        .catch(reportError('Study Editor'))
+                        .then(studyPending(input, false));
+                }
+            });
+    };
+
+    var create = function (list) {
+        var output = m.prop();
+        return createMessage({output: output})
+            .then(function (response) {
+                if (response) {
+                    spinner.show();
+                    getStudyId(output())
+                        .then(function (response) { return Object.assign(unPropify(output()), response); }) // add response data to "newStudy"
+                        .then(spinner.hide)
+                        .then(editNewStudy);
+                }
+            });
+
+        function editNewStudy(input){
+            var output = m.prop();
+            return editMessage({input: input, output: output})
+                .then(function (response) {
+                    if (response) {
+                        var study = Object.assign({
+                            startedSessions: 0,
+                            completedSessions: 0,
+                            creationDate:new Date(),
+                            studyStatus: STATUS_RUNNING
+                        }, input, unPropify(output()));
+                        return createStudy(study)
+                            .then(function () { return list().push(study); })
+                            .then(m.redraw)
+                            .catch(reportError('Create Study'));
+                    }
+                });
+        }
+    };
+
+    var reset = function (study) {
+        messages.confirm({
+            header: 'Restart study',
+            content: 'Are you sure you want to restart this study? This action will reset all started and completed sessions.'
+        }).then(function (response) {
+            if (response) {
+                var old = {
+                    startedSessions: study.startedSessions,
+                    completedSessions: study.completedSessions
+                };
+                study.startedSessions = study.completedSessions = 0;
+                m.redraw();
+                return resetStudy(study)
+                    .catch(function (response) {
+                        Object.assign(study, old);
+                        return Promise.reject(response);
+                    })
+                    .catch(reportError('Restart study'));
+            }
+        });
+    };
+
+    var reportError = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
+
+    var studyPending = function (study, state) { return function () {
+        study.$pending = state;
+        m.redraw();
+    }; };
+
+    var unPropify = function (obj) { return Object.keys(obj).reduce(function (result, key) {
+        result[key] = obj[key]();
+        return result;
+    }, {}); };
+
+    var loginUrl = baseUrl + "/connect";
+    var logoutUrl = baseUrl + "/logout";
+    var is_logedinUrl = baseUrl + "/is_loggedin";
+
+    var login = function (username, password) { return fetchJson(loginUrl, {
+        method: 'post',
+        body: {username: username, password: password}
+    }); };
+
+    var logout = function () { return fetchVoid(logoutUrl, {method:'post'}).then(getAuth); };
+
+    var getAuth = function () { return fetchJson(is_logedinUrl, {
+        method: 'get'
+    }); };
+
+    var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
+    var TABLE_WIDTH = 8;
+
+    var poolComponent = {
+        controller: function () {
+            var ctrl = {
+                play: play, pause: pause, remove: remove, edit: edit, reset: reset, create: create,
+                canCreate: false,
+                list: m.prop([]),
+                globalSearch: m.prop(''),
+                sortBy: m.prop(),
+                error: m.prop(''),
+                loaded: m.prop()
+            };
+
+            getAuth().then(function (response) {ctrl.canCreate = response.role === 'SU';});
+            getAllPoolStudies()
+                .then(ctrl.list)
+                .then(ctrl.loaded)
+                .catch(ctrl.error)
+                .then(m.redraw);
+            return ctrl;
+        },
+        view: function (ctrl) {
+            var list = ctrl.list;
+            return m('.pool', [
+                m('h2', 'Study pool'),
+                ctrl.error()
+                    ?
+                    m('.alert.alert-warning',
+                        m('strong', 'Warning!! '), ctrl.error().message
+                    )
+                    :
+                    m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                        m('thead', [
+                            m('tr', [
+                                m('th', {colspan:TABLE_WIDTH - 1}, [
+                                    m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                                ]),
+                                m('th', [
+                                    m('a.btn.btn-secondary', {href:'/pool/history', config:m.route}, [
+                                        m('i.fa.fa-history'), '  History'
+                                    ])
+                                ])
+                            ]),
+                            ctrl.canCreate ? m('tr', [
+                                m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
+                                    m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
+                                        m('i.fa.fa-plus'), '  Add new study'
+                                    ])
+                                ])
+                            ]) : '',
+                            m('tr', [
+                                m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
+                                m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
+                                m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
+                                m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
+                                m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
+                                m('th','Status'),
+                                m('th','Actions')
+                            ])
+                        ]),
+                        m('tbody', [
+                            list().length === 0
+                                ?
+                                m('tr.table-info',
+                                    m('td.text-xs-center', {colspan: TABLE_WIDTH},
+                                        m('strong', 'Heads up! '), 
+                                        ctrl.loaded()
+                                            ? 'None of your studies is in the Research Pool right now'
+                                            : 'Loading...'
+                                    )
+                                )
+                                :
+                                list().filter(studyFilter(ctrl)).map(function (study) { return m('tr', [
+                                    // ### ID
+                                    m('td', study.studyId),
+
+                                    // ### Study url
+                                    m('td', [
+                                        m('a', {href:PRODUCTION_URL + study.studyUrl, target: '_blank'}, 'Study')
+                                    ]),
+
+                                    // ### Rules url
+                                    m('td', [
+                                        m('a', {href:PRODUCTION_URL + study.rulesUrl, target: '_blank'}, 'Rules')
+                                    ]),
+
+                                    // ### Autopause url
+                                    m('td', [
+                                        m('a', {href:PRODUCTION_URL + study.autopauseUrl, target: '_blank'}, 'Autopause')
+                                    ]),
+
+                                    // ### Completions
+                                    m('td', [
+                                        study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
+                                        m('i.fa.fa-info-circle'),
+                                        m('.info-box', [
+                                            m('.card', [
+                                                m('.card-header', 'Completion Details'),
+                                                m('ul.list-group.list-group-flush',[
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Target Completions: '), study.targetCompletions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Started Sessions: '), study.startedSessions
+                                                    ]),
+                                                    m('li.list-group-item', [
+                                                        m('strong', 'Completed Sessions: '), study.completedSessions
+                                                    ])
+                                                ])
+                                            ])
+                                        ])
+                                    ]),
+
+                                    // ### Date
+                                    m('td', formatDate(new Date(study.creationDate))),
+
+                                    // ### Status
+                                    m('td', [
+                                        {
+                                            R: m('span.label.label-success', 'Running'),
+                                            P: m('span.label.label-info', 'Paused'),
+                                            S: m('span.label.label-danger', 'Stopped')
+                                        }[study.studyStatus]
+                                    ]),
+
+                                    // ### Actions
+                                    m('td', [
+                                        study.$pending
+                                            ?
+                                            m('.l', 'Loading...')
+                                            :
+                                            m('.btn-group', [
+                                                study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play.bind(null, study)}, [
+                                                    m('i.fa.fa-play')
+                                                ]) : '',
+                                                study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
+                                                    m('i.fa.fa-pause')
+                                                ]) : '',
+                                                study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
+                                                    m('i.fa.fa-edit')
+                                                ]): '',
+                                                study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
+                                                    m('i.fa.fa-refresh')
+                                                ]) : '',
+                                                study.canStop ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
+                                                    m('i.fa.fa-close')
+                                                ]) : ''
+                                            ])
+                                    ])
+                                ]); })
+                        ])
+                    ])
+            ]);
+        }
+    };
+
+    // @TODO: bad idiom! should change things within the object, not the object itself.
+    var thConfig = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+
+    function studyFilter(ctrl){
+        return function (study) { return includes(study.studyId, ctrl.globalSearch()) ||
+            includes(study.studyUrl, ctrl.globalSearch()) ||
+            includes(study.rulesUrl, ctrl.globalSearch()); };
+
+        function includes(val, search){
+            return typeof val === 'string' && val.includes(search);
+        }
+    }
+
+    var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
+    var poolComponent$1 = {
+        controller: function () {
+            var ctrl = {
+                list: m.prop([]),
+                globalSearch: m.prop(''),
+                startDate: m.prop(new Date(0)),
+                endDate: m.prop(new Date()),
+                sortBy: m.prop()
+            };
+
+            getLast100PoolUpdates()
+                .then(ctrl.list)
+                .then(m.redraw);
+
+            return ctrl;
+        },
+        view: function (ctrl) {
+            var list = ctrl.list;
+            return m('.pool', [
+                m('h2', 'Pool history'),
+                m('.row', {colspan:8}, [
+                    m('.col-sm-3',[
+                        m('label', 'Search'),
+                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                    ]),
+                    m('.col-sm-4',[
+                        dateRangePicker(ctrl)
+                    ]),
+                    m('.col-sm-5',[
+                        m('label', m.trust('&nbsp')),
+                        m('.text-muted.btn-toolbar', [
+                            dayButtonView(ctrl, 'Last 7 Days', 7),
+                            dayButtonView(ctrl, 'Last 30 Days', 30),
+                            dayButtonView(ctrl, 'Last 90 Days', 90),
+                            dayButtonView(ctrl, 'All time', 3650)
+                        ])
+                    ])
+                ]) ,
+                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                    m('thead', [
+                        m('tr', [
+                            m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
+                            m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
+                            m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
+                            m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
+                            m('th', thConfig$1('creationDate',ctrl.sortBy), 'Creation Date'),
+                            m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
+                            m('th','New Status'),
+                            m('th','Old Status'),
+                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater')
+                        ])
+                    ]),
+                    m('tbody', [
+                        list().filter(studyFilter$1(ctrl)).map(function (study) { return m('tr', [
+                            // ### ID
+                            m('td', study.studyId),
+
+                            // ### Study url
+                            m('td', [
+                                m('a', {href:PRODUCTION_URL$1 + study.studyUrl, target: '_blank'}, 'Study')
+                            ]),
+
+                            // ### Rules url
+                            m('td', [
+                                m('a', {href:PRODUCTION_URL$1 + study.rulesUrl, target: '_blank'}, 'Rules')
+                            ]),
+
+                            // ### Autopause url
+                            m('td', [
+                                m('a', {href:PRODUCTION_URL$1 + study.autopauseUrl, target: '_blank'}, 'Autopause')
+                            ]),
+                            
+                        
+
+                            // ### Date
+                            m('td', formatDate(new Date(study.creationDate))),
+                            
+                            // ### Target Completionss
+                            m('td', [
+                                study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
+                                m('i.fa.fa-info-circle'),
+                                m('.card.info-box', [
+                                    m('.card-header', 'Completion Details'),
+                                    m('ul.list-group.list-group-flush',[
+                                        m('li.list-group-item', [
+                                            m('strong', 'Target Completions: '), study.targetCompletions
+                                        ]),
+                                        m('li.list-group-item', [
+                                            m('strong', 'Started Sessions: '), study.startedSessions
+                                        ]),
+                                        m('li.list-group-item', [
+                                            m('strong', 'Completed Sessions: '), study.completedSessions
+                                        ])
+                                    ])
+                                ])
+                            ]),
+
+                            // ### New Status
+                            m('td', [
+                                {
+                                    R: m('span.label.label-success', 'Running'),
+                                    P: m('span.label.label-info', 'Paused'),
+                                    S: m('span.label.label-danger', 'Stopped')
+                                }[study.newStatus]
+                            ]),
+                            // ### Old Status
+                            m('td', [
+                                {
+                                    R: m('span.label.label-success', 'Running'),
+                                    P: m('span.label.label-info', 'Paused'),
+                                    S: m('span.label.label-danger', 'Stopped')
+                                }[study.studyStatus]
+                            ]),
+                            m('td', study.updaterId)
+                        ]); })
+                    ])
+                ])
+            ]);
+        }
+    };
+
+    // @TODO: bad idiom! should change things within the object, not the object itself.
+    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+
+    function studyFilter$1(ctrl){
+        return function (study) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
+                || includes(study.targetCompletions, ctrl.globalSearch()))
+            && (new Date(study.creationDate)).getTime() >= ctrl.startDate().getTime()
+        && (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime()+86000000; }; //include the end day selected
+
+        function includes(val, search){
+            return typeof val === 'string' && val.includes(search);
+        }
+    }
+
+    var dayButtonView = function (ctrl, name, days) { return m('button.btn.btn-secondary.btn-sm', {onclick: function () {
+        var d = new Date();
+        d.setDate(d.getDate() - days);
+        ctrl.startDate(d);
+        ctrl.endDate(new Date());
+    }}, name); };
+
+    var STATUS_RUNNING$1 = 'R';
+    var STATUS_COMPLETE = 'C';
+    var STATUS_ERROR = 'X';
+
+    var getAllDownloads = function () { return fetchJson(url$1, {
+        method:'post',
+        body: {action:'getAllDownloads'}
+    }).then(interceptErrors$1); };
+
+    var removeDownload = function (download) { return fetchVoid(url$1, {
+        method:'post',
+        body: Object.assign({action:'removeDownload'}, download)
+    }).then(interceptErrors$1); };
+
+    var createDownload = function (download) { return fetchVoid(url$1, {
+        method: 'post',
+        body: Object.assign({action:'download'}, download)
+    }).then(interceptErrors$1); };
+
+    function interceptErrors$1(response){
+        if (!response || !response.error){
+            return response;
+        }
+
+        return Promise.reject({message: response.msg});
+    }
+
+    function createMessage$1 (args) { return messages.custom({
+        content: m.component(createComponent$1, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+
+    var createComponent$1 = {
+        controller: function controller(ref){
+            var output = ref.output;
+            var close = ref.close;
+
+            var download ={
+                studyId: m.prop(''),
+                db: m.prop('test'),
+                startDate: m.prop(daysAgo(3650)),
+                endDate: m.prop(new Date())
+            };
+
+            // export study to calling component
+            output(download);
+
+            var ctrl = {
+                download: download,
+                submitAttempt: false,
+                validity: function validity(){
+                    var response = {
+                        studyId: download.studyId()
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+
+                    if (isValid) {
+                        download.endDate(endOfDay(download.endDate())); 
+                        close(true);
+                    }
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+
+            function endOfDay(date){
+                if (date) return new Date(date.setHours(23,59,59,999));
+            }
+        },
+        view: function view(ctrl){
+            var download = ctrl.download;
+            var validity = ctrl.validity();
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Request Data'),
+                m('.card-block', [
+                    m('.row', [
+                        m('.col-sm-6', [
+                            m('.form-group', {class:groupClasses(validity.studyId)}, [
+                                m('label', 'Study ID'),
+                                m('input.form-control', {
+                                    config: focusConfig$2,
+                                    placeholder:'Study Id',
+                                    value: download.studyId(),
+                                    oninput: m.withAttr('value', download.studyId),
+                                    class:inputClasses(validity.studyId)
+                                }),
+                                validationView(validity.studyId, 'The study ID is required in order to request a download.')
+                            ])   
+                        ]),
+                        m('.col-sm-6', [
+                            m('.form-group', [
+                                m('label','Database'),
+                                m('select.form-control.c-select', {onchange: m.withAttr('value',download.db)}, [
+                                    m('option',{value:'test', selected: download.db() === 'test'}, 'Development'),
+                                    m('option',{value:'warehouse', selected: download.db() === 'warehouse'}, 'Production')
+                                ])
+                            ])
+                        ])
+                    ]),
+                    m('.row', [
+                        m('.col-sm-12', [
+                            m('.form-group', [
+                                dateRangePicker(download),
+                                m('p.text-muted.btn-toolbar', [
+                                    dayButtonView$1(download, 'Last 7 Days', 7),
+                                    dayButtonView$1(download, 'Last 30 Days', 30),
+                                    dayButtonView$1(download, 'Last 90 Days', 90),
+                                    dayButtonView$1(download, 'All time', 3650)
+                                ])
+                            ])
+                        ])
+                    ])
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig$2 = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    // helper functions for the day buttons
+    var daysAgo = function (days) {
+        var d = new Date();
+        d.setDate(d.getDate() - days);
+        return d;
+    };
+    var equalDates = function (date1, date2) { return date1.getDate() === date2.getDate(); };
+    var activeDate = function (ref, days) {
+        var startDate = ref.startDate;
+        var endDate = ref.endDate;
+
+        return equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
+    };
+
+    var dayButtonView$1 = function (download, name, days) { return m('button.btn.btn-secondary.btn-sm', {
+        class: activeDate(download, days)? 'active' : '',
+        onclick: function () {
+            download.startDate(daysAgo(days));
+            download.endDate(new Date());
+        }
+    }, name); };
+
+    var DURATION = 5000;
+
+    /**
+     * Get all downloads
+     */
+
+    var recursiveGetAll = debounce(getAll, DURATION);
+    function getAll(ref){
+        var list = ref.list;
+        var cancel = ref.cancel;
+        var error = ref.error;
+        var loaded = ref.loaded;
+
+        return getAllDownloads()
+            .then(list)
+            .then(function (response) {
+                if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
+                    recursiveGetAll({list: list, cancel: cancel, error: error, loaded: loaded});
+                }
+            })
+            .catch(error)
+            .then(function(){loaded(true);})
+            .then(m.redraw);
+    }
+
+
+    // debounce but call at first iteration
+    function debounce(func, wait) {
+        var first = true;
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            var later = function() {
+                timeout = null;
+                func.apply(context, args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (first) {
+                func.apply(context, args);
+                first = false;
+            }
+        };
+    }
+
+
+    /**
+     * Remove download
+     */
+
+    function remove$1(download, list) {
+        return messages.confirm({
+            header: 'Delete Request:',
+            content: [
+                'Are you sure you want to delete this request from your queue?',
+                m('.text-xs-center',
+                    m('small.muted-text','(Don\'t worry, the data will stay on our servers and you can request it again in the future)')
+                )
+            ]
+        })
+        .then(function(response){
+            if (response) return doRemove(download, list);
+        });
+    }
+
+    function doRemove(download, list){
+        list(list().filter(function (el) { return el !== download; }));
+        m.redraw();
+        removeDownload(download)
+            .catch(function (err) {
+                list().push(download);
+                return messages.alert({
+                    header: 'Delete Request',
+                    content: err.message
+                });
+            });
+    }
+
+    /**
+     * Create download
+     */
+
+    function create$1(list, cancel, loaded){
+        var output = m.prop();
+        return createMessage$1({output: output})
+            .then(function (response) {
+                if (response){
+                    var download = unPropify$1(output());
+                    list().unshift(Object.assign({
+                        studyStatus: STATUS_RUNNING$1,
+                        creationDate: new Date()
+                    },download));
+                    cancel(true);
+                    return createDownload(download)
+                        .catch(reportError$1('Error creating download'))
+                        .then(cancel.bind(null, false))
+                        .then(function () {
+                            getAll({list: list, cancel: cancel, loaded: loaded});
+                        });
+                }
+            });
+    }
+
+    var unPropify$1 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
+        result[key] = obj[key]();
+        return result;
+    }, {}); };
+
+    var reportError$1 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
+
+    var TABLE_WIDTH$1 = 7;
+    var statusLabelsMap = {}; // defined at the bottom of this file
+
+    var downloadsComponent = {
+        controller: function controller(){
+            var list = m.prop([]);
+            var loaded = m.prop(false);
+
+            var cancelDownload = m.prop(false);
+
+            var ctrl = {
+                loaded: loaded,
+                list: list,
+                cancelDownload: cancelDownload,
+                create: create$1,
+                remove: remove$1,
+                globalSearch: m.prop(''),
+                sortBy: m.prop('studyId'),
+                onunload: function onunload(){
+                    cancelDownload(true);
+                },
+                error: m.prop('')
+            };
+
+            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
+            return ctrl;
+        },
+
+        view: function view(ctrl) {
+
+            if (!ctrl.loaded())
+                return m('.loader');
+
+            var list = ctrl.list;
+
+            if (ctrl.error()) return m('.downloads', [
+                m('h3', 'Data Download'),
+                m('.alert.alert-warning', [
+                    m('strong', 'Warning!! '), ctrl.error().message
+                ])
+            ]);
+
+            return m('.downloads', [
+                m('.row.m-b-1', [
+                    m('.col-sm-6', [
+                        m('h3', 'Data Download')
+                    ]),
+                    m('.col-sm-3',[
+                        m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload, ctrl.loaded)}, [
+                            m('i.fa.fa-plus'), ' Request Data'
+                        ])
+                    ]),
+                    m('.col-sm-3',[
+                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                    ])
+                ]),
+
+                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                    m('thead', [
+                        m('tr', [
+                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
+                            m('th', 'Data file'),
+                            m('th', thConfig$2('db',ctrl.sortBy), 'Database'),
+                            m('th', thConfig$2('fileSize',ctrl.sortBy), 'File Size'),
+                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Date Added'),
+                            m('th','Status'),
+                            m('th','Actions')
+                        ])
+                    ]),
+                    m('tbody', [
+                        list().length === 0
+                            ? m('tr.table-info', [
+                                m('td.text-xs-center', {colspan: TABLE_WIDTH$1}, 'There are no downloads running yet')
+                            ])
+                            : list().filter(studyFilter$2(ctrl)).map(function (download) { return m('tr', [
+                                // ### ID
+                                m('td', download.studyId),
+
+                                // ### Study url
+                                m('td', download.studyStatus == STATUS_RUNNING$1
+                                    ? m('i.text-muted', 'Loading...')
+                                    : download.fileSize
+                                        ? m('a', {href:download.studyUrl, download:download.studyId + '.zip', target: '_blank'}, 'Download')
+                                        : m('i.text-muted', 'No Data')
+                                ),
+
+                                // ### Database
+                                m('td', download.db),
+
+                                // ### Filesize
+                                m('td', download.fileSize !== 'unknown'
+                                    ? download.fileSize
+                                    : m('i.text-muted', 'Unknown')
+                                ),
+
+                                // ### Date Added
+                                m('td', [
+                                    formatDate(new Date(download.creationDate)),
+                                    '  ',
+                                    m('i.fa.fa-info-circle'),
+                                    m('.info-box', [
+                                        m('.card', [
+                                            m('.card-header', 'Creation Details'),
+                                            m('ul.list-group.list-group-flush',[
+                                                m('li.list-group-item', [
+                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
+                                                ]),
+                                                m('li.list-group-item', [
+                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
+                                                ]),
+                                                m('li.list-group-item', [
+                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
+                                                ])
+                                            ])
+                                        ])
+                                    ])
+                                ]),
+
+                                // ### Status
+                                m('td', [
+                                    statusLabelsMap[download.studyStatus]
+                                ]),
+
+                                // ### Actions
+                                m('td', [
+                                    m('.btn-group', [
+                                        m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, download, list)}, [
+                                            m('i.fa.fa-close')
+                                        ])
+                                    ])
+                                ])
+                            ]); })
+                    ])
+                ])
+            ]);
+        }
+    };
+
+    // @TODO: bad idiom! should change things within the object, not the object itself.
+    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+
+    function studyFilter$2(ctrl){
+        var search = ctrl.globalSearch();
+        return function (study) { return includes(study.studyId, search) ||
+            includes(study.studyUrl, search); };
+
+        function includes(val, search){
+            return typeof val === 'string' && val.includes(search);
+        }
+    }
+
+    statusLabelsMap[STATUS_COMPLETE] = m('span.label.label-success', 'Complete');
+    statusLabelsMap[STATUS_RUNNING$1] = m('span.label.label-info', 'Running');
+    statusLabelsMap[STATUS_ERROR] = m('span.label.label-danger', 'Error');
+
+    var STATUS_APPROVED = true;
+    var STATUS_SUBMITTED = false;
+
+    function createDataAccessRequest(dataAccessRequest){
+        var body = Object.assign({
+            action:'createDataAccessRequest'
+        }, dataAccessRequest);
+
+        return fetchJson(url$2, {method: 'post', body: body})
+            .then(interceptErrors$2);
+    }
+
+    function deleteDataAccessRequest(dataAccessRequest){
+        var body = Object.assign({
+            action:'deleteDataAccessRequest'
+        }, dataAccessRequest);
+
+        return  fetchJson(url$2, {method: 'post',body:body})
+            .then(interceptErrors$2);
+    }
+
+    function updateApproved(dataAccessRequest, approved){
+        var body = Object.assign({
+            action:'updateApproved'
+        }, dataAccessRequest,{approved: approved});
+
+        return  fetchJson(url$2, {method: 'post',body:body})
+            .then(interceptErrors$2);
+    }
+
+    function getAllOpenRequests(){
+        return fetchJson(url$2, {method:'post', body: {action:'getAllOpenRequests'}})
+            .then(interceptErrors$2);
+    }
+
+
+
+    function interceptErrors$2(response){
+        if (!response.error){
+            return response;
+        }
+
+        var errors = {
+            1: 'This ID already exists.',
+            2: 'The study could not be found.',
+            3: 'The rule file could not be found.',
+            4: 'The rules file does not fit the "research" schema.'
+        };
+
+        return Promise.reject({message: errors[response.error]});
+    }
+
+    var createMessage$2 = function (args) { return messages.custom({
+        content: m.component(createComponent$2, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+    var createComponent$2 = {
+        controller: function controller(ref){
+            var output = ref.output;
+            var close = ref.close;
+
+            var downloadAccess ={
+                studyId: m.prop('')
+            };
+
+            // export study to calling component
+            output(downloadAccess);
+
+
+            var ctrl = {
+                downloadAccess: downloadAccess,
+                submitAttempt: false,
+                validity: function validity(){
+                    var response = {
+                        studyId: downloadAccess.studyId()
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+
+                    if (isValid) close(true);
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+        },
+        view: function view(ctrl){
+            var downloadAccess = ctrl.downloadAccess;
+            var validity = ctrl.validity();
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Request Download Access From Admin'),
+                m('p', 'This page will request access to a study from admin.  For studies created by users you should instead email them directly for access.'),
+                m('.card-block', [
+                    m('.form-group', {class:groupClasses(validity.studyId)}, [
+                        m('label', 'Study Id'),
+                        m('input.form-control', {
+                            config: focusConfig$3,
+                            placeholder:'Study Id',
+                            value: downloadAccess.studyId(),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
+                            class:inputClasses(validity.studyId)
+                        }),
+                        validationView(validity.studyId, 'The study ID is required in order to request access.')
+                    ])
+                    
+                    
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig$3 = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    var grantMessage = function (args) { return messages.custom({
+        content: m.component(grantComponent, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+    var grantComponent = {
+        controller: function controller(ref){
+            var output = ref.output;
+            var close = ref.close;
+
+            var downloadAccess ={
+                studyId: m.prop(''),
+                username: m.prop('')
+            };
+
+            // export study to calling component
+            output(downloadAccess);
+
+
+            var ctrl = {
+                downloadAccess: downloadAccess,
+                submitAttempt: false,
+                validity: function validity(){
+                    var response = {
+                        studyId: downloadAccess.studyId(),
+                        username: downloadAccess.username()
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+
+                    if (isValid) close(true);
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+        },
+        view: function view(ctrl){
+            var downloadAccess = ctrl.downloadAccess;
+            var validity = ctrl.validity();
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Grant Data Access'),
+                m('.card-block', [
+                    m('.form-group', {class:groupClasses(validity.studyId)}, [
+                        m('label', 'Study Id'),
+                        m('input.form-control', {
+                            config: focusConfig$4,
+                            placeholder:'Study Id',
+                            value: downloadAccess.studyId(),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
+                            class:inputClasses(validity.studyId)
+                        }),
+                        m('label', 'Username'),
+                        m('input.form-control', {
+                            config: focusConfig$4,
+                            placeholder:'Username',
+                            value: downloadAccess.username(),
+                            oninput: m.withAttr('value', downloadAccess.username),
+                            class:inputClasses(validity.username)
+                        }),
+                        validationView(validity.studyId, 'The study ID is required in order to grant access.'),
+                        validationView(validity.username, 'The username is required in order to grant access.')
+                    ])
+                    
+                    
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig$4 = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    var revokeMessage = function (args) { return messages.custom({
+        content: m.component(revokeComponent, Object.assign({close:messages.close}, args)),
+        wide: true
+    }); };
+
+    var revokeComponent = {
+        controller: function controller(ref){
+            var output = ref.output;
+            var close = ref.close;
+
+            var downloadAccess ={
+                studyId: m.prop(''),
+                username: m.prop('')
+            };
+
+            // export study to calling component
+            output(downloadAccess);
+
+
+            var ctrl = {
+                downloadAccess: downloadAccess,
+                submitAttempt: false,
+                validity: function validity(){
+                    var response = {
+                        studyId: downloadAccess.studyId(),
+                        username: downloadAccess.username()
+                    };
+                    return response;
+                },
+                ok: function ok(){
+                    ctrl.submitAttempt = true;
+                    var response = ctrl.validity();
+                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
+
+                    if (isValid) close(true);
+                },
+                cancel: function cancel() {
+                    close(null);
+                }
+            };
+
+            return ctrl;
+        },
+        view: function view(ctrl){
+            var downloadAccess = ctrl.downloadAccess;
+            var validity = ctrl.validity();
+            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
+            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'has-danger': !valid,
+                'has-success' : valid
+            }); };
+            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
+                'form-control-danger': !valid,
+                'form-control-success': valid
+            }); };
+
+            return m('div',[
+                m('h4', 'Revoke Data Access'),
+                m('.card-block', [
+                    m('.form-group', {class:groupClasses(validity.studyId)}, [
+                        m('label', 'Study Id'),
+                        m('input.form-control', {
+                            config: focusConfig$5,
+                            placeholder:'Study Id',
+                            value: downloadAccess.studyId(),
+                            oninput: m.withAttr('value', downloadAccess.studyId),
+                            class:inputClasses(validity.studyId)
+                        }),
+                        m('label', 'Username'),
+                        m('input.form-control', {
+                            config: focusConfig$5,
+                            placeholder:'Username',
+                            value: downloadAccess.username(),
+                            oninput: m.withAttr('value', downloadAccess.username),
+                            class:inputClasses(validity.username)
+                        }),
+                        validationView(validity.studyId, 'The study ID is required in order to revoke access.'),
+                        validationView(validity.username, 'The username is required in order to revoke access.')
+                    ])
+                    
+                    
+                ]),
+                m('.text-xs-right.btn-toolbar',[
+                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
+                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
+                ])
+            ]);
+        }
+    };
+
+    var focusConfig$5 = function (element, isInitialized) {
+        if (!isInitialized) element.focus();
+    };
+
+    function play$1(downloadAccess, list){
+        return messages.confirm({
+            header: 'Approve Access Request:',
+            content: ("Are you sure you want to grant access of '" + (downloadAccess.studyId) + "' to '" + (downloadAccess.username) + "'?")
+        })
+        .then(function (response) {
+            if(response) {
+                return updateApproved(downloadAccess, STATUS_APPROVED)
+                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
+                    .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
+                    .catch(reportError$2('Grant Access'))
+                    .then(m.redraw());
+            }
+        });
+    }
+
+
+    var remove$2  = function (downloadAccess, list) {
+        return messages.confirm({
+            header: 'Delete request:',
+            content: ("Are you sure you want to delete the access request for'" + (downloadAccess.studyId) + "'? If access has already been granted you will lose it")
+        })
+        .then(function (response) {
+            if(response) {
+                
+                return deleteDataAccessRequest(downloadAccess)
+                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
+                    .then(messages.alert({header:'Deletion complete', content: 'Access has been deleted'}))
+                    .catch(reportError$2('Remove Download Request'))
+                    .then(m.redraw());
+
+            }
+        });
+    };
+    var grant = function () {
+        var output = m.prop();
+        return grantMessage({output: output})
+        .then(function (response) {
+            if (response) {
+                var now = new Date();
+                var downloadAccess = Object.assign({
+                    approved: STATUS_APPROVED,
+                    creationDate: now
+                }, null, unPropify$2(output()));
+                return createDataAccessRequest(downloadAccess)
+                .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
+                .catch(reportError$2('Grant Access'));
+            }
+        });
+    };
+    var revoke = function () {
+        var output = m.prop();
+        return revokeMessage({output: output})
+        .then(function (response) {
+            if (response) {
+                var now = new Date();
+                var downloadAccess = Object.assign({
+                    creationDate: now
+                }, null, unPropify$2(output()));
+                return deleteDataAccessRequest(downloadAccess)
+                .then(messages.alert({header:'Revoke access completed', content: 'Access revoked'}))
+                .catch(reportError$2('Revoke Access'));
+            }
+        });
+    };
+    var create$2 = function (list) {
+        var output = m.prop();
+        return createMessage$2({output: output})
+            .then(function (response) {
+                if (response) {
+                    var now = new Date();
+                    var downloadAccess = Object.assign({
+                        creationDate: now,
+                        approved: 'access pending'
+                    }, null, unPropify$2(output()));
+                    return createDataAccessRequest(downloadAccess)
+                        .then(function () { return list().unshift(downloadAccess); })
+                        .then(m.redraw)
+                        .catch(reportError$2('Data Access Request'));
+                }
+            });
+    };
+
+    var reportError$2 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
+
+    var unPropify$2 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
+        result[key] = obj[key]();
+        return result;
+    }, {}); };
+
+    var TABLE_WIDTH$2 = 6;
+
+    var downloadsAccessComponent = {
+        controller: function () {
+            var ctrl = {
+                play: play$1,
+                loaded: m.prop(false),
+                remove: remove$2,
+                create: create$2,
+                grant: grant,
+                revoke: revoke,
+                list: m.prop([]),
+                globalSearch: m.prop(''),
+                sortBy: m.prop(),
+                error: m.prop(''),
+                isAdmin: false
+            };
+            getAuth().then(function (response) {ctrl.isAdmin = response.role === 'SU';});
+
+            getAllOpenRequests()
+                .then(ctrl.list)
+                .catch(ctrl.error)
+                .then(function(){ctrl.loaded(true);})
+                .then(m.redraw);
+
+            return ctrl;
+        },
+        view: function (ctrl) {
+            if (!ctrl.loaded())
+                return m('.loader');
+
+            var list = ctrl.list;
+            return m('.downloadAccess', [
+                m('h3', 'Data Download Access Requests'),
+                m('p.col-xs-12.text-muted', [
+                    m('small', [
+                        ctrl.isAdmin
+                            ? 'Approve requests by clicking the Play button; Reject requests by clicking the X button; To grant permission without a request: hit the Grant Access button; For all actions: The user will be notified by email.'
+                            : 'You will receive an email when your request is approved or rejected; To cancel a request, click the X button next to the request'
+                    ])
+                ]),
+                ctrl.error()
+                    ?
+                    m('.alert.alert-warning',
+                        m('strong', 'Warning!! '), ctrl.error().message
+                    )
+                    :
+                    m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                        m('thead', [
+                            m('tr', [ 
+                                m('th', {colspan: TABLE_WIDTH$2}, [ 
+                                    m('.row', [
+                                        m('.col-xs-3.text-xs-left', [
+                                            m('button.btn.btn-secondary', {disabled: ctrl.isAdmin, onclick:ctrl.isAdmin || ctrl.create.bind(null, list)}, [
+                                                m('i.fa.fa-plus'), '  Request Access From Admin'
+                                            ])
+                                        ]),
+                                        m('.col-xs-2.text-xs-left', [
+                                            m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
+                                                m('i.fa.fa-plus'), '  Grant Access'
+                                            ])
+                                        ])
+                                        ,m('.col-xs-2.text-xs-left', [
+                                            ctrl.isAdmin ? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
+                                                m('i.fa.fa-plus'), '  Revoke Access'
+                                            ]) : ''
+                                        ]),
+                                        m('.col-xs-5.text-xs-left', [
+                                            m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
+                                        ])
+                                    ])
+                                ])
+                            ]),
+
+                            m('tr', [
+                                m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
+                                m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
+                                m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
+                                m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
+                                m('th','Status'),
+                                m('th','Actions')
+                            ])
+                        ]),
+                        m('tbody', [
+                            list().length === 0
+                                ?
+                                m('tr.table-info',
+                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
+                                        m('strong', 'Heads up! '), 'There are no requests yet'
+                                    )
+                                )
+                                :
+                                list().filter(dataRequestFilter(ctrl)).map(function (dataRequest) { return m('tr', [
+                                    // ### ID
+                                    m('td', dataRequest.studyId),
+                                    
+                                    // ### USERNAME
+                                    m('td', dataRequest.username),
+                                    
+                                    // ### EMAIL
+                                    m('td', dataRequest.email),
+
+                                    // ### Date
+                                    m('td', formatDate(new Date(dataRequest.creationDate))),
+                                    dataRequest.approved=== STATUS_APPROVED
+                                        ?
+                                        m('td', {style:'color:green'},'access granted')
+                                        :
+                                        m('td', {style:'color:red'},'access pending'),
+
+                                    // ### Actions
+                                    m('td', [
+                                        m('.btn-group', [
+                                            dataRequest.canApprove && dataRequest.approved === STATUS_SUBMITTED ? m('button.btn.btn-sm.btn-secondary', {title:'Approve request, and auto email requester',onclick: ctrl.play.bind(null, dataRequest,list)}, [
+                                                m('i.fa.fa-play')
+                                            ]) : '',
+                                            dataRequest.canDelete ? m('button.btn.btn-sm.btn-secondary', {title:'Delete request.  If this is a granted request owner will lose access to it',onclick: ctrl.remove.bind(null, dataRequest, list)}, [
+                                                m('i.fa.fa-close')
+                                            ]) : ''
+                                        ])
+                                    ])
+                                ]); })
+                        ])
+                    ])
+            ]);
+        }
+    };
+
+    // @TODO: bad idiom! should change things within the object, not the object itself.
+    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+
+    function dataRequestFilter(ctrl){
+        return function (dataRequest) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
+            includes(dataRequest.username, ctrl.globalSearch()) ||
+            includes(dataRequest.email, ctrl.globalSearch()); };
+
+        function includes(val, search){
+            return typeof val === 'string' && val.includes(search);
+        }
+    }
+
+    var fullHeight = function (element, isInitialized, ctx) {
+        if (!isInitialized){
+            onResize();
+
+            window.addEventListener('resize', onResize, true);
+
+            ctx.onunload = function(){
+                window.removeEventListener('resize', onResize);
+            };
+
+        }
+
+        function onResize(){
+            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
+        }
+    };
+
+    var loginComponent = {
+        controller: function controller(){
+            var ctrl = {
+                username:m.prop(''),
+                password:m.prop(''),
+                isloggedin: false,
+                loginAction: loginAction,
+                error: m.prop('')
+            };
+
+            is_loggedin();
+
+            return ctrl;
+
+            function loginAction(){
+                if(ctrl.username() && ctrl.password())
+                    login(ctrl.username, ctrl.password)
+                        .then(function () {
+                            m.route('/');
+                        })
+                        .catch(function (response) {
+                            ctrl.error(response.message);
+                            m.redraw();
+                        })
+                    ;
+            }
+
+            function is_loggedin(){
+                getAuth().then(function (response) {
+                    ctrl.isloggedin = response.isloggedin;
+                    m.redraw();
+                });
+            }
+        },
+        view: function view(ctrl){
+            return m('.login.centrify', {config:fullHeight},[
+                ctrl.isloggedin
+                ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'You are already logged in!')
+                    ]
+                    :
+                    m('.card.card-inverse.col-md-4', [
+                        m('.card-block',[
+                            m('h4', 'Please sign in'),
+
+                            m('form', {onsubmit:ctrl.login}, [
+                                m('input.form-control', {
+                                    type:'username',
+                                    placeholder: 'Username / Email',
+                                    value: ctrl.username(),
+                                    name: 'username',
+                                    oninput: m.withAttr('value', ctrl.username),
+                                    onchange: m.withAttr('value', ctrl.username),
+                                    config: getStartValue(ctrl.username)
+                                }),
+                                m('input.form-control', {
+                                    type:'password',
+                                    name:'password',
+                                    placeholder: 'Password',
+                                    value: ctrl.password(),
+                                    oninput: m.withAttr('value', ctrl.password),
+                                    onchange: m.withAttr('value', ctrl.password),
+                                    config: getStartValue(ctrl.password)
+                                })
+                            ]),
+
+                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
+                            m('p.text-center',
+                                m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
+                            )
+                        ])
+                    ])
+            ]);
+        }
+    };
+
+    function getStartValue(prop){
+        return function (element, isInit) {// !isInit && prop(element.value);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
+        };
+    }
 
     var jshintOptions = {
         // JSHint Default Configuration File (as on JSHint website)
@@ -2318,23 +3656,6 @@
         };
     };
 
-    var fullHeight = function (element, isInitialized, ctx) {
-        if (!isInitialized){
-            onResize();
-
-            window.addEventListener('resize', onResize, true);
-
-            ctx.onunload = function(){
-                window.removeEventListener('resize', onResize);
-            };
-
-        }
-
-        function onResize(){
-            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
-        }
-    };
-
     var imgEditor = function (ref) {
         var file = ref.file;
 
@@ -2517,7 +3838,7 @@
     }
 
     var playground;
-    var play = function (file,study) { return function () {
+    var play$2 = function (file,study) { return function () {
         var isSaved = study.files().every(function (file) { return !file.hasChanged(); });  
 
         if (isSaved) open();
@@ -3859,7 +5180,7 @@
                 ])
             ]),
             m('.btn-group.btn-group-sm.pull-xs-right', [
-                !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
+                !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play$2(file,study), title:'Play this task'},[
                     m('strong.fa.fa-play')
                 ]),
                 
@@ -4579,6 +5900,333 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
+    var dropdown = function (args) { return m.component(dropdownComponent, args); };
+
+    var dropdownComponent = {
+        controller: function controller(){
+            var isOpen = m.prop(false);
+            return {isOpen: isOpen};
+        },
+
+        view: function view(ref, ref$1){
+            var isOpen = ref.isOpen;
+            var toggleSelector = ref$1.toggleSelector;
+            var toggleContent = ref$1.toggleContent;
+            var elements = ref$1.elements;
+            var right = ref$1.right;
+
+            return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
+                m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
+                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
+            ]);
+        },
+
+        config: function (isOpen) { return function (element, isInit, ctx) {
+            if (!isInit) {
+                // this is a bit memory intensive, but lets not preemptively optimse
+                // bootstrap does this with a backdrop
+                document.addEventListener('mousedown', onClick, false);
+                ctx.onunload = function () { return document.removeEventListener('mousedown', onClick); };
+            }
+
+            function onClick(e){
+                if (!isOpen()) return;
+
+                // if we are within the dropdown do not close it
+                // this is conditional to prevent IE problems
+                if (e.target.closest && e.target.closest('.dropdown') === element && !hasClass(e.target, 'dropdown-onclick')) return true;
+                isOpen(false);
+                m.redraw();
+            }
+
+            function hasClass(el, selector){
+                return ( (' ' + el.className + ' ').replace(/[\n\t\r]/g, ' ').indexOf(' ' + selector + ' ') > -1 );
+            }
+        }; }
+    };
+
+    function get_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)));
+    }
+
+    function get_duplicate_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
+    }
+
+    /*CRUD*/
+    var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
+
+    var create_study = function (study_name) { return fetchJson(studyUrl, {
+        method: 'post',
+        body: {study_name: study_name}
+    }); };
+
+    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+    var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+
+    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
+
+    function tag_url(tag_id)
+    {
+        return (tagsUrl + "/" + (encodeURIComponent(tag_id)));
+    }
+
+    function study_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
+    }
+
+
+    var update_tags_in_study = function (study_id, tags) { return fetchJson(study_url(study_id), {
+        method: 'put',
+        body: {tags: tags}
+    }); };
+
+
+    var get_tags = function () { return fetchJson(tagsUrl, {
+        method: 'get'
+    }); };
+
+
+    var get_tags_for_study = function (study_id) { return fetchJson(study_url(study_id), {
+        method: 'get'
+    }); };
+
+    var remove_tag = function (tag_id) { return fetchJson(tag_url(tag_id), {
+        method: 'delete'
+    }); };
+
+    var add_tag = function (tag_text, tag_color) { return fetchJson(tagsUrl, {
+        method: 'post',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
+    var edit_tag = function (tag_id, tag_text, tag_color) { return fetchJson(tag_url(tag_id), {
+        method: 'put',
+        body: {tag_text: tag_text, tag_color: tag_color}
+    }); };
+
+    function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
+
+    var studyTagsComponent$1 = {
+        controller: function controller(ref){
+            var loadTags = ref.loadTags;
+            var tags = ref.tags;
+            var study_id = ref.study_id;
+
+            var tagName = m.prop('');
+            var loaded = m.prop(false);
+            var error = m.prop(null);
+            get_tags_for_study(study_id)
+                .then(function (response) { return tags(response.tags); })
+                .catch(error)
+                .then(loaded.bind(null, true))
+                .then(m.redraw);
+
+            return {tagName: tagName, tags: tags, loaded: loaded, error: error, loadTags: loadTags};
+        },
+        view: function (ref, ref$1) {
+            var tagName = ref.tagName;
+            var tags = ref.tags;
+            var loaded = ref.loaded;
+            var error = ref.error;
+            var loadTags = ref.loadTags;
+            var study_id = ref$1.study_id;
+
+            return m('div', [
+            m('.input-group', [
+                m('input.form-control', {
+                    placeholder: 'Filter Tags',
+                    value: tagName(),
+                    oninput: m.withAttr('value', tagName)
+                }),
+                m('span.input-group-btn', [
+                    m('button.btn.btn-secondary', {onclick: create_tag(study_id, tagName, tags, error, loadTags), disabled: !tagName()}, [
+                        m('i.fa.fa-plus'),
+                        ' Create New'
+                    ])
+                ])
+            ]),
+            m('.small.text-muted.m-b-1', 'Use this text field to filter your tags. Click "Create New" to turn a filter into a new tag'),
+
+            loaded() ? '' : m('.loader'),
+            error() ? m('.alert.alert-warning', error().message): '',
+            loaded() && !tags().length ? m('.alert.alert-info', 'You have no tags yet') : '',
+
+            m('.custom-controls-stacked.pre-scrollable', tags().sort(sort_tags).filter(filter_tags(tagName())).map(function (tag) { return m('label.custom-control.custom-checkbox', [
+                m('input.custom-control-input', {
+                    type: 'checkbox',
+                    checked: tag.used,
+                    onclick: function(){
+                        tag.used = !tag.used;
+                        tag.changed = !tag.changed;
+                    }
+                }), 
+                m('span.custom-control-indicator'),
+                m('span.custom-control-description.m-l-1.study-tag',{style: {'background-color': '#' + tag.color}}, tag.text)
+            ]); }))
+        ]);
+    }
+    };
+
+    function filter_tags(val){return function (tag) { return tag.text.indexOf(val) !== -1; };}
+    function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.toLowerCase() ? 0 : tag_1.text.toLowerCase() > tag_2.text.toLowerCase() ? 1 : -1;}       
+
+
+    function create_tag(study_id, tagName, tags, error, callback){
+        return function () { return add_tag(tagName(), 'E7E7E7')
+            .then(function (response) { return tags().push(response); })
+            .then(tagName.bind(null, ''))
+            .then(callback)
+            .catch(error)
+            .then(m.redraw); };
+    }
+
+    var do_create = function () {
+        var study_name = m.prop('');
+        var error = m.prop('');
+
+        var ask = function () { return messages.prompt({
+            header:'New Study', 
+            content: m('div', [
+                m('p', 'Enter Study Name:'),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ]),
+            prop: study_name
+        }).then(function (response) { return response && create(); }); };
+        
+        var create = function () { return create_study(study_name)
+            .then(function (response) { return m.route('/editor/'+response.study_id); })
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            }); };
+
+        ask();
+    };
+
+    var do_tags = function (ref) {
+        var study_id = ref.study_id;
+        var loadTags = ref.loadTags;
+        var callback = ref.callback;
+
+        return function (e) {
+        e.preventDefault();
+        var  filter_tags = function (){return function (tag) { return tag.changed; };};
+        var tags = m.prop([]);
+        messages.confirm({header:'Tags', content: studyTagsComponent({loadTags: loadTags, tags: tags, study_id: study_id, callback: callback})})
+            .then(function (response) {
+                if (response)
+                    update_tags_in_study(study_id, tags().filter(filter_tags()).map(function (tag){ return (({id: tag.id, used: tag.used})); })).then(callback);
+            });
+    };
+    };
+
+
+    var do_delete = function (study_id, callback) { return function (e) {
+        e.preventDefault();
+        return messages.confirm({header:'Delete study', content:'Are you sure?'})
+            .then(function (response) {
+                if (response) delete_study(study_id)
+                    .then(callback)
+                    .then(m.redraw)
+                    .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
+                    .then(m.redraw);
+            });
+    }; };
+
+
+    var do_rename = function (study_id, name, callback) { return function (e) {
+        e.preventDefault();
+        var study_name = m.prop(name);
+        var error = m.prop('');
+
+        var ask = function () { return messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])
+        }).then(function (response) { return response && rename(); }); };
+
+        var rename = function () { return rename_study(study_id, study_name)
+            .then(callback.bind(null, study_name()))
+            .then(m.redraw)
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            }); };
+
+        // activate creation
+        ask();
+    }; };
+
+    var do_duplicate= function (study_id, name) { return function (e) {
+        e.preventDefault();
+        var study_name = m.prop(name);
+        var error = m.prop('');
+
+        var ask = function () { return messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control', {placeholder: 'Enter Study Name', value: '', onchange: m.withAttr('value', study_name)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])
+        }).then(function (response) { return response && duplicate(); }); };
+
+        var duplicate= function () { return duplicate_study(study_id, study_name)
+            .then(function (response) { return m.route('/editor/'+response.study_id); })
+            .then(m.redraw)
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            }); };
+
+        // activate creation
+        ask();
+    }; };
+
+    var do_lock = function (study_id, is_locked) { return function (e) {
+        e.preventDefault();
+        messages.confirm({okText: ['Yes, ', is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', is_locked
+            ?
+            'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+            :
+            'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'
+        ),
+            ])})
+
+        .then(function (response) { return response && duplicate(); });
+
+        // let duplicate= () => duplicate_study(study_id, study_name)
+        //     .then(response => m.route('/editor/'+response.study_id))
+        //     .then(m.redraw)
+        //     .catch(e => {
+        //         error(e.message);
+        //         ask();
+        //     });
+        //
+        // // activate creation
+        // ask();
+    }; };
+
     var sidebarButtons = function (ref) {
         var study = ref.study;
 
@@ -4595,7 +6243,7 @@
                         m('button.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
                             m('i.fa.fa-fw.fa-exchange'), ' Rename study'
                         ]),
-                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, function () { return m.route('/studies'); })}, [
+                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                             m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                         ])
                     ],
@@ -4761,1196 +6409,194 @@
         return localStorage.fileSidebarWidth;
     }
 
-    var STATUS_RUNNING = 'R';
-    var STATUS_PAUSED = 'P';
-    var STATUS_STOP = 'S';
+    var mainComponent = {
 
-    function createStudy(study){
-        var body = Object.assign({
-            action:'insertRulesTable',
-            creationDate: new Date(),
-            studyStatus: STATUS_RUNNING
-        }, study);
-
-        return fetchJson(url, {method: 'post', body: body})
-            .then(interceptErrors);
-    }
-
-    function updateStudy(study){
-        var body = Object.assign({
-            action:'updateRulesTable'
-        }, study);
-
-        return  fetchJson(url, {method: 'post',body:body})
-            .then(interceptErrors);
-    }
-
-    function updateStatus(study, status){
-        var body = Object.assign({
-            action:'updateStudyStatus'
-        }, study,{studyStatus: status});
-
-        return  fetchJson(url, {method: 'post',body:body})
-            .then(interceptErrors);
-    }
-
-    function getAllPoolStudies(){
-        return fetchJson(url, {method:'post', body: {action:'getAllPoolStudies'}})
-            .then(interceptErrors);
-    }
-
-    function getLast100PoolUpdates(){
-        return fetchJson(url, {method:'post', body: {action:'getLast100PoolUpdates'}})
-            .then(interceptErrors);
-    }
-
-    function getStudyId(study){
-        var body = Object.assign({
-            action:'getStudyId'
-        }, study);
-
-        return  fetchJson(url, {method: 'post',body:body});
-    }
-
-    function resetStudy(study){
-        return fetchJson(url, {method:'post', body: Object.assign({action:'resetCompletions'}, study)})
-            .then(interceptErrors);
-    }
-
-    function interceptErrors(response){
-        if (!response.error){
-            return response;
-        }
-
-        var errors = {
-            1: 'This ID already exists.',
-            2: 'The study could not be found.',
-            3: 'The rule file could not be found.',
-            4: 'The rules file does not fit the "research" schema.'
-        };
-
-        return Promise.reject({message: errors[response.error]});
-    }
-
-    var spinner = {
-        display: m.prop(false),
-        show: function show(response){
-            spinner.display(true);
-            m.redraw();
-            return response;
-        },
-        hide: function hide(response){
-            spinner.display(false);
-            m.redraw();
-            return response;
-        },
-        view: function view(){
-            return m('.backdrop', {hidden:!spinner.display()}, // spinner.show()
-                m('.overlay'),
-                m('.backdrop-content.spinner.icon.fa.fa-cog.fa-spin')
-            );
-        }
-    };
-
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
-    var editMessage = function (args) { return messages.custom({
-        content: m.component(editComponent, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-    var editComponent = {
-        controller: function controller(ref){
-            var input = ref.input;
-            var output = ref.output;
-            var close = ref.close;
-
-            var study = ['rulesUrl', 'targetCompletions', 'autopauseUrl', 'userEmail'].reduce(function (study, prop){
-                study[prop] = m.prop(input[prop] || '');
-                return study;
-            }, {});
-
-            // export study to calling component
-            output(study);
-
-
+        controller: function(){
             var ctrl = {
-                study: study,
-                submitAttempt: false,
-                validity: function validity(){
-                    var isEmail = function (str)  { return /\S+@\S+\.\S+/.test(str); };
-                    var isNormalInteger = function (str) { return /^\+?(0|[1-9]\d*)$/.test(str); };
-
-                    var response = {
-                        rulesUrl: study.rulesUrl(),
-                        targetCompletions: isNormalInteger(study.targetCompletions()),
-                        autopauseUrl: study.autopauseUrl(),
-                        userEmail: isEmail(study.userEmail())
-
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-
-                    if (isValid) {
-                        study.targetCompletions(+study.targetCompletions());// targetCompletions should be cast as a number
-                        close(true);
-                    }
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-        },
-        view: function view(ctrl, ref){
-            var input = ref.input;
-
-            var study = ctrl.study;
-            var validity = ctrl.validity();
-            var miniButtonView = function (prop, name, url) { return m('button.btn.btn-secondary.btn-sm', {onclick: prop.bind(null,url)}, name); };
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Study Editor'),
-                m('.card-block', [
-                    m('.form-group', [
-                        m('label', 'Study ID'),
-                        m('p',[
-                            m('strong.form-control-static', input.studyId)
-                        ])
-
-                    ]),
-                    m('.form-group', [
-                        m('label', 'Study URL'),
-                        m('p',[
-                            m('strong.form-control-static', input.studyUrl)
-                        ])
-                    ]),
-
-                    m('.form-group', {class:groupClasses(validity.rulesUrl)}, [
-                        m('label', 'Rules File URL'),
-                        m('input.form-control', {
-                            config: focusConfig,
-                            placeholder:'Rules file URL',
-                            value: study.rulesUrl(),
-                            oninput: m.withAttr('value', study.rulesUrl),
-                            class:inputClasses(validity.rulesUrl)
-                        }),
-                        m('p.text-muted.btn-toolbar', [
-                            miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')
-                        ]),
-                        validationView(validity.rulesUrl, 'This row is required')
-                    ]),
-                    m('.form-group', {class:groupClasses(validity.autopauseUrl)}, [
-                        m('label', 'Auto-pause file URL'),
-                        m('input.form-control', {
-                            placeholder:'Auto pause file URL',
-                            value: study.autopauseUrl(),
-                            oninput: m.withAttr('value', study.autopauseUrl),
-                            class:inputClasses(validity.autopauseUrl)
-                        }),
-                        m('p.text-muted.btn-toolbar', [
-                            miniButtonView(study.autopauseUrl, 'Default', '/research/library/pausefiles/pausedefault.xml'),
-                            miniButtonView(study.autopauseUrl, 'Never', '/research/library/pausefiles/neverpause.xml'),
-                            miniButtonView(study.autopauseUrl, 'Low restrictions', '/research/library/pausefiles/pauselowrestrictions.xml')
-                        ]),
-                        validationView(validity.autopauseUrl, 'This row is required')
-                    ]),
-                    m('.form-group', {class:groupClasses(validity.targetCompletions)}, [
-                        m('label','Target number of sessions'),
-                        m('input.form-control', {
-                            type:'number',
-                            placeholder:'Target Sessions',
-                            value: study.targetCompletions(),
-                            oninput: m.withAttr('value', study.targetCompletions),
-                            onclick: m.withAttr('value', study.targetCompletions),
-                            class:inputClasses(validity.targetCompletions)
-                        }),
-                        validationView(validity.targetCompletions, 'This row is required and has to be an integer above 0')
-                    ]),
-                    m('.form-group', {class:groupClasses(validity.userEmail)}, [
-                        m('label','User Email'),
-                        m('input.form-control', {
-                            type:'email',
-                            placeholder:'Email',
-                            value: study.userEmail(),
-                            oninput: m.withAttr('value', study.userEmail),
-                            class:inputClasses(validity.userEmail)
-                        }),
-                        validationView(validity.userEmail, 'This row is required and must be a valid Email')
-                    ])
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
-    var createMessage = function (args) { return messages.custom({
-        content: m.component(createComponent, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-    var createComponent = {
-        controller: function controller(ref){
-            var output = ref.output;
-            var close = ref.close;
-
-            var study = output({
-                studyUrl: m.prop('')
-            });
-
-            var ctrl = {
-                study: study,
-                submitAttempt: false,
-                validity: function validity(){
-                    var response = {
-                        studyUrl: study.studyUrl()
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-                    if (isValid) close(true);
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-        },
-        view: function view(ctrl){
-            var study = ctrl.study;
-            var validity = ctrl.validity();
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Create Study'),
-                m('.card-block', [
-                    m('.form-group', {class:groupClasses(validity.studyUrl)}, [
-                        m('label', 'Study URL'),
-                        m('input.form-control', {
-                            config: focusConfig$1,
-                            placeholder:'Study URL',
-                            value: study.studyUrl(),
-                            oninput: m.withAttr('value', study.studyUrl),
-                            class:inputClasses(validity.studyUrl)
-                        }),
-                        validationView(validity.studyUrl, 'This row is required')
-                    ])
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'Proceed')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig$1 = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    function play$1(study){
-        return messages.confirm({
-            header: 'Continue Study:',
-            content: ("Are you sure you want to continue \"" + (study.studyId) + "\"?")
-        })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_RUNNING)
-                    .then(function (){ return study.studyStatus = STATUS_RUNNING; })
-                    .catch(reportError('Continue Study'))
-                    .then(studyPending(study, false));
-            }
-        });
-    }
-
-    function pause(study){
-        return messages.confirm({
-            header: 'Pause Study:',
-            content: ("Are you sure you want to pause \"" + (study.studyId) + "\"?")
-        })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_PAUSED)
-                    .then(function (){ return study.studyStatus = STATUS_PAUSED; })
-                    .catch(reportError('Pause Study'))
-                    .then(studyPending(study, false));
-            }
-        });
-    }
-
-    var remove  = function (study, list) {
-        return messages.confirm({
-            header: 'Remove Study:',
-            content: ("Are you sure you want to remove \"" + (study.studyId) + "\" from the pool?")
-        })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_STOP)
-                    .then(function () { return list(list().filter(function (el) { return el !== study; })); })
-                    .catch(reportError('Remove Study'))
-                    .then(studyPending(study, false));
-            }
-        });
-    };
-
-    var edit  = function (input) {
-        var output = m.prop();
-        return editMessage({input: input, output: output})
-            .then(function (response) {
-                if (response) {
-                    studyPending(input, true)();
-                    var study = Object.assign({}, input, unPropify(output()));
-                    return updateStudy(study)
-                        .then(function () { return Object.assign(input, study); }) // update study in view
-                        .catch(reportError('Study Editor'))
-                        .then(studyPending(input, false));
-                }
-            });
-    };
-
-    var create = function (list) {
-        var output = m.prop();
-        return createMessage({output: output})
-            .then(function (response) {
-                if (response) {
-                    spinner.show();
-                    getStudyId(output())
-                        .then(function (response) { return Object.assign(unPropify(output()), response); }) // add response data to "newStudy"
-                        .then(spinner.hide)
-                        .then(editNewStudy);
-                }
-            });
-
-        function editNewStudy(input){
-            var output = m.prop();
-            return editMessage({input: input, output: output})
-                .then(function (response) {
-                    if (response) {
-                        var study = Object.assign({
-                            startedSessions: 0,
-                            completedSessions: 0,
-                            creationDate:new Date(),
-                            studyStatus: STATUS_RUNNING
-                        }, input, unPropify(output()));
-                        return createStudy(study)
-                            .then(function () { return list().push(study); })
-                            .then(m.redraw)
-                            .catch(reportError('Create Study'));
-                    }
-                });
-        }
-    };
-
-    var reset = function (study) {
-        messages.confirm({
-            header: 'Restart study',
-            content: 'Are you sure you want to restart this study? This action will reset all started and completed sessions.'
-        }).then(function (response) {
-            if (response) {
-                var old = {
-                    startedSessions: study.startedSessions,
-                    completedSessions: study.completedSessions
-                };
-                study.startedSessions = study.completedSessions = 0;
-                m.redraw();
-                return resetStudy(study)
-                    .catch(function (response) {
-                        Object.assign(study, old);
-                        return Promise.reject(response);
-                    })
-                    .catch(reportError('Restart study'));
-            }
-        });
-    };
-
-    var reportError = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
-
-    var studyPending = function (study, state) { return function () {
-        study.$pending = state;
-        m.redraw();
-    }; };
-
-    var unPropify = function (obj) { return Object.keys(obj).reduce(function (result, key) {
-        result[key] = obj[key]();
-        return result;
-    }, {}); };
-
-    var loginUrl = baseUrl + "/connect";
-    var logoutUrl = baseUrl + "/logout";
-    var is_logedinUrl = baseUrl + "/is_loggedin";
-
-    var login = function (username, password) { return fetchJson(loginUrl, {
-        method: 'post',
-        body: {username: username, password: password}
-    }); };
-
-    var logout = function () { return fetchVoid(logoutUrl, {method:'post'}).then(getAuth); };
-
-    var getAuth = function () { return fetchJson(is_logedinUrl, {
-        method: 'get'
-    }); };
-
-    var PRODUCTION_URL = 'https://implicit.harvard.edu/implicit/';
-    var TABLE_WIDTH = 8;
-
-    var poolComponent = {
-        controller: function () {
-            var ctrl = {
-                play: play$1, pause: pause, remove: remove, edit: edit, reset: reset, create: create,
-                canCreate: false,
-                list: m.prop([]),
+                studies:m.prop([]),
+                tags:m.prop([]),
+                user_name:m.prop(''),
                 globalSearch: m.prop(''),
-                sortBy: m.prop(),
-                error: m.prop(''),
-                loaded: m.prop()
+                permissionChoice: m.prop('all'),
+                loaded:false,
+                order_by_name: true,
+                loadStudies: loadStudies,
+                loadTags: loadTags,
+                sort_studies_by_name: sort_studies_by_name,
+                sort_studies_by_date: sort_studies_by_date
             };
 
-            getAuth().then(function (response) {ctrl.canCreate = response.role === 'SU';});
-            getAllPoolStudies()
-                .then(ctrl.list)
-                .then(ctrl.loaded)
-                .catch(ctrl.error)
-                .then(m.redraw);
+            loadTags();
+            loadStudies();
+            function loadStudies() {
+                load_studies()
+                    .then(function (response) { return response.studies.sort(sort_studies_by_name2); })
+                    .then(ctrl.studies)
+                    .then(function (){ return ctrl.loaded = true; })
+                    .then(m.redraw);
+            }
+
+            function loadTags() {
+                get_tags()
+                    .then(function (response) { return response.tags; })
+                    .then(ctrl.tags)
+                    .then(m.redraw);
+            }
+
             return ctrl;
+            function sort_studies_by_name2(study1, study2){
+                ctrl.order_by_name = true;
+
+                return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
+            }
+
+            function sort_studies_by_date2(study1, study2){
+                ctrl.order_by_name = false;
+                return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
+            }
+
+            function sort_studies_by_date(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
+            }
+            function sort_studies_by_name(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_name2));
+            }
+
+
         },
-        view: function (ctrl) {
-            var list = ctrl.list;
-            return m('.pool', [
-                m('h2', 'Study pool'),
-                ctrl.error()
-                    ?
-                    m('.alert.alert-warning',
-                        m('strong', 'Warning!! '), ctrl.error().message
-                    )
-                    :
-                    m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                        m('thead', [
-                            m('tr', [
-                                m('th', {colspan:TABLE_WIDTH - 1}, [
-                                    m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                                ]),
-                                m('th', [
-                                    m('a.btn.btn-secondary', {href:'/pool/history', config:m.route}, [
-                                        m('i.fa.fa-history'), '  History'
-                                    ])
+        view: function view(ref){
+            var loaded = ref.loaded;
+            var studies = ref.studies;
+            var tags = ref.tags;
+            var permissionChoice = ref.permissionChoice;
+            var globalSearch = ref.globalSearch;
+            var loadStudies = ref.loadStudies;
+            var loadTags = ref.loadTags;
+            var sort_studies_by_date = ref.sort_studies_by_date;
+            var sort_studies_by_name = ref.sort_studies_by_name;
+            var order_by_name = ref.order_by_name;
+
+            if (!loaded) return m('.loader');
+            return m('.container.studies', [
+                m('.row.p-t-1', [
+                    m('.col-sm-4', [
+                        m('h3', 'My Studies')
+                    ]),
+
+                    m('.col-sm-8', [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
+                            m('i.fa.fa-plus'), '  Add new study'
+                        ]),
+
+                        m('.pull-right.m-r-1', [
+                            dropdown({toggleSelector:'button.btn.btn-sm.btn-secondary.dropdown-toggle', toggleContent: [m('i.fa.fa-tags'), ' Tags'], elements:[
+                                m('h6.dropdown-header', 'Filter by tags'),
+                                !tags().length
+                                    ? m('em.dropdown-header', 'You do not have any tags yet')
+                                    : tags().map(function (tag) { return m('a.dropdown-item',m('label.custom-control.custom-checkbox', [
+                                        m('input.custom-control-input', {
+                                            type: 'checkbox',
+                                            checked: tag.used,
+                                            onclick: function(){
+                                                tag.used = !tag.used;
+                                            }
+                                        }),
+                                        m('span.custom-control-indicator'),
+                                        m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
+                                    ])); }),
+                                m('.dropdown-divider'),
+                                m('a.dropdown-item', { href: "/tags", config: m.route }, 'Manage tags')
+                            ]})
+                        ]),
+
+                        m('.input-group.pull-right.m-r-1', [
+                            m('select.c-select.form-control', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
+                                m('option', {value:'all'}, 'Show all my studies'),
+                                m('option', {value:'owner'}, 'Show only studies I created'),
+                                m('option', {value:'collaboration'}, 'Show only studies shared with me'),
+                                m('option', {value:'public'}, 'Show public studies')
+                            ])
+                        ])
+                    ])
+                ]),
+
+                m('.card.studies-card', [
+                    m('.card-block', [
+                        m('.row', {key: '@@notid@@'}, [
+                            m('.col-sm-6', [
+                                m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
+                                    m('strong', 'Study Name '),
+                                    m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
                                 ])
                             ]),
-                            ctrl.canCreate ? m('tr', [
-                                m('th.text-xs-center', {colspan:TABLE_WIDTH}, [
-                                    m('button.btn.btn-secondary', {onclick:ctrl.create.bind(null, list)}, [
-                                        m('i.fa.fa-plus'), '  Add new study'
-                                    ])
+                            m('.col-sm-2', [
+                                m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
+                                    m('strong', ' Last Changed '),
+                                    m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
                                 ])
-                            ]) : '',
-                            m('tr', [
-                                m('th', thConfig('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig('studyUrl',ctrl.sortBy), 'Study'),
-                                m('th', thConfig('rulesUrl',ctrl.sortBy), 'Rules'),
-                                m('th', thConfig('autopauseUrl',ctrl.sortBy), 'Autopause'),
-                                m('th', thConfig('completedSessions',ctrl.sortBy), 'Completion'),
-                                m('th', thConfig('creationDate',ctrl.sortBy), 'Date'),
-                                m('th','Status'),
-                                m('th','Actions')
+                            ]),
+                            m('.col-sm-4', [
+                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
                             ])
                         ]),
-                        m('tbody', [
-                            list().length === 0
-                                ?
-                                m('tr.table-info',
-                                    m('td.text-xs-center', {colspan: TABLE_WIDTH},
-                                        m('strong', 'Heads up! '), 
-                                        ctrl.loaded()
-                                            ? 'None of your studies is in the Research Pool right now'
-                                            : 'Loading...'
-                                    )
-                                )
-                                :
-                                list().filter(studyFilter(ctrl)).map(function (study) { return m('tr', [
-                                    // ### ID
-                                    m('td', study.studyId),
 
-                                    // ### Study url
-                                    m('td', [
-                                        m('a', {href:PRODUCTION_URL + study.studyUrl, target: '_blank'}, 'Study')
+                        studies()
+                            .filter(tagFilter(tags().filter(uesedFilter()).map(function (tag){ return tag.text; })))
+                            .filter(permissionFilter(permissionChoice()))
+                            .filter(searchFilter(globalSearch()))
+                            .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
+                                m('.row.study-row', [
+                                    m('.col-sm-3', [
+                                        m('.study-text', [
+                                            m('i.fa.fa-fw.owner-icon', {
+                                                class: classNames({
+                                                    'fa-globe': study.is_public,
+                                                    'fa-users': !study.is_public && study.permission !== 'owner'
+                                                }),
+                                                title: classNames({
+                                                    'Public' : study.is_public,
+                                                    'Collaboration' : !study.is_public && study.permission !== 'owner'
+                                                })
+                                            }),
+                                            study.name
+                                        ])
                                     ]),
-
-                                    // ### Rules url
-                                    m('td', [
-                                        m('a', {href:PRODUCTION_URL + study.rulesUrl, target: '_blank'}, 'Rules')
+                                    m('.col-sm-3', [
+                                        study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
                                     ]),
-
-                                    // ### Autopause url
-                                    m('td', [
-                                        m('a', {href:PRODUCTION_URL + study.autopauseUrl, target: '_blank'}, 'Autopause')
+                                    m('.col-sm-3', [
+                                        m('.study-text', formatDate(new Date(study.last_modified)))
                                     ]),
-
-                                    // ### Completions
-                                    m('td', [
-                                        study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
-                                        m('i.fa.fa-info-circle'),
-                                        m('.info-box', [
-                                            m('.card', [
-                                                m('.card-header', 'Completion Details'),
-                                                m('ul.list-group.list-group-flush',[
-                                                    m('li.list-group-item', [
-                                                        m('strong', 'Target Completions: '), study.targetCompletions
+                                    m('.col-sm-1', [
+                                        m('.btn-toolbar.pull-right', [
+                                            m('.btn-group.btn-group-sm', [
+                                                study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
+                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
-                                                    m('li.list-group-item', [
-                                                        m('strong', 'Started Sessions: '), study.startedSessions
+
+                                                    study.permission !== 'owner' ? '' : [
+                                                        study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-remove'), ' Delete Study'
+                                                        ]),
+                                                        study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
+                                                        ]),
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                                                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                                                        ])
+                                                    ],
+
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study.id, study.is_locked)}, [
+                                                        m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                                                     ]),
-                                                    m('li.list-group-item', [
-                                                        m('strong', 'Completed Sessions: '), study.completedSessions
-                                                    ])
-                                                ])
+
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyRemoval/" + (study.id)), config: m.route }, 'Request Removal'),
+                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
+                                                ]})
                                             ])
-                                        ])
-                                    ]),
-
-                                    // ### Date
-                                    m('td', formatDate(new Date(study.creationDate))),
-
-                                    // ### Status
-                                    m('td', [
-                                        {
-                                            R: m('span.label.label-success', 'Running'),
-                                            P: m('span.label.label-info', 'Paused'),
-                                            S: m('span.label.label-danger', 'Stopped')
-                                        }[study.studyStatus]
-                                    ]),
-
-                                    // ### Actions
-                                    m('td', [
-                                        study.$pending
-                                            ?
-                                            m('.l', 'Loading...')
-                                            :
-                                            m('.btn-group', [
-                                                study.canUnpause && study.studyStatus === STATUS_PAUSED ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.play.bind(null, study)}, [
-                                                    m('i.fa.fa-play')
-                                                ]) : '',
-                                                study.canPause && study.studyStatus === STATUS_RUNNING ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.pause.bind(null, study)}, [
-                                                    m('i.fa.fa-pause')
-                                                ]) : '',
-                                                study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.edit.bind(null, study)}, [
-                                                    m('i.fa.fa-edit')
-                                                ]): '',
-                                                study.canReset ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.reset.bind(null, study)}, [
-                                                    m('i.fa.fa-refresh')
-                                                ]) : '',
-                                                study.canStop ? m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, study, list)}, [
-                                                    m('i.fa.fa-close')
-                                                ]) : ''
-                                            ])
-                                    ])
-                                ]); })
-                        ])
-                    ])
-            ]);
-        }
-    };
-
-    // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
-
-    function studyFilter(ctrl){
-        return function (study) { return includes(study.studyId, ctrl.globalSearch()) ||
-            includes(study.studyUrl, ctrl.globalSearch()) ||
-            includes(study.rulesUrl, ctrl.globalSearch()); };
-
-        function includes(val, search){
-            return typeof val === 'string' && val.includes(search);
-        }
-    }
-
-    var PRODUCTION_URL$1 = 'https://implicit.harvard.edu/implicit/';
-    var poolComponent$1 = {
-        controller: function () {
-            var ctrl = {
-                list: m.prop([]),
-                globalSearch: m.prop(''),
-                startDate: m.prop(new Date(0)),
-                endDate: m.prop(new Date()),
-                sortBy: m.prop()
-            };
-
-            getLast100PoolUpdates()
-                .then(ctrl.list)
-                .then(m.redraw);
-
-            return ctrl;
-        },
-        view: function (ctrl) {
-            var list = ctrl.list;
-            return m('.pool', [
-                m('h2', 'Pool history'),
-                m('.row', {colspan:8}, [
-                    m('.col-sm-3',[
-                        m('label', 'Search'),
-                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                    ]),
-                    m('.col-sm-4',[
-                        dateRangePicker(ctrl)
-                    ]),
-                    m('.col-sm-5',[
-                        m('label', m.trust('&nbsp')),
-                        m('.text-muted.btn-toolbar', [
-                            dayButtonView(ctrl, 'Last 7 Days', 7),
-                            dayButtonView(ctrl, 'Last 30 Days', 30),
-                            dayButtonView(ctrl, 'Last 90 Days', 90),
-                            dayButtonView(ctrl, 'All time', 3650)
-                        ])
-                    ])
-                ]) ,
-                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                    m('thead', [
-                        m('tr', [
-                            m('th', thConfig$1('studyId',ctrl.sortBy), 'ID'),
-                            m('th', thConfig$1('studyUrl',ctrl.sortBy), 'Study'),
-                            m('th', thConfig$1('rulesUrl',ctrl.sortBy), 'Rules'),
-                            m('th', thConfig$1('autopauseUrl',ctrl.sortBy), 'Autopause'),     
-                            m('th', thConfig$1('creationDate',ctrl.sortBy), 'Creation Date'),
-                            m('th', thConfig$1('completedSessions',ctrl.sortBy), 'Completion'),
-                            m('th','New Status'),
-                            m('th','Old Status'),
-                            m('th', thConfig$1('updaterId',ctrl.sortBy), 'Updater')
-                        ])
-                    ]),
-                    m('tbody', [
-                        list().filter(studyFilter$1(ctrl)).map(function (study) { return m('tr', [
-                            // ### ID
-                            m('td', study.studyId),
-
-                            // ### Study url
-                            m('td', [
-                                m('a', {href:PRODUCTION_URL$1 + study.studyUrl, target: '_blank'}, 'Study')
-                            ]),
-
-                            // ### Rules url
-                            m('td', [
-                                m('a', {href:PRODUCTION_URL$1 + study.rulesUrl, target: '_blank'}, 'Rules')
-                            ]),
-
-                            // ### Autopause url
-                            m('td', [
-                                m('a', {href:PRODUCTION_URL$1 + study.autopauseUrl, target: '_blank'}, 'Autopause')
-                            ]),
-                            
-                        
-
-                            // ### Date
-                            m('td', formatDate(new Date(study.creationDate))),
-                            
-                            // ### Target Completionss
-                            m('td', [
-                                study.startedSessions ? (100 * study.completedSessions / study.startedSessions).toFixed(1) + '% ' : 'n/a ',
-                                m('i.fa.fa-info-circle'),
-                                m('.card.info-box', [
-                                    m('.card-header', 'Completion Details'),
-                                    m('ul.list-group.list-group-flush',[
-                                        m('li.list-group-item', [
-                                            m('strong', 'Target Completions: '), study.targetCompletions
-                                        ]),
-                                        m('li.list-group-item', [
-                                            m('strong', 'Started Sessions: '), study.startedSessions
-                                        ]),
-                                        m('li.list-group-item', [
-                                            m('strong', 'Completed Sessions: '), study.completedSessions
-                                        ])
-                                    ])
-                                ])
-                            ]),
-
-                            // ### New Status
-                            m('td', [
-                                {
-                                    R: m('span.label.label-success', 'Running'),
-                                    P: m('span.label.label-info', 'Paused'),
-                                    S: m('span.label.label-danger', 'Stopped')
-                                }[study.newStatus]
-                            ]),
-                            // ### Old Status
-                            m('td', [
-                                {
-                                    R: m('span.label.label-success', 'Running'),
-                                    P: m('span.label.label-info', 'Paused'),
-                                    S: m('span.label.label-danger', 'Stopped')
-                                }[study.studyStatus]
-                            ]),
-                            m('td', study.updaterId)
-                        ]); })
-                    ])
-                ])
-            ]);
-        }
-    };
-
-    // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$1 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
-
-    function studyFilter$1(ctrl){
-        return function (study) { return (includes(study.studyId, ctrl.globalSearch()) ||    includes(study.updaterId, ctrl.globalSearch()) || includes(study.rulesUrl, ctrl.globalSearch())
-                || includes(study.targetCompletions, ctrl.globalSearch()))
-            && (new Date(study.creationDate)).getTime() >= ctrl.startDate().getTime()
-        && (new Date(study.creationDate)).getTime() <= ctrl.endDate().getTime()+86000000; }; //include the end day selected
-
-        function includes(val, search){
-            return typeof val === 'string' && val.includes(search);
-        }
-    }
-
-    var dayButtonView = function (ctrl, name, days) { return m('button.btn.btn-secondary.btn-sm', {onclick: function () {
-        var d = new Date();
-        d.setDate(d.getDate() - days);
-        ctrl.startDate(d);
-        ctrl.endDate(new Date());
-    }}, name); };
-
-    var STATUS_RUNNING$1 = 'R';
-    var STATUS_COMPLETE = 'C';
-    var STATUS_ERROR = 'X';
-
-    var getAllDownloads = function () { return fetchJson(url$1, {
-        method:'post',
-        body: {action:'getAllDownloads'}
-    }).then(interceptErrors$1); };
-
-    var removeDownload = function (download) { return fetchVoid(url$1, {
-        method:'post',
-        body: Object.assign({action:'removeDownload'}, download)
-    }).then(interceptErrors$1); };
-
-    var createDownload = function (download) { return fetchVoid(url$1, {
-        method: 'post',
-        body: Object.assign({action:'download'}, download)
-    }).then(interceptErrors$1); };
-
-    function interceptErrors$1(response){
-        if (!response || !response.error){
-            return response;
-        }
-
-        return Promise.reject({message: response.msg});
-    }
-
-    function createMessage$1 (args) { return messages.custom({
-        content: m.component(createComponent$1, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-
-    var createComponent$1 = {
-        controller: function controller(ref){
-            var output = ref.output;
-            var close = ref.close;
-
-            var download ={
-                studyId: m.prop(''),
-                db: m.prop('test'),
-                startDate: m.prop(daysAgo(3650)),
-                endDate: m.prop(new Date())
-            };
-
-            // export study to calling component
-            output(download);
-
-            var ctrl = {
-                download: download,
-                submitAttempt: false,
-                validity: function validity(){
-                    var response = {
-                        studyId: download.studyId()
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-
-                    if (isValid) {
-                        download.endDate(endOfDay(download.endDate())); 
-                        close(true);
-                    }
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-
-            function endOfDay(date){
-                if (date) return new Date(date.setHours(23,59,59,999));
-            }
-        },
-        view: function view(ctrl){
-            var download = ctrl.download;
-            var validity = ctrl.validity();
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Request Data'),
-                m('.card-block', [
-                    m('.row', [
-                        m('.col-sm-6', [
-                            m('.form-group', {class:groupClasses(validity.studyId)}, [
-                                m('label', 'Study ID'),
-                                m('input.form-control', {
-                                    config: focusConfig$2,
-                                    placeholder:'Study Id',
-                                    value: download.studyId(),
-                                    oninput: m.withAttr('value', download.studyId),
-                                    class:inputClasses(validity.studyId)
-                                }),
-                                validationView(validity.studyId, 'The study ID is required in order to request a download.')
-                            ])   
-                        ]),
-                        m('.col-sm-6', [
-                            m('.form-group', [
-                                m('label','Database'),
-                                m('select.form-control.c-select', {onchange: m.withAttr('value',download.db)}, [
-                                    m('option',{value:'test', selected: download.db() === 'test'}, 'Development'),
-                                    m('option',{value:'warehouse', selected: download.db() === 'warehouse'}, 'Production')
-                                ])
-                            ])
-                        ])
-                    ]),
-                    m('.row', [
-                        m('.col-sm-12', [
-                            m('.form-group', [
-                                dateRangePicker(download),
-                                m('p.text-muted.btn-toolbar', [
-                                    dayButtonView$1(download, 'Last 7 Days', 7),
-                                    dayButtonView$1(download, 'Last 30 Days', 30),
-                                    dayButtonView$1(download, 'Last 90 Days', 90),
-                                    dayButtonView$1(download, 'All time', 3650)
-                                ])
-                            ])
-                        ])
-                    ])
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig$2 = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    // helper functions for the day buttons
-    var daysAgo = function (days) {
-        var d = new Date();
-        d.setDate(d.getDate() - days);
-        return d;
-    };
-    var equalDates = function (date1, date2) { return date1.getDate() === date2.getDate(); };
-    var activeDate = function (ref, days) {
-        var startDate = ref.startDate;
-        var endDate = ref.endDate;
-
-        return equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
-    };
-
-    var dayButtonView$1 = function (download, name, days) { return m('button.btn.btn-secondary.btn-sm', {
-        class: activeDate(download, days)? 'active' : '',
-        onclick: function () {
-            download.startDate(daysAgo(days));
-            download.endDate(new Date());
-        }
-    }, name); };
-
-    var DURATION = 5000;
-
-    /**
-     * Get all downloads
-     */
-
-    var recursiveGetAll = debounce(getAll, DURATION);
-    function getAll(ref){
-        var list = ref.list;
-        var cancel = ref.cancel;
-        var error = ref.error;
-        var loaded = ref.loaded;
-
-        return getAllDownloads()
-            .then(list)
-            .then(function (response) {
-                if (!cancel() && response.some(function (download) { return download.studyStatus === STATUS_RUNNING$1; })) {
-                    recursiveGetAll({list: list, cancel: cancel, error: error, loaded: loaded});
-                }
-            })
-            .catch(error)
-            .then(function(){loaded(true);})
-            .then(m.redraw);
-    }
-
-
-    // debounce but call at first iteration
-    function debounce(func, wait) {
-        var first = true;
-        var timeout;
-        return function() {
-            var context = this, args = arguments;
-            var later = function() {
-                timeout = null;
-                func.apply(context, args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-            if (first) {
-                func.apply(context, args);
-                first = false;
-            }
-        };
-    }
-
-
-    /**
-     * Remove download
-     */
-
-    function remove$1(download, list) {
-        return messages.confirm({
-            header: 'Delete Request:',
-            content: [
-                'Are you sure you want to delete this request from your queue?',
-                m('.text-xs-center',
-                    m('small.muted-text','(Don\'t worry, the data will stay on our servers and you can request it again in the future)')
-                )
-            ]
-        })
-        .then(function(response){
-            if (response) return doRemove(download, list);
-        });
-    }
-
-    function doRemove(download, list){
-        list(list().filter(function (el) { return el !== download; }));
-        m.redraw();
-        removeDownload(download)
-            .catch(function (err) {
-                list().push(download);
-                return messages.alert({
-                    header: 'Delete Request',
-                    content: err.message
-                });
-            });
-    }
-
-    /**
-     * Create download
-     */
-
-    function create$1(list, cancel, loaded){
-        var output = m.prop();
-        return createMessage$1({output: output})
-            .then(function (response) {
-                if (response){
-                    var download = unPropify$1(output());
-                    list().unshift(Object.assign({
-                        studyStatus: STATUS_RUNNING$1,
-                        creationDate: new Date()
-                    },download));
-                    cancel(true);
-                    return createDownload(download)
-                        .catch(reportError$1('Error creating download'))
-                        .then(cancel.bind(null, false))
-                        .then(function () {
-                            getAll({list: list, cancel: cancel, loaded: loaded});
-                        });
-                }
-            });
-    }
-
-    var unPropify$1 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
-        result[key] = obj[key]();
-        return result;
-    }, {}); };
-
-    var reportError$1 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
-
-    var TABLE_WIDTH$1 = 7;
-    var statusLabelsMap = {}; // defined at the bottom of this file
-
-    var downloadsComponent = {
-        controller: function controller(){
-            var list = m.prop([]);
-            var loaded = m.prop(false);
-
-            var cancelDownload = m.prop(false);
-
-            var ctrl = {
-                loaded: loaded,
-                list: list,
-                cancelDownload: cancelDownload,
-                create: create$1,
-                remove: remove$1,
-                globalSearch: m.prop(''),
-                sortBy: m.prop('studyId'),
-                onunload: function onunload(){
-                    cancelDownload(true);
-                },
-                error: m.prop('')
-            };
-
-            getAll({list:ctrl.list, cancel: cancelDownload, error: ctrl.error, loaded:ctrl.loaded});
-            return ctrl;
-        },
-
-        view: function view(ctrl) {
-
-            if (!ctrl.loaded())
-                return m('.loader');
-
-            var list = ctrl.list;
-
-            if (ctrl.error()) return m('.downloads', [
-                m('h3', 'Data Download'),
-                m('.alert.alert-warning', [
-                    m('strong', 'Warning!! '), ctrl.error().message
-                ])
-            ]);
-
-            return m('.downloads', [
-                m('.row.m-b-1', [
-                    m('.col-sm-6', [
-                        m('h3', 'Data Download')
-                    ]),
-                    m('.col-sm-3',[
-                        m('button.btn.btn-secondary.pull-right', {onclick:ctrl.create.bind(null, list, ctrl.cancelDownload, ctrl.loaded)}, [
-                            m('i.fa.fa-plus'), ' Request Data'
-                        ])
-                    ]),
-                    m('.col-sm-3',[
-                        m('input.form-control', {placeholder: 'Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                    ])
-                ]),
-
-                m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                    m('thead', [
-                        m('tr', [
-                            m('th', thConfig$2('studyId',ctrl.sortBy), 'ID'),
-                            m('th', 'Data file'),
-                            m('th', thConfig$2('db',ctrl.sortBy), 'Database'),
-                            m('th', thConfig$2('fileSize',ctrl.sortBy), 'File Size'),
-                            m('th', thConfig$2('creationDate',ctrl.sortBy), 'Date Added'),
-                            m('th','Status'),
-                            m('th','Actions')
-                        ])
-                    ]),
-                    m('tbody', [
-                        list().length === 0
-                            ? m('tr.table-info', [
-                                m('td.text-xs-center', {colspan: TABLE_WIDTH$1}, 'There are no downloads running yet')
-                            ])
-                            : list().filter(studyFilter$2(ctrl)).map(function (download) { return m('tr', [
-                                // ### ID
-                                m('td', download.studyId),
-
-                                // ### Study url
-                                m('td', download.studyStatus == STATUS_RUNNING$1
-                                    ? m('i.text-muted', 'Loading...')
-                                    : download.fileSize
-                                        ? m('a', {href:download.studyUrl, download:download.studyId + '.zip', target: '_blank'}, 'Download')
-                                        : m('i.text-muted', 'No Data')
-                                ),
-
-                                // ### Database
-                                m('td', download.db),
-
-                                // ### Filesize
-                                m('td', download.fileSize !== 'unknown'
-                                    ? download.fileSize
-                                    : m('i.text-muted', 'Unknown')
-                                ),
-
-                                // ### Date Added
-                                m('td', [
-                                    formatDate(new Date(download.creationDate)),
-                                    '  ',
-                                    m('i.fa.fa-info-circle'),
-                                    m('.info-box', [
-                                        m('.card', [
-                                            m('.card-header', 'Creation Details'),
-                                            m('ul.list-group.list-group-flush',[
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Creation Date: '), formatDate(new Date(download.creationDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'Start Date: '), formatDate(new Date(download.startDate))
-                                                ]),
-                                                m('li.list-group-item', [
-                                                    m('strong', 'End Date: '), formatDate(new Date(download.endDate))
-                                                ])
-                                            ])
-                                        ])
-                                    ])
-                                ]),
-
-                                // ### Status
-                                m('td', [
-                                    statusLabelsMap[download.studyStatus]
-                                ]),
-
-                                // ### Actions
-                                m('td', [
-                                    m('.btn-group', [
-                                        m('button.btn.btn-sm.btn-secondary', {onclick: ctrl.remove.bind(null, download, list)}, [
-                                            m('i.fa.fa-close')
                                         ])
                                     ])
                                 ])
@@ -5961,661 +6607,43 @@
         }
     };
 
-    // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$2 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
+    var permissionFilter = function (permission) { return function (study) {
+        if(permission === 'all') return !study.is_public;
+        if(permission === 'public') return study.is_public;
+        if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
+        return study.permission === permission;
+    }; };
 
-    function studyFilter$2(ctrl){
-        var search = ctrl.globalSearch();
-        return function (study) { return includes(study.studyId, search) ||
-            includes(study.studyUrl, search); };
+    var tagFilter = function (tags) { return function (study) {
+        if (tags.length==0)
+            return true;
+        return study.tags.map(function (tag){ return tag.text; }).some(function (tag) { return tags.indexOf(tag) != -1; });
+    }; };
 
-        function includes(val, search){
-            return typeof val === 'string' && val.includes(search);
+    var uesedFilter = function () { return function (tag) {
+        return tag.used;
+    }; };
+
+
+    var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
+
+    function routeConfig(el, isInit, ctx, vdom) {
+
+        el.href = location.pathname + '?' + vdom.attrs.href;
+
+        if (!isInit) el.addEventListener('click', route);
+
+        function route(e){
+            var el = e.currentTarget;
+
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+            if (e.defaultPrevented) return;
+
+            e.preventDefault();
+            if (e.target.tagName === 'A' && e.target !== el) return;
+
+            m.route(el.search.slice(1));
         }
-    }
-
-    statusLabelsMap[STATUS_COMPLETE] = m('span.label.label-success', 'Complete');
-    statusLabelsMap[STATUS_RUNNING$1] = m('span.label.label-info', 'Running');
-    statusLabelsMap[STATUS_ERROR] = m('span.label.label-danger', 'Error');
-
-    var STATUS_APPROVED = true;
-    var STATUS_SUBMITTED = false;
-
-    function createDataAccessRequest(dataAccessRequest){
-        var body = Object.assign({
-            action:'createDataAccessRequest'
-        }, dataAccessRequest);
-
-        return fetchJson(url$2, {method: 'post', body: body})
-            .then(interceptErrors$2);
-    }
-
-    function deleteDataAccessRequest(dataAccessRequest){
-        var body = Object.assign({
-            action:'deleteDataAccessRequest'
-        }, dataAccessRequest);
-
-        return  fetchJson(url$2, {method: 'post',body:body})
-            .then(interceptErrors$2);
-    }
-
-    function updateApproved(dataAccessRequest, approved){
-        var body = Object.assign({
-            action:'updateApproved'
-        }, dataAccessRequest,{approved: approved});
-
-        return  fetchJson(url$2, {method: 'post',body:body})
-            .then(interceptErrors$2);
-    }
-
-    function getAllOpenRequests(){
-        return fetchJson(url$2, {method:'post', body: {action:'getAllOpenRequests'}})
-            .then(interceptErrors$2);
-    }
-
-
-
-    function interceptErrors$2(response){
-        if (!response.error){
-            return response;
-        }
-
-        var errors = {
-            1: 'This ID already exists.',
-            2: 'The study could not be found.',
-            3: 'The rule file could not be found.',
-            4: 'The rules file does not fit the "research" schema.'
-        };
-
-        return Promise.reject({message: errors[response.error]});
-    }
-
-    var createMessage$2 = function (args) { return messages.custom({
-        content: m.component(createComponent$2, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-    var createComponent$2 = {
-        controller: function controller(ref){
-            var output = ref.output;
-            var close = ref.close;
-
-            var downloadAccess ={
-                studyId: m.prop('')
-            };
-
-            // export study to calling component
-            output(downloadAccess);
-
-
-            var ctrl = {
-                downloadAccess: downloadAccess,
-                submitAttempt: false,
-                validity: function validity(){
-                    var response = {
-                        studyId: downloadAccess.studyId()
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-
-                    if (isValid) close(true);
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-        },
-        view: function view(ctrl){
-            var downloadAccess = ctrl.downloadAccess;
-            var validity = ctrl.validity();
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Request Download Access From Admin'),
-                m('p', 'This page will request access to a study from admin.  For studies created by users you should instead email them directly for access.'),
-                m('.card-block', [
-                    m('.form-group', {class:groupClasses(validity.studyId)}, [
-                        m('label', 'Study Id'),
-                        m('input.form-control', {
-                            config: focusConfig$3,
-                            placeholder:'Study Id',
-                            value: downloadAccess.studyId(),
-                            oninput: m.withAttr('value', downloadAccess.studyId),
-                            class:inputClasses(validity.studyId)
-                        }),
-                        validationView(validity.studyId, 'The study ID is required in order to request access.')
-                    ])
-                    
-                    
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig$3 = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    var grantMessage = function (args) { return messages.custom({
-        content: m.component(grantComponent, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-    var grantComponent = {
-        controller: function controller(ref){
-            var output = ref.output;
-            var close = ref.close;
-
-            var downloadAccess ={
-                studyId: m.prop(''),
-                username: m.prop('')
-            };
-
-            // export study to calling component
-            output(downloadAccess);
-
-
-            var ctrl = {
-                downloadAccess: downloadAccess,
-                submitAttempt: false,
-                validity: function validity(){
-                    var response = {
-                        studyId: downloadAccess.studyId(),
-                        username: downloadAccess.username()
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-
-                    if (isValid) close(true);
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-        },
-        view: function view(ctrl){
-            var downloadAccess = ctrl.downloadAccess;
-            var validity = ctrl.validity();
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Grant Data Access'),
-                m('.card-block', [
-                    m('.form-group', {class:groupClasses(validity.studyId)}, [
-                        m('label', 'Study Id'),
-                        m('input.form-control', {
-                            config: focusConfig$4,
-                            placeholder:'Study Id',
-                            value: downloadAccess.studyId(),
-                            oninput: m.withAttr('value', downloadAccess.studyId),
-                            class:inputClasses(validity.studyId)
-                        }),
-                        m('label', 'Username'),
-                        m('input.form-control', {
-                            config: focusConfig$4,
-                            placeholder:'Username',
-                            value: downloadAccess.username(),
-                            oninput: m.withAttr('value', downloadAccess.username),
-                            class:inputClasses(validity.username)
-                        }),
-                        validationView(validity.studyId, 'The study ID is required in order to grant access.'),
-                        validationView(validity.username, 'The username is required in order to grant access.')
-                    ])
-                    
-                    
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig$4 = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    var revokeMessage = function (args) { return messages.custom({
-        content: m.component(revokeComponent, Object.assign({close:messages.close}, args)),
-        wide: true
-    }); };
-
-    var revokeComponent = {
-        controller: function controller(ref){
-            var output = ref.output;
-            var close = ref.close;
-
-            var downloadAccess ={
-                studyId: m.prop(''),
-                username: m.prop('')
-            };
-
-            // export study to calling component
-            output(downloadAccess);
-
-
-            var ctrl = {
-                downloadAccess: downloadAccess,
-                submitAttempt: false,
-                validity: function validity(){
-                    var response = {
-                        studyId: downloadAccess.studyId(),
-                        username: downloadAccess.username()
-                    };
-                    return response;
-                },
-                ok: function ok(){
-                    ctrl.submitAttempt = true;
-                    var response = ctrl.validity();
-                    var isValid = Object.keys(response).every(function (key) { return response[key]; });
-
-                    if (isValid) close(true);
-                },
-                cancel: function cancel() {
-                    close(null);
-                }
-            };
-
-            return ctrl;
-        },
-        view: function view(ctrl){
-            var downloadAccess = ctrl.downloadAccess;
-            var validity = ctrl.validity();
-            var validationView = function (isValid, message) { return isValid || !ctrl.submitAttempt ? '' : m('small.text-muted', message); };
-            var groupClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'has-danger': !valid,
-                'has-success' : valid
-            }); };
-            var inputClasses = function (valid) { return !ctrl.submitAttempt ? '' : classNames({
-                'form-control-danger': !valid,
-                'form-control-success': valid
-            }); };
-
-            return m('div',[
-                m('h4', 'Revoke Data Access'),
-                m('.card-block', [
-                    m('.form-group', {class:groupClasses(validity.studyId)}, [
-                        m('label', 'Study Id'),
-                        m('input.form-control', {
-                            config: focusConfig$5,
-                            placeholder:'Study Id',
-                            value: downloadAccess.studyId(),
-                            oninput: m.withAttr('value', downloadAccess.studyId),
-                            class:inputClasses(validity.studyId)
-                        }),
-                        m('label', 'Username'),
-                        m('input.form-control', {
-                            config: focusConfig$5,
-                            placeholder:'Username',
-                            value: downloadAccess.username(),
-                            oninput: m.withAttr('value', downloadAccess.username),
-                            class:inputClasses(validity.username)
-                        }),
-                        validationView(validity.studyId, 'The study ID is required in order to revoke access.'),
-                        validationView(validity.username, 'The username is required in order to revoke access.')
-                    ])
-                    
-                    
-                ]),
-                m('.text-xs-right.btn-toolbar',[
-                    m('a.btn.btn-secondary.btn-sm', {onclick:ctrl.cancel}, 'Cancel'),
-                    m('a.btn.btn-primary.btn-sm', {onclick:ctrl.ok}, 'OK')
-                ])
-            ]);
-        }
-    };
-
-    var focusConfig$5 = function (element, isInitialized) {
-        if (!isInitialized) element.focus();
-    };
-
-    function play$2(downloadAccess, list){
-        return messages.confirm({
-            header: 'Approve Access Request:',
-            content: ("Are you sure you want to grant access of '" + (downloadAccess.studyId) + "' to '" + (downloadAccess.username) + "'?")
-        })
-        .then(function (response) {
-            if(response) {
-                return updateApproved(downloadAccess, STATUS_APPROVED)
-                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
-                    .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
-                    .catch(reportError$2('Grant Access'))
-                    .then(m.redraw());
-            }
-        });
-    }
-
-
-    var remove$2  = function (downloadAccess, list) {
-        return messages.confirm({
-            header: 'Delete request:',
-            content: ("Are you sure you want to delete the access request for'" + (downloadAccess.studyId) + "'? If access has already been granted you will lose it")
-        })
-        .then(function (response) {
-            if(response) {
-                
-                return deleteDataAccessRequest(downloadAccess)
-                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
-                    .then(messages.alert({header:'Deletion complete', content: 'Access has been deleted'}))
-                    .catch(reportError$2('Remove Download Request'))
-                    .then(m.redraw());
-
-            }
-        });
-    };
-    var grant = function () {
-        var output = m.prop();
-        return grantMessage({output: output})
-        .then(function (response) {
-            if (response) {
-                var now = new Date();
-                var downloadAccess = Object.assign({
-                    approved: STATUS_APPROVED,
-                    creationDate: now
-                }, null, unPropify$2(output()));
-                return createDataAccessRequest(downloadAccess)
-                .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
-                .catch(reportError$2('Grant Access'));
-            }
-        });
-    };
-    var revoke = function () {
-        var output = m.prop();
-        return revokeMessage({output: output})
-        .then(function (response) {
-            if (response) {
-                var now = new Date();
-                var downloadAccess = Object.assign({
-                    creationDate: now
-                }, null, unPropify$2(output()));
-                return deleteDataAccessRequest(downloadAccess)
-                .then(messages.alert({header:'Revoke access completed', content: 'Access revoked'}))
-                .catch(reportError$2('Revoke Access'));
-            }
-        });
-    };
-    var create$2 = function (list) {
-        var output = m.prop();
-        return createMessage$2({output: output})
-            .then(function (response) {
-                if (response) {
-                    var now = new Date();
-                    var downloadAccess = Object.assign({
-                        creationDate: now,
-                        approved: 'access pending'
-                    }, null, unPropify$2(output()));
-                    return createDataAccessRequest(downloadAccess)
-                        .then(function () { return list().unshift(downloadAccess); })
-                        .then(m.redraw)
-                        .catch(reportError$2('Data Access Request'));
-                }
-            });
-    };
-
-    var reportError$2 = function (header) { return function (err) { return messages.alert({header: header, content: err.message}); }; };
-
-    var unPropify$2 = function (obj) { return Object.keys(obj).reduce(function (result, key) {
-        result[key] = obj[key]();
-        return result;
-    }, {}); };
-
-    var TABLE_WIDTH$2 = 6;
-
-    var downloadsAccessComponent = {
-        controller: function () {
-            var ctrl = {
-                play: play$2,
-                loaded: m.prop(false),
-                remove: remove$2,
-                create: create$2,
-                grant: grant,
-                revoke: revoke,
-                list: m.prop([]),
-                globalSearch: m.prop(''),
-                sortBy: m.prop(),
-                error: m.prop(''),
-                isAdmin: false
-            };
-            getAuth().then(function (response) {ctrl.isAdmin = response.role === 'SU';});
-
-            getAllOpenRequests()
-                .then(ctrl.list)
-                .catch(ctrl.error)
-                .then(function(){ctrl.loaded(true);})
-                .then(m.redraw);
-
-            return ctrl;
-        },
-        view: function (ctrl) {
-            if (!ctrl.loaded())
-                return m('.loader');
-
-            var list = ctrl.list;
-            return m('.downloadAccess', [
-                m('h3', 'Data Download Access Requests'),
-                m('p.col-xs-12.text-muted', [
-                    m('small', [
-                        ctrl.isAdmin
-                            ? 'Approve requests by clicking the Play button; Reject requests by clicking the X button; To grant permission without a request: hit the Grant Access button; For all actions: The user will be notified by email.'
-                            : 'You will receive an email when your request is approved or rejected; To cancel a request, click the X button next to the request'
-                    ])
-                ]),
-                ctrl.error()
-                    ?
-                    m('.alert.alert-warning',
-                        m('strong', 'Warning!! '), ctrl.error().message
-                    )
-                    :
-                    m('table', {class:'table table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                        m('thead', [
-                            m('tr', [ 
-                                m('th', {colspan: TABLE_WIDTH$2}, [ 
-                                    m('.row', [
-                                        m('.col-xs-3.text-xs-left', [
-                                            m('button.btn.btn-secondary', {disabled: ctrl.isAdmin, onclick:ctrl.isAdmin || ctrl.create.bind(null, list)}, [
-                                                m('i.fa.fa-plus'), '  Request Access From Admin'
-                                            ])
-                                        ]),
-                                        m('.col-xs-2.text-xs-left', [
-                                            m('button.btn.btn-secondary', {onclick:ctrl.grant.bind(null, list)}, [
-                                                m('i.fa.fa-plus'), '  Grant Access'
-                                            ])
-                                        ])
-                                        ,m('.col-xs-2.text-xs-left', [
-                                            ctrl.isAdmin ? m('button.btn.btn-secondary', {onclick:ctrl.revoke.bind(null, list)}, [
-                                                m('i.fa.fa-plus'), '  Revoke Access'
-                                            ]) : ''
-                                        ]),
-                                        m('.col-xs-5.text-xs-left', [
-                                            m('input.form-control', {placeholder: 'Global Search ...', oninput: m.withAttr('value', ctrl.globalSearch)})
-                                        ])
-                                    ])
-                                ])
-                            ]),
-
-                            m('tr', [
-                                m('th', thConfig$3('studyId',ctrl.sortBy), 'ID'),
-                                m('th', thConfig$3('username',ctrl.sortBy), 'Username'),
-                                m('th', thConfig$3('email',ctrl.sortBy), 'Email'),
-                                m('th', thConfig$3('creationDate',ctrl.sortBy), 'Date'),
-                                m('th','Status'),
-                                m('th','Actions')
-                            ])
-                        ]),
-                        m('tbody', [
-                            list().length === 0
-                                ?
-                                m('tr.table-info',
-                                    m('td.text-xs-center', {colspan: TABLE_WIDTH$2},
-                                        m('strong', 'Heads up! '), 'There are no requests yet'
-                                    )
-                                )
-                                :
-                                list().filter(dataRequestFilter(ctrl)).map(function (dataRequest) { return m('tr', [
-                                    // ### ID
-                                    m('td', dataRequest.studyId),
-                                    
-                                    // ### USERNAME
-                                    m('td', dataRequest.username),
-                                    
-                                    // ### EMAIL
-                                    m('td', dataRequest.email),
-
-                                    // ### Date
-                                    m('td', formatDate(new Date(dataRequest.creationDate))),
-                                    dataRequest.approved=== STATUS_APPROVED
-                                        ?
-                                        m('td', {style:'color:green'},'access granted')
-                                        :
-                                        m('td', {style:'color:red'},'access pending'),
-
-                                    // ### Actions
-                                    m('td', [
-                                        m('.btn-group', [
-                                            dataRequest.canApprove && dataRequest.approved === STATUS_SUBMITTED ? m('button.btn.btn-sm.btn-secondary', {title:'Approve request, and auto email requester',onclick: ctrl.play.bind(null, dataRequest,list)}, [
-                                                m('i.fa.fa-play')
-                                            ]) : '',
-                                            dataRequest.canDelete ? m('button.btn.btn-sm.btn-secondary', {title:'Delete request.  If this is a granted request owner will lose access to it',onclick: ctrl.remove.bind(null, dataRequest, list)}, [
-                                                m('i.fa.fa-close')
-                                            ]) : ''
-                                        ])
-                                    ])
-                                ]); })
-                        ])
-                    ])
-            ]);
-        }
-    };
-
-    // @TODO: bad idiom! should change things within the object, not the object itself.
-    var thConfig$3 = function (prop, current) { return ({'data-sort-by':prop, class: current() === prop ? 'active' : ''}); };
-
-    function dataRequestFilter(ctrl){
-        return function (dataRequest) { return includes(dataRequest.studyId, ctrl.globalSearch()) ||
-            includes(dataRequest.username, ctrl.globalSearch()) ||
-            includes(dataRequest.email, ctrl.globalSearch()); };
-
-        function includes(val, search){
-            return typeof val === 'string' && val.includes(search);
-        }
-    }
-
-    var loginComponent = {
-        controller: function controller(){
-            var ctrl = {
-                username:m.prop(''),
-                password:m.prop(''),
-                isloggedin: false,
-                loginAction: loginAction,
-                error: m.prop('')
-            };
-
-            is_loggedin();
-
-            return ctrl;
-
-            function loginAction(){
-                if(ctrl.username() && ctrl.password())
-                    login(ctrl.username, ctrl.password)
-                        .then(function () {
-                            m.route('/');
-                        })
-                        .catch(function (response) {
-                            ctrl.error(response.message);
-                            m.redraw();
-                        })
-                    ;
-            }
-
-            function is_loggedin(){
-                getAuth().then(function (response) {
-                    ctrl.isloggedin = response.isloggedin;
-                    m.redraw();
-                });
-            }
-        },
-        view: function view(ctrl){
-            return m('.login.centrify', {config:fullHeight},[
-                ctrl.isloggedin
-                ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'You are already logged in!')
-                    ]
-                    :
-                    m('.card.card-inverse.col-md-4', [
-                        m('.card-block',[
-                            m('h4', 'Please sign in'),
-
-                            m('form', {onsubmit:ctrl.login}, [
-                                m('input.form-control', {
-                                    type:'username',
-                                    placeholder: 'Username / Email',
-                                    value: ctrl.username(),
-                                    name: 'username',
-                                    oninput: m.withAttr('value', ctrl.username),
-                                    onchange: m.withAttr('value', ctrl.username),
-                                    config: getStartValue(ctrl.username)
-                                }),
-                                m('input.form-control', {
-                                    type:'password',
-                                    name:'password',
-                                    placeholder: 'Password',
-                                    value: ctrl.password(),
-                                    oninput: m.withAttr('value', ctrl.password),
-                                    onchange: m.withAttr('value', ctrl.password),
-                                    config: getStartValue(ctrl.password)
-                                })
-                            ]),
-
-                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
-                            m('p.text-center',
-                                m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
-                            )
-                        ])
-                    ])
-            ]);
-        }
-    };
-
-    function getStartValue(prop){
-        return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
-        };
     }
 
     var deploy_url = baseUrl + "/deploy_list";
@@ -7405,18 +7433,30 @@
         };
     }
 
+    var change_password_url = baseUrl + "/change_password";
+    var change_email_url = baseUrl + "/change_email";
+
     function apiURL(code)
     {   
-        return (activation1_url + "/" + (encodeURIComponent(code)));
+        return (change_password_url + "/" + (encodeURIComponent(code)));
     }
 
-    var is_activation_code = function (code) { return fetchJson(apiURL(code), {
+    var is_recovery_code = function (code) { return fetchJson(apiURL(code), {
         method: 'get'
     }); };
 
     var set_password = function (code, password, confirm) { return fetchJson(apiURL(code), {
         method: 'post',
         body: {password: password, confirm: confirm}
+    }); };
+
+    var set_email = function (email) { return fetchJson(change_email_url, {
+        method: 'post',
+        body: {email: email}
+    }); };
+
+    var get_email = function () { return fetchJson(change_email_url, {
+        method: 'get'
     }); };
 
     var password_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
@@ -7451,73 +7491,6 @@
             if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
-
-    var activationComponent = {
-        controller: function controller(){
-            var ctrl = {
-                password: m.prop(''),
-                confirm: m.prop(''),
-                password_error: m.prop(''),
-                activated:false,
-                do_set_password: do_set_password
-            };
-           
-            is_activation_code(m.route.param('code'))
-            .catch(function () {
-                m.route('/');
-            });
-
-            return ctrl;
-
-            function do_set_password(){
-                set_password(m.route.param('code'), ctrl.password, ctrl.confirm)
-                    .then(function () {
-                        ctrl.activated = true;
-                    })
-                    .catch(function (response) {
-                        ctrl.password_error(response.message);
-                    })
-                    .then(m.redraw);
-            }
-        },
-        view: function view(ctrl){
-            return m('.activation.centrify', {config:fullHeight},[
-                ctrl.activated
-                ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!')
-                    ]
-                :
-                password_body(ctrl)]);
-        }
-    };
-
-    var change_password_url = baseUrl + "/change_password";
-    var change_email_url = baseUrl + "/change_email";
-
-    function apiURL$1(code)
-    {   
-        return (change_password_url + "/" + (encodeURIComponent(code)));
-    }
-
-    var is_recovery_code = function (code) { return fetchJson(apiURL$1(code), {
-        method: 'get'
-    }); };
-
-    var set_password$1 = function (code, password, confirm) { return fetchJson(apiURL$1(code), {
-        method: 'post',
-        body: {password: password, confirm: confirm}
-    }); };
-
-    var set_email = function (email) { return fetchJson(change_email_url, {
-        method: 'post',
-        body: {email: email}
-    }); };
-
-    var get_email = function () { return fetchJson(change_email_url, {
-        method: 'get'
-    }); };
 
     var emil_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
@@ -7575,7 +7548,7 @@
 
 
             function do_set_password(){
-                set_password$1('', ctrl.password, ctrl.confirm)
+                set_password('', ctrl.password, ctrl.confirm)
                     .then(function () {
                         ctrl.password_changed = true;
                     })
@@ -7620,6 +7593,176 @@
         }
     };
 
+    var massMailUrl = baseUrl + "/mass_mail";
+
+    var send = function (subject, body , ru, su, cu) { return fetchJson(massMailUrl, {
+        method: 'post',
+        body: {subject: subject, body: body , ru: ru, su: su, cu: cu}
+    }); };
+
+    var massMailComponent = {
+        controller: function controller(){
+            var subject = m.prop('');
+            var body = m.prop('');
+            var ru = m.prop(false);
+            var su = m.prop(false);
+            var cu = m.prop(false);
+            var ctrl = {
+                subject: subject,
+                body: body,
+                ru: ru,
+                su: su,
+                cu: cu,
+                error: m.prop(''),
+                sent:false,
+                send: sendAction
+            };
+            return ctrl;
+
+            function sendAction(){
+                send(subject, body , ru, su, cu)
+                    .then(function () {
+                        ctrl.sent = true;
+                        m.redraw();
+                    })
+                    .catch(function (response) {
+                        ctrl.error(response.message);
+                        m.redraw();
+                    });
+            }
+        },
+        view: function view(ctrl){
+            return m('.add.centrify', {config:fullHeight},[
+                ctrl.sent
+                    ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Mail successfully sent!')
+                    ]
+                    :
+                    m('.card.card-inverse.col-md-4', [
+                        m('.card-block',[
+                            m('h4', 'Please fill the following details'),
+                            m('form', {onsubmit:ctrl.send}, [
+                                m('fieldset.form-group',
+                                    m('input.form-control', {
+                                        type:'Subject',
+                                        placeholder: 'Subject',
+                                        value: ctrl.subject(),
+                                        oninput: m.withAttr('value', ctrl.subject),
+                                        onchange: m.withAttr('value', ctrl.subject),
+                                        config: getStartValue$4(ctrl.subject)
+                                    }
+                                )),
+                                m('fieldset.form-group',
+                                    m('textarea.form-control', {
+                                        type:'Body',
+                                        placeholder: 'Body',
+                                        value: ctrl.body(),
+                                        oninput: m.withAttr('value', ctrl.body),
+                                        onchange: m.withAttr('value', ctrl.body),
+                                        config: getStartValue$4(ctrl.body)
+                                    }
+                                )),
+                                m('fieldset.form-group',
+
+                                    m('label.c-input.c-checkbox', [
+                                        m('input.form-control', {
+                                            type: 'checkbox',
+                                            onclick: m.withAttr('checked', ctrl.ru)}),
+                                        m('span.c-indicator'),
+                                        m.trust('&nbsp;'),
+                                        m('span', 'Regular users')
+                                    ]),
+                                    m('label.c-input.c-checkbox', [
+                                        m('input.form-control', {
+                                            type: 'checkbox',
+                                            onclick: m.withAttr('checked', ctrl.su)}),
+                                        m('span.c-indicator'),
+                                        m.trust('&nbsp;'),
+                                        m('span', 'Super users')
+                                    ]),
+                                    m('label.c-input.c-checkbox', [
+                                        m('input.form-control', {
+                                            type: 'checkbox',
+                                            onclick: m.withAttr('checked', ctrl.cu)}),
+                                        m('span.c-indicator'),
+                                        m.trust('&nbsp;'),
+                                        m('span', 'Contract users')
+                                    ])
+
+                                )
+                            ]),
+
+                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.send},'Send')
+                        ])
+                    ])
+            ]);
+        }
+    };
+
+    function getStartValue$4(prop){
+        return function (element, isInit) {// !isInit && prop(element.value);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
+        };
+    }
+
+    function apiURL$1(code)
+    {   
+        return (activation1_url + "/" + (encodeURIComponent(code)));
+    }
+
+    var is_activation_code = function (code) { return fetchJson(apiURL$1(code), {
+        method: 'get'
+    }); };
+
+    var set_password$1 = function (code, password, confirm) { return fetchJson(apiURL$1(code), {
+        method: 'post',
+        body: {password: password, confirm: confirm}
+    }); };
+
+    var activationComponent = {
+        controller: function controller(){
+            var ctrl = {
+                password: m.prop(''),
+                confirm: m.prop(''),
+                password_error: m.prop(''),
+                activated:false,
+                do_set_password: do_set_password
+            };
+           
+            is_activation_code(m.route.param('code'))
+            .catch(function () {
+                m.route('/');
+            });
+
+            return ctrl;
+
+            function do_set_password(){
+                set_password$1(m.route.param('code'), ctrl.password, ctrl.confirm)
+                    .then(function () {
+                        ctrl.activated = true;
+                    })
+                    .catch(function (response) {
+                        ctrl.password_error(response.message);
+                    })
+                    .then(m.redraw);
+            }
+        },
+        view: function view(ctrl){
+            return m('.activation.centrify', {config:fullHeight},[
+                ctrl.activated
+                ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Password successfully updated!')
+                    ]
+                :
+                password_body(ctrl)]);
+        }
+    };
+
     var resetPasswordComponent = {
         controller: function controller(){
             var ctrl = {
@@ -7642,7 +7785,7 @@
             return ctrl;
             
             function do_set_password(){
-                set_password$1(ctrl.code(), ctrl.password, ctrl.confirm)
+                set_password(ctrl.code(), ctrl.password, ctrl.confirm)
                     .then(function () {
                         ctrl.password_changed = true;
                     })
@@ -7713,7 +7856,7 @@
                                 value: ctrl.username(),
                                 oninput: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue$4(ctrl.username)
+                                config: getStartValue$5(ctrl.username)
                             })
                         ]),
 
@@ -7725,7 +7868,7 @@
         }
     };
 
-    function getStartValue$4(prop){
+    function getStartValue$5(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
@@ -8120,13 +8263,16 @@
         '/activation/:code':  activationComponent,
         '/change_password':  changePasswordComponent,
         '/reset_password/:code':  resetPasswordComponent,
-        '/addUser':  addComponent,
-        '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
-        '/studyRemoval/:studyId':  StudyRemovalComponent,
-        '/deploy/:studyId': deployComponent$1,
+
         '/deployList': deployComponent,
         '/removalList': removalListComponent,
         '/changeRequestList': changeRequestListComponent,
+        '/addUser':  addComponent,
+        '/massMail':  massMailComponent,
+
+        '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
+        '/studyRemoval/:studyId':  StudyRemovalComponent,
+        '/deploy/:studyId': deployComponent$1,
         '/login': loginComponent,
         '/studies' : mainComponent,
         '/studies/statistics' : statisticsComponent,
@@ -8243,7 +8389,8 @@
                                         m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
                                         m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
                                         m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
-                                        m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User')
+                                        m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User'),
+                                        m('a.dropdown-item',{href:'/massMail', config:m.route}, 'Send MassMail')
                                     ])
                                 ])
                             ]),
