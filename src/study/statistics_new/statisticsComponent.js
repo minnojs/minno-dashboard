@@ -11,7 +11,7 @@ let statisticsComponent = {
 
         let loading = m.prop(false);
         let query = {
-            source: m.prop('Research:Current'),
+            source: m.prop('Pool:Current'),
             startDate: m.prop(firstDayInPreviousMonth(new Date())),
             endDate: m.prop(new Date()),
             study: m.prop(''),
