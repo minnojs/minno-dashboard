@@ -22,12 +22,13 @@ let statisticsTableComponent = {
             m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                 m('thead', [
                     m('tr.table-default', [
-                        th_option(sortBy, 'studyName', 'studyName'),
-                        !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
-                        query.sorttime2()==='All' ? '' : th_option(sortBy, 'date', 'date'),
-                        th_option(sortBy, 'starts', 'starts'),
-                        th_option(sortBy, 'completes', 'completes'),
-                        !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
+                        th_option(sortBy, 'studyName', 'Study Name'),
+                        !query.sorttask_sent() ? '' : th_option(sortBy, 'taskName', 'Task Name'),
+                        query.sorttime_sent()==='All' ? '' : th_option(sortBy, 'date', 'Date'),
+                        th_option(sortBy, 'starts', 'Starts'),
+                        th_option(sortBy, 'completes', 'Completes'),
+                        th_option(sortBy, 'completion_rate', 'Completion Rate %'),
+                        !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'Schema')
                     ])
                 ]),
                 m('tbody', [
@@ -38,10 +39,11 @@ let statisticsTableComponent = {
                     :
                     m('tr.table-default', [
                         m('td', row.studyName),
-                        !query.sorttask2() ? '' : m('td', row.taskName),
-                        query.sorttime2()==='All' ? '' : m('td', formatDate(new Date(row.date))),
+                        !query.sorttask_sent() ? '' : m('td', row.taskName),
+                        query.sorttime_sent()==='All' ? '' : m('td', formatDate(new Date(row.date))),
                         m('td', row.starts),
                         m('td', row.completes),
+                        m('td', row.completion_rate=Math.round((row.completes/row.starts)* 100) / 100),
                         !query.sortgroup() ? '' : m('td', row.schema)
                     ])
                     )

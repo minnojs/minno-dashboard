@@ -1032,12 +1032,13 @@
                 m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                     m('thead', [
                         m('tr.table-default', [
-                            th_option(sortBy, 'studyName', 'studyName'),
-                            !query.sorttask2() ? '' : th_option(sortBy, 'taskName', 'taskName'),
-                            query.sorttime2()==='All' ? '' : th_option(sortBy, 'date', 'date'),
-                            th_option(sortBy, 'starts', 'starts'),
-                            th_option(sortBy, 'completes', 'completes'),
-                            !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'schema')
+                            th_option(sortBy, 'studyName', 'Study Name'),
+                            !query.sorttask_sent() ? '' : th_option(sortBy, 'taskName', 'Task Name'),
+                            query.sorttime_sent()==='All' ? '' : th_option(sortBy, 'date', 'Date'),
+                            th_option(sortBy, 'starts', 'Starts'),
+                            th_option(sortBy, 'completes', 'Completes'),
+                            th_option(sortBy, 'completion_rate', 'Completion Rate %'),
+                            !query.sortgroup() ? '' : th_option(sortBy, 'schema', 'Schema')
                         ])
                     ]),
                     m('tbody', [
@@ -1047,10 +1048,11 @@
                         :
                         m('tr.table-default', [
                             m('td', row.studyName),
-                            !query.sorttask2() ? '' : m('td', row.taskName),
-                            query.sorttime2()==='All' ? '' : m('td', formatDate(new Date(row.date))),
+                            !query.sorttask_sent() ? '' : m('td', row.taskName),
+                            query.sorttime_sent()==='All' ? '' : m('td', formatDate(new Date(row.date))),
                             m('td', row.starts),
                             m('td', row.completes),
+                            m('td', row.completion_rate=Math.round((row.completes/row.starts)* 100) / 100),
                             !query.sortgroup() ? '' : m('td', row.schema)
                         ]); }
                         )
@@ -1090,10 +1092,10 @@
                 studydb: m.prop('Any'),
                 sortstudy: m.prop(true),
                 sorttask: m.prop(false),
-                sorttask2: m.prop(false),
+                sorttask_sent: m.prop(false),
                 sortgroup: m.prop(false),
                 sorttime: m.prop('All'),
-                sorttime2: m.prop('All'),
+                sorttime_sent: m.prop('All'),
                 showEmpty: m.prop(false),
                 firstTask: m.prop(''),
                 lastTask: m.prop(''),
@@ -1107,8 +1109,8 @@
                 getStatistics$1(query)
                     .then(tableContent)
                     .then(loading.bind(null, false))
-                    .then(query.sorttask2(query.sorttask()))
-                    .then(query.sorttime2(query.sorttime()))
+                    .then(query.sorttask_sent(query.sorttask()))
+                    .then(query.sorttime_sent(query.sorttime()))
                     .then(m.redraw);
             }
 
@@ -1151,7 +1153,7 @@
         var json = text.data;
         json = !query.showEmpty() ? json : json.filter(function (row) { return row.starts !== 0; });
 
-        var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
+        var fields = ['studyName', !query.sorttask_sent() ? '' : 'taskName', query.sorttime_sent()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(function (n) { return n; });
 
         var replacer = function(key, value) { return value === null ? '' : value;};
         var csv = json.map(function(row){

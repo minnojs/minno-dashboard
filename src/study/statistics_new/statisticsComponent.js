@@ -20,10 +20,10 @@ let statisticsComponent = {
             studydb: m.prop('Any'),
             sortstudy: m.prop(true),
             sorttask: m.prop(false),
-            sorttask2: m.prop(false),
+            sorttask_sent: m.prop(false),
             sortgroup: m.prop(false),
             sorttime: m.prop('All'),
-            sorttime2: m.prop('All'),
+            sorttime_sent: m.prop('All'),
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
             lastTask: m.prop(''),
@@ -37,8 +37,8 @@ let statisticsComponent = {
             getStatistics(query)
                 .then(tableContent)
                 .then(loading.bind(null, false))
-                .then(query.sorttask2(query.sorttask()))
-                .then(query.sorttime2(query.sorttime()))
+                .then(query.sorttask_sent(query.sorttask()))
+                .then(query.sorttime_sent(query.sorttime()))
                 .then(m.redraw);
         }
 
@@ -73,7 +73,7 @@ let downloadFile = (filename, text, query) => element => {
     var json = text.data;
     json = !query.showEmpty() ? json : json.filter(row => row.starts !== 0);
 
-    var fields = ['studyName', !query.sorttask2() ? '' : 'taskName', query.sorttime2()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
+    var fields = ['studyName', !query.sorttask_sent() ? '' : 'taskName', query.sorttime_sent()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
 
     var replacer = function(key, value) { return value === null ? '' : value;};
     var csv = json.map(function(row){
