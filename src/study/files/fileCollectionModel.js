@@ -13,6 +13,7 @@ let studyPrototype = {
             .then(study => {
                 this.loaded = true;
                 this.isReadonly = study.is_readonly;
+                this.is_locked = study.is_locked;
                 this.name = study.study_name;
                 this.baseUrl = study.base_url;
                 let files = flattenFiles(study.files)

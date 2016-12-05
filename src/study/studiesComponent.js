@@ -137,6 +137,7 @@ var mainComponent = {
                                     m('.study-text', [
                                         m('i.fa.fa-fw.owner-icon', {
                                             class: classNames({
+                                                'fa-lock': study.is_locked,
                                                 'fa-globe': study.is_public,
                                                 'fa-users': !study.is_public && study.permission !== 'owner'
                                             }),
@@ -162,7 +163,7 @@ var mainComponent = {
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
 
-                                                study.permission !== 'owner' ? '' : [
+                                                study.permission === 'read only' ? '' : [
                                                     study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-remove'), ' Delete Study'
                                                     ]),
@@ -171,12 +172,12 @@ var mainComponent = {
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                                                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                                                    ]),
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
+                                                        m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                                                     ])
                                                 ],
 
-                                                m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study.id, study.is_locked)}, [
-                                                    m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
-                                                ]),
 
                                                 study.is_locked ? '' : m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
                                                 study.is_locked ? '' : m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),

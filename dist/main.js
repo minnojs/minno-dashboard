@@ -3444,6 +3444,7 @@
                 .then(function (study) {
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
+                    this$1.is_locked = study.is_locked;
                     this$1.name = study.study_name;
                     this$1.baseUrl = study.base_url;
                     var files = flattenFiles(study.files)
@@ -5964,6 +5965,12 @@
     function get_duplicate_url(study_id) {
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
     }
+    function get_lock_url(study_id , lock) {
+
+        if (lock)
+            return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/lock");
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/unlock");
+    }
 
     /*CRUD*/
     var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
@@ -5981,6 +5988,10 @@
     var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
         method: 'put',
         body: {study_name: study_name}
+    }); };
+
+    var lock_study = function (study_id, lock) { return fetchJson(get_lock_url(study_id, lock), {
+        method: 'post'
     }); };
 
 
@@ -6200,33 +6211,31 @@
                 error(e.message);
                 ask();
             }); };
-
-        // activate creation
         ask();
     }; };
 
-    var do_lock = function (study_id, is_locked) { return function (e) {
+    var do_lock = function (study) { return function (e) {
         e.preventDefault();
-        messages.confirm({okText: ['Yes, ', is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', is_locked
+        var error = m.prop('');
+
+        var ask = function () { return messages.confirm({okText: ['Yes, ', study.is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', study.is_locked
             ?
             'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
             :
-            'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'
-        ),
-            ])})
+            'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
+            !error() ? '' : m('p.alert.alert-danger', error())])
+        })
 
-        .then(function (response) { return response && duplicate(); });
+        .then(function (response) { return response && lock(); }); };
 
-        // let duplicate= () => duplicate_study(study_id, study_name)
-        //     .then(response => m.route('/editor/'+response.study_id))
-        //     .then(m.redraw)
-        //     .catch(e => {
-        //         error(e.message);
-        //         ask();
-        //     });
-        //
-        // // activate creation
-        // ask();
+        var lock= function () { return lock_study(study.id, !study.is_locked)
+            .then(study.is_locked = !study.is_locked)
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            })
+            .then(m.redraw); };
+        ask();
     }; };
 
     var sidebarButtons = function (ref) {
@@ -6239,20 +6248,26 @@
             m('.btn-group.btn-group-sm', [
                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), elements: [
                     readonly ? '' : [
-                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, function () { return m.route('/studies'); })}, [
+                        study.is_locked ? '' : m('button.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, function () { return m.route('/studies'); })}, [
                             m('i.fa.fa-fw.fa-remove'), ' Delete study'
                         ]),
-                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
+                        study.is_locked ? '' : m('button.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, function (name) { return study.name = name; })}, [
                             m('i.fa.fa-fw.fa-exchange'), ' Rename study'
-                        ]),
-                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
-                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                         ])
+
                     ],
-                    m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
-                    m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
-                    m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
-                    m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing']),
+                    m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                        m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                    ]),
+                    readonly ? '' : [
+                        m('button.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
+                            m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
+                        ]),
+                        study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
+                        study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId + "t"), config: m.route }, 'Request Change'),
+                        study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
+                        m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
+                    ],
                     m('button.dropdown-item.dropdown-onclick', {onmousedown: copyUrl(study.baseUrl)}, [m('i.fa.fa-fw.fa-link'), ' Copy Base URL'])
                 ]})
             ]),
@@ -6552,6 +6567,7 @@
                                         m('.study-text', [
                                             m('i.fa.fa-fw.owner-icon', {
                                                 class: classNames({
+                                                    'fa-lock': study.is_locked,
                                                     'fa-globe': study.is_public,
                                                     'fa-users': !study.is_public && study.permission !== 'owner'
                                                 }),
@@ -6577,7 +6593,7 @@
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
 
-                                                    study.permission !== 'owner' ? '' : [
+                                                    study.permission === 'read only' ? '' : [
                                                         study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-remove'), ' Delete Study'
                                                         ]),
@@ -6586,12 +6602,12 @@
                                                         ]),
                                                         m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                                                             m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                                                        ]),
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
+                                                            m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                                                         ])
                                                     ],
 
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study.id, study.is_locked)}, [
-                                                        m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
-                                                    ]),
 
                                                     study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
                                                     study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),

@@ -43,7 +43,7 @@ let statisticsTableComponent = {
                         query.sorttime_sent()==='All' ? '' : m('td', formatDate(new Date(row.date))),
                         m('td', row.starts),
                         m('td', row.completes),
-                        m('td', row.completion_rate=(row.completes/row.starts).toFixed(2)),
+                        m('td', row.completion_rate = row.starts===0 ? 0 : (row.completes/row.starts).toFixed(2)),
                         !query.sortgroup() ? '' : m('td', row.schema)
                     ])
                     )

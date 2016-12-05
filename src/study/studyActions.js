@@ -1,5 +1,5 @@
 import messages from 'utils/messagesComponent';
-import {duplicate_study, create_study, delete_study, rename_study} from './studyModel';
+import {lock_study, duplicate_study, create_study, delete_study, rename_study} from './studyModel';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
@@ -96,31 +96,29 @@ export let do_duplicate= (study_id, name) => e => {
             error(e.message);
             ask();
         });
-
-    // activate creation
     ask();
 };
 
-export let do_lock = (study_id, is_locked) => e => {
+export let do_lock = (study) => e => {
     e.preventDefault();
-    messages.confirm({okText: ['Yes, ', is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', is_locked
+    let error = m.prop('');
+
+    let ask = () => messages.confirm({okText: ['Yes, ', study.is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', study.is_locked
         ?
         'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
         :
-        'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'
-    ),
-        ])})
+        'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
+        !error() ? '' : m('p.alert.alert-danger', error())])
+    })
 
-    .then(response => response && duplicate());
+    .then(response => response && lock());
 
-    // let duplicate= () => duplicate_study(study_id, study_name)
-    //     .then(response => m.route('/editor/'+response.study_id))
-    //     .then(m.redraw)
-    //     .catch(e => {
-    //         error(e.message);
-    //         ask();
-    //     });
-    //
-    // // activate creation
-    // ask();
+    let lock= () => lock_study(study.id, !study.is_locked)
+        .then(study.is_locked = !study.is_locked)
+        .catch(e => {
+            error(e.message);
+            ask();
+        })
+        .then(m.redraw);
+    ask();
 };
