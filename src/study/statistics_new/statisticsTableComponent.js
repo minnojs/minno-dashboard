@@ -10,6 +10,8 @@ let statisticsTableComponent = {
         return {sortBy: m.prop()};
     },
     view({sortBy}, {tableContent, query}){
+        if (query.error())
+            return m('.alert.alert-warning', m('strong', 'Error: '), query.error());
         let content = tableContent();
         if (!content) return m('div');
         if (!content.data) return m('.col-sm-12', [
@@ -17,8 +19,7 @@ let statisticsTableComponent = {
         ]);
 
         let list = m.prop(content.data);
-
-        return m('.col-sm-12', [
+        return m('.col-sm-12',[
             m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                 m('thead', [
                     m('tr.table-default', [
@@ -47,7 +48,6 @@ let statisticsTableComponent = {
                         !query.sortgroup() ? '' : m('td', row.schema)
                     ])
                     )
-
                 ])
             ])
         ]);

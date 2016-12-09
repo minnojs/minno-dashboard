@@ -27,6 +27,7 @@ let statisticsComponent = {
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
             lastTask: m.prop(''),
+            error: m.prop(''),
             rows:m.prop([])
         };
 
@@ -36,6 +37,9 @@ let statisticsComponent = {
             loading(true);
             getStatistics(query)
                 .then(tableContent)
+                .catch(response => {
+                    query.error(response.message);
+                })
                 .then(loading.bind(null, false))
                 .then(query.sorttask_sent(query.sorttask()))
                 .then(query.sorttime_sent(query.sorttime()))
