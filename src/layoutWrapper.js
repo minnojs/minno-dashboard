@@ -61,7 +61,11 @@ let layout = route => {
 
             function doLogout(){
                 clearInterval(countdown);
-                logout().then(() => m.route('/login'));
+                logout().then(() =>{
+                    let url = m.route();
+                    m.route('/login');
+                    location.hash = encodeURIComponent(url);
+                });
             }
         },
         view(ctrl){
