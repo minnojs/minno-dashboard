@@ -11,16 +11,14 @@ let loginComponent = {
             loginAction,
             error: m.prop('')
         };
-
         is_loggedin();
-
         return ctrl;
 
         function loginAction(){
             if(ctrl.username() && ctrl.password())
                 login(ctrl.username, ctrl.password)
                     .then(() => {
-                        m.route('/');
+                        m.route(decodeURIComponent(location.hash).substring(1));
                     })
                     .catch(response => {
                         ctrl.error(response.message);

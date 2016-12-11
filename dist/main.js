@@ -1029,9 +1029,7 @@
             ]);
 
             var list = m.prop(content.data);
-            return m('.col-sm-12',
-                [
-
+            return m('.col-sm-12',[
                 m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
                     m('thead', [
                         m('tr.table-default', [
@@ -1059,7 +1057,6 @@
                             !query.sortgroup() ? '' : m('td', row.schema)
                         ]); }
                         )
-
                     ])
                 ])
             ]);
@@ -3157,16 +3154,14 @@
                 loginAction: loginAction,
                 error: m.prop('')
             };
-
             is_loggedin();
-
             return ctrl;
 
             function loginAction(){
                 if(ctrl.username() && ctrl.password())
                     login(ctrl.username, ctrl.password)
                         .then(function () {
-                            m.route('/');
+                            m.route(decodeURIComponent(location.hash).substring(1));
                         })
                         .catch(function (response) {
                             ctrl.error(response.message);
@@ -8292,8 +8287,12 @@
                     getAuth().then(function (response) {
                         ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
-                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code'))
+
+                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                            var url = m.route();
                             m.route('/login');
+                            location.hash = encodeURIComponent(url);
+                        }
                         if(ctrl.role()=='CU' && m.route() == '/studies')
                             m.route('/downloads');
 
