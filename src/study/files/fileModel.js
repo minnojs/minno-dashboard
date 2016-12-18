@@ -64,6 +64,20 @@ let filePrototype = {
                 return Promise.reject(response);
             });
     },
+    copy(path, study_id, new_study_id){
+        return fetchJson(this.apiUrl() + `/copy/`, {
+            method:'put',
+            body: {new_study_id}
+        })
+            .then(response => {
+                this.id = response.id;
+                this.url = response.url;
+            })
+            .catch(response => {
+                this.setPath(oldPath);
+                return Promise.reject(response);
+            });
+    },
 
     del(){
         return fetchVoid(this.apiUrl(), {method:'delete'});

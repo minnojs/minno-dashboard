@@ -5,7 +5,7 @@ export default statisticsForm;
 let statisticsForm = args => m.component(statisticsFormComponent, args);
 const colWidth = 3;
 const SOURCES = {
-    'Research pool - Current studies'   : 'Research:Current',
+    'Research pool - Current studies'   : 'Pool:Current',
 //    'Research pool - Past studies'      : 'Research:History',
     'All research - Pool and lab'       : 'Research:Any',
     'Demo studies'                      : 'Demo:Any',
@@ -22,7 +22,6 @@ let statisticsFormComponent = {
         return m('.col-sm-12', [
             selectInput({label: 'Source', prop: query.source, values: SOURCES, form, colWidth}),
             textInput({label:'Study', prop: query.study , form, colWidth}),
-            textInput({label:'Task', prop: query.task , form, colWidth}),
             m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
             m('.form-group.row', [
                 m('.col-sm-3', [
@@ -32,7 +31,7 @@ let statisticsFormComponent = {
                     m('.btn-group.btn-group-sm', [
                         button(query.sortstudy, 'Study'),
                         button(query.sorttask, 'Task'),
-                        m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                        m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'All' ? 'active' : ''}, [
                             'Time',
                             m('.time-card', [
                                 m('.card', [
@@ -46,11 +45,12 @@ let statisticsFormComponent = {
                                     ])
                                 ])
                             ])
-                        ]),
-                        button(query.sortgroup, 'Data Group')
+                        ])
                     ]),
                     m('.btn-group.btn-group-sm.pull-right', [
-                        button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                        button(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),
+                        button(query.sortgroup, 'Show Data Group')
+
                     ])
                 ])
             ]),

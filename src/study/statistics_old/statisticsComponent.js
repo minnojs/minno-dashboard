@@ -7,11 +7,10 @@ export default statisticsComponent;
 let statisticsComponent = {
     controller(){
         let displayHelp = m.prop(false);
-        let tableContent = m.prop('');
-
+        let tableContent = m.prop();
         let loading = m.prop(false);
         let query = {
-            source: m.prop('Pool:Current'),
+            source: m.prop('Research:Current'),
             startDate: m.prop(firstDayInPreviousMonth(new Date())),
             endDate: m.prop(new Date()),
             study: m.prop(''),
@@ -20,15 +19,11 @@ let statisticsComponent = {
             studydb: m.prop('Any'),
             sortstudy: m.prop(true),
             sorttask: m.prop(false),
-            sorttask_sent: m.prop(false),
             sortgroup: m.prop(false),
-            sorttime: m.prop('All'),
-            sorttime_sent: m.prop('All'),
+            sorttime: m.prop('None'),
             showEmpty: m.prop(false),
             firstTask: m.prop(''),
-            lastTask: m.prop(''),
-            error: m.prop(''),
-            rows:m.prop([])
+            lastTask: m.prop('')
         };
 
         return {query, submit, displayHelp, tableContent,loading};
@@ -37,12 +32,7 @@ let statisticsComponent = {
             loading(true);
             getStatistics(query)
                 .then(tableContent)
-                .catch(response => {
-                    query.error(response.message);
-                })
                 .then(loading.bind(null, false))
-                .then(query.sorttask_sent(query.sorttask()))
-                .then(query.sorttime_sent(query.sorttime()))
                 .then(m.redraw);
         }
 
@@ -59,7 +49,7 @@ let statisticsComponent = {
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                 m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${query.study()}.csv`, tableContent(), query)}, 'Download CSV')
+                !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${tableContent().study}.csv`, tableContent().file)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
@@ -68,26 +58,12 @@ let statisticsComponent = {
         m('.row.m-t-1', [
             loading()
                 ? m('.loader')
-                : statisticsTable({tableContent, query})
+                : statisticsTable({tableContent})
         ])
     ])
 };
 
-let downloadFile = (filename, text, query) => element => {
-    var json = text.data;
-    json = !query.showEmpty() ? json : json.filter(row => row.starts !== 0);
-
-    var fields = ['studyName', !query.sorttask_sent() ? '' : 'taskName', query.sorttime_sent()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
-
-    var replacer = function(key, value) { return value === null ? '' : value;};
-    var csv = json.map(function(row){
-        return fields.map(function(fieldName){
-            return JSON.stringify(row[fieldName], replacer);
-        }).join(',');
-    });
-    csv.unshift(fields.join(',')); // add header column
-
-
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
+let downloadFile = (filename, text) => element => {
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
 };

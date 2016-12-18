@@ -1,54 +1,26 @@
-import {fetchText} from 'utils/modelHelpers';
+import {fetchJson} from 'utils/modelHelpers';
 import {statisticsUrl as STATISTICS_URL} from 'modelUrls';
 
 export let getStatistics = query => {
-    return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+    return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
         .then(response => {
-            let csv = response ? CSVToArray(response) : [[]];
-            return {
-                study: query.study(),
-                file: response,
-                headers: csv.shift(),
-                data: csv,
-                query: Object.assign(query) // clone the query so that we can get back to it in the future
-            };
+            return response;
         });
 
     /**
      * Parses the query as we build it locally and creates an appropriate post for the server
      **/
-    function parseQuery({source, study, task, sortstudy, sorttask, sortgroup, sorttime, showEmpty, startDate, endDate, firstTask, lastTask}){
-        let baseUrl = `${location.origin}/implicit`;
+    function parseQuery({source, study, sorttask, sorttime, startDate, endDate, firstTask, lastTask}){
         let post = {
-            db: source().match(/^(.*?):/)[1], // before colon
-            current: source().match(/:(.*?)$/)[1], // after colon
-            testDB:'newwarehouse',
-            study: study(),
-            task: task(),
-            since: parseDate(startDate()),
-            until: parseDate(endDate()),
-            refresh: 'no',
+            schema: source().match(/^(.*?):/)[1], // before colon
+            studyId: study(),
+            startDate: parseDate(startDate()),
+            endDate: parseDate(endDate()),
             startTask: firstTask(),
+            sorttask: sorttask(),
             endTask: lastTask(),
-            filter:'',
-            studyc:sortstudy(),
-            taskc:sorttask(),
-            datac:sortgroup(),
-            timec:sorttime() !== 'None',
-            dayc:sorttime() === 'Days',
-            weekc:sorttime() === 'Weeks',
-            monthc:sorttime() === 'Months',
-            yearc:sorttime() === 'Years',
-            method:'3',
-            cpath:'',
-            hpath:'',
-            tasksM:'3',
-            threads:'yes',
-            threadsNum:'1',
-            zero: showEmpty(),
-            curl:`${baseUrl}/research/library/randomStudiesConfig/RandomStudiesConfig.xml`,
-            hurl:`${baseUrl}/research/library/randomStudiesConfig/HistoryRand.xml`,
-            baseURL:baseUrl
+            timeframe: sorttime()==='None' ? 'All' : sorttime(),
+            extended:sorttask()
         };
         return post;
 

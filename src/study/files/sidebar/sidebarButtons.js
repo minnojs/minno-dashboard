@@ -30,7 +30,7 @@ let sidebarButtons = ({study}) => {
                         m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                     ]),
                     study.is_locked ? '' : m('a.dropdown-item', { href: `/deploy/${studyId}`, config: m.route }, 'Request Deploy'),
-                    study.is_locked ? '' : m('a.dropdown-item', { href: `/studyChangeRequest/${studyId}t`, config: m.route }, 'Request Change'),
+                    study.is_locked ? '' : m('a.dropdown-item', { href: `/studyChangeRequest/${studyId}`, config: m.route }, 'Request Change'),
                     study.is_locked ? '' : m('a.dropdown-item', { href: `/studyRemoval/${studyId}`, config: m.route }, 'Request Removal'),
                     m('a.dropdown-item', { href: `/sharing/${studyId}`, config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                 ],

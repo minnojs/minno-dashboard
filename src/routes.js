@@ -1,5 +1,5 @@
 import statisticsComponent from './study/statistics/statisticsComponent';
-import statistics_newComponent from './study/statistics_new/statisticsComponent';
+import statistics_oldComponent from './study/statistics_old/statisticsComponent';
 
 
 import poolComponent from './pool/poolComponent';
@@ -52,8 +52,8 @@ let routes = {
     '/deploy/:studyId': deployComponent,
     '/login': loginComponent,
     '/studies' : studiesComponent,
+    '/studies/statistics_old' : statistics_oldComponent,
     '/studies/statistics' : statisticsComponent,
-    '/studies/statistics_new' : statistics_newComponent,
 
     '/editor/:studyId': filesComponent,
     '/editor/:studyId/:resource/:fileId': filesComponent,

@@ -75,16 +75,9 @@
     var url$2 = urlPrefix + "DownloadsAccess";
 
     var getStatistics = function (query) {
-        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+        return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
             .then(function (response) {
-                var csv = response ? CSVToArray(response) : [[]];
-                return {
-                    study: query.study(),
-                    file: response,
-                    headers: csv.shift(),
-                    data: csv,
-                    query: Object.assign(query) // clone the query so that we can get back to it in the future
-                };
+                return response;
             });
 
         /**
@@ -93,48 +86,23 @@
         function parseQuery(ref){
             var source = ref.source;
             var study = ref.study;
-            var task = ref.task;
-            var sortstudy = ref.sortstudy;
             var sorttask = ref.sorttask;
-            var sortgroup = ref.sortgroup;
             var sorttime = ref.sorttime;
-            var showEmpty = ref.showEmpty;
             var startDate = ref.startDate;
             var endDate = ref.endDate;
             var firstTask = ref.firstTask;
             var lastTask = ref.lastTask;
 
-            var baseUrl = (location.origin) + "/implicit";
             var post = {
-                db: source().match(/^(.*?):/)[1], // before colon
-                current: source().match(/:(.*?)$/)[1], // after colon
-                testDB:'newwarehouse',
-                study: study(),
-                task: task(),
-                since: parseDate(startDate()),
-                until: parseDate(endDate()),
-                refresh: 'no',
+                schema: source().match(/^(.*?):/)[1], // before colon
+                studyId: study(),
+                startDate: parseDate(startDate()),
+                endDate: parseDate(endDate()),
                 startTask: firstTask(),
+                sorttask: sorttask(),
                 endTask: lastTask(),
-                filter:'',
-                studyc:sortstudy(),
-                taskc:sorttask(),
-                datac:sortgroup(),
-                timec:sorttime() !== 'None',
-                dayc:sorttime() === 'Days',
-                weekc:sorttime() === 'Weeks',
-                monthc:sorttime() === 'Months',
-                yearc:sorttime() === 'Years',
-                method:'3',
-                cpath:'',
-                hpath:'',
-                tasksM:'3',
-                threads:'yes',
-                threadsNum:'1',
-                zero: showEmpty(),
-                curl:(baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
-                hurl:(baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
-                baseURL:baseUrl
+                timeframe: sorttime()==='None' ? 'All' : sorttime(),
+                extended:sorttask()
             };
             return post;
 
@@ -152,89 +120,6 @@
     // This will parse a delimited string into an array of
     // arrays. The default delimiter is the comma, but this
     // can be overriden in the second argument.
-    function CSVToArray( strData, strDelimiter ){
-        // Check to see if the delimiter is defined. If not,
-        // then default to comma.
-        strDelimiter = (strDelimiter || ",");
-
-        // Create a regular expression to parse the CSV values.
-        var objPattern = new RegExp(
-            (
-                // Delimiters.
-                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-                // Quoted fields.
-                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-                // Standard fields.
-                "([^\"\\" + strDelimiter + "\\r\\n]*))"
-            ),
-            "gi"
-            );
-
-
-        // Create an array to hold our data. Give the array
-        // a default empty first row.
-        var arrData = [[]];
-
-        // Create an array to hold our individual pattern
-        // matching groups.
-        var arrMatches = null;
-
-
-        // Keep looping over the regular expression matches
-        // until we can no longer find a match.
-        while (arrMatches = objPattern.exec( strData )){
-
-            // Get the delimiter that was found.
-            var strMatchedDelimiter = arrMatches[ 1 ];
-
-            // Check to see if the given delimiter has a length
-            // (is not the start of string) and if it matches
-            // field delimiter. If id does not, then we know
-            // that this delimiter is a row delimiter.
-            if (
-                strMatchedDelimiter.length &&
-                strMatchedDelimiter !== strDelimiter
-                ){
-
-                // Since we have reached a new row of data,
-                // add an empty row to our data array.
-                arrData.push( [] );
-
-            }
-
-            var strMatchedValue;
-
-            // Now that we have our delimiter out of the way,
-            // let's check to see which kind of value we
-            // captured (quoted or unquoted).
-            if (arrMatches[ 2 ]){
-
-                // We found a quoted value. When we capture
-                // this value, unescape any double quotes.
-                strMatchedValue = arrMatches[ 2 ].replace(
-                    new RegExp( "\"\"", "g" ),
-                    "\""
-                    );
-
-            } else {
-
-                // We found a non-quoted value.
-                strMatchedValue = arrMatches[ 3 ];
-
-            }
-
-
-            // Now that we have our value string, let's add
-            // it to the data array.
-            arrData[ arrData.length - 1 ].push( strMatchedValue );
-        }
-
-        // Return the parsed data.
-        return( arrData );
-    }
-    /* eslint-enable */
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -557,15 +442,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -648,7 +524,7 @@
     var statisticsForm = function (args) { return m.component(statisticsFormComponent, args); };
     var colWidth = 3;
     var SOURCES = {
-        'Research pool - Current studies'   : 'Research:Current',
+        'Research pool - Current studies'   : 'Pool:Current',
     //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
@@ -668,7 +544,6 @@
             return m('.col-sm-12', [
                 selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
                 textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
-                textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth}),
                 m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
                 m('.form-group.row', [
                     m('.col-sm-3', [
@@ -678,7 +553,7 @@
                         m('.btn-group.btn-group-sm', [
                             button(query.sortstudy, 'Study'),
                             button(query.sorttask, 'Task'),
-                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'All' ? 'active' : ''}, [
                                 'Time',
                                 m('.time-card', [
                                     m('.card', [
@@ -692,11 +567,12 @@
                                         ])
                                     ])
                                 ])
-                            ]),
-                            button(query.sortgroup, 'Data Group')
+                            ])
                         ]),
                         m('.btn-group.btn-group-sm.pull-right', [
-                            button(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                            button(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),
+                            button(query.sortgroup, 'Show Data Group')
+
                         ])
                     ])
                 ]),
@@ -758,261 +634,14 @@
         };
     }
 
-    var statisticsTable = function (args) { return m.component(statisticsTableComponent, args); };
-
-    var statisticsTableComponent = {
-        controller: function controller(){
-            return {sortBy: m.prop()};
-        },
-        view: function view(ref, ref$1){
-            var sortBy = ref.sortBy;
-            var tableContent = ref$1.tableContent;
-
-            var content = tableContent();
-            if (!content) return m('div'); 
-            if (!content.file) return m('.col-sm-12', [
-                m('.alert.alert-info', 'There was no data found for this request')            
-            ]);
-
-            var list = m.prop(content.data);
-            
-            return m('.col-sm-12', [
-                m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
-                    m('thead', [
-                        m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
-                    ]),
-                    m('tbody', tableContent().data.map(function (row) { return m('tr', !row.length ? '' : row.map(function (column) { return m('td', column); })); }))
-                ])
-            ]);
-        }
-    };
-
-    var statisticsInstructions = function () { return m('.text-muted', [
-        m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
-        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies.'),
-        m('p', 'You can also use the Task box to enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks.'),
-        m('p', 'You can also choose how you want the data displayed, using the "Show by" options. If you click "Study", you will see data from each study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated by task.  The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.  '),
-        m('p', 'You can define how completion rate is calculated by entering text to "First task" and "Last task". Only sessions that visited those tasks would be used for the calculation.'),
-        m('p', 'When you choose to show the results by date, you will see all the studies that have at least one session in the requested date range, separated by day, week, month or year. This will also show dates with zero sessions. If you want to hide rows with zero sessions, select the "Hide empty" option.')
-    ]); };
-
-    var statisticsComponent = {
-        controller: function controller(){
-            var displayHelp = m.prop(false);
-            var tableContent = m.prop();
-            var loading = m.prop(false);
-            var query = {
-                source: m.prop('Research:Current'),
-                startDate: m.prop(firstDayInPreviousMonth(new Date())),
-                endDate: m.prop(new Date()),
-                study: m.prop(''),
-                task: m.prop(''),
-                studyType: m.prop('Both'),
-                studydb: m.prop('Any'),
-                sortstudy: m.prop(true),
-                sorttask: m.prop(false),
-                sortgroup: m.prop(false),
-                sorttime: m.prop('None'),
-                showEmpty: m.prop(false),
-                firstTask: m.prop(''),
-                lastTask: m.prop('')
-            };
-
-            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent,loading: loading};
-
-            function submit(){
-                loading(true);
-                getStatistics(query)
-                    .then(tableContent)
-                    .then(loading.bind(null, false))
-                    .then(m.redraw);
-            }
-
-            function firstDayInPreviousMonth(yourDate) {
-                return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
-            }
-        },
-        view: function (ref) {
-            var query = ref.query;
-            var tableContent = ref.tableContent;
-            var submit = ref.submit;
-            var displayHelp = ref.displayHelp;
-            var loading = ref.loading;
-
-            return m('.container.statistics', [
-            m('h3', 'Statistics'),
-            m('.row', [
-                statisticsForm({query: query})
-            ]),
-            m('.row', [
-                m('.col-sm-12',[
-                    m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
-                    m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
-                ])
-            ]),
-            !displayHelp() ? '' : m('.row', [
-                m('.col-sm-12.p-a-2', statisticsInstructions())
-            ]),
-            m('.row.m-t-1', [
-                loading()
-                    ? m('.loader')
-                    : statisticsTable({tableContent: tableContent})
-            ])
-        ]);
-    }
-    };
-
-    var downloadFile = function (filename, text) { return function (element) {
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', filename);
-    }; };
-
-    var getStatistics$1 = function (query) {
-        return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
-            .then(function (response) {
-                return response;
-            });
-
-        /**
-         * Parses the query as we build it locally and creates an appropriate post for the server
-         **/
-        function parseQuery(ref){
-            var source = ref.source;
-            var study = ref.study;
-            var sorttask = ref.sorttask;
-            var sorttime = ref.sorttime;
-            var startDate = ref.startDate;
-            var endDate = ref.endDate;
-            var firstTask = ref.firstTask;
-            var lastTask = ref.lastTask;
-
-            var post = {
-                schema: source().match(/^(.*?):/)[1], // before colon
-                studyId: study(),
-                startDate: parseDate(startDate()),
-                endDate: parseDate(endDate()),
-                startTask: firstTask(),
-                sorttask: sorttask(),
-                endTask: lastTask(),
-                timeframe: sorttime(),
-                extended:sorttask()
-            };
-            return post;
-
-            function parseDate(date){
-                if (!date) return;
-                return ((date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
-            }
-        } 
-    };
-
-    var statisticsForm$1 = function (args) { return m.component(statisticsFormComponent$1, args); };
-    var colWidth$1 = 3;
-    var SOURCES$1 = {
-        'Research pool - Current studies'   : 'Pool:Current',
-    //    'Research pool - Past studies'      : 'Research:History',
-        'All research - Pool and lab'       : 'Research:Any',
-        'Demo studies'                      : 'Demo:Any',
-        'All studies'                       : 'Both:Any'
-    };
-
-    var statisticsFormComponent$1 = {
-        controller: function controller(){
-            var form = formFactory();
-
-            return {form: form};
-        },
-        view: function view(ref, ref$1){
-            var form = ref.form;
-            var query = ref$1.query;
-
-            return m('.col-sm-12', [
-                selectInput({label: 'Source', prop: query.source, values: SOURCES$1, form: form, colWidth: colWidth$1}),
-                textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth$1}),
-                m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
-                m('.form-group.row', [
-                    m('.col-sm-3', [
-                        m('label.form-control-label', 'Show by')
-                    ]),
-                    m('.col-sm-9.pull-right', [
-                        m('.btn-group.btn-group-sm', [
-                            button$1(query.sortstudy, 'Study'),
-                            button$1(query.sorttask, 'Task'),
-                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'All' ? 'active' : ''}, [
-                                'Time',
-                                m('.time-card', [
-                                    m('.card', [
-                                        m('.card-header', 'Time filter'),
-                                        m('.card-block.c-inputs-stacked', [
-                                            radioButton$1(query.sorttime, 'All'),
-                                            radioButton$1(query.sorttime, 'Days'),
-                                            radioButton$1(query.sorttime, 'Weeks'),
-                                            radioButton$1(query.sorttime, 'Months'),
-                                            radioButton$1(query.sorttime, 'Years')
-                                        ])
-                                    ])
-                                ])
-                            ])
-                        ]),
-                        m('.btn-group.btn-group-sm.pull-right', [
-                            button$1(query.showEmpty, 'Hide Empty', 'Hide Rows with Zero Started Sessions'),
-                            button$1(query.sortgroup, 'Show Data Group')
-
-                        ])
-                    ])
-                ]),
-                m('.form-group.row', [
-                    m('.col-sm-3', [
-                        m('label.form-control-label', 'Compute completions')
-                    ]),
-                    m('.col-sm-9', [
-                        m('.row', [
-                            m('.col-sm-5', [
-                                m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
-                            ]),
-                            m('.col-sm-1', [
-                                m('.form-control-static', 'to')
-                            ]),
-                            m('.col-sm-5', [
-                                m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
-                            ])
-                        ])
-                    ])
-                ])
-            ]);
-        
-        
-        }
-    };
-
-    var button$1 = function (prop, text, title) {
-        if ( title === void 0 ) title = '';
-
-        return m('a.btn.btn-secondary', {
-        class: prop() ? 'active' : '',
-        onclick: function () { return prop(!prop()); },
-        title: title
-    }, text);
-    };
-
-    var radioButton$1 = function (prop, text) { return m('label.c-input.c-radio', [
-        m('input.form-control[type=radio]', {
-            onclick: prop.bind(null, text),
-            checked: prop() == text
-        }),
-        m('span.c-indicator'),
-        text
-    ]); };
-
     function formatDate(date){
         var pad = function (num) { return num < 10 ? '0' + num : num; };
         return ((pad(date.getMonth() + 1)) + "\\" + (pad(date.getDate())) + "\\" + (date.getFullYear()));
     }
 
-    var statisticsTable$1 = function (args) { return m.component(statisticsTableComponent$1, args); };
+    var statisticsTable = function (args) { return m.component(statisticsTableComponent, args); };
 
-    var statisticsTableComponent$1 = {
+    var statisticsTableComponent = {
         controller: function controller(){
             return {sortBy: m.prop()};
         },
@@ -1068,7 +697,7 @@
         'data-sort-by':sortByTxt, class: sortBy() === sortByTxt ? 'active' : ''
     }, text); };
 
-    var statisticsInstructions$1 = function () { return m('.text-muted', [
+    var statisticsInstructions = function () { return m('.text-muted', [
         m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
         m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies.'),
         m('p', 'You can also use the Task box to enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks.'),
@@ -1077,7 +706,7 @@
         m('p', 'When you choose to show the results by date, you will see all the studies that have at least one session in the requested date range, separated by day, week, month or year. This will also show dates with zero sessions. If you want to hide rows with zero sessions, select the "Hide empty" option.')
     ]); };
 
-    var statisticsComponent$1 = {
+    var statisticsComponent = {
         controller: function controller(){
             var displayHelp = m.prop(false);
             var tableContent = m.prop('');
@@ -1095,8 +724,8 @@
                 sorttask: m.prop(false),
                 sorttask_sent: m.prop(false),
                 sortgroup: m.prop(false),
-                sorttime: m.prop('All'),
-                sorttime_sent: m.prop('All'),
+                sorttime: m.prop('None'),
+                sorttime_sent: m.prop('None'),
                 showEmpty: m.prop(false),
                 firstTask: m.prop(''),
                 lastTask: m.prop(''),
@@ -1108,7 +737,7 @@
 
             function submit(){
                 loading(true);
-                getStatistics$1(query)
+                getStatistics(query)
                     .then(tableContent)
                     .catch(function (response) {
                         query.error(response.message);
@@ -1133,28 +762,28 @@
             return m('.container.statistics', [
             m('h3', 'Statistics'),
             m('.row', [
-                statisticsForm$1({query: query})
+                statisticsForm({query: query})
             ]),
             m('.row', [
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((query.study()) + ".csv"), tableContent(), query)}, 'Download CSV')
+                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((query.study()) + ".csv"), tableContent(), query)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
-                m('.col-sm-12.p-a-2', statisticsInstructions$1())
+                m('.col-sm-12.p-a-2', statisticsInstructions())
             ]),
             m('.row.m-t-1', [
                 loading()
                     ? m('.loader')
-                    : statisticsTable$1({tableContent: tableContent, query: query})
+                    : statisticsTable({tableContent: tableContent, query: query})
             ])
         ]);
     }
     };
 
-    var downloadFile$1 = function (filename, text, query) { return function (element) {
+    var downloadFile = function (filename, text, query) { return function (element) {
         var json = text.data;
         json = !query.showEmpty() ? json : json.filter(function (row) { return row.starts !== 0; });
 
@@ -1170,6 +799,376 @@
 
 
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv.join('\r\n') ));
+        element.setAttribute('download', filename);
+    }; };
+
+    var getStatistics$1 = function (query) {
+        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+            .then(function (response) {
+                var csv = response ? CSVToArray$1(response) : [[]];
+                return {
+                    study: query.study(),
+                    file: response,
+                    headers: csv.shift(),
+                    data: csv,
+                    query: Object.assign(query) // clone the query so that we can get back to it in the future
+                };
+            });
+
+        /**
+         * Parses the query as we build it locally and creates an appropriate post for the server
+         **/
+        function parseQuery(ref){
+            var source = ref.source;
+            var study = ref.study;
+            var task = ref.task;
+            var sortstudy = ref.sortstudy;
+            var sorttask = ref.sorttask;
+            var sortgroup = ref.sortgroup;
+            var sorttime = ref.sorttime;
+            var showEmpty = ref.showEmpty;
+            var startDate = ref.startDate;
+            var endDate = ref.endDate;
+            var firstTask = ref.firstTask;
+            var lastTask = ref.lastTask;
+
+            var baseUrl = (location.origin) + "/implicit";
+            var post = {
+                db: source().match(/^(.*?):/)[1], // before colon
+                current: source().match(/:(.*?)$/)[1], // after colon
+                testDB:'newwarehouse',
+                study: study(),
+                task: task(),
+                since: parseDate(startDate()),
+                until: parseDate(endDate()),
+                refresh: 'no',
+                startTask: firstTask(),
+                endTask: lastTask(),
+                filter:'',
+                studyc:sortstudy(),
+                taskc:sorttask(),
+                datac:sortgroup(),
+                timec:sorttime() !== 'None',
+                dayc:sorttime() === 'Days',
+                weekc:sorttime() === 'Weeks',
+                monthc:sorttime() === 'Months',
+                yearc:sorttime() === 'Years',
+                method:'3',
+                cpath:'',
+                hpath:'',
+                tasksM:'3',
+                threads:'yes',
+                threadsNum:'1',
+                zero: showEmpty(),
+                curl:(baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
+                hurl:(baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
+                baseURL:baseUrl
+            };
+            return post;
+
+            function parseDate(date){
+                if (!date) return;
+                return ((date.getMonth()+1) + "/" + (date.getDate()) + "/" + (date.getYear() + 1900));
+            }
+        } 
+    };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    function CSVToArray$1( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+            );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[ 1 ];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (
+                strMatchedDelimiter.length &&
+                strMatchedDelimiter !== strDelimiter
+                ){
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push( [] );
+
+            }
+
+            var strMatchedValue;
+
+            // Now that we have our delimiter out of the way,
+            // let's check to see which kind of value we
+            // captured (quoted or unquoted).
+            if (arrMatches[ 2 ]){
+
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[ 2 ].replace(
+                    new RegExp( "\"\"", "g" ),
+                    "\""
+                    );
+
+            } else {
+
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[ 3 ];
+
+            }
+
+
+            // Now that we have our value string, let's add
+            // it to the data array.
+            arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    }
+    /* eslint-enable */
+
+    var statisticsForm$1 = function (args) { return m.component(statisticsFormComponent$1, args); };
+    var colWidth$1 = 3;
+    var SOURCES$1 = {
+        'Research pool - Current studies'   : 'Research:Current',
+    //    'Research pool - Past studies'      : 'Research:History',
+        'All research - Pool and lab'       : 'Research:Any',
+        'Demo studies'                      : 'Demo:Any',
+        'All studies'                       : 'Both:Any'
+    };
+
+    var statisticsFormComponent$1 = {
+        controller: function controller(){
+            var form = formFactory();
+
+            return {form: form};
+        },
+        view: function view(ref, ref$1){
+            var form = ref.form;
+            var query = ref$1.query;
+
+            return m('.col-sm-12', [
+                selectInput({label: 'Source', prop: query.source, values: SOURCES$1, form: form, colWidth: colWidth$1}),
+                textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth$1}),
+                textInput({label:'Task', prop: query.task , form: form, colWidth: colWidth$1}),
+                m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Show by')
+                    ]),
+                    m('.col-sm-9.pull-right', [
+                        m('.btn-group.btn-group-sm', [
+                            button$1(query.sortstudy, 'Study'),
+                            button$1(query.sorttask, 'Task'),
+                            m('a.btn.btn-secondary.statistics-time-button', {class: query.sorttime() !== 'None' ? 'active' : ''}, [
+                                'Time',
+                                m('.time-card', [
+                                    m('.card', [
+                                        m('.card-header', 'Time filter'),
+                                        m('.card-block.c-inputs-stacked', [
+                                            radioButton$1(query.sorttime, 'None'),
+                                            radioButton$1(query.sorttime, 'Days'),
+                                            radioButton$1(query.sorttime, 'Weeks'),
+                                            radioButton$1(query.sorttime, 'Months'),
+                                            radioButton$1(query.sorttime, 'Years')
+                                        ])
+                                    ])
+                                ])
+                            ]),
+                            button$1(query.sortgroup, 'Data Group')
+                        ]),
+                        m('.btn-group.btn-group-sm.pull-right', [
+                            button$1(query.showEmpty, 'Hide empty', 'Hide Rows with Zero Started Sessions')
+                        ])
+                    ])
+                ]),
+                m('.form-group.row', [
+                    m('.col-sm-3', [
+                        m('label.form-control-label', 'Compute completions')
+                    ]),
+                    m('.col-sm-9', [
+                        m('.row', [
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'First task', value: query.firstTask(), onchange: m.withAttr('value', query.firstTask)})
+                            ]),
+                            m('.col-sm-1', [
+                                m('.form-control-static', 'to')
+                            ]),
+                            m('.col-sm-5', [
+                                m('input.form-control', {placeholder: 'Last task', value: query.lastTask(), onchange: m.withAttr('value', query.lastTask)})
+                            ])
+                        ])
+                    ])
+                ])
+            ]);
+        
+        
+        }
+    };
+
+    var button$1 = function (prop, text, title) {
+        if ( title === void 0 ) title = '';
+
+        return m('a.btn.btn-secondary', {
+        class: prop() ? 'active' : '',
+        onclick: function () { return prop(!prop()); },
+        title: title
+    }, text);
+    };
+
+    var radioButton$1 = function (prop, text) { return m('label.c-input.c-radio', [
+        m('input.form-control[type=radio]', {
+            onclick: prop.bind(null, text),
+            checked: prop() == text
+        }),
+        m('span.c-indicator'),
+        text
+    ]); };
+
+    var statisticsTable$1 = function (args) { return m.component(statisticsTableComponent$1, args); };
+
+    var statisticsTableComponent$1 = {
+        controller: function controller(){
+            return {sortBy: m.prop()};
+        },
+        view: function view(ref, ref$1){
+            var sortBy = ref.sortBy;
+            var tableContent = ref$1.tableContent;
+
+            var content = tableContent();
+            if (!content) return m('div'); 
+            if (!content.file) return m('.col-sm-12', [
+                m('.alert.alert-info', 'There was no data found for this request')            
+            ]);
+
+            var list = m.prop(content.data);
+            
+            return m('.col-sm-12', [
+                m('table.table.table-sm', {onclick: sortTable(list, sortBy)}, [
+                    m('thead', [
+                        m('tr.table-default', tableContent().headers.map(function (header,index) { return m('th',{'data-sort-by':index, class: sortBy() === index ? 'active' : ''}, header); }))
+                    ]),
+                    m('tbody', tableContent().data.map(function (row) { return m('tr', !row.length ? '' : row.map(function (column) { return m('td', column); })); }))
+                ])
+            ]);
+        }
+    };
+
+    var statisticsInstructions$1 = function () { return m('.text-muted', [
+        m('p', 'Choose whether you want participation data from demo studies, research pool, all research studies (including lab studies), or all studies (demo and research).'),
+        m('p', 'Enter the study id or any part of the study id (the study name that that appears in an .expt file). Note that the study id search feature is case-sensitive. If you leave this box blank you will get data from all studies.'),
+        m('p', 'You can also use the Task box to enter a task name or part of a task name (e.g., realstart) if you only want participation data from certain tasks.'),
+        m('p', 'You can also choose how you want the data displayed, using the "Show by" options. If you click "Study", you will see data from each study that meets your search criteria. If you also check "Task" you will see data from any study that meets your search criteria separated by task.  The "Data Group" option will allow you to see whether a given study is coming from the demo or research site.  '),
+        m('p', 'You can define how completion rate is calculated by entering text to "First task" and "Last task". Only sessions that visited those tasks would be used for the calculation.'),
+        m('p', 'When you choose to show the results by date, you will see all the studies that have at least one session in the requested date range, separated by day, week, month or year. This will also show dates with zero sessions. If you want to hide rows with zero sessions, select the "Hide empty" option.')
+    ]); };
+
+    var statisticsComponent$1 = {
+        controller: function controller(){
+            var displayHelp = m.prop(false);
+            var tableContent = m.prop();
+            var loading = m.prop(false);
+            var query = {
+                source: m.prop('Research:Current'),
+                startDate: m.prop(firstDayInPreviousMonth(new Date())),
+                endDate: m.prop(new Date()),
+                study: m.prop(''),
+                task: m.prop(''),
+                studyType: m.prop('Both'),
+                studydb: m.prop('Any'),
+                sortstudy: m.prop(true),
+                sorttask: m.prop(false),
+                sortgroup: m.prop(false),
+                sorttime: m.prop('None'),
+                showEmpty: m.prop(false),
+                firstTask: m.prop(''),
+                lastTask: m.prop('')
+            };
+
+            return {query: query, submit: submit, displayHelp: displayHelp, tableContent: tableContent,loading: loading};
+
+            function submit(){
+                loading(true);
+                getStatistics$1(query)
+                    .then(tableContent)
+                    .then(loading.bind(null, false))
+                    .then(m.redraw);
+            }
+
+            function firstDayInPreviousMonth(yourDate) {
+                return new Date(yourDate.getFullYear(), yourDate.getMonth() - 1, 1);
+            }
+        },
+        view: function (ref) {
+            var query = ref.query;
+            var tableContent = ref.tableContent;
+            var submit = ref.submit;
+            var displayHelp = ref.displayHelp;
+            var loading = ref.loading;
+
+            return m('.container.statistics', [
+            m('h3', 'Statistics'),
+            m('.row', [
+                statisticsForm$1({query: query})
+            ]),
+            m('.row', [
+                m('.col-sm-12',[
+                    m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
+                    m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
+                    !tableContent() || !tableContent().file ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile$1(((tableContent().study) + ".csv"), tableContent().file)}, 'Download CSV')
+                ])
+            ]),
+            !displayHelp() ? '' : m('.row', [
+                m('.col-sm-12.p-a-2', statisticsInstructions$1())
+            ]),
+            m('.row.m-t-1', [
+                loading()
+                    ? m('.loader')
+                    : statisticsTable$1({tableContent: tableContent})
+            ])
+        ]);
+    }
+    };
+
+    var downloadFile$1 = function (filename, text) { return function (element) {
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
         element.setAttribute('download', filename);
     }; };
 
@@ -1456,10 +1455,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1611,10 +1606,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3323,6 +3314,22 @@
                     return Promise.reject(response);
                 });
         },
+        copy: function copy(path, study_id, new_study_id){
+            var this$1 = this;
+
+            return fetchJson(this.apiUrl() + "/copy/", {
+                method:'put',
+                body: {new_study_id: new_study_id}
+            })
+                .then(function (response) {
+                    this$1.id = response.id;
+                    this$1.url = response.url;
+                })
+                .catch(function (response) {
+                    this$1.setPath(oldPath);
+                    return Promise.reject(response);
+                });
+        },
 
         del: function del(){
             return fetchVoid(this.apiUrl(), {method:'delete'});
@@ -3772,6 +3779,83 @@
         return name === '/' ? m('span.text-muted', 'Root Directory') : name;
     }
 
+    function get_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)));
+    }
+
+    function get_duplicate_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
+    }
+    function get_lock_url(study_id , lock) {
+
+        if (lock)
+            return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/lock");
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/unlock");
+    }
+
+    /*CRUD*/
+    var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
+
+    var create_study = function (study_name) { return fetchJson(studyUrl, {
+        method: 'post',
+        body: {study_name: study_name}
+    }); };
+
+    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+    var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
+        method: 'put',
+        body: {study_name: study_name}
+    }); };
+
+    var lock_study = function (study_id, lock) { return fetchJson(get_lock_url(study_id, lock), {
+        method: 'post'
+    }); };
+
+
+    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
+
+    function copyFileComponent (args) { return m.component(copyFileComponent$1, args); };
+
+    var copyFileComponent$1 = {
+        controller: function controller(ref){
+            var new_study_id = ref.new_study_id;
+            var study_id = ref.study_id;
+
+            var studies = m.prop([]);
+            var loaded = m.prop(false);
+            var error = m.prop(null);
+            load_studies()
+                .then(function (response) { return studies(response.studies); })
+                .catch(error)
+                .then(loaded.bind(null, true))
+                .then(m.redraw);
+            return {studies: studies, study_id: study_id, new_study_id: new_study_id, loaded: loaded, error: error};
+        },
+        view: function (ref) {
+            var studies = ref.studies;
+            var study_id = ref.study_id;
+            var new_study_id = ref.new_study_id;
+            var loaded = ref.loaded;
+            var error = ref.error;
+
+            return m('div', [
+            loaded() ? '' : m('.loader'),
+            error() ? m('.alert.alert-warning', error().message): '',
+
+            loaded() && !studies().length ? m('.alert.alert-info', 'You have no studies yet') : '',
+
+            m('select.form-control', {value:new_study_id(), onchange: m.withAttr('value',new_study_id)}, [
+                m('option',{value:'', disabled: true}, 'Select Study'),
+                studies().filter(function (study) { return !study.is_locked && !study.is_public && study.permission!=='read only' && study.id!=study_id(); }).map(function (study) { return m('option',{value:study.id, selected: new_study_id() === study.id}, study.name); })
+            ])
+        ]);
+    }
+    };
+
     var uploadFiles = function (path,study) { return function (files) {
         // validation (make sure files do not already exist)
         var filePaths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
@@ -3809,6 +3893,21 @@
             });
     }; };
 
+    var copyFile = function (file, study) { return function () {
+        var filePath = m.prop(file.basePath);
+        var study_id = m.prop(study.id);
+        var new_study_id = m.prop('');
+        messages.confirm({
+            header: 'Copy File',
+            content: copyFileComponent({new_study_id: new_study_id, study_id: study_id})
+        })
+            .then(function (response) {
+                console.log(new_study_id());
+                if (response && study_id() !== new_study_id) return copyAction(filePath() +'/'+ file.name, file, study_id, new_study_id);
+            })
+        ;
+    }; };
+
     var renameFile = function (file,study) { return function () {
         var newPath = m.prop(file.path);
         return messages.prompt({
@@ -3817,12 +3916,13 @@
             prop: newPath
         })
             .then(function (response) {
-                if (response) return moveAction(newPath(), file,study);
+                if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
             });
     }; };
 
     function moveAction(newPath, file, study){
         var isFocused = file.id === m.route.param('fileId');
+
         var def = file
         .move(newPath,study) // the actual movement
         .then(redirect)
@@ -3837,9 +3937,22 @@
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
-            if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id))); 
+            if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id)));
             return response;
         }
+    }
+
+    function copyAction(path, file, study_id, new_study_id){
+        var def = file
+        .copy(path, study_id, new_study_id) // the actual movement
+        .catch(function (response) { return messages.alert({
+            header: 'Copy File',
+            content: response.message
+        }); })
+        .then(m.redraw); // redraw after server response
+
+        m.redraw();
+        return def;
     }
 
     var playground;
@@ -5471,21 +5584,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5545,8 +5643,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5648,6 +5744,7 @@
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
                 {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
+                {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
                 {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
             ]);
         }
@@ -5727,7 +5824,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -5905,16 +6001,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -5959,45 +6045,6 @@
             }
         }; }
     };
-
-    function get_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)));
-    }
-
-    function get_duplicate_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
-    }
-    function get_lock_url(study_id , lock) {
-
-        if (lock)
-            return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/lock");
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/unlock");
-    }
-
-    /*CRUD*/
-    var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
-
-    var create_study = function (study_name) { return fetchJson(studyUrl, {
-        method: 'post',
-        body: {study_name: study_name}
-    }); };
-
-    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
-        method: 'put',
-        body: {study_name: study_name}
-    }); };
-
-    var duplicate_study = function (study_id, study_name) { return fetchJson(get_duplicate_url(study_id), {
-        method: 'put',
-        body: {study_name: study_name}
-    }); };
-
-    var lock_study = function (study_id, lock) { return fetchJson(get_lock_url(study_id, lock), {
-        method: 'post'
-    }); };
-
-
-    var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
 
     function tag_url(tag_id)
     {
@@ -6266,7 +6313,7 @@
                             m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                         ]),
                         study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + studyId), config: m.route }, 'Request Deploy'),
-                        study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId + "t"), config: m.route }, 'Request Change'),
+                        study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + studyId), config: m.route }, 'Request Change'),
                         study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyRemoval/" + studyId), config: m.route }, 'Request Removal'),
                         m('a.dropdown-item', { href: ("/sharing/" + studyId), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
                     ],
@@ -8295,8 +8342,8 @@
         '/deploy/:studyId': deployComponent$1,
         '/login': loginComponent,
         '/studies' : mainComponent,
+        '/studies/statistics_old' : statisticsComponent$1,
         '/studies/statistics' : statisticsComponent,
-        '/studies/statistics_new' : statisticsComponent$1,
 
         '/editor/:studyId': editorLayoutComponent,
         '/editor/:studyId/:resource/:fileId': editorLayoutComponent,

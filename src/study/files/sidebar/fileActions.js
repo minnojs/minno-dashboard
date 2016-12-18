@@ -1,6 +1,8 @@
 import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
+import copyFileComponent from './copyFileComponent';
+import {load_studies} from 'study/studyModel';
 
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
@@ -36,6 +38,21 @@ export let moveFile = (file, study) => () => {
         });
 };
 
+export let copyFile = (file, study) => () => {
+    let filePath = m.prop(file.basePath);
+    let study_id = m.prop(study.id);
+    let new_study_id = m.prop('');
+    messages.confirm({
+        header: 'Copy File',
+        content: copyFileComponent({new_study_id, study_id})
+    })
+        .then(response => {
+            console.log(new_study_id());
+            if (response && study_id() !== new_study_id) return copyAction(filePath() +'/'+ file.name, file, study_id, new_study_id);
+        })
+    ;
+};
+
 export let renameFile = (file,study) => () => {
     let newPath = m.prop(file.path);
     return messages.prompt({
@@ -44,12 +61,13 @@ export let renameFile = (file,study) => () => {
         prop: newPath
     })
         .then(response => {
-            if (response) return moveAction(newPath(), file,study);
+            if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
         });
 };
 
 function moveAction(newPath, file, study){
     let isFocused = file.id === m.route.param('fileId');
+
     let def = file
     .move(newPath,study) // the actual movement
     .then(redirect)
@@ -64,9 +82,22 @@ function moveAction(newPath, file, study){
 
     function redirect(response){
         // redirect only if the file is chosen, otherwise we can stay right here...
-        if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`); 
+        if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`);
         return response;
     }
+}
+
+function copyAction(path, file, study_id, new_study_id){
+    let def = file
+    .copy(path, study_id, new_study_id) // the actual movement
+    .catch(response => messages.alert({
+        header: 'Copy File',
+        content: response.message
+    }))
+    .then(m.redraw); // redraw after server response
+
+    m.redraw();
+    return def;
 }
 
 let playground;
