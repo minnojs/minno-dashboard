@@ -3539,7 +3539,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -5126,7 +5126,7 @@
         var isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
         var amdMatch = amdReg.exec(file.content());
         var APItype = amdMatch && amdMatch[1];
-        var launchUrl = "https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''));
+        var launchUrl = "https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, '')) + "&refresh=true";
 
         return m('.btn-toolbar.editor-menu', [
             m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},

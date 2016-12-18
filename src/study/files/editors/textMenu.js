@@ -16,7 +16,7 @@ let textMenuView = ({mode, file, study, observer}) => {
     let isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
     let amdMatch = amdReg.exec(file.content());
     let APItype = amdMatch && amdMatch[1];
-    const launchUrl = `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`;
+    const launchUrl = `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}&refresh=true`;
 
     return m('.btn-toolbar.editor-menu', [
         m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},
