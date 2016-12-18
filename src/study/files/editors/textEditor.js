@@ -67,5 +67,11 @@ let modeMap = {
     jst: 'ejs',
     html: 'ejs',
     htm: 'ejs',
+    txt: 'ejs',
+    m: 'ejs',
+    c: 'ejs',
+    cs: 'ejs',
+    h: 'ejs',
+    py: 'ejs',
     xml: 'xml'
 };

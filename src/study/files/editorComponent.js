@@ -13,6 +13,12 @@ let editors = {
     html: textEditor,
     htm: textEditor,
     jst: textEditor,
+    txt: textEditor,
+    m: textEditor,
+    c: textEditor,
+    cs: textEditor,
+    h: textEditor,
+    py: textEditor,
     xml: textEditor,
 
     jpg: imgEditor,

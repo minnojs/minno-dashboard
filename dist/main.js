@@ -3319,8 +3319,6 @@
                 method:'put',
                 body: {new_study_id: new_study_id}
             })
-                .then(function (response) {
-                })
                 .catch(function (response) {
                     return Promise.reject(response);
                 });
@@ -5384,6 +5382,12 @@
         jst: 'ejs',
         html: 'ejs',
         htm: 'ejs',
+        txt: 'ejs',
+        m: 'ejs',
+        c: 'ejs',
+        cs: 'ejs',
+        h: 'ejs',
+        py: 'ejs',
         xml: 'xml'
     };
 
@@ -5394,6 +5398,12 @@
         html: textEditor,
         htm: textEditor,
         jst: textEditor,
+        txt: textEditor,
+        m: textEditor,
+        c: textEditor,
+        cs: textEditor,
+        h: textEditor,
+        py: textEditor,
         xml: textEditor,
 
         jpg: imgEditor,
