@@ -1,3 +1,4 @@
+import 'utils/polyfills';
 import routes from './routes';
 import layoutWrapper from './layoutWrapper';
 
