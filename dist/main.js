@@ -3161,7 +3161,7 @@
                 if(ctrl.username() && ctrl.password())
                     login(ctrl.username, ctrl.password)
                         .then(function () {
-                            m.route(decodeURIComponent(location.hash).substring(1));
+                            m.route(!location.hash ? './' : decodeURIComponent(location.hash).substring(1));
                         })
                         .catch(function (response) {
                             ctrl.error(response.message);

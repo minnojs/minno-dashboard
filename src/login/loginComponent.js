@@ -18,7 +18,7 @@ let loginComponent = {
             if(ctrl.username() && ctrl.password())
                 login(ctrl.username, ctrl.password)
                     .then(() => {
-                        m.route(decodeURIComponent(location.hash).substring(1));
+                        m.route(!location.hash ? './' : decodeURIComponent(location.hash).substring(1));
                     })
                     .catch(response => {
                         ctrl.error(response.message);
