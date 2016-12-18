@@ -2,7 +2,6 @@ import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
-import {load_studies} from 'study/studyModel';
 
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
@@ -47,7 +46,6 @@ export let copyFile = (file, study) => () => {
         content: copyFileComponent({new_study_id, study_id})
     })
         .then(response => {
-            console.log(new_study_id());
             if (response && study_id() !== new_study_id) return copyAction(filePath() +'/'+ file.name, file, study_id, new_study_id);
         })
     ;
@@ -91,12 +89,12 @@ function copyAction(path, file, study_id, new_study_id){
     let def = file
     .copy(path, study_id, new_study_id) // the actual movement
     .catch(response => messages.alert({
+
         header: 'Copy File',
         content: response.message
     }))
     .then(m.redraw); // redraw after server response
 
-    m.redraw();
     return def;
 }
 

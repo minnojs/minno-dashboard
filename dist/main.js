@@ -3315,18 +3315,13 @@
                 });
         },
         copy: function copy(path, study_id, new_study_id){
-            var this$1 = this;
-
             return fetchJson(this.apiUrl() + "/copy/", {
                 method:'put',
                 body: {new_study_id: new_study_id}
             })
                 .then(function (response) {
-                    this$1.id = response.id;
-                    this$1.url = response.url;
                 })
                 .catch(function (response) {
-                    this$1.setPath(oldPath);
                     return Promise.reject(response);
                 });
         },
@@ -3902,7 +3897,6 @@
             content: copyFileComponent({new_study_id: new_study_id, study_id: study_id})
         })
             .then(function (response) {
-                console.log(new_study_id());
                 if (response && study_id() !== new_study_id) return copyAction(filePath() +'/'+ file.name, file, study_id, new_study_id);
             })
         ;
@@ -3946,12 +3940,12 @@
         var def = file
         .copy(path, study_id, new_study_id) // the actual movement
         .catch(function (response) { return messages.alert({
+
             header: 'Copy File',
             content: response.message
         }); })
         .then(m.redraw); // redraw after server response
 
-        m.redraw();
         return def;
     }
 
@@ -5239,7 +5233,7 @@
         var isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
         var amdMatch = amdReg.exec(file.content());
         var APItype = amdMatch && amdMatch[1];
-        var launchUrl = "https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''));
+        var launchUrl = "https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, '')) + "&refresh=true";
 
         return m('.btn-toolbar.editor-menu', [
             m('.file-name', {class: file.hasChanged() ? 'text-danger' : ''},

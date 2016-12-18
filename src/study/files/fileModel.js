@@ -69,12 +69,7 @@ let filePrototype = {
             method:'put',
             body: {new_study_id}
         })
-            .then(response => {
-                this.id = response.id;
-                this.url = response.url;
-            })
             .catch(response => {
-                this.setPath(oldPath);
                 return Promise.reject(response);
             });
     },
