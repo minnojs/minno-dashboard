@@ -17,6 +17,7 @@
     "bootstrap": "4.0",
     "font-awesome": "fontawesome#~4.5.0",
     "fetch": "~1.0.0",
-    "pikaday": "~1.4.0"
+    "pikaday": "~1.4.0",
+    "promise-polyfill": "^6.0.2"
   }
 }
