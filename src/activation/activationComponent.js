@@ -1,6 +1,6 @@
 import {is_activation_code, set_password} from './activationModel';
 import fullHeight from 'utils/fullHeight';
-import {password_body} from 'changePassword/changePasswordView';
+import {password_body} from 'settings/changePasswordView';
 
 export default activationComponent;
 

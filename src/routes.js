@@ -21,12 +21,12 @@ import studyRemovalComponent from './deploy/studyRemovalComponent';
 import studyChangeRequestComponent from './deploy/studyChangeRequestComponent';
 
 import addUserComponent from './addUser/addUserComponent';
-import settingsComponent from './changePassword/settingsComponent';
+import settingsComponent from './settings/settingsComponent';
 import massMailComponent from './massMail/massMailComponent';
 
 
 import activationComponent from './activation/activationComponent';
-import resetPasswordComponent from './changePassword/resetPasswordComponent';
+import resetPasswordComponent from './settings/resetPasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
 
 import sharingComponent from 'study/sharing/sharingComponent';
@@ -38,7 +38,7 @@ let routes = {
     '/tags':  tagsComponent,
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
-    '/change_password':  settingsComponent,
+    '/settings':  settingsComponent,
     '/reset_password/:code':  resetPasswordComponent,
 
     '/deployList': deployListComponent,
