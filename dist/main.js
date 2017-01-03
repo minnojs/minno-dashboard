@@ -8215,7 +8215,7 @@
                 ?
                 m('.loader')
                 :
-                m('.container', [
+                m('.container.sharing-page', [
                     m('.row',[
                         m('.col-sm-7', [
                             m('h3', [ctrl.study_name(), ': Sharing'])
