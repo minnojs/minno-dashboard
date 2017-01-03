@@ -1,8 +1,9 @@
-import {set_password, set_email, get_email} from './settingsModel';
+import {set_password, set_email, get_email, check_if_synchronized} from './settingsModel';
 
 import fullHeight from 'utils/fullHeight';
 import {password_body} from './changePasswordView';
 import {emil_body} from './changeEmailView';
+import {dropbox_body} from './connect2sropboxView';
 
 export default changePasswordComponent;
 
@@ -12,6 +13,9 @@ let changePasswordComponent = {
         const ctrl = {
             password:m.prop(''),
             confirm:m.prop(''),
+            is_synchronized: m.prop(),
+            auth_link: m.prop(''),
+            synchronization_error: m.prop(''),
             email: m.prop(''),
             password_error: m.prop(''),
             password_changed:false,
@@ -19,6 +23,7 @@ let changePasswordComponent = {
             email_changed:false,
             do_set_password,
             do_set_email
+
         };
 
         get_email()
@@ -30,8 +35,16 @@ let changePasswordComponent = {
         })
         .then(m.redraw);
 
+        check_if_synchronized()
+        .then((response) => {
+            ctrl.is_synchronized(response.is_synchronized);
+            ctrl.auth_link(response.auth_link);
+        })
+        .catch(response => {
+            ctrl.synchronization_error(response.message);
+        })
+        .then(m.redraw);
         return ctrl;
-
 
 
         function do_set_password(){
@@ -74,7 +87,8 @@ let changePasswordComponent = {
             :
                 [
                     password_body(ctrl),
-                    emil_body(ctrl)
+                    emil_body(ctrl),
+                    dropbox_body(ctrl)
                 ]
         ]);
     }

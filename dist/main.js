@@ -7610,6 +7610,7 @@
 
     var change_password_url = baseUrl + "/change_password";
     var change_email_url = baseUrl + "/change_email";
+    var dropbox_url = baseUrl + "/dropbox";
 
     function apiURL(code)
     {   
@@ -7632,6 +7633,14 @@
 
     var get_email = function () { return fetchJson(change_email_url, {
         method: 'get'
+    }); };
+
+    var check_if_synchronized = function () { return fetchJson(dropbox_url, {
+        method: 'get'
+    }); };
+
+    var stop_synchronized = function () { return fetchJson(dropbox_url, {
+        method: 'delete'
     }); };
 
     var password_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
@@ -7694,12 +7703,44 @@
         };
     }
 
+    function stop_sync(ctrl){
+        stop_synchronized()
+            .then(function () {
+                ctrl.is_synchronized(false);
+            })
+            .catch(function (response) {
+                ctrl.synchronization_error(response.message);
+            })
+            .then(m.redraw);
+    }
+
+    var dropbox_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            !ctrl.is_synchronized()?
+            m('a', {href:ctrl.auth_link()},
+                m('button.btn.btn-primary.btn-block', [
+                    m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
+                ])
+            )
+            :
+            m('button.btn.btn-primary.btn-block', {onclick: function(){stop_sync(ctrl)}},[
+
+                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+            ])
+
+        ])
+
+    ]); };
+
     var changePasswordComponent = {
         controller: function controller(){
 
             var ctrl = {
                 password:m.prop(''),
                 confirm:m.prop(''),
+                is_synchronized: m.prop(),
+                auth_link: m.prop(''),
+                synchronization_error: m.prop(''),
                 email: m.prop(''),
                 password_error: m.prop(''),
                 password_changed:false,
@@ -7707,6 +7748,7 @@
                 email_changed:false,
                 do_set_password: do_set_password,
                 do_set_email: do_set_email
+
             };
 
             get_email()
@@ -7718,8 +7760,16 @@
             })
             .then(m.redraw);
 
+            check_if_synchronized()
+            .then(function (response) {
+                ctrl.is_synchronized(response.is_synchronized);
+                ctrl.auth_link(response.auth_link);
+            })
+            .catch(function (response) {
+                ctrl.synchronization_error(response.message);
+            })
+            .then(m.redraw);
             return ctrl;
-
 
 
             function do_set_password(){
@@ -7762,7 +7812,8 @@
                 :
                     [
                         password_body(ctrl),
-                        emil_body(ctrl)
+                        emil_body(ctrl),
+                        dropbox_body(ctrl)
                     ]
             ]);
         }

@@ -1,26 +1,19 @@
-export let emil_body = ctrl => m('.card.card-inverse.col-md-4', [
+import {stop_sync} from './settingsActions';
+
+export let dropbox_body = ctrl => m('.card.card-inverse.col-md-4', [
     m('.card-block',[
-        m('h4', 'Enter New Email Address'),
-        m('form', [
-            m('input.form-control', {
-                type:'email',
-                placeholder: 'New Email Address',
-                value: ctrl.email(),
-                oninput: m.withAttr('value', ctrl.email),
-                onchange: m.withAttr('value', ctrl.email),
-                config: getStartValue(ctrl.email)
-            })
+        !ctrl.is_synchronized()?
+        m('a', {href:ctrl.auth_link()},
+            m('button.btn.btn-primary.btn-block', [
+                m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
+            ])
+        )
+        :
+        m('button.btn.btn-primary.btn-block', {onclick: function(){stop_sync(ctrl)}},[
+
+            m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
         ])
-        ,
-        !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
-        m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
 
     ])
 
 ]);
-
-function getStartValue(prop){
-    return (element, isInit) => {// !isInit && prop(element.value);
-        if (!isInit) setTimeout(()=>prop(element.value), 30);
-    };
-}
