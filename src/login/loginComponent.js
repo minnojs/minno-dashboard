@@ -29,20 +29,13 @@ let loginComponent = {
 
         function is_loggedin(){
             getAuth().then((response) => {
-                ctrl.isloggedin = response.isloggedin;
-                m.redraw();
+                if(response.isloggedin)
+                    m.route('./');
             });
         }
     },
     view(ctrl){
         return m('.login.centrify', {config:fullHeight},[
-            ctrl.isloggedin
-            ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'You are already logged in!')
-                ]
-                :
                 m('.card.card-inverse.col-md-4', [
                     m('.card-block',[
                         m('h4', 'Please sign in'),
