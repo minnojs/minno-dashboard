@@ -8,6 +8,6 @@ export function stop_sync(ctrl){
         .catch(response => {
             ctrl.synchronization_error(response.message);
         })
-        .then(m.redraw);
+        .then(m.route('/settings'));
 }
 
