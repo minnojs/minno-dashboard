@@ -36,38 +36,38 @@ let loginComponent = {
     },
     view(ctrl){
         return m('.login.centrify', {config:fullHeight},[
-                m('.card.card-inverse.col-md-4', [
-                    m('.card-block',[
-                        m('h4', 'Please sign in'),
+            m('.card.card-inverse.col-md-4', [
+                m('.card-block',[
+                    m('h4', 'Please sign in'),
 
-                        m('form', {onsubmit:ctrl.login}, [
-                            m('input.form-control', {
-                                type:'username',
-                                placeholder: 'Username / Email',
-                                value: ctrl.username(),
-                                name: 'username',
-                                oninput: m.withAttr('value', ctrl.username),
-                                onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue(ctrl.username)
-                            }),
-                            m('input.form-control', {
-                                type:'password',
-                                name:'password',
-                                placeholder: 'Password',
-                                value: ctrl.password(),
-                                oninput: m.withAttr('value', ctrl.password),
-                                onchange: m.withAttr('value', ctrl.password),
-                                config: getStartValue(ctrl.password)
-                            })
-                        ]),
+                    m('form', {onsubmit:ctrl.login}, [
+                        m('input.form-control', {
+                            type:'username',
+                            placeholder: 'Username / Email',
+                            value: ctrl.username(),
+                            name: 'username',
+                            oninput: m.withAttr('value', ctrl.username),
+                            onchange: m.withAttr('value', ctrl.username),
+                            config: getStartValue(ctrl.username)
+                        }),
+                        m('input.form-control', {
+                            type:'password',
+                            name:'password',
+                            placeholder: 'Password',
+                            value: ctrl.password(),
+                            oninput: m.withAttr('value', ctrl.password),
+                            onchange: m.withAttr('value', ctrl.password),
+                            config: getStartValue(ctrl.password)
+                        })
+                    ]),
 
-                        !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
-                        m('p.text-center',
-                            m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
-                        )
-                    ])
+                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.loginAction},'Sign in'),
+                    m('p.text-center',
+                        m('small.text-muted',  m('a', {href:'index.html?/recovery'}, 'Lost your password?'))
+                    )
                 ])
+            ])
         ]);
     }
 };

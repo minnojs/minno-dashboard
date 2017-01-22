@@ -9,7 +9,7 @@ export let dropbox_body = ctrl => m('.card.card-inverse.col-md-4', [
             ])
         )
         :
-        m('button.btn.btn-primary.btn-block', {onclick: function(){stop_sync(ctrl)}},[
+        m('button.btn.btn-primary.btn-block', {onclick: function(){stop_sync(ctrl);}},[
 
             m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
         ])
