@@ -1,9 +1,10 @@
-import {set_password, set_email, get_email, check_if_synchronized} from './settingsModel';
+import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_gdrive_synchronized} from './settingsModel';
 
 import fullHeight from 'utils/fullHeight';
 import {password_body} from './changePasswordView';
 import {emil_body} from './changeEmailView';
-import {dropbox_body} from './connect2sropboxView';
+import {dropbox_body} from './connect2dropboxView';
+import {gdrive_body} from './connect2GdriveView';
 
 export default changePasswordComponent;
 
@@ -13,8 +14,10 @@ let changePasswordComponent = {
         const ctrl = {
             password:m.prop(''),
             confirm:m.prop(''),
-            is_synchronized: m.prop(),
-            auth_link: m.prop(''),
+            is_dbx_synchronized: m.prop(),
+            is_gdrive_synchronized: m.prop(),
+            dbx_auth_link: m.prop(''),
+            gdrive_auth_link: m.prop(''),
             synchronization_error: m.prop(''),
             email: m.prop(''),
             password_error: m.prop(''),
@@ -35,15 +38,26 @@ let changePasswordComponent = {
         })
         .then(m.redraw);
 
-        check_if_synchronized()
+        check_if_dbx_synchronized()
         .then((response) => {
-            ctrl.is_synchronized(response.is_synchronized);
-            ctrl.auth_link(response.auth_link);
+            ctrl.is_dbx_synchronized(response.is_synchronized);
+            ctrl.dbx_auth_link(response.auth_link);
         })
         .catch(response => {
             ctrl.synchronization_error(response.message);
         })
         .then(m.redraw);
+
+        check_if_gdrive_synchronized()
+            .then((response) => {
+                ctrl.is_gdrive_synchronized(response.is_synchronized);
+                ctrl.gdrive_auth_link(response.auth_link);
+            })
+            .catch(response => {
+                ctrl.synchronization_error(response.message);
+            })
+            .then(m.redraw);
+
         return ctrl;
 
 
@@ -88,7 +102,8 @@ let changePasswordComponent = {
                 [
                     password_body(ctrl),
                     emil_body(ctrl),
-                    dropbox_body(ctrl)
+                    dropbox_body(ctrl),
+                    gdrive_body(ctrl)
                 ]
         ]);
     }
