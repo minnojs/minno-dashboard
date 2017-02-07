@@ -33,7 +33,8 @@ export let moveFile = (file, study) => () => {
         content: moveFileComponent({newPath, file, study})
     })
         .then(response => {
-            if (response && newPath() !== file.basePath) return moveAction(newPath() +'/'+ file.name, file,study);
+            const targetPath = newPath().replace(/\/$/, '') + '/' + file.name;
+            if (response && newPath() !== file.basePath) return moveAction(targetPath, file,study);
         });
 };
 
