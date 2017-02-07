@@ -3397,6 +3397,7 @@
 
             var basePath = (path.substring(0, path.lastIndexOf('/')));
             var folderExists = basePath === '' || study.files().some(function (f) { return f.isDir && f.path === basePath; });
+            console.log(path, basePath, folderExists)
 
             if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
             if (study.files().some(function (f){ return f.path === path; })) return Promise.reject({message: ("File " + path + " already exists.")});
@@ -3643,7 +3644,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3988,7 +3989,8 @@
             content: moveFileComponent({newPath: newPath, file: file, study: study})
         })
             .then(function (response) {
-                if (response && newPath() !== file.basePath) return moveAction(newPath() +'/'+ file.name, file,study);
+                var targetPath = newPath().replace(/\/$/, '') + '/' + file.name;
+                if (response && newPath() !== file.basePath) return moveAction(targetPath, file,study);
             });
     }; };
 
