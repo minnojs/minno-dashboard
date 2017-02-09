@@ -6,13 +6,23 @@ let ace = args => m.component(aceComponent, args);
 let noop = function(){};
 
 let aceComponent = {
+    controller: function(){
+        const editorCache = m.prop();
+        return {editorCache, onunload};
+
+        function onunload(){
+            if (editorCache()){
+                editorCache().destroy();
+            }
+        }
+    },
     view: function editorView(ctrl, args){
-        return m('.editor', {config: aceComponent.config(args)});
+        return m('.editor', {id:'text-editor', config: aceComponent.config(ctrl, args)});
     },
 
-    config: function({content, observer, settings = {}}){
+    config: function({editorCache},{content, observer, settings = {}}){
         return function(element, isInitialized, ctx){
-            let editor;
+            let editor = editorCache();
             let mode = settings.mode || 'javascript';
 
             // paster with padding
@@ -32,11 +42,14 @@ let aceComponent = {
                 fullHeight(element, isInitialized, ctx);
 
                 require(['ace/ace'], function(ace){
-                    let undoManager = settings.undoManager || (u => u);
+                    const undoManager = settings.undoManager || (u => u);
+                    const position = settings.position || (u => u);
                     ace.config.set('packaged', true);
                     ace.config.set('basePath', require.toUrl('ace'));
 
-                    editor = ctx.editor = ace.edit(element);
+                    editor = ace.edit(element);
+                    editorCache(editor);
+
                     let session = editor.getSession();
                     let commands = editor.commands;
 
@@ -50,7 +63,7 @@ let aceComponent = {
                     editor.$blockScrolling = Infinity; // scroll to top
 
                     // set jshintOptions
-                    editor.session.on('changeMode', function(e, session){
+                    session.on('changeMode', function(e, session){
                         if (session.getMode().$id === 'ace/mode/javascript' && !!session.$worker && settings.jshintOptions) {
                             session.$worker.send('setOptions', [settings.jshintOptions]);
                         }
@@ -70,24 +83,31 @@ let aceComponent = {
                     if(observer) observer.on('paste',paste );
                     
                     setContent();
+
+                    // return to the last position when reinitializing an editor
+                    if (position()) {
+                        let {scroll, row, column} = position();
+                        editor.session.setScrollTop(scroll);
+                        editor.moveCursorTo(row, column);
+                        editor.clearSelection();
+                    }
+
                     // reset undo manager so that ctrl+z doesn't erase file
                     // save it so that it doesn't get lost when users navigate away
                     session.setUndoManager(undoManager() || undoManager(new ace.UndoManager())); 
                     editor.focus();
-                    
-                    ctx.onunload = () => {
-                        editor.destroy();
+                    editor.on('destroy', () => {
+                        position(Object.assign({scroll: editor.session.getScrollTop()},editor.getCursorPosition()));
                         if(observer) observer.off(paste );
-                    };
+                    });
                 });
-
             }
             
             // each redraw set content from model (the function makes sure that this is not done when not needed...)
             setContent();
 
             function setContent(){
-                let editor = ctx.editor;
+                let editor = editorCache();
                 if (!editor) return;
                 
                 // this should trigger only drastic changes such as the first time the editor is set

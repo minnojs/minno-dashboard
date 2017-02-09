@@ -146,7 +146,8 @@ const fileFactory = fileObj => {
         syntaxValid     : undefined,
         syntaxData      : undefined,
 
-        undoManager     : m.prop() // a prop to keep track of the undo manager for this file
+        undoManager     : m.prop(), // a prop to keep track of the ace-editor undo manager for this file
+        position        : m.prop() // a prop to keep track of the ace-editor position in this file
     });
 
     file.content(fileObj.content || '');

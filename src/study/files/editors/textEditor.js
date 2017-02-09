@@ -36,7 +36,7 @@ let textEditorComponent = {
 
         return m('.editor', [
             textMenu({mode, file, study, observer}),
-            textContent(ctrl, {file,observer, study})
+            textContent(ctrl, {key: file.id, file,observer, study})
         ]);
     }
 };
@@ -52,7 +52,8 @@ let textContent = (ctrl, {file, study, observer}) => {
                 mode: textMode,
                 jshintOptions,
                 isReadonly: study.isReadonly,
-                undoManager: file.undoManager
+                undoManager: file.undoManager,
+                position: file.position
             }
         });
         case 'validator': return validatorComponent({file});
