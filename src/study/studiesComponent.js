@@ -57,6 +57,8 @@ var mainComponent = {
             return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
         }
 
+
+
         function sort_studies_by_date(){
             ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
         }
@@ -66,16 +68,16 @@ var mainComponent = {
 
 
     },
-    view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, loadTags, sort_studies_by_date, sort_studies_by_name, order_by_name}){
+    view({loaded, studies, tags, permissionChoice, globalSearch, loadStudies, loadTags, sort_studies_by_date, sort_studies_by_name, order_by_name, type}){
         if (!loaded) return m('.loader');
         return m('.container.studies', [
             m('.row.p-t-1', [
                 m('.col-sm-4', [
-                    m('h3', 'My Studies')
+                    m('h3', ['My ', type()=='regular' ? 'Studies' : 'Template Studies'])
                 ]),
 
                 m('.col-sm-8', [
-                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
+                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type())}}, [
                         m('i.fa.fa-plus'), '  Add new study'
                     ]),
 
@@ -132,10 +134,11 @@ var mainComponent = {
                     ]),
 
                     studies()
+                        .filter(typeFilter(type()))
                         .filter(tagFilter(tags().filter(uesedFilter()).map(tag=>tag.text)))
                         .filter(permissionFilter(permissionChoice()))
                         .filter(searchFilter(globalSearch()))
-                        .map(study => m('a', {href: `/editor/${study.id}`,config:routeConfig, key: study.id}, [
+                        .map(study => m('a', {href: m.route() != '/studies' ? '/translate' : `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
                                 m('.col-sm-3', [
                                     m('.study-text', [
@@ -143,7 +146,7 @@ var mainComponent = {
                                             class: classNames({
                                                 'fa-lock': study.is_locked,
                                                 'fa-globe': study.is_public,
-                                                'fa-flag': study.is_international,
+                                                'fa-flag': study.is_template,
                                                 'fa-users': !study.is_public && study.permission !== 'owner'
                                             }),
                                             title: classNames({
@@ -163,7 +166,7 @@ var mainComponent = {
                                 m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
-                                            study.is_international || study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                            study.is_template || study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
@@ -197,6 +200,12 @@ var mainComponent = {
             ])
         ]);
     }
+};
+
+
+let typeFilter = type => study => {
+    console.log(study);
+    return study.study_type === type;
 };
 
 let permissionFilter = permission => study => {

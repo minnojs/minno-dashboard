@@ -19,9 +19,9 @@ function get_lock_url(study_id , lock) {
 /*CRUD*/
 export let load_studies = () => fetchJson(baseUrl, {credentials: 'same-origin'});
 
-export let create_study = (study_name, is_international) => fetchJson(baseUrl, {
+export let create_study = (study_name, type) => fetchJson(baseUrl, {
     method: 'post',
-    body: {study_name, is_international}
+    body: {study_name, type}
 });
 
 export let rename_study = (study_id, study_name) => fetchJson(get_url(study_id), {

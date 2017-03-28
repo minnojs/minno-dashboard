@@ -3,7 +3,7 @@ import {lock_study, duplicate_study, create_study, delete_study, rename_study} f
 import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
-export let do_create = () => {
+export let do_create = (type) => {
     let study_name = m.prop('');
     let is_international = m.prop('');
     let error = m.prop('');
@@ -13,20 +13,11 @@ export let do_create = () => {
         content: m.component({view: () => m('p', [
             m('p', 'Enter Study Name:'),
             m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
-            m('label.c-input.c-checkbox', [
-                m('input.form-control', {
-                    type: 'checkbox',
-                    onclick: m.withAttr('checked', is_international)}),
-                m('span.c-indicator'),
-                m.trust('&nbsp;'),
-                m('span', 'International Study')
-            ]),
-
             !error() ? '' : m('p.alert.alert-danger', error())
         ])
     })}).then(response => response && create());
     
-    let create = () => create_study(study_name, is_international)
+    let create = () => create_study(study_name, type)
         .then(response => m.route('/editor/'+response.study_id))
         .catch(e => {
             error(e.message);
