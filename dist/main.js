@@ -169,6 +169,7 @@
     var baseUrl            = urlPrefix + "dashboard";
     var studyUrl           = urlPrefix + "dashboard/studies";
     var tagsUrl            = urlPrefix + "dashboard/tags";
+    var translateUrl       = urlPrefix + "dashboard/translate";
     var url            = urlPrefix + "StudyData";
     var baseUrl$1            = urlPrefix + "dashboard";
     var STATISTICS_URL      = urlPrefix + "PITracking";
@@ -214,6 +215,14 @@
             }
         } 
     };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -536,15 +545,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1558,10 +1558,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1713,10 +1709,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3552,6 +3544,7 @@
                 .then(function (study) {
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
+                    this$1.isInternational = study.is_international;
                     this$1.is_locked = study.is_locked;
                     this$1.name = study.study_name;
                     this$1.baseUrl = study.base_url;
@@ -3645,7 +3638,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort$1(response){
+        sort: function sort(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
@@ -3897,9 +3890,9 @@
     /*CRUD*/
     var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
 
-    var create_study = function (study_name) { return fetchJson(studyUrl, {
+    var create_study = function (study_name, is_international) { return fetchJson(studyUrl, {
         method: 'post',
-        body: {study_name: study_name}
+        body: {study_name: study_name, is_international: is_international}
     }); };
 
     var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
@@ -5722,21 +5715,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5796,8 +5774,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5979,7 +5955,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6157,16 +6132,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6327,20 +6292,30 @@
             .then(m.redraw); };
     }
 
-    var do_create = function () {
+    var do_create = function (have_international) {
         var study_name = m.prop('');
+        var is_international = m.prop('');
         var error = m.prop('');
 
-        var ask = function () { return messages.prompt({
+        var ask = function () { return messages.confirm({
             header:'New Study', 
-            content: m('div', [
+            content: m.component({view: function () { return m('p', [
                 m('p', 'Enter Study Name:'),
+                m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
+                m('label.c-input.c-checkbox', [
+                    m('input.form-control', {
+                        type: 'checkbox',
+                        onclick: m.withAttr('checked', is_international)}),
+                    m('span.c-indicator'),
+                    m.trust('&nbsp;'),
+                    m('span', 'International Study')
+                ]),
+
                 !error() ? '' : m('p.alert.alert-danger', error())
-            ]),
-            prop: study_name
-        }).then(function (response) { return response && create(); }); };
+            ]); }
+        })}).then(function (response) { return response && create(); }); };
         
-        var create = function () { return create_study(study_name)
+        var create = function () { return create_study(study_name, is_international)
             .then(function (response) { return m.route('/editor/'+response.study_id); })
             .catch(function (e) {
                 error(e.message);
@@ -6474,6 +6449,7 @@
                     m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                     ]),
+
                     readonly ? '' : [
                         m('button.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
                             m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
@@ -6646,6 +6622,7 @@
         controller: function(){
             var ctrl = {
                 studies:m.prop([]),
+                have_international:m.prop(false),
                 tags:m.prop([]),
                 user_name:m.prop(''),
                 globalSearch: m.prop(''),
@@ -6654,17 +6631,22 @@
                 order_by_name: true,
                 loadStudies: loadStudies,
                 loadTags: loadTags,
+                type: m.prop(''),
                 sort_studies_by_name: sort_studies_by_name,
                 sort_studies_by_date: sort_studies_by_date
             };
 
+            console.log(m.route());
             loadTags();
             loadStudies();
             function loadStudies() {
+                ctrl.type(m.route() == '/studies' ? 'regular' : m.route().substr(1));
+                console.log(ctrl.type());
                 load_studies()
-                    .then(function (response) { return response.studies.sort(sort_studies_by_name2); })
+                    .then(function (response) { return response.studies; })
                     .then(ctrl.studies)
                     .then(function (){ return ctrl.loaded = true; })
+                    .then(sort_studies_by_name)
                     .then(m.redraw);
             }
 
@@ -6678,7 +6660,6 @@
             return ctrl;
             function sort_studies_by_name2(study1, study2){
                 ctrl.order_by_name = true;
-
                 return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
             }
 
@@ -6716,7 +6697,7 @@
                     ]),
 
                     m('.col-sm-8', [
-                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:do_create}, [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create()}}, [
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
@@ -6784,6 +6765,7 @@
                                                 class: classNames({
                                                     'fa-lock': study.is_locked,
                                                     'fa-globe': study.is_public,
+                                                    'fa-flag': study.is_international,
                                                     'fa-users': !study.is_public && study.permission !== 'owner'
                                                 }),
                                                 title: classNames({
@@ -6803,7 +6785,7 @@
                                     m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right', [
                                             m('.btn-group.btn-group-sm', [
-                                                study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                study.is_international || study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
                                                         m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                     ]),
@@ -6822,7 +6804,6 @@
                                                             m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                                                         ])
                                                     ],
-
 
                                                     study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
                                                     study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
@@ -6844,6 +6825,7 @@
         if(permission === 'all') return !study.is_public;
         if(permission === 'public') return study.is_public;
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
+        if(permission === 'international') return study.is_international;
         return study.permission === permission;
     }; };
 
@@ -7702,10 +7684,6 @@
         method: 'get'
     }); };
 
-    var stop_gdrive_synchronized = function () { return fetchJson(gdrive_url, {
-        method: 'delete'
-    }); };
-
     var stop_dbx_synchronized = function () { return fetchJson(dropbox_url, {
         method: 'delete'
     }); };
@@ -7776,12 +7754,6 @@
             .catch(function (response) {
                 ctrl.synchronization_error(response.message);
             });
-    }function stop_gdrive_sync(ctrl){
-        stop_gdrive_synchronized()
-            .then(m.route('/settings'))
-            .catch(function (response) {
-                ctrl.synchronization_error(response.message);
-            });
     }
 
     var dropbox_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
@@ -7794,24 +7766,6 @@
             )
             :
             m('button.btn.btn-primary.btn-block', {onclick: function(){stop_dbx_sync(ctrl);}},[
-
-                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
-            ])
-
-        ])
-
-    ]); };
-
-    var gdrive_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
-        m('.card-block',[
-            !ctrl.is_gdrive_synchronized()?
-            m('a', {href:ctrl.gdrive_auth_link()},
-                m('button.btn.btn-primary.btn-block', [
-                    m('i.fa.fa-fw.fa-google'), ' Synchronize with your Google Drive account'
-                ])
-            )
-            :
-            m('button.btn.btn-primary.btn-block', {onclick: function(){stop_gdrive_sync(ctrl);}},[
 
                 m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
             ])
@@ -7914,8 +7868,8 @@
                     [
                         password_body(ctrl),
                         emil_body(ctrl),
-                        dropbox_body(ctrl),
-                        gdrive_body(ctrl)
+                        dropbox_body(ctrl)
+                        // ,gdrive_body(ctrl)
                     ]
             ]);
         }
@@ -8585,8 +8539,397 @@
         }
     };
 
+    function page_url(pageId)
+    {
+        return (translateUrl + "/" + (encodeURIComponent(pageId)));
+    }
+
+    var getListOfPages = function () { return fetchJson(translateUrl, {
+        method: 'get'
+    }); };
+
+
+    var getStrings = function (pageId) { return fetchJson(page_url(pageId), {
+        method: 'get'
+    }); };
+
+
+    var saveStrings = function (strings, pageId) { return fetchJson(page_url(pageId), {
+        body: {strings: strings},
+        method: 'put'
+    }); };
+
+    var tagsComponent$1 = {
+        controller: function controller(){
+            var pageId = m.route.param('pageId');
+
+            var ctrl = {
+                pages:m.prop(),
+                strings:m.prop(),
+                loaded:false,
+                error:m.prop(''),
+                pageId: pageId,
+                save: save
+            };
+
+            function load() {
+                getListOfPages()
+                    .then(function (response) {
+                        ctrl.pages(response.pages);
+                        ctrl.loaded = true;
+                    })
+                    .catch(function (error) {
+                        ctrl.error(error.message);
+                    }).then(m.redraw);
+                if(pageId)
+                    getStrings(pageId)
+                        .then(function (response) {
+                            ctrl.strings(response.strings.map(propifyTranslation).map(propifyChanged));
+                            ctrl.loaded = true;
+
+                        })
+                        .catch(function (error) {
+                            ctrl.error(error.message);
+                        }).then(m.redraw);
+
+            }
+            function save() {
+                var changed_studies = ctrl.strings().filter(changedFilter());
+                if(!changed_studies.length)
+                    return;
+                saveStrings(changed_studies, pageId)
+                    .then(function (){ return load(); });
+            }
+            load();
+            return ctrl;
+        },
+        view: function view(ref){
+            var loaded = ref.loaded;
+            var pages = ref.pages;
+            var strings = ref.strings;
+            var save = ref.save;
+            var pageId = ref.pageId;
+
+            return m('.study', {config: fullHeight},  [
+                !loaded ? m('.loader') : splitPane({
+                        leftWidth: leftWidth$1,
+                        left: m('.files', [
+                            m('ul', pages().map(function (page) { return m('li.file-node', [
+                                m('a.wholerow',{
+                                    unselectable:'on',
+                                    class:classNames({
+                                        'current': page.pageId===pageId
+                                    }),
+                                    href: ("/translate/" + (page.pageId)), config: m.route }, (" " + (page.pageName))),
+                                m('i.fa fa-fw')
+
+                            ]); }))]),
+                        right:  !strings()
+                            ?  m('.centrify', [
+                                m('i.fa.fa-smile-o.fa-5x'),
+                                m('h5', 'Please select a page to start working')
+                            ])
+                            :[strings().map(function (string) { return m('.list-group-item', [
+                            m('.row', [
+                                m('.col-sm-6', [
+                                    m('span.study-tag',  string.text)
+                                ]),
+                                m('.col-sm-6', [
+                                    m('input.form-control', {
+                                        type:'text',
+                                        placeholder: 'translation',
+                                        value: string.translation(),
+                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                        config: getStartValue$6(string.translation)
+                                    })
+
+                                ])
+                            ])
+                        ]); }),
+
+                m('button.btn.btn-primary.col-sm-1', {onclick: save},'Update')
+                ]
+                })
+            ]);
+        }
+    };
+
+    // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
+    // Essentially this is a global variable
+    function leftWidth$1(val){
+        if (arguments.length) localStorage.fileSidebarWidth = val;
+        return localStorage.fileSidebarWidth;
+    }
+    function propifyTranslation(obj){
+        obj = Object.assign({}, obj); // copy obj
+        obj.translation = m.prop(obj.translation);
+        return obj;
+    }
+
+    function propifyChanged(obj) {
+        obj.changed = false;
+        return obj;
+    }
+
+    function getStartValue$6(prop){
+        return function (element, isInit) {// !isInit && prop(element.value);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
+        };
+    }
+
+    var changedFilter = function () { return function (string) {
+        return string.changed==true;
+    }; };
+
+    var mainComponent$1 = {
+
+        controller: function(){
+            var ctrl = {
+                studies:m.prop([]),
+                have_international:m.prop(false),
+                tags:m.prop([]),
+                user_name:m.prop(''),
+                globalSearch: m.prop(''),
+                permissionChoice: m.prop('all'),
+                loaded:false,
+                order_by_name: true,
+                loadStudies: loadStudies,
+                loadTags: loadTags,
+                sort_studies_by_name: sort_studies_by_name,
+                sort_studies_by_date: sort_studies_by_date
+            };
+
+            loadTags();
+            loadStudies();
+            function loadStudies() {
+                load_studies()
+                    .then(function (response) { return response.studies; })
+                    .then(ctrl.studies)
+                    .then(function (){ return ctrl.loaded = true; })
+                    .then(sort_studies_by_name)
+                    .then(m.redraw);
+            }
+
+            function loadTags() {
+                get_tags()
+                    .then(function (response) { return response.tags; })
+                    .then(ctrl.tags)
+                    .then(m.redraw);
+            }
+
+            return ctrl;
+            function sort_studies_by_name2(study1, study2){
+                ctrl.order_by_name = true;
+
+                return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
+            }
+
+            function sort_studies_by_date2(study1, study2){
+                ctrl.order_by_name = false;
+                return study1.last_modified === study2.last_modified ? 0 : study1.last_modified < study2.last_modified ? 1 : -1;
+            }
+
+            function sort_studies_by_date(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_date2));
+            }
+            function sort_studies_by_name(){
+                ctrl.studies(ctrl.studies().sort(sort_studies_by_name2));
+            }
+
+
+        },
+        view: function view(ref){
+            var loaded = ref.loaded;
+            var studies = ref.studies;
+            var tags = ref.tags;
+            var permissionChoice = ref.permissionChoice;
+            var globalSearch = ref.globalSearch;
+            var loadStudies = ref.loadStudies;
+            var loadTags = ref.loadTags;
+            var sort_studies_by_date = ref.sort_studies_by_date;
+            var sort_studies_by_name = ref.sort_studies_by_name;
+            var order_by_name = ref.order_by_name;
+
+            if (!loaded) return m('.loader');
+            return m('.container.studies', [
+                m('.row.p-t-1', [
+                    m('.col-sm-4', [
+                        m('h3', 'My Studies')
+                    ]),
+
+                    m('.col-sm-8', [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create()}}, [
+                            m('i.fa.fa-plus'), '  Add new template study'
+                        ]),
+
+                        m('.pull-right.m-r-1', [
+                            dropdown({toggleSelector:'button.btn.btn-sm.btn-secondary.dropdown-toggle', toggleContent: [m('i.fa.fa-tags'), ' Tags'], elements:[
+                                m('h6.dropdown-header', 'Filter by tags'),
+                                !tags().length
+                                    ? m('em.dropdown-header', 'You do not have any tags yet')
+                                    : tags().map(function (tag) { return m('a.dropdown-item',m('label.custom-control.custom-checkbox', [
+                                        m('input.custom-control-input', {
+                                            type: 'checkbox',
+                                            checked: tag.used,
+                                            onclick: function(){
+                                                tag.used = !tag.used;
+                                            }
+                                        }),
+                                        m('span.custom-control-indicator'),
+                                        m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
+                                    ])); }),
+                                m('.dropdown-divider'),
+                                m('a.dropdown-item', { href: "/tags", config: m.route }, 'Manage tags')
+                            ]})
+                        ]),
+
+                        m('.input-group.pull-right.m-r-1', [
+                            m('select.c-select.form-control', {onchange: function (e) { return permissionChoice(e.target.value); }}, [
+                                m('option', {value:'all'}, 'Show all my studies'),
+                                m('option', {value:'owner'}, 'Show only studies I created'),
+                                m('option', {value:'collaboration'}, 'Show only studies shared with me'),
+                                m('option', {value:'public'}, 'Show public studies')
+                            ])
+                        ])
+                    ])
+                ]),
+
+                m('.card.studies-card', [
+                    m('.card-block', [
+                        m('.row', {key: '@@notid@@'}, [
+                            m('.col-sm-6', [
+                                m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
+                                    m('strong', 'Study Name '),
+                                    m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
+                                ])
+                            ]),
+                            m('.col-sm-2', [
+                                m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
+                                    m('strong', ' Last Changed '),
+                                    m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
+                                ])
+                            ]),
+                            m('.col-sm-4', [
+                                m('input.form-control', {placeholder: 'Search ...', value: globalSearch(), oninput: m.withAttr('value', globalSearch)})
+                            ])
+                        ]),
+
+                        studies()
+                            .filter(tagFilter$1(tags().filter(uesedFilter$1()).map(function (tag){ return tag.text; })))
+                            .filter(permissionFilter$1(permissionChoice()))
+                            .filter(searchFilter$1(globalSearch()))
+                            .map(function (study) { return m('a', {href: ("/editor/" + (study.id)),config:routeConfig$1, key: study.id}, [
+                                m('.row.study-row', [
+                                    m('.col-sm-3', [
+                                        m('.study-text', [
+                                            m('i.fa.fa-fw.owner-icon', {
+                                                class: classNames({
+                                                    'fa-lock': study.is_locked,
+                                                    'fa-globe': study.is_public,
+                                                    'fa-flag': study.is_international,
+                                                    'fa-users': !study.is_public && study.permission !== 'owner'
+                                                }),
+                                                title: classNames({
+                                                    'Public' : study.is_public,
+                                                    'Collaboration' : !study.is_public && study.permission !== 'owner'
+                                                })
+                                            }),
+                                            study.name
+                                        ])
+                                    ]),
+                                    m('.col-sm-3', [
+                                        study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
+                                    ]),
+                                    m('.col-sm-3', [
+                                        m('.study-text', formatDate(new Date(study.last_modified)))
+                                    ]),
+                                    m('.col-sm-1', [
+                                        m('.btn-toolbar.pull-right', [
+                                            m('.btn-group.btn-group-sm', [
+                                                study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
+                                                        m('i.fa.fa-fw.fa-tags'), ' Tags'
+                                                    ]),
+
+                                                    study.permission === 'read only' ? '' : [
+                                                        study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_delete(study.id, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-remove'), ' Delete Study'
+                                                        ]),
+                                                        study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
+                                                            m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
+                                                        ]),
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                                                            m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                                                        ]),
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
+                                                            m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
+                                                        ])
+                                                    ],
+
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/deploy/" + (study.id)), config: m.route }, 'Request Deploy'),
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyChangeRequest/" + (study.id)), config: m.route }, 'Request Change'),
+                                                    study.is_locked ? '' : m('a.dropdown-item', { href: ("/studyRemoval/" + (study.id)), config: m.route }, 'Request Removal'),
+                                                    m('a.dropdown-item', { href: ("/sharing/" + (study.id)), config: m.route }, [m('i.fa.fa-fw.fa-user-plus'), ' Sharing'])
+                                                ]})
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ]); })
+                    ])
+                ])
+            ]);
+        }
+    };
+
+    var permissionFilter$1 = function (permission) { return function (study) {
+        if(permission === 'all') return !study.is_public;
+        if(permission === 'public') return study.is_public;
+        if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
+        if(permission === 'international') return study.is_international;
+        return study.permission === permission;
+    }; };
+
+    var tagFilter$1 = function (tags) { return function (study) {
+        if (tags.length==0)
+            return true;
+        return study.tags.map(function (tag){ return tag.text; }).some(function (tag) { return tags.indexOf(tag) != -1; });
+    }; };
+
+    var uesedFilter$1 = function () { return function (tag) {
+        return tag.used;
+    }; };
+
+
+    var searchFilter$1 = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
+
+    function routeConfig$1(el, isInit, ctx, vdom) {
+
+        el.href = location.pathname + '?' + vdom.attrs.href;
+
+        if (!isInit) el.addEventListener('click', route);
+
+        function route(e){
+            var el = e.currentTarget;
+
+            if (e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2) return;
+            if (e.defaultPrevented) return;
+
+            e.preventDefault();
+            if (e.target.tagName === 'A' && e.target !== el) return;
+
+            m.route(el.search.slice(1));
+        }
+    }
+
     var routes = {
         '/tags':  tagsComponent,
+        '/translate':  tagsComponent$1,
+        '/translate/:pageId':  tagsComponent$1,
+        '/template_studies' : mainComponent,
+
+
         '/recovery':  recoveryComponent,
         '/activation/:code':  activationComponent,
         '/settings':  changePasswordComponent,
@@ -8693,6 +9036,14 @@
                             :
                             m('li.nav-item',[
                                 m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+                            ]),
+                            ctrl.role()=='CU'
+                            ?
+                            ''
+                            :
+                            m('li.nav-item',[
+                                m('a.nav-link',{href:'/template_studies', config:m.route},'Template Studies')
+
                             ]),
                             m('li.nav-item', [
                                 m('.dropdown', [

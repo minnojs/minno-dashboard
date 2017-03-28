@@ -4,7 +4,7 @@ import fullHeight from 'utils/fullHeight';
 import {password_body} from './changePasswordView';
 import {emil_body} from './changeEmailView';
 import {dropbox_body} from './connect2dropboxView';
-import {gdrive_body} from './connect2GdriveView';
+// import {gdrive_body} from './connect2GdriveView';
 
 export default changePasswordComponent;
 
@@ -102,8 +102,8 @@ let changePasswordComponent = {
                 [
                     password_body(ctrl),
                     emil_body(ctrl),
-                    dropbox_body(ctrl),
-                    gdrive_body(ctrl)
+                    dropbox_body(ctrl)
+                    // ,gdrive_body(ctrl)
                 ]
         ]);
     }

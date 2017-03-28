@@ -31,11 +31,17 @@ import recoveryComponent from './recovery/recoveryComponent';
 
 import sharingComponent from 'study/sharing/sharingComponent';
 import tagsComponent from 'tags/tagsComponent';
+import translateComponent from 'study/templates/pagesComponent';
 
 export default routes;
 
 let routes = {
     '/tags':  tagsComponent,
+    '/translate':  translateComponent,
+    '/translate/:pageId':  translateComponent,
+    '/template_studies' : studiesComponent,
+
+
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
     '/settings':  settingsComponent,

@@ -12,6 +12,7 @@ var mainComponent = {
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
+            have_international:m.prop(false),
             tags:m.prop([]),
             user_name:m.prop(''),
             globalSearch: m.prop(''),
@@ -20,6 +21,7 @@ var mainComponent = {
             order_by_name: true,
             loadStudies,
             loadTags,
+            type: m.prop(''),
             sort_studies_by_name,
             sort_studies_by_date
         };
@@ -27,10 +29,13 @@ var mainComponent = {
         loadTags();
         loadStudies();
         function loadStudies() {
+            ctrl.type(m.route() == '/studies' ? 'regular' : m.route().substr(1));
+            // console.log(ctrl.type());
             load_studies()
-                .then(response => response.studies.sort(sort_studies_by_name2))
+                .then(response => response.studies)
                 .then(ctrl.studies)
                 .then(()=>ctrl.loaded = true)
+                .then(sort_studies_by_name)
                 .then(m.redraw);
         }
 
@@ -44,7 +49,6 @@ var mainComponent = {
         return ctrl;
         function sort_studies_by_name2(study1, study2){
             ctrl.order_by_name = true;
-
             return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
         }
 
@@ -139,6 +143,7 @@ var mainComponent = {
                                             class: classNames({
                                                 'fa-lock': study.is_locked,
                                                 'fa-globe': study.is_public,
+                                                'fa-flag': study.is_international,
                                                 'fa-users': !study.is_public && study.permission !== 'owner'
                                             }),
                                             title: classNames({
@@ -158,7 +163,7 @@ var mainComponent = {
                                 m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right', [
                                         m('.btn-group.btn-group-sm', [
-                                            study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                            study.is_international || study.permission =='read only' || study.is_public ?  '' : dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
                                                 m('a.dropdown-item.dropdown-onclick', {onmousedown: do_tags({study_id: study.id, tags: tags, callback: loadStudies, loadTags:loadTags})}, [
                                                     m('i.fa.fa-fw.fa-tags'), ' Tags'
                                                 ]),
@@ -177,7 +182,6 @@ var mainComponent = {
                                                         m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                                                     ])
                                                 ],
-
 
                                                 study.is_locked ? '' : m('a.dropdown-item', { href: `/deploy/${study.id}`, config: m.route }, 'Request Deploy'),
                                                 study.is_locked ? '' : m('a.dropdown-item', { href: `/studyChangeRequest/${study.id}`, config: m.route }, 'Request Change'),
@@ -199,6 +203,7 @@ let permissionFilter = permission => study => {
     if(permission === 'all') return !study.is_public;
     if(permission === 'public') return study.is_public;
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
+    if(permission === 'international') return study.is_international;
     return study.permission === permission;
 };
 

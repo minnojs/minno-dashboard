@@ -84,6 +84,14 @@ let layout = route => {
                         m('li.nav-item',[
                             m('a.nav-link',{href:'/studies', config:m.route},'Studies')
                         ]),
+                        ctrl.role()=='CU'
+                        ?
+                        ''
+                        :
+                        m('li.nav-item',[
+                            m('a.nav-link',{href:'/template_studies', config:m.route},'Template Studies')
+
+                        ]),
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Data'),

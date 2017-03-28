@@ -11,7 +11,7 @@ export let gdrive_body = ctrl => m('.card.card-inverse.col-md-4', [
         :
         m('button.btn.btn-primary.btn-block', {onclick: function(){stop_gdrive_sync(ctrl);}},[
 
-            m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+            m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Google Drive account'
         ])
 
     ])
