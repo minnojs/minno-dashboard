@@ -3,6 +3,7 @@ import {baseUrl} from 'modelUrls';
 
 const change_password_url = `${baseUrl}/change_password`;
 const change_email_url = `${baseUrl}/change_email`;
+const present_templates_url = `${baseUrl}/present_templates`;
 const dropbox_url = `${baseUrl}/dropbox`;
 const gdrive_url = `${baseUrl}/gdrive`;
 
@@ -27,6 +28,27 @@ export let set_email = (email) => fetchJson(change_email_url, {
 
 export let get_email = () => fetchJson(change_email_url, {
     method: 'get'
+});
+
+
+export let check_if_present_templates = () => fetchJson(present_templates_url, {
+    method: 'get'
+});
+
+export let set_present_templates = (value) => {
+    if (value)
+        return do_present_templates();
+    return do_hide_templates();
+};
+
+
+
+export let do_present_templates = () => fetchJson(present_templates_url, {
+    method: 'post'
+});
+
+export let do_hide_templates = () => fetchJson(present_templates_url, {
+    method: 'delete'
 });
 
 export let check_if_dbx_synchronized = () => fetchJson(dropbox_url, {

@@ -77,7 +77,7 @@ var mainComponent = {
                 ]),
 
                 m('.col-sm-8', [
-                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type())}}, [
+                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type());}}, [
                         m('i.fa.fa-plus'), '  Add new study'
                     ]),
 
@@ -204,7 +204,6 @@ var mainComponent = {
 
 
 let typeFilter = type => study => {
-    console.log(study);
     return study.study_type === type;
 };
 

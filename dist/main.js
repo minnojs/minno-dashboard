@@ -6293,7 +6293,6 @@
 
     var do_create = function (type) {
         var study_name = m.prop('');
-        var is_international = m.prop('');
         var error = m.prop('');
 
         var ask = function () { return messages.confirm({
@@ -6689,7 +6688,7 @@
                     ]),
 
                     m('.col-sm-8', [
-                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type())}}, [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type());}}, [
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
@@ -6816,7 +6815,6 @@
 
 
     var typeFilter = function (type) { return function (study) {
-        console.log(study);
         return study.study_type === type;
     }; };
 
@@ -7649,6 +7647,7 @@
 
     var change_password_url = baseUrl + "/change_password";
     var change_email_url = baseUrl + "/change_email";
+    var present_templates_url = baseUrl + "/present_templates";
     var dropbox_url = baseUrl + "/dropbox";
     var gdrive_url = baseUrl + "/gdrive";
 
@@ -7675,11 +7674,28 @@
         method: 'get'
     }); };
 
-    var check_if_dbx_synchronized = function () { return fetchJson(dropbox_url, {
+
+    var check_if_present_templates = function () { return fetchJson(present_templates_url, {
         method: 'get'
     }); };
 
-    var check_if_gdrive_synchronized = function () { return fetchJson(gdrive_url, {
+    var set_present_templates = function (value) {
+        if (value)
+            return do_present_templates();
+        return do_hide_templates();
+    };
+
+
+
+    var do_present_templates = function () { return fetchJson(present_templates_url, {
+        method: 'post'
+    }); };
+
+    var do_hide_templates = function () { return fetchJson(present_templates_url, {
+        method: 'delete'
+    }); };
+
+    var check_if_dbx_synchronized = function () { return fetchJson(dropbox_url, {
         method: 'get'
     }); };
 
@@ -7747,6 +7763,29 @@
         };
     }
 
+    function start_dbx_sync(ctrl){
+        var error = m.prop('');
+        // ctrl.dbx_auth_link()
+        messages.confirm({okText: 'Continue', cancelText: 'Cancel', header:'Synchronization with Dropbox', content:m('p', [
+            m('p','This feature creates a backup for all your studies by copying all your study files to your Dropbox account. Every time you change a file here, on the Dashboard, it will send that update to your Dropbox account. Using the Dropbox website, you will be able to see previous versions of all the files you changed.'),
+            m('ul',
+                [
+                    m('li', 'Dropbox will create a folder under Apps/minno.ks/username and will copy all your studies under that folder.'),
+                    m('li', 'We will not have access to any of your files on other folders.'),
+                    m('li', [m('span' ,'This feature is only for backup. If you edit or delete your study files on your computer\'s file-system, these edits will not be synchronized with the study files on this website. '), m('strong', 'Updates work only in one direction: from this website to your Dropbox, not from your Dropbox to this website.')]),
+                    m('li', 'If you want to see an older version of any of your study files, you can go to Dropbox and request to see previous versions of the file. If you want to restore an older version of a file, you will need to copy and paste its text to the Dashboard\'s editor on this website, or to download the old file to your computer and upload it to this website.'),
+                ]
+            ),
+            !error() ? '' : m('p.alert.alert-danger', error())])
+        })
+        .then(function (response) {
+            if (response)
+                window.location = ctrl.dbx_auth_link();
+
+        });
+
+    }
+
     function stop_dbx_sync(ctrl){
         stop_dbx_synchronized()
             .then(m.route('/settings'))
@@ -7758,7 +7797,7 @@
     var dropbox_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
             !ctrl.is_dbx_synchronized()?
-            m('a', {href:ctrl.dbx_auth_link()},
+            m('a',  {onclick: function(){start_dbx_sync(ctrl);}},
                 m('button.btn.btn-primary.btn-block', [
                     m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
                 ])
@@ -7768,9 +7807,23 @@
 
                 m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
             ])
-
         ])
+    ]); };
 
+    var templates_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            !ctrl.present_templates()
+            ?
+            m('a', {onclick: function(){ctrl.do_set_templete(true);}},
+                m('button.btn.btn-primary.btn-block', [
+                    m('i.fa.fa-fw.fa-flag'), ' Preset template studies'
+                ])
+            )
+            :
+            m('button.btn.btn-primary.btn-block', {onclick: function(){ctrl.do_set_templete(false);}},[
+                m('i.fa.fa-fw.fa-flag'), ' Hide template studies'
+            ])
+        ])
     ]); };
 
     var changePasswordComponent = {
@@ -7781,16 +7834,19 @@
                 confirm:m.prop(''),
                 is_dbx_synchronized: m.prop(),
                 is_gdrive_synchronized: m.prop(),
+                present_templates: m.prop(),
                 dbx_auth_link: m.prop(''),
                 gdrive_auth_link: m.prop(''),
                 synchronization_error: m.prop(''),
+                present_templates_error: m.prop(''),
                 email: m.prop(''),
                 password_error: m.prop(''),
                 password_changed:false,
                 email_error: m.prop(''),
                 email_changed:false,
                 do_set_password: do_set_password,
-                do_set_email: do_set_email
+                do_set_email: do_set_email,
+                do_set_templete: do_set_templete
 
             };
 
@@ -7802,27 +7858,34 @@
                 ctrl.email_error(response.message);
             })
             .then(m.redraw);
-
             check_if_dbx_synchronized()
-            .then(function (response) {
-                ctrl.is_dbx_synchronized(response.is_synchronized);
-                ctrl.dbx_auth_link(response.auth_link);
-            })
-            .catch(function (response) {
-                ctrl.synchronization_error(response.message);
-            })
-            .then(m.redraw);
-
-            check_if_gdrive_synchronized()
                 .then(function (response) {
-                    ctrl.is_gdrive_synchronized(response.is_synchronized);
-                    ctrl.gdrive_auth_link(response.auth_link);
+                    ctrl.is_dbx_synchronized(response.is_synchronized);
+                    ctrl.dbx_auth_link(response.auth_link);
                 })
                 .catch(function (response) {
                     ctrl.synchronization_error(response.message);
                 })
                 .then(m.redraw);
 
+            // check_if_gdrive_synchronized()
+            //     .then((response) => {
+            //         ctrl.is_gdrive_synchronized(response.is_synchronized);
+            //         ctrl.gdrive_auth_link(response.auth_link);
+            //     })
+            //     .catch(response => {
+            //         ctrl.synchronization_error(response.message);
+            //     })
+            //     .then(m.redraw);
+
+            check_if_present_templates()
+                .then(function (response) {
+                    ctrl.present_templates(response.present_templates);
+                })
+                .catch(function (response) {
+                    ctrl.present_templates_error(response.message);
+                })
+                .then(m.redraw);
             return ctrl;
 
 
@@ -7847,6 +7910,19 @@
                     })
                     .then(m.redraw);
             }
+
+
+            function do_set_templete(value){
+                set_present_templates(value)
+                    .then(function () {
+                        ctrl.present_templates(value);
+                    })
+                    .catch(function (response) {
+                        ctrl.present_templates_error(response.message);
+                    })
+                    .then(m.redraw);
+            }
+
         },
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
@@ -7867,7 +7943,8 @@
                     [
                         password_body(ctrl),
                         emil_body(ctrl),
-                        dropbox_body(ctrl)
+                        dropbox_body(ctrl),
+                        templates_body(ctrl)
                         // ,gdrive_body(ctrl)
                     ]
             ]);
@@ -8730,6 +8807,7 @@
                 var ctrl = {
                     isloggedin: true,
                     role: m.prop(''),
+                    present_templates: m.prop(false),
                     doLogout: doLogout,
                     timer:m.prop(0)
                 };
@@ -8738,7 +8816,8 @@
                     getAuth().then(function (response) {
                         ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
-
+                        ctrl.present_templates(response.present_templates);
+                        // console.log(response.present_templates);
                         if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
                             var url = m.route();
                             m.route('/login');
@@ -8797,17 +8876,19 @@
                              ?
                             ''
                             :
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+                            m('li.nav-item', [
+                                m('.dropdown', [
+                                    m('a.nav-link',{href:'/studies', config:m.route},'Studies'),
+                                    !ctrl.present_templates()
+                                        ?
+                                        ''
+                                        :
+                                        m('.dropdown-menu', [
+                                            m('a.dropdown-item',{href:'/template_studies', config:m.route},'Template Studies')
+                                        ])
+                                ])
                             ]),
-                            ctrl.role()=='CU'
-                            ?
-                            ''
-                            :
-                            m('li.nav-item',[
-                                m('a.nav-link',{href:'/template_studies', config:m.route},'Template Studies')
 
-                            ]),
                             m('li.nav-item', [
                                 m('.dropdown', [
                                     m('a.nav-link', 'Data'),

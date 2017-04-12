@@ -5,7 +5,6 @@ import {update_tags_in_study} from '../tags/tagsModel';
 
 export let do_create = (type) => {
     let study_name = m.prop('');
-    let is_international = m.prop('');
     let error = m.prop('');
 
     let ask = () => messages.confirm({

@@ -14,6 +14,7 @@ let layout = route => {
             const ctrl = {
                 isloggedin: true,
                 role: m.prop(''),
+                present_templates: m.prop(false),
                 doLogout,
                 timer:m.prop(0)
             };
@@ -22,7 +23,8 @@ let layout = route => {
                 getAuth().then((response) => {
                     ctrl.role(response.role);
                     ctrl.isloggedin = response.isloggedin;
-
+                    ctrl.present_templates(response.present_templates);
+                    // console.log(response.present_templates);
                     if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
                         let url = m.route();
                         m.route('/login');
@@ -81,17 +83,19 @@ let layout = route => {
                          ?
                         ''
                         :
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/studies', config:m.route},'Studies')
+                        m('li.nav-item', [
+                            m('.dropdown', [
+                                m('a.nav-link',{href:'/studies', config:m.route},'Studies'),
+                                !ctrl.present_templates()
+                                    ?
+                                    ''
+                                    :
+                                    m('.dropdown-menu', [
+                                        m('a.dropdown-item',{href:'/template_studies', config:m.route},'Template Studies')
+                                    ])
+                            ])
                         ]),
-                        ctrl.role()=='CU'
-                        ?
-                        ''
-                        :
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/template_studies', config:m.route},'Template Studies')
 
-                        ]),
                         m('li.nav-item', [
                             m('.dropdown', [
                                 m('a.nav-link', 'Data'),

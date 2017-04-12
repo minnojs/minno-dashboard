@@ -1,9 +1,10 @@
-import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_gdrive_synchronized} from './settingsModel';
+import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_present_templates , set_present_templates} from './settingsModel';
 
 import fullHeight from 'utils/fullHeight';
 import {password_body} from './changePasswordView';
 import {emil_body} from './changeEmailView';
 import {dropbox_body} from './connect2dropboxView';
+import {templates_body} from './templateStudiesView';
 // import {gdrive_body} from './connect2GdriveView';
 
 export default changePasswordComponent;
@@ -16,16 +17,19 @@ let changePasswordComponent = {
             confirm:m.prop(''),
             is_dbx_synchronized: m.prop(),
             is_gdrive_synchronized: m.prop(),
+            present_templates: m.prop(),
             dbx_auth_link: m.prop(''),
             gdrive_auth_link: m.prop(''),
             synchronization_error: m.prop(''),
+            present_templates_error: m.prop(''),
             email: m.prop(''),
             password_error: m.prop(''),
             password_changed:false,
             email_error: m.prop(''),
             email_changed:false,
             do_set_password,
-            do_set_email
+            do_set_email,
+            do_set_templete
 
         };
 
@@ -37,27 +41,34 @@ let changePasswordComponent = {
             ctrl.email_error(response.message);
         })
         .then(m.redraw);
-
         check_if_dbx_synchronized()
-        .then((response) => {
-            ctrl.is_dbx_synchronized(response.is_synchronized);
-            ctrl.dbx_auth_link(response.auth_link);
-        })
-        .catch(response => {
-            ctrl.synchronization_error(response.message);
-        })
-        .then(m.redraw);
-
-        check_if_gdrive_synchronized()
             .then((response) => {
-                ctrl.is_gdrive_synchronized(response.is_synchronized);
-                ctrl.gdrive_auth_link(response.auth_link);
+                ctrl.is_dbx_synchronized(response.is_synchronized);
+                ctrl.dbx_auth_link(response.auth_link);
             })
             .catch(response => {
                 ctrl.synchronization_error(response.message);
             })
             .then(m.redraw);
 
+        // check_if_gdrive_synchronized()
+        //     .then((response) => {
+        //         ctrl.is_gdrive_synchronized(response.is_synchronized);
+        //         ctrl.gdrive_auth_link(response.auth_link);
+        //     })
+        //     .catch(response => {
+        //         ctrl.synchronization_error(response.message);
+        //     })
+        //     .then(m.redraw);
+
+        check_if_present_templates()
+            .then((response) => {
+                ctrl.present_templates(response.present_templates);
+            })
+            .catch(response => {
+                ctrl.present_templates_error(response.message);
+            })
+            .then(m.redraw);
         return ctrl;
 
 
@@ -82,6 +93,19 @@ let changePasswordComponent = {
                 })
                 .then(m.redraw);
         }
+
+
+        function do_set_templete(value){
+            set_present_templates(value)
+                .then(() => {
+                    ctrl.present_templates(value);
+                })
+                .catch(response => {
+                    ctrl.present_templates_error(response.message);
+                })
+                .then(m.redraw);
+        }
+
     },
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
@@ -102,7 +126,8 @@ let changePasswordComponent = {
                 [
                     password_body(ctrl),
                     emil_body(ctrl),
-                    dropbox_body(ctrl)
+                    dropbox_body(ctrl),
+                    templates_body(ctrl)
                     // ,gdrive_body(ctrl)
                 ]
         ]);
