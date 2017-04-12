@@ -168,6 +168,7 @@
 
     var baseUrl            = urlPrefix + "dashboard";
     var studyUrl           = urlPrefix + "dashboard/studies";
+    var templatesUrl       = urlPrefix + "dashboard/templates";
     var tagsUrl            = urlPrefix + "dashboard/tags";
     var translateUrl       = urlPrefix + "dashboard/translate";
     var url            = urlPrefix + "StudyData";
@@ -215,14 +216,6 @@
             }
         } 
     };
-
-
-    /* eslint-disable */
-
-    // ref: http://stackoverflow.com/a/1293163/2343
-    // This will parse a delimited string into an array of
-    // arrays. The default delimiter is the comma, but this
-    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -545,6 +538,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1558,6 +1560,10 @@
         return classes.substr(1);
     }
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1709,6 +1715,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3543,7 +3553,7 @@
                 .then(function (study) {
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
-                    this$1.isInternational = study.is_international;
+                    this$1.istemplate = study.is_template;
                     this$1.is_locked = study.is_locked;
                     this$1.name = study.study_name;
                     this$1.baseUrl = study.base_url;
@@ -3889,9 +3899,11 @@
     /*CRUD*/
     var load_studies = function () { return fetchJson(studyUrl, {credentials: 'same-origin'}); };
 
-    var create_study = function (study_name, type) { return fetchJson(studyUrl, {
+    var load_templates = function () { return fetchJson(templatesUrl, {credentials: 'same-origin'}); };
+
+    var create_study = function (study_name, type, template_id) { return fetchJson(studyUrl, {
         method: 'post',
-        body: {study_name: study_name, type: type}
+        body: {study_name: study_name, type: type, template_id: template_id}
     }); };
 
     var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
@@ -5714,6 +5726,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5773,6 +5800,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5954,6 +5983,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6131,6 +6161,16 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6175,6 +6215,50 @@
             }
         }; }
     };
+
+    function studyTemplatesComponent (args) { return m.component(studyTemplatesComponent$1, args); };
+
+    var studyTemplatesComponent$1 = {
+        controller: function controller(ref){
+            var load_templates = ref.load_templates;
+            var templates = ref.templates;
+            var template_id = ref.template_id;
+
+            var loaded = m.prop(false);
+            var error = m.prop(null);
+            load_templates()
+                .then(function (response) { return templates(response.templates); })
+                .catch(error)
+                .then(loaded.bind(null, true))
+                .then(m.redraw);
+            return {template_id: template_id, templates: templates, loaded: loaded, error: error};
+        },
+        view: function (ref) {
+            var template_id = ref.template_id;
+            var templates = ref.templates;
+            var loaded = ref.loaded;
+            var error = ref.error;
+
+            return m('div', [
+            loaded() ? '' : m('.loader'),
+            error() ? m('.alert.alert-warning', error().message): '',
+            loaded() && !templates().length ? m('.alert.alert-info', 'You have no tags yet') : '',
+            m('.custom-controls-stacked.pre-scrollable', templates().sort(sort_studies).map(function (study) { return m('label.custom-control.custom-checkbox', [
+                m('input.custom-control-input', {
+                    type: 'radio',
+                    name:'template',
+                    onclick: function(){
+                        template_id(study.id);
+                    }
+                }),
+                m('span.custom-control-indicator'),
+                m('span.custom-control-description.m-l-1', study.name)
+            ]); }))
+        ]);
+    }
+    };
+
+    function sort_studies(study_1, study_2){return study_1.name.toLowerCase() === study_2.name.toLowerCase() ? 0 : study_1.name.toLowerCase() > study_2.name.toLowerCase() ? 1 : -1;}
 
     function tag_url(tag_id)
     {
@@ -6293,24 +6377,29 @@
 
     var do_create = function (type) {
         var study_name = m.prop('');
+        var templates = m.prop([]);
+        var template_id = m.prop('');
+
         var error = m.prop('');
 
+
+
         var ask = function () { return messages.confirm({
-            header:'New Study', 
+            header:'New Study',
             content: m.component({view: function () { return m('p', [
                 m('p', 'Enter Study Name:'),
                 m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
-                !error() ? '' : m('p.alert.alert-danger', error())
+                !error() ? '' : m('p.alert.alert-danger', error()),
+                m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates: load_templates, templates: templates, template_id: template_id}))
             ]); }
         })}).then(function (response) { return response && create(); }); };
-        
-        var create = function () { return create_study(study_name, type)
-            .then(function (response) { return m.route('/editor/'+response.study_id); })
+
+        var create = function () { return create_study(study_name, type, template_id)
+            .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
             .catch(function (e) {
                 error(e.message);
                 ask();
             }); };
-
         ask();
     };
 
@@ -6611,7 +6700,7 @@
         controller: function(){
             var ctrl = {
                 studies:m.prop([]),
-                have_international:m.prop(false),
+                have_templates:m.prop(false),
                 tags:m.prop([]),
                 user_name:m.prop(''),
                 globalSearch: m.prop(''),
@@ -6749,7 +6838,7 @@
                             .filter(tagFilter(tags().filter(uesedFilter()).map(function (tag){ return tag.text; })))
                             .filter(permissionFilter(permissionChoice()))
                             .filter(searchFilter(globalSearch()))
-                            .map(function (study) { return m('a', {href: m.route() != '/studies' ? '/translate' : ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
+                            .map(function (study) { return m('a', {href: m.route() != '/studies' ? ("/translate/" + (study.id)) : ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
                                     m('.col-sm-3', [
                                         m('.study-text', [
@@ -6822,7 +6911,7 @@
         if(permission === 'all') return !study.is_public;
         if(permission === 'public') return study.is_public;
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
-        if(permission === 'international') return study.is_international;
+        if(permission === 'template') return study.is_template;
         return study.permission === permission;
     }; };
 
@@ -7773,7 +7862,7 @@
                     m('li', 'Dropbox will create a folder under Apps/minno.ks/username and will copy all your studies under that folder.'),
                     m('li', 'We will not have access to any of your files on other folders.'),
                     m('li', [m('span' ,'This feature is only for backup. If you edit or delete your study files on your computer\'s file-system, these edits will not be synchronized with the study files on this website. '), m('strong', 'Updates work only in one direction: from this website to your Dropbox, not from your Dropbox to this website.')]),
-                    m('li', 'If you want to see an older version of any of your study files, you can go to Dropbox and request to see previous versions of the file. If you want to restore an older version of a file, you will need to copy and paste its text to the Dashboard\'s editor on this website, or to download the old file to your computer and upload it to this website.'),
+                    m('li', 'If you want to see an older version of any of your study files, you can go to Dropbox and request to see previous versions of the file. If you want to restore an older version of a file, you will need to copy and paste its text to the Dashboard\'s editor on this website, or to download the old file to your computer and upload it to this website.')
                 ]
             ),
             !error() ? '' : m('p.alert.alert-danger', error())])
@@ -7781,7 +7870,6 @@
         .then(function (response) {
             if (response)
                 window.location = ctrl.dbx_auth_link();
-
         });
 
     }

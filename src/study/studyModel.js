@@ -1,5 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
-import {studyUrl as baseUrl} from 'modelUrls';
+import {templatesUrl, studyUrl as baseUrl} from 'modelUrls';
 
 
 function get_url(study_id) {
@@ -19,9 +19,11 @@ function get_lock_url(study_id , lock) {
 /*CRUD*/
 export let load_studies = () => fetchJson(baseUrl, {credentials: 'same-origin'});
 
-export let create_study = (study_name, type) => fetchJson(baseUrl, {
+export let load_templates = () => fetchJson(templatesUrl, {credentials: 'same-origin'});
+
+export let create_study = (study_name, type, template_id) => fetchJson(baseUrl, {
     method: 'post',
-    body: {study_name, type}
+    body: {study_name, type, template_id}
 });
 
 export let rename_study = (study_id, study_name) => fetchJson(get_url(study_id), {

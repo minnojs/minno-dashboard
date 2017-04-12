@@ -12,7 +12,7 @@ var mainComponent = {
     controller: function(){
         var ctrl = {
             studies:m.prop([]),
-            have_international:m.prop(false),
+            have_templates:m.prop(false),
             tags:m.prop([]),
             user_name:m.prop(''),
             globalSearch: m.prop(''),
@@ -138,7 +138,7 @@ var mainComponent = {
                         .filter(tagFilter(tags().filter(uesedFilter()).map(tag=>tag.text)))
                         .filter(permissionFilter(permissionChoice()))
                         .filter(searchFilter(globalSearch()))
-                        .map(study => m('a', {href: m.route() != '/studies' ? '/translate' : `/editor/${study.id}`,config:routeConfig, key: study.id}, [
+                        .map(study => m('a', {href: m.route() != '/studies' ? `/translate/${study.id}` : `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
                                 m('.col-sm-3', [
                                     m('.study-text', [
@@ -211,7 +211,7 @@ let permissionFilter = permission => study => {
     if(permission === 'all') return !study.is_public;
     if(permission === 'public') return study.is_public;
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
-    if(permission === 'international') return study.is_international;
+    if(permission === 'template') return study.is_template;
     return study.permission === permission;
 };
 

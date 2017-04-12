@@ -1,28 +1,34 @@
 import messages from 'utils/messagesComponent';
-import {lock_study, duplicate_study, create_study, delete_study, rename_study} from './studyModel';
+import {lock_study, duplicate_study, create_study, delete_study, rename_study, load_templates} from './studyModel';
+import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
 export let do_create = (type) => {
     let study_name = m.prop('');
+    let templates = m.prop([]);
+    let template_id = m.prop('');
+
     let error = m.prop('');
 
+
+
     let ask = () => messages.confirm({
-        header:'New Study', 
+        header:'New Study',
         content: m.component({view: () => m('p', [
             m('p', 'Enter Study Name:'),
             m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
-            !error() ? '' : m('p.alert.alert-danger', error())
+            !error() ? '' : m('p.alert.alert-danger', error()),
+            m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates, templates, template_id}))
         ])
     })}).then(response => response && create());
-    
-    let create = () => create_study(study_name, type)
-        .then(response => m.route('/editor/'+response.study_id))
+
+    let create = () => create_study(study_name, type, template_id)
+        .then(response => m.route(type == 'regular' ? `/editor/${response.study_id}` : `/translate/${response.study_id}`))
         .catch(e => {
             error(e.message);
             ask();
         });
-
     ask();
 };
 

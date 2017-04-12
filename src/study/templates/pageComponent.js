@@ -39,7 +39,7 @@ let pageComponent = {
         return m('.container.translate-page', [
             m('.row',[
                 m('.col-sm-7',
-                    m('h3', 'International Studies')
+                    m('h3', 'Template Studies')
                 )
             ]),
             !strings().length
