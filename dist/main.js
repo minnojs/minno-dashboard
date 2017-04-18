@@ -190,6 +190,7 @@
         function parseQuery(ref){
             var source = ref.source;
             var study = ref.study;
+            var sortstudy = ref.sortstudy;
             var sorttask = ref.sorttask;
             var sorttime = ref.sorttime;
             var startDate = ref.startDate;
@@ -204,6 +205,7 @@
                 endDate: parseDate(endDate()),
                 startTask: firstTask(),
                 sorttask: sorttask(),
+                sortstudy: sortstudy(),
                 endTask: lastTask(),
                 timeframe: sorttime()==='None' ? 'All' : sorttime(),
                 extended:sorttask()
