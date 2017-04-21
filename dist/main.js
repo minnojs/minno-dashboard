@@ -3649,7 +3649,7 @@
                 .then(this.sort.bind(this));
         },
 
-        sort: function sort(response){
+        sort: function sort$1(response){
             var files = this.files().sort(sort);
             this.files(files);
             return response;
