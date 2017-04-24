@@ -219,6 +219,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -540,15 +548,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1562,10 +1561,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1717,10 +1712,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5728,21 +5719,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5802,8 +5778,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5985,7 +5959,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6163,16 +6136,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6245,7 +6208,7 @@
             loaded() ? '' : m('.loader'),
             error() ? m('.alert.alert-warning', error().message): '',
             loaded() && !templates().length ? m('.alert.alert-info', 'You have no tags yet') : '',
-            m('.custom-controls-stacked.pre-scrollable', templates().sort(sort_studies).map(function (study) { return m('label.custom-control.custom-checkbox', [
+            m('.custom-controls-stacked.pre-scrollable', templates().filter(ownerFilter()).sort(sort_studies).map(function (study) { return m('label.custom-control.custom-checkbox', [
                 m('input.custom-control-input', {
                     type: 'radio',
                     name:'template',
@@ -6261,6 +6224,10 @@
     };
 
     function sort_studies(study_1, study_2){return study_1.name.toLowerCase() === study_2.name.toLowerCase() ? 0 : study_1.name.toLowerCase() > study_2.name.toLowerCase() ? 1 : -1;}
+
+    var ownerFilter = function (permission) { return function (study) {
+        return study.permission == 'owner';
+    }; };
 
     function tag_url(tag_id)
     {
@@ -6461,7 +6428,7 @@
         ask();
     }; };
 
-    var do_duplicate= function (study_id, name) { return function (e) {
+    var do_duplicate= function (study_id, name, type) { return function (e) {
         e.preventDefault();
         var study_name = m.prop(name);
         var error = m.prop('');
@@ -6474,8 +6441,8 @@
             ])
         }).then(function (response) { return response && duplicate(); }); };
 
-        var duplicate= function () { return duplicate_study(study_id, study_name)
-            .then(function (response) { return m.route('/editor/'+response.study_id); })
+        var duplicate= function () { return duplicate_study(study_id, study_name, type)
+            .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
             .then(m.redraw)
             .catch(function (e) {
                 error(e.message);
@@ -6719,7 +6686,7 @@
             loadTags();
             loadStudies();
             function loadStudies() {
-                ctrl.type(m.route() == '/studies' ? 'regular' : m.route().substr(1));
+                ctrl.type(m.route() == '/studies' ? 'regular' : 'template');
                 // console.log(ctrl.type());
                 load_studies()
                     .then(function (response) { return response.studies; })
@@ -6880,7 +6847,7 @@
                                                         study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                             m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
                                                         ]),
-                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                                                        m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, study.type)}, [
                                                             m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                                                         ]),
                                                         m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
@@ -7900,22 +7867,6 @@
         ])
     ]); };
 
-    var templates_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
-        m('.card-block',[
-            !ctrl.present_templates()
-            ?
-            m('a', {onclick: function(){ctrl.do_set_templete(true);}},
-                m('button.btn.btn-primary.btn-block', [
-                    m('i.fa.fa-fw.fa-flag'), ' Preset template studies'
-                ])
-            )
-            :
-            m('button.btn.btn-primary.btn-block', {onclick: function(){ctrl.do_set_templete(false);}},[
-                m('i.fa.fa-fw.fa-flag'), ' Hide template studies'
-            ])
-        ])
-    ]); };
-
     var changePasswordComponent = {
         controller: function controller(){
 
@@ -8033,8 +7984,8 @@
                     [
                         password_body(ctrl),
                         emil_body(ctrl),
-                        dropbox_body(ctrl),
-                        templates_body(ctrl)
+                        dropbox_body(ctrl)
+                        // ,templates_body(ctrl)
                         // ,gdrive_body(ctrl)
                     ]
             ]);
@@ -8705,28 +8656,34 @@
         }
     };
 
-    function page_url(pageId)
+    function template_url(templateId)
     {
-        return (translateUrl + "/" + (encodeURIComponent(pageId)));
+        return (translateUrl + "/" + (encodeURIComponent(templateId)));
     }
 
-    var getListOfPages = function () { return fetchJson(translateUrl, {
+    function page_url(templateId, pageId)
+    {
+        return (translateUrl + "/" + (encodeURIComponent(templateId)) + "/" + (encodeURIComponent(pageId)));
+    }
+
+    var getListOfPages = function (templateId) { return fetchJson(template_url(templateId), {
         method: 'get'
     }); };
 
 
-    var getStrings = function (pageId) { return fetchJson(page_url(pageId), {
+    var getStrings = function (templateId, pageId) { return fetchJson(page_url(templateId, pageId), {
         method: 'get'
     }); };
 
 
-    var saveStrings = function (strings, pageId) { return fetchJson(page_url(pageId), {
+    var saveStrings = function (strings, templateId, pageId) { return fetchJson(page_url(templateId, pageId), {
         body: {strings: strings},
         method: 'put'
     }); };
 
-    var tagsComponent$1 = {
+    var pagesComponent = {
         controller: function controller(){
+            var templateId = m.route.param('templateId');
             var pageId = m.route.param('pageId');
 
             var ctrl = {
@@ -8735,11 +8692,12 @@
                 loaded:false,
                 error:m.prop(''),
                 pageId: pageId,
+                templateId: templateId,
                 save: save
             };
 
             function load() {
-                getListOfPages()
+                getListOfPages(templateId)
                     .then(function (response) {
                         ctrl.pages(response.pages);
                         ctrl.loaded = true;
@@ -8748,7 +8706,7 @@
                         ctrl.error(error.message);
                     }).then(m.redraw);
                 if(pageId)
-                    getStrings(pageId)
+                    getStrings(templateId, pageId)
                         .then(function (response) {
                             ctrl.strings(response.strings.map(propifyTranslation).map(propifyChanged));
                             ctrl.loaded = true;
@@ -8763,7 +8721,7 @@
                 var changed_studies = ctrl.strings().filter(changedFilter());
                 if(!changed_studies.length)
                     return;
-                saveStrings(changed_studies, pageId)
+                saveStrings(changed_studies, templateId, pageId)
                     .then(function (){ return load(); });
             }
             load();
@@ -8774,6 +8732,7 @@
             var pages = ref.pages;
             var strings = ref.strings;
             var save = ref.save;
+            var templateId = ref.templateId;
             var pageId = ref.pageId;
 
             return m('.study', {config: fullHeight},  [
@@ -8784,9 +8743,9 @@
                             m('a.wholerow',{
                                 unselectable:'on',
                                 class:classNames({
-                                    'current': page.pageId===pageId
+                                    'current': page.pageName===pageId
                                 }),
-                                href: ("/translate/" + (page.pageId)), config: m.route }, (" " + (page.pageName))),
+                                href: ("/translate/" + templateId + "/" + (page.pageName) + "/"), config: m.route }, (" " + (page.pageName))),
                             m('i.fa fa-fw')
 
                         ]); }))]),
@@ -8798,7 +8757,7 @@
                         :[strings().map(function (string) { return m('.list-group-item', [
                             m('.row', [
                                 m('.col-sm-6', [
-                                    m('span.study-tag',  string.text)
+                                    m('span.templae_text',  string.text)
                                 ]),
                                 m('.col-sm-6', [
                                     m('input.form-control', {
@@ -8855,8 +8814,8 @@
 
     var routes = {
         '/tags':  tagsComponent,
-        '/translate':  tagsComponent$1,
-        '/translate/:pageId':  tagsComponent$1,
+        '/translate/:templateId':  pagesComponent,
+        '/translate/:templateId/:pageId':  pagesComponent,
         '/template_studies' : mainComponent,
 
 

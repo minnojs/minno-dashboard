@@ -29,7 +29,7 @@ var mainComponent = {
         loadTags();
         loadStudies();
         function loadStudies() {
-            ctrl.type(m.route() == '/studies' ? 'regular' : m.route().substr(1));
+            ctrl.type(m.route() == '/studies' ? 'regular' : 'template');
             // console.log(ctrl.type());
             load_studies()
                 .then(response => response.studies)
@@ -178,7 +178,7 @@ var mainComponent = {
                                                     study.is_locked ? '' : m('a.dropdown-item.dropdown-onclick', {onmousedown: do_rename(study.id, study.name, loadStudies)}, [
                                                         m('i.fa.fa-fw.fa-exchange'), ' Rename Study'
                                                     ]),
-                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                                                    m('a.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name, study.type)}, [
                                                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                                                     ]),
                                                     m('a.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [

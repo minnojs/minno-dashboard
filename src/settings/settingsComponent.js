@@ -126,8 +126,8 @@ let changePasswordComponent = {
                 [
                     password_body(ctrl),
                     emil_body(ctrl),
-                    dropbox_body(ctrl),
-                    templates_body(ctrl)
+                    dropbox_body(ctrl)
+                    // ,templates_body(ctrl)
                     // ,gdrive_body(ctrl)
                 ]
         ]);

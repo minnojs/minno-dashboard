@@ -82,7 +82,7 @@ export let do_rename = (study_id, name, callback) => e => {
     ask();
 };
 
-export let do_duplicate= (study_id, name) => e => {
+export let do_duplicate= (study_id, name, type) => e => {
     e.preventDefault();
     let study_name = m.prop(name);
     let error = m.prop('');
@@ -95,8 +95,8 @@ export let do_duplicate= (study_id, name) => e => {
         ])
     }).then(response => response && duplicate());
 
-    let duplicate= () => duplicate_study(study_id, study_name)
-        .then(response => m.route('/editor/'+response.study_id))
+    let duplicate= () => duplicate_study(study_id, study_name, type)
+        .then(response => m.route(type == 'regular' ? `/editor/${response.study_id}` : `/translate/${response.study_id}`))
         .then(m.redraw)
         .catch(e => {
             error(e.message);

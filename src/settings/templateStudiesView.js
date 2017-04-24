@@ -4,7 +4,7 @@ export let templates_body = ctrl => m('.card.card-inverse.col-md-4', [
         ?
         m('a', {onclick: function(){ctrl.do_set_templete(true);}},
             m('button.btn.btn-primary.btn-block', [
-                m('i.fa.fa-fw.fa-flag'), ' Preset template studies'
+                m('i.fa.fa-fw.fa-flag'), ' Show template studies'
             ])
         )
         :

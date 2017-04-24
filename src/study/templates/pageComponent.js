@@ -49,8 +49,8 @@ let pageComponent = {
                 m('.list-group.col-sm-10', [
                     strings().map(string => m('.list-group-item', [
                         m('.row', [
-                            m('.col-sm-6', [
-                                m('span.study-tag',  string.text)
+                            m('.col-sm-6.templae_text', [
+                                m('span',  string.text)
                             ]),
                             m('.col-sm-6', [
                                 m('input.form-control', {

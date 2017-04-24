@@ -4,10 +4,11 @@ import splitPane from 'utils/splitPane';
 import {getStrings, saveStrings} from './translateModel';
 import classNames from 'utils/classNames';
 
-export default tagsComponent;
+export default pagesComponent;
 
-let tagsComponent = {
+let pagesComponent = {
     controller(){
+        const templateId = m.route.param('templateId');
         const pageId = m.route.param('pageId');
 
         let ctrl = {
@@ -16,11 +17,12 @@ let tagsComponent = {
             loaded:false,
             error:m.prop(''),
             pageId,
+            templateId,
             save
         };
 
         function load() {
-            getListOfPages()
+            getListOfPages(templateId)
                 .then(response => {
                     ctrl.pages(response.pages);
                     ctrl.loaded = true;
@@ -29,7 +31,7 @@ let tagsComponent = {
                     ctrl.error(error.message);
                 }).then(m.redraw);
             if(pageId)
-                getStrings(pageId)
+                getStrings(templateId, pageId)
                     .then(response => {
                         ctrl.strings(response.strings.map(propifyTranslation).map(propifyChanged));
                         ctrl.loaded = true;
@@ -44,13 +46,13 @@ let tagsComponent = {
             let changed_studies = ctrl.strings().filter(changedFilter());
             if(!changed_studies.length)
                 return;
-            saveStrings(changed_studies, pageId)
+            saveStrings(changed_studies, templateId, pageId)
                 .then(()=>load());
         }
         load();
         return ctrl;
     },
-    view({loaded, pages, strings, save, pageId}){
+    view({loaded, pages, strings, save, templateId, pageId}){
         return m('.study', {config: fullheight},  [
             !loaded ? m('.loader') : splitPane({
                 leftWidth,
@@ -59,9 +61,9 @@ let tagsComponent = {
                         m('a.wholerow',{
                             unselectable:'on',
                             class:classNames({
-                                'current': page.pageId===pageId
+                                'current': page.pageName===pageId
                             }),
-                            href: `/translate/${page.pageId}`, config: m.route }, ` ${page.pageName}`),
+                            href: `/translate/${templateId}/${page.pageName}/`, config: m.route }, ` ${page.pageName}`),
                         m('i.fa fa-fw')
 
                     ])))]),
@@ -73,7 +75,7 @@ let tagsComponent = {
                     :[strings().map(string => m('.list-group-item', [
                         m('.row', [
                             m('.col-sm-6', [
-                                m('span.study-tag',  string.text)
+                                m('span.templae_text',  string.text)
                             ]),
                             m('.col-sm-6', [
                                 m('input.form-control', {

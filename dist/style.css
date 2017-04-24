@@ -105,6 +105,9 @@ a.no-decoration {
 .table.table-nowrap th {
   white-space: nowrap; }
 
+.templae_text {
+  display: inline; }
+
 .custom-controls-stacked .custom-control {
   display: inline; }
 

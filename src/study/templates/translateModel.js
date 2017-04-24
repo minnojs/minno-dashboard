@@ -2,22 +2,27 @@ import {fetchJson} from 'utils/modelHelpers';
 import {translateUrl} from 'modelUrls';
 
 
-function page_url(pageId)
+function template_url(templateId)
 {
-    return `${translateUrl}/${encodeURIComponent(pageId)}`;
+    return `${translateUrl}/${encodeURIComponent(templateId)}`;
 }
 
-export let getListOfPages = () => fetchJson(translateUrl, {
+function page_url(templateId, pageId)
+{
+    return `${translateUrl}/${encodeURIComponent(templateId)}/${encodeURIComponent(pageId)}`;
+}
+
+export let getListOfPages = (templateId) => fetchJson(template_url(templateId), {
     method: 'get'
 });
 
 
-export let getStrings = (pageId) => fetchJson(page_url(pageId), {
+export let getStrings = (templateId, pageId) => fetchJson(page_url(templateId, pageId), {
     method: 'get'
 });
 
 
-export let saveStrings = (strings, pageId) => fetchJson(page_url(pageId), {
+export let saveStrings = (strings, templateId, pageId) => fetchJson(page_url(templateId, pageId), {
     body: {strings},
     method: 'put'
 });

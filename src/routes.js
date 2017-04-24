@@ -37,8 +37,8 @@ export default routes;
 
 let routes = {
     '/tags':  tagsComponent,
-    '/translate':  translateComponent,
-    '/translate/:pageId':  translateComponent,
+    '/translate/:templateId':  translateComponent,
+    '/translate/:templateId/:pageId':  translateComponent,
     '/template_studies' : studiesComponent,
 
 

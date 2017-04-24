@@ -16,7 +16,7 @@ let studyTemplatesComponent = {
         loaded() ? '' : m('.loader'),
         error() ? m('.alert.alert-warning', error().message): '',
         loaded() && !templates().length ? m('.alert.alert-info', 'You have no tags yet') : '',
-        m('.custom-controls-stacked.pre-scrollable', templates().sort(sort_studies).map(study => m('label.custom-control.custom-checkbox', [
+        m('.custom-controls-stacked.pre-scrollable', templates().filter(ownerFilter()).sort(sort_studies).map(study => m('label.custom-control.custom-checkbox', [
             m('input.custom-control-input', {
                 type: 'radio',
                 name:'template',
@@ -31,3 +31,7 @@ let studyTemplatesComponent = {
 };
 
 function sort_studies(study_1, study_2){return study_1.name.toLowerCase() === study_2.name.toLowerCase() ? 0 : study_1.name.toLowerCase() > study_2.name.toLowerCase() ? 1 : -1;}
+
+let ownerFilter = permission => study => {
+    return study.permission == 'owner';
+};
