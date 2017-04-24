@@ -6479,7 +6479,7 @@
         }).then(function (response) { return response && duplicate(); }); };
 
         var duplicate= function () { return duplicate_study(study_id, study_name, type)
-            .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
+            .then(function (response) { return m.route( ("/editor/" + (response.study_id)) ); })
             .then(m.redraw)
             .catch(function (e) {
                 error(e.message);
