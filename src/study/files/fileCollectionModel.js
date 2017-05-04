@@ -117,6 +117,7 @@ let studyPrototype = {
     },
 
     uploadFiles({path, files, force}){
+        console.log(path);
         let formData = buildFormData(path === '/' ? '' : path, files);
         formData.append('forceUpload', +force);
 

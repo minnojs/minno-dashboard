@@ -72,7 +72,10 @@ let pagesComponent = {
                         m('i.fa.fa-smile-o.fa-5x'),
                         m('h5', 'Please select a page to start working')
                     ])
-                    :[strings().map(string => m('.list-group-item', [
+                    :
+                    [
+                    m('.translate-page', {config: fullheight},
+                    [strings().map(string => m('.list-group-item', [
                         m('.row', [
                             m('.col-sm-6', [
                                 m('span.templae_text',  string.text)
@@ -89,10 +92,10 @@ let pagesComponent = {
 
                             ])
                         ])
-                    ])),
-
+                    ]))
+            ]),
             m('button.btn.btn-primary.col-sm-1', {onclick: save},'Update')
-            ]
+                    ]
             })
         ]);
     }

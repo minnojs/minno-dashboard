@@ -3669,6 +3669,7 @@
             var files = ref.files;
             var force = ref.force;
 
+            console.log(path);
             var formData = buildFormData(path === '/' ? '' : path, files);
             formData.append('forceUpload', +force);
 
@@ -8815,7 +8816,10 @@
                             m('i.fa.fa-smile-o.fa-5x'),
                             m('h5', 'Please select a page to start working')
                         ])
-                        :[strings().map(function (string) { return m('.list-group-item', [
+                        :
+                        [
+                        m('.translate-page', {config: fullHeight},
+                        [strings().map(function (string) { return m('.list-group-item', [
                             m('.row', [
                                 m('.col-sm-6', [
                                     m('span.templae_text',  string.text)
@@ -8832,10 +8836,10 @@
 
                                 ])
                             ])
-                        ]); }),
-
+                        ]); })
+                ]),
                 m('button.btn.btn-primary.col-sm-1', {onclick: save},'Update')
-                ]
+                        ]
                 })
             ]);
         }

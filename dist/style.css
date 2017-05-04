@@ -10,6 +10,10 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
 .deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool, .tags-page, .translate-page, .sharing-page {
   padding-top: 1em; }
 
+.translate-page {
+  overflow: auto;
+  max-height: 100%; }
+
 a.no-decoration {
   text-decoration: none;
   color: inherit; }
