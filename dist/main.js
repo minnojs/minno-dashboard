@@ -875,7 +875,7 @@
                 m('.col-sm-12',[
                     m('button.btn.btn-secondary.btn-sm', {onclick: function (){ return displayHelp(!displayHelp()); }}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                     m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(((query.study()) + ".csv"), tableContent(), query)}, 'Download CSV')
+                    !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(query.study() ? ((query.study()) + ".csv") : 'stats.csv', tableContent(), query)}, 'Download CSV')
                 ])
             ]),
             !displayHelp() ? '' : m('.row', [
@@ -3936,7 +3936,7 @@
             var loaded = m.prop(false);
             var error = m.prop(null);
             load_studies()
-                .then(function (response) { return studies(response.studies); })
+                .then(function (response) { return studies(response.studies.sort(sort_studies_by_name2).filter(template_filter())); })
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
@@ -3962,6 +3962,16 @@
         ]);
     }
     };
+
+
+
+    function sort_studies_by_name2(study1, study2){
+        return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
+    }
+
+    var template_filter = function () { return function (study) {
+        return study.study_type === 'regular' && !study.is_template;
+    }; };
 
     var uploadFiles = function (path,study) { return function (files) {
         // validation (make sure files do not already exist)
@@ -6479,7 +6489,7 @@
         }).then(function (response) { return response && duplicate(); }); };
 
         var duplicate= function () { return duplicate_study(study_id, study_name, type)
-            .then(function (response) { return m.route( ("/editor/" + (response.study_id)) ); })
+            .then(function (response) { return m.route( type==='regular' ? ("/editor/" + (response.study_id)): ("/editor/" + (response.study_id)) ); })
             .then(m.redraw)
             .catch(function (e) {
                 error(e.message);
@@ -7865,7 +7875,7 @@
             m('p','This feature creates a backup for all your studies by copying all your study files to your Dropbox account. Every time you change a file here, on the Dashboard, it will send that update to your Dropbox account. Using the Dropbox website, you will be able to see previous versions of all the files you changed.'),
             m('ul',
                 [
-                    m('li', 'Dropbox will create a folder under Apps/minno.ks/username and will copy all your studies under that folder.'),
+                    m('li', 'Dropbox will create a folder under Apps/minno.js/username and will copy all your studies under that folder.'),
                     m('li', 'We will not have access to any of your files on other folders.'),
                     m('li', [m('span' ,'This feature is only for backup. If you edit or delete your study files on your computer\'s file-system, these edits will not be synchronized with the study files on this website. '), m('strong', 'Updates work only in one direction: from this website to your Dropbox, not from your Dropbox to this website.')]),
                     m('li', 'If you want to see an older version of any of your study files, you can go to Dropbox and request to see previous versions of the file. If you want to restore an older version of a file, you will need to copy and paste its text to the Dashboard\'s editor on this website, or to download the old file to your computer and upload it to this website.')
@@ -7891,15 +7901,29 @@
     var dropbox_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
             !ctrl.is_dbx_synchronized()?
-            m('a',  {onclick: function(){start_dbx_sync(ctrl);}},
-                m('button.btn.btn-primary.btn-block', [
+                m('button.btn.btn-primary.btn-block', {onclick: function(){start_dbx_sync(ctrl);}},[
                     m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
+                ])
+            :
+            m('button.btn.btn-primary.btn-block', {onclick: function(){start_dbx_sync(ctrl);}}, {onclick: function(){stop_dbx_sync(ctrl);}},[
+
+                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+            ])
+        ])
+    ]); };
+
+    var templates_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            !ctrl.present_templates()
+            ?
+            m('a', {onclick: function(){ctrl.do_set_templete(true);}},
+                m('button.btn.btn-primary.btn-block', [
+                    m('i.fa.fa-fw.fa-flag'), ' Show template studies'
                 ])
             )
             :
-            m('button.btn.btn-primary.btn-block', {onclick: function(){stop_dbx_sync(ctrl);}},[
-
-                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+            m('button.btn.btn-primary.btn-block', {onclick: function(){ctrl.do_set_templete(false);}},[
+                m('i.fa.fa-fw.fa-flag'), ' Hide template studies'
             ])
         ])
     ]); };
@@ -8022,7 +8046,7 @@
                         password_body(ctrl),
                         emil_body(ctrl),
                         dropbox_body(ctrl)
-                        // ,templates_body(ctrl)
+                        ,templates_body(ctrl)
                         // ,gdrive_body(ctrl)
                     ]
             ]);
@@ -8411,7 +8435,7 @@
                     });
             }
             function do_make_public(is_public){
-                messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keap ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
+                messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
                                                                                     ?
                                                                                     'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
                                                                                     :

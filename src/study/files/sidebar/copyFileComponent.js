@@ -8,7 +8,7 @@ let copyFileComponent = {
         let loaded = m.prop(false);
         let error = m.prop(null);
         load_studies()
-            .then(response => studies(response.studies))
+            .then(response => studies(response.studies.sort(sort_studies_by_name2).filter(template_filter())))
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
@@ -28,3 +28,12 @@ let copyFileComponent = {
     ])
 };
 
+
+
+function sort_studies_by_name2(study1, study2){
+    return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
+}
+
+let template_filter = () => study => {
+    return study.study_type === 'regular' && !study.is_template;
+};

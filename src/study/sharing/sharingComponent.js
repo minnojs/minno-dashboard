@@ -72,7 +72,7 @@ let collaborationComponent = {
                 });
         }
         function do_make_public(is_public){
-            messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keap ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
+            messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
                                                                                 ?
                                                                                 'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
                                                                                 :

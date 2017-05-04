@@ -96,7 +96,7 @@ export let do_duplicate= (study_id, name, type) => e => {
     }).then(response => response && duplicate());
 
     let duplicate= () => duplicate_study(study_id, study_name, type)
-        .then(response => m.route( `/editor/${response.study_id}` ))
+        .then(response => m.route( type==='regular' ? `/editor/${response.study_id}`: `/editor/${response.study_id}` ))
         .then(m.redraw)
         .catch(e => {
             error(e.message);

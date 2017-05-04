@@ -59,7 +59,7 @@ let statisticsComponent = {
             m('.col-sm-12',[
                 m('button.btn.btn-secondary.btn-sm', {onclick: ()=>displayHelp(!displayHelp())}, ['Toggle help ', m('i.fa.fa-question-circle')]),
                 m('a.btn.btn-primary.pull-right', {onclick:submit}, 'Submit'),
-                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(`${query.study()}.csv`, tableContent(), query)}, 'Download CSV')
+                !tableContent()  ? '' : m('a.btn.btn-secondary.pull-right.m-r-1', {config:downloadFile(query.study() ? `${query.study()}.csv` : 'stats.csv', tableContent(), query)}, 'Download CSV')
             ])
         ]),
         !displayHelp() ? '' : m('.row', [
