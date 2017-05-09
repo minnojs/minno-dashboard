@@ -78,7 +78,7 @@ let textMenuView = ({mode, file, study, observer}) => {
             !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
                 m('strong.fa.fa-play')
             ]),
-            
+
             !isExpt ? '' :  [
                 m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
                     m('strong.fa.fa-play')

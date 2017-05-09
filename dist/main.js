@@ -219,6 +219,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -540,15 +548,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1562,10 +1561,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1717,10 +1712,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5443,7 +5434,7 @@
                 !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play$2(file,study), title:'Play this task'},[
                     m('strong.fa.fa-play')
                 ]),
-                
+
                 !isExpt ? '' :  [
                     m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
                         m('strong.fa.fa-play')
@@ -5739,21 +5730,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5813,8 +5789,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5996,7 +5970,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6174,16 +6147,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -8750,8 +8713,10 @@
 
             var ctrl = {
                 pages:m.prop(),
+                study_name:m.prop(),
                 strings:m.prop(),
                 loaded:false,
+                has_changed:m.prop(false),
                 error:m.prop(''),
                 pageId: pageId,
                 templateId: templateId,
@@ -8762,6 +8727,7 @@
                 getListOfPages(templateId)
                     .then(function (response) {
                         ctrl.pages(response.pages);
+                        ctrl.study_name(response.study_name);
                         ctrl.loaded = true;
                     })
                     .catch(function (error) {
@@ -8780,6 +8746,7 @@
 
             }
             function save() {
+                ctrl.has_changed(false);
                 var changed_studies = ctrl.strings().filter(changedFilter());
                 if(!changed_studies.length)
                     return;
@@ -8787,6 +8754,7 @@
                     .then(function (){ return load(); });
             }
             load();
+            console.log(ctrl.has_changed());
             return ctrl;
         },
         view: function view(ref){
@@ -8796,21 +8764,33 @@
             var save = ref.save;
             var templateId = ref.templateId;
             var pageId = ref.pageId;
+            var study_name = ref.study_name;
+            var has_changed = ref.has_changed;
 
-            return m('.study', {config: fullHeight},  [
+            return m('.study',  [
                 !loaded ? m('.loader') : splitPane({
                     leftWidth: leftWidth$1,
-                    left: m('.files', [
-                        m('ul', pages().map(function (page) { return m('li.file-node', [
-                            m('a.wholerow',{
-                                unselectable:'on',
-                                class:classNames({
-                                    'current': page.pageName===pageId
-                                }),
-                                href: ("/translate/" + templateId + "/" + (page.pageName) + "/"), config: m.route }, (" " + (page.pageName))),
-                            m('i.fa fa-fw')
+                    left:m('div.translate-page', [
+                             m('h5', m('a.no-decoration',  (" " + (study_name())))),
+                                m('.files', [
+                                    m('ul', pages().map(function (page) { return m('li.file-node',{onclick: select$1(templateId, page)}, [
+                                        m('a.wholerow',{
+                                            unselectable:'on',
+                                            class:classNames({
+                                                'current': page.pageName===pageId
+                                            }),
+                                        }, m.trust('&nbsp;')),
 
-                        ]); }))]),
+                                        m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
+                                            // icon
+                                            m('i.fa.fa-fw.fa-file-o.fa-files-o', {
+                                            }),
+                                            // file name
+                                            m('span', (" " + (page.pageName))),
+                                        ])
+                                    ]); }))
+                                ])
+                    ]),
                     right:  !strings()
                         ?  m('.centrify', [
                             m('i.fa.fa-smile-o.fa-5x'),
@@ -8818,27 +8798,40 @@
                         ])
                         :
                         [
-                        m('.translate-page', {config: fullHeight},
+                            m('.study',
+                            m('.editor',
+                            m('.btn-toolbar.editor-menu', [
+                                m('.file-name', {class: has_changed() ? 'text-danger' : ''},
+                                    m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
+                                    'File'
+                                ),
+                                m('.btn-group.btn-group-sm.pull-xs-right', [
+                                    m('a.btn.btn-secondary', { title:'Save', onclick:save
+                                        , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
+                                    },[
+                                        m('strong.fa.fa-save')
+                                ])]
+                            )]))),
+                        m('div.translate-page', {config: fullHeight},
                         [strings().map(function (string) { return m('.list-group-item', [
                             m('.row', [
                                 m('.col-sm-6', [
-                                    m('span.templae_text',  string.text)
+                                    m('span',  string.text)
                                 ]),
                                 m('.col-sm-6', [
                                     m('input.form-control', {
                                         type:'text',
                                         placeholder: 'translation',
                                         value: string.translation(),
-                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
-                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
                                         config: getStartValue$6(string.translation)
                                     })
-
                                 ])
                             ])
                         ]); })
-                ]),
-                m('button.btn.btn-primary.col-sm-1', {onclick: save},'Update')
+                ])
+
                         ]
                 })
             ]);
@@ -8875,6 +8868,12 @@
 
     var changedFilter = function () { return function (string) {
         return string.changed==true;
+    }; };
+
+    var select$1 = function (templateId, page) { return function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        m.route(("/translate/" + templateId + "/" + (page.pageName)));
     }; };
 
     var routes = {

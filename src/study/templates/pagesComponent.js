@@ -13,8 +13,10 @@ let pagesComponent = {
 
         let ctrl = {
             pages:m.prop(),
+            study_name:m.prop(),
             strings:m.prop(),
             loaded:false,
+            has_changed:m.prop(false),
             error:m.prop(''),
             pageId,
             templateId,
@@ -25,6 +27,7 @@ let pagesComponent = {
             getListOfPages(templateId)
                 .then(response => {
                     ctrl.pages(response.pages);
+                    ctrl.study_name(response.study_name);
                     ctrl.loaded = true;
                 })
                 .catch(error => {
@@ -43,6 +46,7 @@ let pagesComponent = {
 
         }
         function save() {
+            ctrl.has_changed(false);
             let changed_studies = ctrl.strings().filter(changedFilter());
             if(!changed_studies.length)
                 return;
@@ -50,23 +54,34 @@ let pagesComponent = {
                 .then(()=>load());
         }
         load();
+        console.log(ctrl.has_changed());
         return ctrl;
     },
-    view({loaded, pages, strings, save, templateId, pageId}){
-        return m('.study', {config: fullheight},  [
+    view({loaded, pages, strings, save, templateId, pageId, study_name, has_changed}){
+        return m('.study',  [
             !loaded ? m('.loader') : splitPane({
                 leftWidth,
-                left: m('.files', [
-                    m('ul', pages().map(page =>m('li.file-node', [
-                        m('a.wholerow',{
-                            unselectable:'on',
-                            class:classNames({
-                                'current': page.pageName===pageId
-                            }),
-                            href: `/translate/${templateId}/${page.pageName}/`, config: m.route }, ` ${page.pageName}`),
-                        m('i.fa fa-fw')
+                left:m('div.translate-page', [
+                         m('h5', m('a.no-decoration',  ` ${study_name()}`)),
+                            m('.files', [
+                                m('ul', pages().map(page =>m('li.file-node',{onclick: select(templateId, page)}, [
+                                    m('a.wholerow',{
+                                        unselectable:'on',
+                                        class:classNames({
+                                            'current': page.pageName===pageId
+                                        }),
+                                    }, m.trust('&nbsp;')),
 
-                    ])))]),
+                                    m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
+                                        // icon
+                                        m('i.fa.fa-fw.fa-file-o.fa-files-o', {
+                                        }),
+                                        // file name
+                                        m('span', ` ${page.pageName}`),
+                                    ])
+                                ])))
+                            ])
+                ]),
                 right:  !strings()
                     ?  m('.centrify', [
                         m('i.fa.fa-smile-o.fa-5x'),
@@ -74,27 +89,40 @@ let pagesComponent = {
                     ])
                     :
                     [
-                    m('.translate-page', {config: fullheight},
+                        m('.study',
+                        m('.editor',
+                        m('.btn-toolbar.editor-menu', [
+                            m('.file-name', {class: has_changed() ? 'text-danger' : ''},
+                                m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
+                                'File'
+                            ),
+                            m('.btn-group.btn-group-sm.pull-xs-right', [
+                                m('a.btn.btn-secondary', { title:'Save', onclick:save
+                                    , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
+                                },[
+                                    m('strong.fa.fa-save')
+                            ])]
+                        )]))),
+                    m('div.translate-page', {config: fullheight},
                     [strings().map(string => m('.list-group-item', [
                         m('.row', [
                             m('.col-sm-6', [
-                                m('span.templae_text',  string.text)
+                                m('span',  string.text)
                             ]),
                             m('.col-sm-6', [
                                 m('input.form-control', {
                                     type:'text',
                                     placeholder: 'translation',
                                     value: string.translation(),
-                                    oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
-                                    onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                    oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                    onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
                                     config: getStartValue(string.translation)
                                 })
-
                             ])
                         ])
                     ]))
-            ]),
-            m('button.btn.btn-primary.col-sm-1', {onclick: save},'Update')
+            ])
+
                     ]
             })
         ]);
@@ -131,4 +159,10 @@ function getStartValue(prop){
 
 let changedFilter = () => string => {
     return string.changed==true;
+};
+
+const select = (templateId, page) => e => {
+    e.stopPropagation();
+    e.preventDefault();
+    m.route(`/translate/${templateId}/${page.pageName}`);
 };
