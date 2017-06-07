@@ -54,7 +54,6 @@ let pagesComponent = {
                 .then(()=>load());
         }
         load();
-        console.log(ctrl.has_changed());
         return ctrl;
     },
     view({loaded, pages, strings, save, templateId, pageId, study_name, has_changed}){
@@ -62,25 +61,25 @@ let pagesComponent = {
             !loaded ? m('.loader') : splitPane({
                 leftWidth,
                 left:m('div.translate-page', [
-                         m('h5', m('a.no-decoration',  ` ${study_name()}`)),
-                            m('.files', [
-                                m('ul', pages().map(page =>m('li.file-node',{onclick: select(templateId, page)}, [
-                                    m('a.wholerow',{
-                                        unselectable:'on',
-                                        class:classNames({
-                                            'current': page.pageName===pageId
-                                        }),
-                                    }, m.trust('&nbsp;')),
+                    m('h5', m('a.no-decoration',  ` ${study_name()}`)),
+                    m('.files', [
+                        m('ul', pages().map(page =>m('li.file-node',{onclick: select(templateId, page)}, [
+                            m('a.wholerow',{
+                                unselectable:'on',
+                                class:classNames({
+                                    'current': page.pageName===pageId
+                                })
+                            }, m.trust('&nbsp;')),
 
-                                    m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
-                                        // icon
-                                        m('i.fa.fa-fw.fa-file-o.fa-files-o', {
-                                        }),
-                                        // file name
-                                        m('span', ` ${page.pageName}`),
-                                    ])
-                                ])))
+                            m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
+                                // icon
+                                m('i.fa.fa-fw.fa-file-o.fa-files-o', {
+                                }),
+                                // page name
+                                m('span', ` ${page.pageName}`)
                             ])
+                        ])))
+                    ])
                 ]),
                 right:  !strings()
                     ?  m('.centrify', [
@@ -94,34 +93,34 @@ let pagesComponent = {
                         m('.btn-toolbar.editor-menu', [
                             m('.file-name', {class: has_changed() ? 'text-danger' : ''},
                                 m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
-                                'File'
+                                pageId
                             ),
                             m('.btn-group.btn-group-sm.pull-xs-right', [
                                 m('a.btn.btn-secondary', { title:'Save', onclick:save
                                     , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
                                 },[
                                     m('strong.fa.fa-save')
-                            ])]
+                                ])]
                         )]))),
-                    m('div.translate-page', {config: fullheight},
-                    [strings().map(string => m('.list-group-item', [
-                        m('.row', [
-                            m('.col-sm-6', [
-                                m('span',  string.text)
-                            ]),
-                            m('.col-sm-6', [
-                                m('input.form-control', {
-                                    type:'text',
-                                    placeholder: 'translation',
-                                    value: string.translation(),
-                                    oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                    onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                    config: getStartValue(string.translation)
-                                })
+                        m('div.translate-page', {config: fullheight},
+                        [strings().map(string => m('.list-group-item', [
+                            m('.row', [
+                                m('.col-sm-6', [
+                                    m('span',  string.text)
+                                ]),
+                                m('.col-sm-6', [
+                                    m('input.form-control', {
+                                        type:'text',
+                                        placeholder: 'translation',
+                                        value: string.translation(),
+                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                        config: getStartValue(string.translation)
+                                    })
+                                ])
                             ])
-                        ])
-                    ]))
-            ])
+                        ]))
+                ])
 
                     ]
             })

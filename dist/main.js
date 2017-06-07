@@ -3660,7 +3660,6 @@
             var files = ref.files;
             var force = ref.force;
 
-            console.log(path);
             var formData = buildFormData(path === '/' ? '' : path, files);
             formData.append('forceUpload', +force);
 
@@ -6236,7 +6235,7 @@
 
     function sort_studies(study_1, study_2){return study_1.name.toLowerCase() === study_2.name.toLowerCase() ? 0 : study_1.name.toLowerCase() > study_2.name.toLowerCase() ? 1 : -1;}
 
-    var ownerFilter = function (permission) { return function (study) {
+    var ownerFilter = function () { return function (study) {
         return study.permission == 'owner';
     }; };
 
@@ -6671,6 +6670,49 @@
     // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
     // Essentially this is a global variable
     function leftWidth(val){
+        if (arguments.length) localStorage.fileSidebarWidth = val;
+        return localStorage.fileSidebarWidth;
+    }
+
+    var study$1;
+
+    var editorLayoutComponent$1 = {
+        controller: function (){
+
+            var code = m.route.param('code');
+
+            var id = 4173;
+
+            if (!study$1 || (study$1.id !== id)){
+                study$1 = studyFactory(id);
+                study$1
+                    .get()
+                    .then(m.redraw);
+            }
+
+            var ctrl = {study: study$1, onunload: onunload};
+
+            return ctrl;
+
+        },
+        view: function (ref) {
+            var study = ref.study;
+
+            return m('.study', {config: fullHeight},  [
+                !study.loaded ? '' : splitPane({
+                    leftWidth: leftWidth$1,
+                    left: m.component(sidebarComponent, {study: study}),
+                    right: m.route.param('resource') === 'wizard'
+                        ? m.component(wizardComponent, {study: study})
+                        : m.component(fileEditorComponent, {study: study})
+                })
+            ]);
+        }
+    };
+
+    // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
+    // Essentially this is a global variable
+    function leftWidth$1(val){
         if (arguments.length) localStorage.fileSidebarWidth = val;
         return localStorage.fileSidebarWidth;
     }
@@ -8303,6 +8345,12 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
 
+    function link_url(study_id)
+    {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/link");
+    }
+
+
 
     function public_url(study_id)
     {
@@ -8325,6 +8373,17 @@
     }); };
 
 
+    var edit_link = function (study_id, users_to_add, users_to_remove, type) { return fetchJson(link_url(study_id), {
+        method: 'put',
+        body: {users_to_add: users_to_add, users_to_remove: users_to_remove, type: type}
+    }); };
+
+    var add_link = function (study_id) { return fetchJson(link_url(study_id), {
+        method: 'post'
+    }); };
+
+
+
     var make_pulic = function (study_id, is_public) { return fetchJson(public_url(study_id), {
         method: 'post',
         body: {is_public: is_public}
@@ -8335,6 +8394,13 @@
             var ctrl = {
                 users:m.prop(),
                 is_public:m.prop(),
+
+                link_data:m.prop(),
+                link:m.prop(''),
+                link_type:m.prop(''),
+                link_list:m.prop([]),
+                link_add_list:m.prop([]),
+                link_remove_list:m.prop([]),
                 study_name:m.prop(),
                 user_name:m.prop(''),
                 permission:m.prop(''),
@@ -8343,6 +8409,11 @@
                 pub_error:m.prop(''),
                 remove: remove,
                 do_add_collaboration: do_add_collaboration,
+                do_add_link: do_add_link,
+                do_edit_link: do_edit_link,
+                view_link: view_link,
+                add_to_link: add_to_link,
+                remove_from_link: remove_from_link,
                 do_make_public: do_make_public
             };
             function load() {
@@ -8350,6 +8421,10 @@
                     .then(function (response) {ctrl.users(response.users);
                         ctrl.is_public(response.is_public);
                         ctrl.study_name(response.study_name);
+                        ctrl.link(response.link_data.link);
+                        ctrl.link_type(response.link_data.link_type);
+                        ctrl.link_list(response.link_data.link_list);
+
                         ctrl.loaded = true;})
                     .catch(function (error) {
                         ctrl.col_error(error.message);
@@ -8370,7 +8445,9 @@
                                 .then(m.redraw);
                     });
             }
-            function do_add_collaboration(){
+
+            function do_add_collaboration()
+            {
                 messages.confirm({
                     header:'Add a Collaborator',
                     content: m.component({view: function () { return m('p', [
@@ -8387,15 +8464,130 @@
                     .then(function (response) {
                         if (response)
                             add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
-                            .then(function (){
-                                ctrl.col_error('');
-                                load();
-                            })
-                            .catch(function (error) {
-                                ctrl.col_error(error.message);
-                                do_add_collaboration();
-                            })
-                            .then(m.redraw);
+                                .then(function (){
+                                    ctrl.col_error('');
+                                    load();
+                                })
+                                .catch(function (error) {
+                                    ctrl.col_error(error.message);
+                                    do_add_collaboration();
+                                })
+                                .then(m.redraw);
+                    });
+            }
+
+
+
+            function add_to_link(user_name)
+            {
+                if(!user_name)
+                    return;
+                ctrl.link_list().push(user_name);
+                ctrl.link_list(ctrl.link_list().filter(uniqueFilter));
+
+                ctrl.link_add_list().push(user_name);
+                ctrl.link_add_list(ctrl.link_add_list().filter(uniqueFilter));
+                ctrl.link_remove_list(ctrl.link_remove_list().filter(removeFilter));
+            }
+
+            function remove_from_link(user_name)
+            {
+                if(!ctrl.link_add_list().find(function(e){return e==user_name;}))
+                {
+                    ctrl.link_remove_list().push(user_name);
+                    ctrl.link_remove_list(ctrl.link_remove_list().filter(uniqueFilter));
+                }
+                ctrl.link_add_list(ctrl.link_add_list().filter(removeFilter(user_name)));
+                ctrl.link_list(ctrl.link_list().filter(removeFilter(user_name)));
+            }
+
+            var removeFilter = function (user_name) { return function (string) {
+                return string!=user_name;
+            }; };
+
+            function uniqueFilter(value, index, self) {
+                return self.indexOf(value) === index;
+            }
+
+            function do_add_link() {
+                add_link(m.route.param('studyId'))
+                    .then(function (response) {ctrl.link(response.link);})
+                    .catch(function (error) {
+                        ctrl.col_error(error.message);
+                    }).then(m.redraw);
+            }
+
+            function do_edit_link() {
+                return edit_link(m.route.param('studyId'), ctrl.link_add_list, ctrl.link_remove_list, ctrl.link_type)
+                    .then(function (response) {ctrl.link(response.link);})
+                    .catch(function (error) {
+                        ctrl.col_error(error.message);
+                    });
+            }
+
+
+            function view_link(){
+                messages.confirm({
+                    header:'Access link',
+                    content: m.component({view: function () { return m('p', [
+                        m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
+                            'Create / Re-create link'
+                        ),
+                        m('label.input-group',[
+                            m('.input-group-addon', m('i.fa.fa-fw.fa-copy')),
+                            m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
+                        ]),
+                        m('.custom-control.custom-checkbox', [
+                            m('input.custom-control-input', {
+                                type: 'radio',
+                                name:'template',
+                                checked:ctrl.link_type()=='Public',
+                                onclick: function(){
+                                    ctrl.link_type('Public');
+                                }
+                            }),
+                            m('span.custom-control-indicator'),
+                            m('span.custom-control-description.m-l-1', 'Public')
+                        ]),
+                        m('.custom-control.custom-checkbox', [
+                            m('input.custom-control-input', {
+                                type: 'radio',
+                                name:'template',
+                                checked:ctrl.link_type()=='Private',
+                                onclick: function(){
+                                    ctrl.link_type('Private');
+                                }
+                            }),
+                            m('span.custom-control-indicator'),
+                            m('span.custom-control-description.m-l-1', 'Private')
+                        ]),
+                        ctrl.link_type()!='Private'
+                        ?
+                        ''
+                        :
+                        m('p', [
+                            ctrl.link_list().map(function (user){ return m('.small',{onclick:function(){ctrl.remove_from_link(user);}}, [m('i.fa.fa-times', {
+
+                            }), (" " + user + "  ")]); }),
+                            m('p', 'Enter collaborator\'s user name:'),
+                            m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
+                            m('button.btn.btn-success.btn-sm', {onclick:function(){ctrl.add_to_link(ctrl.user_name()); ctrl.user_name('');}}, 'Add')
+                        ]),
+                        m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
+                    ]); }
+                    })})
+                    .then(function (response) {
+                        if (response)
+                            do_edit_link()
+                                .then(function (){
+                                    ctrl.col_error('');
+                                    load();
+                                })
+                                .catch(function (error) {
+                                    ctrl.col_error(error.message);
+                                    view_link();
+                                })
+                                .then(m.redraw);
                     });
             }
             function do_make_public(is_public){
@@ -8429,10 +8621,13 @@
                 :
                 m('.container.sharing-page', [
                     m('.row',[
-                        m('.col-sm-7', [
+                        m('.col-sm-6', [
                             m('h3', [ctrl.study_name(), ': Sharing'])
                         ]),
-                        m('.col-sm-5', [
+                        m('.col-sm-6', [
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
+                                m('i.fa.fa-plus'), '  Access link'
+                            ]),
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                                 m('i.fa.fa-plus'), '  Add a new collaborator'
                             ]),
@@ -8754,7 +8949,6 @@
                     .then(function (){ return load(); });
             }
             load();
-            console.log(ctrl.has_changed());
             return ctrl;
         },
         view: function view(ref){
@@ -8769,27 +8963,27 @@
 
             return m('.study',  [
                 !loaded ? m('.loader') : splitPane({
-                    leftWidth: leftWidth$1,
+                    leftWidth: leftWidth$2,
                     left:m('div.translate-page', [
-                             m('h5', m('a.no-decoration',  (" " + (study_name())))),
-                                m('.files', [
-                                    m('ul', pages().map(function (page) { return m('li.file-node',{onclick: select$1(templateId, page)}, [
-                                        m('a.wholerow',{
-                                            unselectable:'on',
-                                            class:classNames({
-                                                'current': page.pageName===pageId
-                                            }),
-                                        }, m.trust('&nbsp;')),
+                        m('h5', m('a.no-decoration',  (" " + (study_name())))),
+                        m('.files', [
+                            m('ul', pages().map(function (page) { return m('li.file-node',{onclick: select$1(templateId, page)}, [
+                                m('a.wholerow',{
+                                    unselectable:'on',
+                                    class:classNames({
+                                        'current': page.pageName===pageId
+                                    })
+                                }, m.trust('&nbsp;')),
 
-                                        m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
-                                            // icon
-                                            m('i.fa.fa-fw.fa-file-o.fa-files-o', {
-                                            }),
-                                            // file name
-                                            m('span', (" " + (page.pageName))),
-                                        ])
-                                    ]); }))
+                                m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(page.pageName)})}, [
+                                    // icon
+                                    m('i.fa.fa-fw.fa-file-o.fa-files-o', {
+                                    }),
+                                    // page name
+                                    m('span', (" " + (page.pageName)))
                                 ])
+                            ]); }))
+                        ])
                     ]),
                     right:  !strings()
                         ?  m('.centrify', [
@@ -8803,34 +8997,34 @@
                             m('.btn-toolbar.editor-menu', [
                                 m('.file-name', {class: has_changed() ? 'text-danger' : ''},
                                     m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
-                                    'File'
+                                    pageId
                                 ),
                                 m('.btn-group.btn-group-sm.pull-xs-right', [
                                     m('a.btn.btn-secondary', { title:'Save', onclick:save
                                         , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
                                     },[
                                         m('strong.fa.fa-save')
-                                ])]
+                                    ])]
                             )]))),
-                        m('div.translate-page', {config: fullHeight},
-                        [strings().map(function (string) { return m('.list-group-item', [
-                            m('.row', [
-                                m('.col-sm-6', [
-                                    m('span',  string.text)
-                                ]),
-                                m('.col-sm-6', [
-                                    m('input.form-control', {
-                                        type:'text',
-                                        placeholder: 'translation',
-                                        value: string.translation(),
-                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                        config: getStartValue$6(string.translation)
-                                    })
+                            m('div.translate-page', {config: fullHeight},
+                            [strings().map(function (string) { return m('.list-group-item', [
+                                m('.row', [
+                                    m('.col-sm-6', [
+                                        m('span',  string.text)
+                                    ]),
+                                    m('.col-sm-6', [
+                                        m('input.form-control', {
+                                            type:'text',
+                                            placeholder: 'translation',
+                                            value: string.translation(),
+                                            oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                            onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                            config: getStartValue$6(string.translation)
+                                        })
+                                    ])
                                 ])
-                            ])
-                        ]); })
-                ])
+                            ]); })
+                    ])
 
                         ]
                 })
@@ -8840,7 +9034,7 @@
 
     // a clone of m.prop that users localStorage so that width changes persist across sessions as well as files.
     // Essentially this is a global variable
-    function leftWidth$1(val){
+    function leftWidth$2(val){
         if (arguments.length) localStorage.fileSidebarWidth = val;
         return localStorage.fileSidebarWidth;
     }
@@ -8901,6 +9095,10 @@
         '/studies' : mainComponent,
         '/studies/statistics_old' : statisticsComponent$1,
         '/studies/statistics' : statisticsComponent,
+
+        '/view/:studyId': editorLayoutComponent$1,
+        '/view/:studyId/:resource/:fileId': editorLayoutComponent$1,
+
 
         '/editor/:studyId': editorLayoutComponent,
         '/editor/:studyId/:resource/:fileId': editorLayoutComponent,

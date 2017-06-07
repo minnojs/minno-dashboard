@@ -32,6 +32,6 @@ let studyTemplatesComponent = {
 
 function sort_studies(study_1, study_2){return study_1.name.toLowerCase() === study_2.name.toLowerCase() ? 0 : study_1.name.toLowerCase() > study_2.name.toLowerCase() ? 1 : -1;}
 
-let ownerFilter = permission => study => {
+let ownerFilter = () => study => {
     return study.permission == 'owner';
 };

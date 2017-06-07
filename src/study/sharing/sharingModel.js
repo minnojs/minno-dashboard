@@ -7,6 +7,12 @@ function collaboration_url(study_id)
     return `${studyUrl}/${encodeURIComponent(study_id)}/collaboration`;
 }
 
+function link_url(study_id)
+{
+    return `${studyUrl}/${encodeURIComponent(study_id)}/link`;
+}
+
+
 
 function public_url(study_id)
 {
@@ -27,6 +33,17 @@ export let add_collaboration = (study_id, user_name, permission) => fetchJson(co
     method: 'post',
     body: {user_name, permission}
 });
+
+
+export let edit_link = (study_id, users_to_add, users_to_remove, type) => fetchJson(link_url(study_id), {
+    method: 'put',
+    body: {users_to_add, users_to_remove, type}
+});
+
+export let add_link = (study_id) => fetchJson(link_url(study_id), {
+    method: 'post'
+});
+
 
 
 export let make_pulic = (study_id, is_public) => fetchJson(public_url(study_id), {

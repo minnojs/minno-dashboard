@@ -9,6 +9,8 @@ import downloadsAccessComponent from './downloadsAccess/downloadsAccessComponent
 
 import loginComponent from './login/loginComponent';
 import filesComponent from './study/files/filesComponent';
+import viewFilesComponent from './study/files/viewFilesComponent';
+
 import studiesComponent from './study/studiesComponent';
 
 
@@ -60,6 +62,10 @@ let routes = {
     '/studies' : studiesComponent,
     '/studies/statistics_old' : statistics_oldComponent,
     '/studies/statistics' : statisticsComponent,
+
+    '/view/:studyId': viewFilesComponent,
+    '/view/:studyId/:resource/:fileId': viewFilesComponent,
+
 
     '/editor/:studyId': filesComponent,
     '/editor/:studyId/:resource/:fileId': filesComponent,
