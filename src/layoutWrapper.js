@@ -25,7 +25,7 @@ let layout = route => {
                     ctrl.isloggedin = response.isloggedin;
                     ctrl.present_templates(response.present_templates);
                     // console.log(response.present_templates);
-                    if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                    if (!m.route() !== '/view/'+ m.route.param('code') && !m.route() !== '/view/'+ m.route.param('code') + m.route.param('code') + m.route.param('resource') + m.route.param('fileId') &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
                         let url = m.route();
                         m.route('/login');
                         location.hash = encodeURIComponent(url);

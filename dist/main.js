@@ -116,6 +116,13 @@
         throw error;
     };
 
+    var checkFullStatus = function (response) {
+        if (response.status >= 200 && response.status < 300) {
+            return response;
+        }
+        throw response;
+    };
+
     var toJSON = function (response) { return response
         .json()
         .catch( ); };
@@ -142,6 +149,27 @@
             .then(checkStatus)
             .catch(catchJSON);
     }
+
+    function fetchFullJson(url, options){
+        if ( options === void 0 ) options = {};
+
+        var opts = Object.assign({
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }, options);
+
+        opts.body = JSON.stringify(options.body);
+        return fetch(url, opts)
+            .then(checkFullStatus)
+            .then(toJSON)
+            .catch();
+    }
+
+
+
 
     function fetchJson(url, options){
         return fetchVoid(url, options)
@@ -6057,9 +6085,13 @@
 
     // select specific file and display it
     var select = function (file) { return function (e) {
+        console.log(file);
         e.stopPropagation();
         e.preventDefault();
-        m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
+        if(file.viewStudy)
+            m.route(("/view/" + (m.route.param('code')) + "/file/" + (encodeURIComponent(file.id))));
+        else
+            m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
     }; };
 
     // checkmark a file/folder
@@ -6217,18 +6249,11 @@
             return m('div', [
             loaded() ? '' : m('.loader'),
             error() ? m('.alert.alert-warning', error().message): '',
-            loaded() && !templates().length ? m('.alert.alert-info', 'You have no tags yet') : '',
-            m('.custom-controls-stacked.pre-scrollable', templates().filter(ownerFilter()).sort(sort_studies).map(function (study) { return m('label.custom-control.custom-checkbox', [
-                m('input.custom-control-input', {
-                    type: 'radio',
-                    name:'template',
-                    onclick: function(){
-                        template_id(study.id);
-                    }
-                }),
-                m('span.custom-control-indicator'),
-                m('span.custom-control-description.m-l-1', study.name)
-            ]); }))
+            loaded() && !templates().length ? m('.alert.alert-info', 'There is no templates yet') : '',
+            m('select.form-control', {value:template_id(), onchange: m.withAttr('value',template_id)}, [
+                m('option',{value:'', disabled: true}, 'Select template'),
+                templates().filter(ownerFilter()).sort(sort_studies).map(function (study) { return m('option',{value:study.id}, study.name); })
+            ])
         ]);
     }
     };
@@ -6364,7 +6389,7 @@
 
 
         var ask = function () { return messages.confirm({
-            header:'New Study',
+            header:type == 'regular' ? 'New Study' : 'New Template Study',
             content: m.component({view: function () { return m('p', [
                 m('p', 'Enter Study Name:'),
                 m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
@@ -6674,6 +6699,199 @@
         return localStorage.fileSidebarWidth;
     }
 
+    var studyPrototype$1 = {
+        apiURL: function apiURL(path){
+            if ( path === void 0 ) path = '';
+
+            return (baseUrl + "/view_files/" + (encodeURIComponent(this.code)) + path);
+        },
+
+        get: function get(){
+            var this$1 = this;
+
+            return fetchFullJson(this.apiURL())
+                .then(function (study) {
+                    this$1.loaded = true;
+                    console.log(study);
+                    this$1.id = study.id;
+                    this$1.isReadonly = study.is_readonly;
+                    this$1.istemplate = study.is_template;
+                    this$1.is_locked = study.is_locked;
+                    this$1.name = study.study_name;
+                    this$1.baseUrl = study.base_url;
+                    var files = flattenFiles(study.files)
+                        .map(assignStudyId(this$1.id))
+                        .map(assignViewStudy())
+                        .map(fileFactory);
+
+                    this$1.files(files);
+                    this$1.sort();
+                })
+                .catch(function (reason) {
+                    this$1.error = true;
+                    throw(reason);
+                    // if(reason.status==404)
+                    //
+                    // console.log(reason.status);
+                    //
+                    // return Promise.reject(reason); // do not swallow error
+                });
+
+            function flattenFiles(files){
+                if (!files) return [];
+                return files
+                        .map(spreadFile)
+                        .reduce(function (result, fileArr) { return result.concat(fileArr); },[]);
+            }
+
+            function assignStudyId(id){
+                return function (f) { return Object.assign(f, {studyId: id}); };
+            }
+
+            function assignViewStudy(){
+                return function (f) { return Object.assign(f, {viewStudy: true}); };
+            }
+
+            // create an array including file and all its children
+            function spreadFile(file){
+                return [file].concat(flattenFiles(file.files));
+            }
+        },
+
+        getFile: function getFile(id){
+            return this.files().find(function (f) { return f.id === id; });
+        },
+
+        // makes sure not to return both a folder and its contents.
+        // This is important mainly for server side clarity (don't delete or download both a folder and its content)
+        // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
+        getChosenFiles: function getChosenFiles(){
+            var vm = this.vm;
+            var rootFiles = this.files().filter(function (f) { return f.basePath === '/'; });
+            return getChosen(rootFiles);
+
+            function getChosen(files){
+                return files.reduce(function (response, file) {
+                    // a chosen file/dir does not need sub files to be checked
+                    if (vm(file.id).isChosen() === 1) response.push(file);
+                    // if not chosen, we need to look deeper
+                    else response = response.concat(getChosen(file.files || []));
+                    return response;
+                }, []);
+            }
+        },
+
+        addFile: function addFile(file){
+            this.files().push(file);
+            // update the parent folder
+            var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+            if (parent) {
+                parent.files || (parent.files = []);
+                parent.files.push(file);
+            }
+        },
+
+        createFile: function createFile(ref){
+            var this$1 = this;
+            var name = ref.name;
+            var content = ref.content; if ( content === void 0 ) content = '';
+            var isDir = ref.isDir;
+
+            // validation (make sure there are no invalid characters)
+            if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: ("The file name \"" + name + "\" is not valid")});
+
+            // validation (make sure file does not already exist)
+            var exists = this.files().some(function (file) { return file.path === name; });
+            if (exists) return Promise.reject({message: ("The file \"" + name + "\" already exists")});
+
+            // validateion (make sure direcotry exists)
+            var basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
+            var dirExists = basePath === '' || this.files().some(function (file) { return file.isDir && file.path === basePath; });
+            if (!dirExists) return Promise.reject({message: ("The directory \"" + basePath + "\" does not exist")});
+            return fetchJson(this.apiURL('/file'), {method:'post', body: {name: name, content: content, isDir: isDir}})
+                .then(function (response) {
+                    Object.assign(response, {studyId: this$1.id, content: content, path:name, isDir: isDir});
+                    var file = fileFactory(response);
+                    file.loaded = true;
+                    this$1.addFile(file);
+                    return response;
+                })
+                .then(this.sort.bind(this));
+        },
+
+        sort: function sort(response){
+            var files = this.files().sort(sort);
+            this.files(files);
+            return response;
+
+            function sort(a,b){
+                // sort by isDir then name
+                var nameA= +!a.isDir + a.name.toLowerCase(), nameB=+!b.isDir + b.name.toLowerCase();
+                if (nameA < nameB) return -1;//sort string ascending
+                if (nameA > nameB) return 1;
+                return 0; //default return value (no sorting)
+            }
+        },
+
+
+        /*
+         * @param files [Array] a list of file.path to download
+         * @returns url [String] the download url
+         */
+        downloadFiles: function downloadFiles(files){
+            return fetchJson(this.apiURL(), {method: 'post', body: {files: files}})
+                .then(function (response) { return (baseUrl + "/download?path=" + (response.zip_file) + "&study=_PATH"); });
+        },
+
+
+        getParents: function getParents(file){
+            return this.files().filter(function (f) { return f.isDir && file.basePath.indexOf(f.path) === 0; });
+        },
+
+        // returns array of children for this file, including itself
+        getChildren: function getChildren(file){
+            return children(file);
+           
+            function children(file){
+                if (!file.files) return [file];
+                return file.files
+                    .map(children) // harvest children
+                    .reduce(function (result, files) { return result.concat(files); }, [file]); // flatten
+            }
+        }
+    };
+
+    var studyFactory$1 =  function (code) {
+        var study = Object.create(studyPrototype$1);
+        Object.assign(study, {
+            code    : code,
+            id      : '',
+            view    : true,
+            files   : m.prop([]),
+            loaded  : false,
+            error   :false,
+            vm      : viewModelMap$1({
+                isOpen: m.prop(false),
+                isChanged: m.prop(false),
+                isChosen: m.prop(0)
+            })
+        });
+
+        return study;
+    };
+
+    // http://lhorie.github.io/mithril-blog/mapping-view-models.html
+    var viewModelMap$1 = function(signature) {
+        var map = {};
+        return function(key) {
+            if (!map[key]) {
+                map[key] = {};
+                for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
+            }
+            return map[key];
+        };
+    };
+
     var study$1;
 
     var editorLayoutComponent$1 = {
@@ -6681,19 +6899,24 @@
 
             var code = m.route.param('code');
 
-            var id = 4173;
-
-            if (!study$1 || (study$1.id !== id)){
-                study$1 = studyFactory(id);
+            if (!study$1 || (study$1.code !== code)){
+                study$1 = studyFactory$1(code);
                 study$1
                     .get()
+                    .catch(function (reason) {
+                        if(reason.status==404)
+                            m.route('/');
+                        // else
+
+
+                        // console.log(reason);
+                    })
                     .then(m.redraw);
             }
 
             var ctrl = {study: study$1, onunload: onunload};
 
             return ctrl;
-
         },
         view: function (ref) {
             var study = ref.study;
@@ -9096,8 +9319,8 @@
         '/studies/statistics_old' : statisticsComponent$1,
         '/studies/statistics' : statisticsComponent,
 
-        '/view/:studyId': editorLayoutComponent$1,
-        '/view/:studyId/:resource/:fileId': editorLayoutComponent$1,
+        '/view/:code': editorLayoutComponent$1,
+        '/view/:code/:resource/:fileId': editorLayoutComponent$1,
 
 
         '/editor/:studyId': editorLayoutComponent,
@@ -9129,7 +9352,7 @@
                         ctrl.isloggedin = response.isloggedin;
                         ctrl.present_templates(response.present_templates);
                         // console.log(response.present_templates);
-                        if (!ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                        if (!m.route() !== '/view/'+ m.route.param('code') && !m.route() !== '/view/'+ m.route.param('code') + m.route.param('code') + m.route.param('resource') + m.route.param('fileId') &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
                             var url = m.route();
                             m.route('/login');
                             location.hash = encodeURIComponent(url);

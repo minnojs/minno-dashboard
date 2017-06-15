@@ -82,9 +82,13 @@ const toggleOpen = vm => e => {
 
 // select specific file and display it
 const select = (file) => e => {
+    console.log(file);
     e.stopPropagation();
     e.preventDefault();
-    m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
+    if(file.viewStudy)
+        m.route(`/view/${m.route.param('code')}/file/${encodeURIComponent(file.id)}`);
+    else
+        m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
 };
 
 // checkmark a file/folder

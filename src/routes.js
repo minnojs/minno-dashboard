@@ -63,8 +63,8 @@ let routes = {
     '/studies/statistics_old' : statistics_oldComponent,
     '/studies/statistics' : statisticsComponent,
 
-    '/view/:studyId': viewFilesComponent,
-    '/view/:studyId/:resource/:fileId': viewFilesComponent,
+    '/view/:code': viewFilesComponent,
+    '/view/:code/:resource/:fileId': viewFilesComponent,
 
 
     '/editor/:studyId': filesComponent,

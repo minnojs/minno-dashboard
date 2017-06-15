@@ -15,18 +15,12 @@ let studyTemplatesComponent = {
     view: ({template_id, templates, loaded, error}) => m('div', [
         loaded() ? '' : m('.loader'),
         error() ? m('.alert.alert-warning', error().message): '',
-        loaded() && !templates().length ? m('.alert.alert-info', 'You have no tags yet') : '',
-        m('.custom-controls-stacked.pre-scrollable', templates().filter(ownerFilter()).sort(sort_studies).map(study => m('label.custom-control.custom-checkbox', [
-            m('input.custom-control-input', {
-                type: 'radio',
-                name:'template',
-                onclick: function(){
-                    template_id(study.id);
-                }
-            }),
-            m('span.custom-control-indicator'),
-            m('span.custom-control-description.m-l-1', study.name)
-        ])))
+        loaded() && !templates().length ? m('.alert.alert-info', 'There is no templates yet') : '',
+        m('select.form-control', {value:template_id(), onchange: m.withAttr('value',template_id)}, [
+            m('option',{value:'', disabled: true}, 'Select template'),
+            templates().filter(ownerFilter()).sort(sort_studies).map(study =>
+            m('option',{value:study.id}, study.name))
+        ])
     ])
 };
 

@@ -11,6 +11,13 @@ export let checkStatus = response => {
     throw error;
 };
 
+export let checkFullStatus = response => {
+    if (response.status >= 200 && response.status < 300) {
+        return response;
+    }
+    throw response;
+};
+
 export let toJSON = response => response
     .json()
     .catch( );
@@ -35,6 +42,25 @@ export function fetchVoid(url, options = {}){
         .then(checkStatus)
         .catch(catchJSON);
 }
+
+export function fetchFullJson(url, options = {}){
+    let opts = Object.assign({
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }, options);
+
+    opts.body = JSON.stringify(options.body);
+    return fetch(url, opts)
+        .then(checkFullStatus)
+        .then(toJSON)
+        .catch();
+}
+
+
+
 
 export function fetchJson(url, options){
     return fetchVoid(url, options)

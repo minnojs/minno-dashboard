@@ -14,7 +14,7 @@ export let do_create = (type) => {
 
 
     let ask = () => messages.confirm({
-        header:'New Study',
+        header:type == 'regular' ? 'New Study' : 'New Template Study',
         content: m.component({view: () => m('p', [
             m('p', 'Enter Study Name:'),
             m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
