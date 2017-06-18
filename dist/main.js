@@ -3284,7 +3284,7 @@
         }
 
         function onResize(){
-            requestAnimationFrame(function () { return element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px'; });
+            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
         }
     };
 
@@ -9166,6 +9166,7 @@
         var resize = function () {
             var height = el.scrollHeight + 'px';
             requestAnimationFrame(function () {
+                el.style.overflow = 'hidden';
                 el.style.height = 'auto';
                 el.style.height = height;
             });

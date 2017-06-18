@@ -7,7 +7,7 @@ h1 small, h2 small, h3 small, h4 small, h5 small {
   color: #818a91;
   font-size: 70%; }
 
-.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool, .tags-page, .translate-page, .sharing-page, .translate-page {
+.deploy, .sharing, .downloadAccess, .StudyChangeRequest, .StudyRemoval, .downloads, .statistics, .pool, .tags-page, .translate-page, .sharing-page {
   padding-top: 1em; }
 
 .translate-page {
@@ -532,7 +532,7 @@ select.c-select {
   height: 100%;
   display: flex; }
   .split-pane-col-right {
-    flex: 1 1 auto;
+    flex: 1 1 1px;
     min-width: 0; }
   .split-pane-col-left {
     flex: 0 1 auto;
