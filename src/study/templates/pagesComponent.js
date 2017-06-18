@@ -3,6 +3,7 @@ import fullheight from 'utils/fullHeight';
 import splitPane from 'utils/splitPane';
 import {getStrings, saveStrings} from './translateModel';
 import classNames from 'utils/classNames';
+import textareaAutoresize from 'utils/textareaAutoresize';
 
 export default pagesComponent;
 
@@ -120,15 +121,13 @@ let pagesComponent = {
                                 m('.col-sm-5', [
                                     m('span',  string.text)
                                 ]),
-                                ,m('.col-sm-7', [
-
-                                m('textarea.form-control', {
-                                    placeholder: 'translation',
-                                    oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                                    onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                    /                config: (element, isInit) => textareaConfig(element, isInit),
-
-                                } , string.translation())
+                                m('.col-sm-7', [
+                                    m('textarea.form-control', {
+                                        placeholder: 'translation',
+                                        oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                                        config: textareaAutoresize,
+                                    }, string.translation())
                                 ])
 
                                 // ,m('.col-sm-6', [
@@ -188,17 +187,3 @@ const select = (templateId, page) => e => {
     e.preventDefault();
     m.route(`/translate/${templateId}/${page.pageName}`);
 };
-
-function textareaConfig(el, isInit){
-    // el.style.height = (5+el.scrollHeight)+'px';
-    // const delayedResize = () => setTimeout(resize, 0);
-    // if (!isInit) {
-    //     // el.style.height = 'auto';
-    //     // el.addEventListener('change',  resize);
-    //     // el.addEventListener('cut',     delayedResize);
-    //     // el.addEventListener('paste',   delayedResize);
-    //     // el.addEventListener('drop',    delayedResize);
-    //     // el.addEventListener('keydown', delayedResize);
-    //     resize();
-    // }
-}
