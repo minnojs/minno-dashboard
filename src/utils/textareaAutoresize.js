@@ -1,15 +1,14 @@
 export default function textareaConfig(el, isInit){
     const resize = () => {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
+        const height = el.scrollHeight + 'px';
+        requestAnimationFrame(() => {
+            el.style.height = 'auto';
+            el.style.height = height;
+        });
     }
-    const delayedResize = () => setTimeout(resize, 0);
+
     if (!isInit) {
-        el.addEventListener('change',  resize);
-        el.addEventListener('cut',     delayedResize);
-        el.addEventListener('paste',   delayedResize);
-        el.addEventListener('drop',    delayedResize);
-        el.addEventListener('keydown', delayedResize);
-        resize();   
+        el.addEventListener('input',  resize);
+        resize();
     }
 }

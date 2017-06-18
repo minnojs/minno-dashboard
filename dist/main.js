@@ -3284,7 +3284,7 @@
         }
 
         function onResize(){
-            element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px';
+            requestAnimationFrame(function () { return element.style.height = document.documentElement.clientHeight - element.getBoundingClientRect().top + 'px'; });
         }
     };
 
@@ -9164,17 +9164,16 @@
 
     function textareaConfig(el, isInit){
         var resize = function () {
-            el.style.height = 'auto';
-            el.style.height = el.scrollHeight + 'px';
+            var height = el.scrollHeight + 'px';
+            requestAnimationFrame(function () {
+                el.style.height = 'auto';
+                el.style.height = height;
+            });
         }
-        var delayedResize = function () { return setTimeout(resize, 0); };
+
         if (!isInit) {
-            el.addEventListener('change',  resize);
-            el.addEventListener('cut',     delayedResize);
-            el.addEventListener('paste',   delayedResize);
-            el.addEventListener('drop',    delayedResize);
-            el.addEventListener('keydown', delayedResize);
-            resize();   
+            el.addEventListener('input',  resize);
+            resize();
         }
     }
 
