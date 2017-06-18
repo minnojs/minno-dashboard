@@ -10,7 +10,6 @@ let pagesComponent = {
     controller(){
         const templateId = m.route.param('templateId');
         const pageId = m.route.param('pageId');
-
         let ctrl = {
             pages:m.prop(),
             study_name:m.prop(),
@@ -20,7 +19,8 @@ let pagesComponent = {
             error:m.prop(''),
             pageId,
             templateId,
-            save
+            save,
+            onunload
         };
 
         function load() {
@@ -54,6 +54,18 @@ let pagesComponent = {
                 .then(()=>load());
         }
         load();
+
+        function beforeunload(event) {
+            if (ctrl.has_changed()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+        }
+
+        function onunload(e){
+            if (ctrl.has_changed() && !window.confirm('You have unsaved data are you sure you want to leave?')){
+                e.preventDefault();
+            } else {
+                window.removeEventListener('beforeunload', beforeunload);
+            }
+        }
         return ctrl;
     },
     view({loaded, pages, strings, save, templateId, pageId, study_name, has_changed}){
@@ -105,19 +117,30 @@ let pagesComponent = {
                         m('div.translate-page', {config: fullheight},
                         [strings().map(string => m('.list-group-item', [
                             m('.row', [
-                                m('.col-sm-6', [
+                                m('.col-sm-5', [
                                     m('span',  string.text)
                                 ]),
-                                m('.col-sm-6', [
-                                    m('input.form-control', {
-                                        type:'text',
-                                        placeholder: 'translation',
-                                        value: string.translation(),
-                                        oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                        onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                        config: getStartValue(string.translation)
-                                    })
+                                ,m('.col-sm-7', [
+
+                                m('textarea.form-control', {
+                                    placeholder: 'translation',
+                                    oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                                    onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                    /                config: (element, isInit) => textareaConfig(element, isInit),
+
+                                } , string.translation())
                                 ])
+
+                                // ,m('.col-sm-6', [
+                                //     m('input.form-control', {
+                                //         type:'text',
+                                //         placeholder: 'translation',
+                                //         value: string.translation(),
+                                //         oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                //         onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                //         config: getStartValue(string.translation)
+                                //     })
+                                // ])
                             ])
                         ]))
                 ])
@@ -165,3 +188,17 @@ const select = (templateId, page) => e => {
     e.preventDefault();
     m.route(`/translate/${templateId}/${page.pageName}`);
 };
+
+function textareaConfig(el, isInit){
+    // el.style.height = (5+el.scrollHeight)+'px';
+    // const delayedResize = () => setTimeout(resize, 0);
+    // if (!isInit) {
+    //     // el.style.height = 'auto';
+    //     // el.addEventListener('change',  resize);
+    //     // el.addEventListener('cut',     delayedResize);
+    //     // el.addEventListener('paste',   delayedResize);
+    //     // el.addEventListener('drop',    delayedResize);
+    //     // el.addEventListener('keydown', delayedResize);
+    //     resize();
+    // }
+}

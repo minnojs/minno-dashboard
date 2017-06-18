@@ -6667,6 +6667,7 @@
             }
 
             function onunload(e){
+
                 var leavingEditor = !/^\/editor\//.test(m.route());
                 if (leavingEditor && hasUnsavedData() && !window.confirm('You have unsaved data are you sure you want to leave?')){
                     e.preventDefault();
@@ -9128,7 +9129,6 @@
         controller: function controller(){
             var templateId = m.route.param('templateId');
             var pageId = m.route.param('pageId');
-
             var ctrl = {
                 pages:m.prop(),
                 study_name:m.prop(),
@@ -9138,7 +9138,8 @@
                 error:m.prop(''),
                 pageId: pageId,
                 templateId: templateId,
-                save: save
+                save: save,
+                onunload: onunload
             };
 
             function load() {
@@ -9172,6 +9173,18 @@
                     .then(function (){ return load(); });
             }
             load();
+
+            function beforeunload(event) {
+                if (ctrl.has_changed()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+            }
+
+            function onunload(e){
+                if (ctrl.has_changed() && !window.confirm('You have unsaved data are you sure you want to leave?')){
+                    e.preventDefault();
+                } else {
+                    window.removeEventListener('beforeunload', beforeunload);
+                }
+            }
             return ctrl;
         },
         view: function view(ref){
@@ -9232,19 +9245,30 @@
                             m('div.translate-page', {config: fullHeight},
                             [strings().map(function (string) { return m('.list-group-item', [
                                 m('.row', [
-                                    m('.col-sm-6', [
+                                    m('.col-sm-5', [
                                         m('span',  string.text)
                                     ]),
-                                    m('.col-sm-6', [
-                                        m('input.form-control', {
-                                            type:'text',
-                                            placeholder: 'translation',
-                                            value: string.translation(),
-                                            oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                            onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
-                                            config: getStartValue$6(string.translation)
-                                        })
+                                    ,m('.col-sm-7', [
+
+                                    m('textarea.form-control', {
+                                        placeholder: 'translation',
+                                        oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
+                                        config: function (element, isInit) { return textareaConfig(element, isInit); },
+
+                                    } , string.translation())
                                     ])
+
+                                    // ,m('.col-sm-6', [
+                                    //     m('input.form-control', {
+                                    //         type:'text',
+                                    //         placeholder: 'translation',
+                                    //         value: string.translation(),
+                                    //         oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                    //         onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true; has_changed(true);}),
+                                    //         config: getStartValue(string.translation)
+                                    //     })
+                                    // ])
                                 ])
                             ]); })
                     ])
@@ -9277,12 +9301,6 @@
         return obj;
     }
 
-    function getStartValue$6(prop){
-        return function (element, isInit) {// !isInit && prop(element.value);
-            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
-        };
-    }
-
     var changedFilter = function () { return function (string) {
         return string.changed==true;
     }; };
@@ -9292,6 +9310,20 @@
         e.preventDefault();
         m.route(("/translate/" + templateId + "/" + (page.pageName)));
     }; };
+
+    function textareaConfig(el, isInit){
+        // el.style.height = (5+el.scrollHeight)+'px';
+        // const delayedResize = () => setTimeout(resize, 0);
+        // if (!isInit) {
+        //     // el.style.height = 'auto';
+        //     // el.addEventListener('change',  resize);
+        //     // el.addEventListener('cut',     delayedResize);
+        //     // el.addEventListener('paste',   delayedResize);
+        //     // el.addEventListener('drop',    delayedResize);
+        //     // el.addEventListener('keydown', delayedResize);
+        //     resize();
+        // }
+    }
 
     var routes = {
         '/tags':  tagsComponent,

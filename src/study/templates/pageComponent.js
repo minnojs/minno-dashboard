@@ -53,6 +53,14 @@ let pageComponent = {
                                 m('span',  string.text)
                             ]),
                             m('.col-sm-6', [
+                             m('textarea.form-control', {
+                                    placeholder: 'translation',
+                                     oninput: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                     onchange: m.withAttr('value', function(value){string.translation(value); string.changed=true;}),
+                                    config: textareaConfig(),
+                                } , string.translation()),
+
+
                                 m('input.form-control', {
                                     type:'text',
                                     placeholder: 'translation',
@@ -95,3 +103,17 @@ function getStartValue(prop){
 let changedFilter = () => string => {
     return string.changed==true;
 };
+
+function textareaConfig(el, isInit){
+    const resize = () => el.style.height = el.scrollHeight+'px';
+    const delayedResize = () => setTimeout(resize, 0);
+    if (!isInit) {
+        el.style.height = 'auto';
+        el.addEventListener('change',  resize);
+        el.addEventListener('cut',     delayedResize);
+        el.addEventListener('paste',   delayedResize);
+        el.addEventListener('drop',    delayedResize);
+        el.addEventListener('keydown', delayedResize);
+        resize();
+    }
+}
