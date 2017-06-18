@@ -9164,17 +9164,17 @@
 
     function textareaConfig(el, isInit){
         var resize = function () {
+            el.style.height = ''; // reset before recaluculating
             var height = el.scrollHeight + 'px';
             requestAnimationFrame(function () {
                 el.style.overflow = 'hidden';
-                el.style.height = 'auto';
                 el.style.height = height;
             });
         }
 
         if (!isInit) {
             el.addEventListener('input',  resize);
-            resize();
+            requestAnimationFrame(resize);
         }
     }
 
