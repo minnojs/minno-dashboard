@@ -24,8 +24,12 @@ let layout = route => {
                     ctrl.role(response.role);
                     ctrl.isloggedin = response.isloggedin;
                     ctrl.present_templates(response.present_templates);
-                    // console.log(response.present_templates);
-                    if (!m.route() !== '/view/'+ m.route.param('code') && !m.route() !== '/view/'+ m.route.param('code') + m.route.param('code') + m.route.param('resource') + m.route.param('fileId') &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                    let is_view = (m.route() == `/view/${m.route.param('code')}` || m.route() == `/view/${m.route.param('code')}/${m.route.param('resource')}/${encodeURIComponent(m.route.param('fileId'))}`);
+
+                    if(ctrl.role()=='ro' && !is_view)
+                        return doLogout();
+                    if (!is_view &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                        doLogout();
                         let url = m.route();
                         m.route('/login');
                         location.hash = encodeURIComponent(url);
@@ -72,7 +76,8 @@ let layout = route => {
         },
         view(ctrl){
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
-                m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code')
+                m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code') || ctrl.role()=='ro'
+
                 ?
                 ''
                 :

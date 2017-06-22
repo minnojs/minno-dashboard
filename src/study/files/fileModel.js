@@ -5,6 +5,7 @@ export default fileFactory;
 
 let filePrototype = {
     apiUrl(){
+
         return `${baseUrl}/files/${encodeURIComponent(this.studyId)}/file/${encodeURIComponent(this.id)}`;
     },
 

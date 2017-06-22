@@ -1,4 +1,4 @@
-import {fetchFullJson, fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
+import {fetchFullJson, fetchJson} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 import {baseUrl} from 'modelUrls';
@@ -12,7 +12,6 @@ let studyPrototype = {
         return fetchFullJson(this.apiURL())
             .then(study => {
                 this.loaded = true;
-                console.log(study);
                 this.id = study.id;
                 this.isReadonly = study.is_readonly;
                 this.istemplate = study.is_template;

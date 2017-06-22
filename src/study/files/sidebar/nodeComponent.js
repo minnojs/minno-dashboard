@@ -82,7 +82,6 @@ const toggleOpen = vm => e => {
 
 // select specific file and display it
 const select = (file) => e => {
-    console.log(file);
     e.stopPropagation();
     e.preventDefault();
     if(file.viewStudy)

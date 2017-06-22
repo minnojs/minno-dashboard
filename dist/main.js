@@ -3385,6 +3385,7 @@
 
     var filePrototype = {
         apiUrl: function apiUrl(){
+
             return (baseUrl$1 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
@@ -6112,7 +6113,6 @@
 
     // select specific file and display it
     var select = function (file) { return function (e) {
-        console.log(file);
         e.stopPropagation();
         e.preventDefault();
         if(file.viewStudy)
@@ -6750,7 +6750,6 @@
             return fetchFullJson(this.apiURL())
                 .then(function (study) {
                     this$1.loaded = true;
-                    console.log(study);
                     this$1.id = study.id;
                     this$1.isReadonly = study.is_readonly;
                     this$1.istemplate = study.is_template;
@@ -9170,7 +9169,7 @@
                 el.style.overflow = 'hidden';
                 el.style.height = height;
             });
-        }
+        };
 
         if (!isInit) {
             el.addEventListener('input',  resize);
@@ -9228,7 +9227,8 @@
             load();
 
             function beforeunload(event) {
-                if (ctrl.has_changed()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+                if (ctrl.has_changed())
+                    event.returnValue = 'You have unsaved data are you sure you want to leave?';
             }
 
             function onunload(e){
@@ -9304,9 +9304,9 @@
                                     m('.col-sm-7', [
                                         m('textarea.form-control', {
                                             placeholder: 'translation',
-                                            oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                                            onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                                            config: textareaConfig,
+                                            oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                            onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                            config: textareaConfig
                                         }, string.translation())
                                     ])
 
@@ -9351,6 +9351,7 @@
         obj.changed = false;
         return obj;
     }
+
 
     var changedFilter = function () { return function (string) {
         return string.changed==true;
@@ -9420,8 +9421,12 @@
                         ctrl.role(response.role);
                         ctrl.isloggedin = response.isloggedin;
                         ctrl.present_templates(response.present_templates);
-                        // console.log(response.present_templates);
-                        if (!m.route() !== '/view/'+ m.route.param('code') && !m.route() !== '/view/'+ m.route.param('code') + m.route.param('code') + m.route.param('resource') + m.route.param('fileId') &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                        var is_view = (m.route() == ("/view/" + (m.route.param('code'))) || m.route() == ("/view/" + (m.route.param('code')) + "/" + (m.route.param('resource')) + "/" + (encodeURIComponent(m.route.param('fileId')))));
+
+                        if(ctrl.role()=='ro' && !is_view)
+                            return doLogout();
+                        if (!is_view &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
+                            doLogout();
                             var url = m.route();
                             m.route('/login');
                             location.hash = encodeURIComponent(url);
@@ -9468,7 +9473,8 @@
             },
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
-                    m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code')
+                    m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code') || ctrl.role()=='ro'
+
                     ?
                     ''
                     :

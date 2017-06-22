@@ -57,7 +57,8 @@ let pagesComponent = {
         load();
 
         function beforeunload(event) {
-            if (ctrl.has_changed()) return event.returnValue = 'You have unsaved data are you sure you want to leave?';
+            if (ctrl.has_changed())
+                event.returnValue = 'You have unsaved data are you sure you want to leave?';
         }
 
         function onunload(e){
@@ -124,9 +125,9 @@ let pagesComponent = {
                                 m('.col-sm-7', [
                                     m('textarea.form-control', {
                                         placeholder: 'translation',
-                                        oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                                        onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true)}),
-                                        config: textareaAutoresize,
+                                        oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                        onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                        config: textareaAutoresize
                                     }, string.translation())
                                 ])
 
@@ -172,11 +173,6 @@ function propifyChanged(obj) {
     return obj;
 }
 
-function getStartValue(prop){
-    return (element, isInit) => {// !isInit && prop(element.value);
-        if (!isInit) setTimeout(()=>prop(element.value), 30);
-    };
-}
 
 let changedFilter = () => string => {
     return string.changed==true;

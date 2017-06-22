@@ -6,7 +6,7 @@ export default function textareaConfig(el, isInit){
             el.style.overflow = 'hidden';
             el.style.height = height;
         });
-    }
+    };
 
     if (!isInit) {
         el.addEventListener('input',  resize);
