@@ -27,6 +27,9 @@ let textMenuView = ({mode, file, study, observer}) => {
         m('.btn-group.btn-group-sm.pull-xs-right', [
             m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file since the last change'},[
                 m('strong.fa.fa-refresh')
+            ]),
+            m('a.btn.btn-secondary', {onclick: ()=>observer.trigger('settings'), title:'Editor settings'},[
+                m('strong.fa.fa-cog')
             ])
         ]),
 

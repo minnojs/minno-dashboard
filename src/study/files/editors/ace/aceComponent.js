@@ -81,6 +81,7 @@ let aceComponent = {
                     });
                     
                     if(observer) observer.on('paste',paste );
+                    if(observer) observer.on('settings',() => editor.execCommand('showSettingsMenu'));
                     
                     setContent();
 

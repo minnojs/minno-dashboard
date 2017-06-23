@@ -4348,6 +4348,7 @@
                         });
                         
                         if(observer) observer.on('paste',paste );
+                        if(observer) observer.on('settings',function () { return editor.execCommand('showSettingsMenu'); });
                         
                         setContent();
 
@@ -5420,6 +5421,9 @@
             m('.btn-group.btn-group-sm.pull-xs-right', [
                 m('button.btn.btn-secondary', {onclick: resetFile(file), title:'Reset any chnages made to this file since the last change'},[
                     m('strong.fa.fa-refresh')
+                ]),
+                m('a.btn.btn-secondary', {onclick: function (){ return observer.trigger('settings'); }, title:'Editor settings'},[
+                    m('strong.fa.fa-cog')
                 ])
             ]),
 
