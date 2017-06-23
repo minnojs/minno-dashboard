@@ -494,6 +494,10 @@ select.c-select {
     margin: 4px;
     float: left; }
 
+.study .img-editor img {
+  max-height: 90%;
+  max-width: 90%; }
+
 .study .sidebar {
   height: 100%;
   width: inherit;

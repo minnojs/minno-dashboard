@@ -53,6 +53,11 @@
         }
     }
 
+    .img-editor img {
+        max-height:90%;
+        max-width:90%;
+    }
+
     .sidebar {
         height:100%;
         width: inherit;
