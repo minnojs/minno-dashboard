@@ -204,6 +204,7 @@
     var STATISTICS_URL      = urlPrefix + "PITracking";
     var url$1       = urlPrefix + "DashboardData";
     var activation1_url      = urlPrefix + "dashboard/activation";
+    var collaboration_url   = urlPrefix + "dashboard/collaboration";
     var url$2 = urlPrefix + "DownloadsAccess";
 
     var getStatistics = function (query) {
@@ -8493,6 +8494,33 @@
         }
     };
 
+    function apiURL$2(code)
+    {   
+        return (collaboration_url + "/" + (encodeURIComponent(code)));
+    }
+
+    var is_collaboration_code = function (code) { return fetchJson(apiURL$2(code), {
+        method: 'get'
+    }); };
+
+    var collaborationComponent = {
+        controller: function controller(){
+
+            is_collaboration_code(m.route.param('code'))
+            .then(function () {
+                m.route('/');
+            }).catch().then(m.redraw);
+
+
+
+        },
+        view: function view(){
+            return m('.activation.centrify', {config:fullHeight},[
+                m('i.fa.fa-thumbs-down.fa-5x.m-b-1'),
+                m('h5', 'There is a problem! please check your code...')]);
+        }
+    };
+
     var resetPasswordComponent = {
         controller: function controller(){
             var ctrl = {
@@ -8604,7 +8632,7 @@
         };
     }
 
-    function collaboration_url(study_id)
+    function collaboration_url$1(study_id)
     {
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
@@ -8621,17 +8649,17 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
-    var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
+    var get_collaborations = function (study_id) { return fetchJson(collaboration_url$1(study_id), {
         method: 'get'
     }); };
 
-    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url(study_id), {
+    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url$1(study_id), {
         method: 'delete',
         body: {user_id: user_id}
     }); };
 
 
-    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url(study_id), {
+    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url$1(study_id), {
         method: 'post',
         body: {user_name: user_name, permission: permission}
     }); };
@@ -8653,7 +8681,7 @@
         body: {is_public: is_public}
     }); };
 
-    var collaborationComponent = {
+    var collaborationComponent$1 = {
         controller: function controller(){
             var ctrl = {
                 users:m.prop(),
@@ -9376,6 +9404,7 @@
 
         '/recovery':  recoveryComponent,
         '/activation/:code':  activationComponent,
+        '/collaboration/:code':  collaborationComponent,
         '/settings':  changePasswordComponent,
         '/reset_password/:code':  resetPasswordComponent,
 
@@ -9403,7 +9432,7 @@
         '/pool/history': poolComponent$1,
         '/downloads': downloadsComponent,
         '/downloadsAccess': downloadsAccessComponent,
-        '/sharing/:studyId': collaborationComponent
+        '/sharing/:studyId': collaborationComponent$1
     };
 
     var timer = 0;

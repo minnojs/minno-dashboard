@@ -10,4 +10,5 @@ export const fileUrl            = `${urlPrefix}dashboard`;
 export const statisticsUrl      = `${urlPrefix}PITracking`;
 export const downloadsUrl       = `${urlPrefix}DashboardData`;
 export const activationUrl      = `${urlPrefix}dashboard/activation`;
+export const collaborationUrl   = `${urlPrefix}dashboard/collaboration`;
 export const downloadsAccessUrl = `${urlPrefix}DownloadsAccess`;

@@ -28,6 +28,7 @@ import massMailComponent from './massMail/massMailComponent';
 
 
 import activationComponent from './activation/activationComponent';
+import collaborationComponent from './collaboration/collaborationComponent';
 import resetPasswordComponent from './settings/resetPasswordComponent';
 import recoveryComponent from './recovery/recoveryComponent';
 
@@ -46,6 +47,7 @@ let routes = {
 
     '/recovery':  recoveryComponent,
     '/activation/:code':  activationComponent,
+    '/collaboration/:code':  collaborationComponent,
     '/settings':  settingsComponent,
     '/reset_password/:code':  resetPasswordComponent,
 
