@@ -6288,7 +6288,7 @@
             var loaded = ref.loaded;
             var error = ref.error;
 
-            return m('div', [
+            return m('div.space', [
             loaded() ? '' : m('.loader'),
             error() ? m('.alert.alert-warning', error().message): '',
             loaded() && !templates().length ? m('.alert.alert-info', 'There is no templates yet') : '',

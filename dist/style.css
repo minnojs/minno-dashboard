@@ -38,6 +38,9 @@ a.no-decoration {
 .pool {
   padding-bottom: 9em; }
 
+.space {
+  padding-top: 10px; }
+
 #ruleGenerator {
   background-color: #bcdae2;
   border-color: #bcdae2;

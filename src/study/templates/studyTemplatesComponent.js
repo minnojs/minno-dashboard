@@ -12,7 +12,7 @@ let studyTemplatesComponent = {
             .then(m.redraw);
         return {template_id, templates, loaded, error};
     },
-    view: ({template_id, templates, loaded, error}) => m('div', [
+    view: ({template_id, templates, loaded, error}) => m('div.space', [
         loaded() ? '' : m('.loader'),
         error() ? m('.alert.alert-warning', error().message): '',
         loaded() && !templates().length ? m('.alert.alert-info', 'There is no templates yet') : '',
