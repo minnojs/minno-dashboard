@@ -7,13 +7,15 @@ export default layout;
 
 let timer = 0;
 let countdown = 0;
+let role = '';
+let isloggedin = true;
 
 let layout = route => {
     return {
         controller(){
             const ctrl = {
-                isloggedin: true,
-                role: m.prop(''),
+                isloggedin: isloggedin,
+                role: m.prop(role),
                 present_templates: m.prop(false),
                 doLogout,
                 timer:m.prop(0)
@@ -21,8 +23,8 @@ let layout = route => {
             is_loggedin();
             function is_loggedin(){
                 getAuth().then((response) => {
-                    ctrl.role(response.role);
-                    ctrl.isloggedin = response.isloggedin;
+                    role = ctrl.role(response.role);
+                    isloggedin = ctrl.isloggedin = response.isloggedin;
                     ctrl.present_templates(response.present_templates);
                     let is_view = (m.route() == `/view/${m.route.param('code')}` || m.route() == `/view/${m.route.param('code')}/${m.route.param('resource')}/${encodeURIComponent(m.route.param('fileId'))}`);
 
@@ -75,9 +77,8 @@ let layout = route => {
             }
         },
         view(ctrl){
-            return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
-                m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code') || ctrl.role()=='ro'
-
+            return  mco('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
+                !ctrl.isloggedin || ctrl.role()=='ro'
                 ?
                 ''
                 :

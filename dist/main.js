@@ -9449,13 +9449,15 @@
 
     var timer = 0;
     var countdown = 0;
+    var role = '';
+    var isloggedin = true;
 
     var layout = function (route) {
         return {
             controller: function controller(){
                 var ctrl = {
-                    isloggedin: true,
-                    role: m.prop(''),
+                    isloggedin: isloggedin,
+                    role: m.prop(role),
                     present_templates: m.prop(false),
                     doLogout: doLogout,
                     timer:m.prop(0)
@@ -9463,8 +9465,8 @@
                 is_loggedin();
                 function is_loggedin(){
                     getAuth().then(function (response) {
-                        ctrl.role(response.role);
-                        ctrl.isloggedin = response.isloggedin;
+                        role = ctrl.role(response.role);
+                        isloggedin = ctrl.isloggedin = response.isloggedin;
                         ctrl.present_templates(response.present_templates);
                         var is_view = (m.route() == ("/view/" + (m.route.param('code'))) || m.route() == ("/view/" + (m.route.param('code')) + "/" + (m.route.param('resource')) + "/" + (encodeURIComponent(m.route.param('fileId')))));
 
@@ -9518,8 +9520,7 @@
             },
             view: function view(ctrl){
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
-                    m.route()=='/login' || m.route() == '/recovery' || m.route() == '/activation/'+ m.route.param('code') || ctrl.role()=='ro'
-
+                    !ctrl.isloggedin || ctrl.role()=='ro'
                     ?
                     ''
                     :
