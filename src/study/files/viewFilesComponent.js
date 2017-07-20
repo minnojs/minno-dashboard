@@ -20,16 +20,11 @@ let editorLayoutComponent = {
                 .catch(reason => {
                     if(reason.status==404)
                         m.route('/');
-                    // else
-
-
-                    // console.log(reason);
                 })
                 .then(m.redraw);
         }
 
         let ctrl = {study, onunload};
-
         return ctrl;
     },
     view: ({study}) => {

@@ -22,9 +22,10 @@ let sidebarButtons = ({study}) => {
                     ])
 
                 ],
-                m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
-                    m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
-                ]),
+                study.view ? '' :
+                    m('button.dropdown-item.dropdown-onclick', {onmousedown: do_duplicate(study.id, study.name)}, [
+                        m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
+                    ]),
 
                 readonly ? '' : [
                     m('button.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
