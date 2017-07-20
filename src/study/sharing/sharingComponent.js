@@ -148,7 +148,7 @@ let collaborationComponent = {
                         'Create / Re-create link'
                     ),
                     m('label.input-group',[
-                        m('.input-group-addon', m('i.fa.fa-fw.fa-copy')),
+                        m('.input-group-addon', {onclick: function() {copy(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
                         m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
                     ]),
                     m('.custom-control.custom-checkbox', [
@@ -269,3 +269,19 @@ let collaborationComponent = {
             ]);
     }
 };
+
+function copy(text){
+    return new Promise((resolve, reject) => {
+        let input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        try {
+            document.execCommand('copy');
+        } catch(err){
+            reject(err);
+        }
+
+        input.parentNode.removeChild(input);
+    });
+}

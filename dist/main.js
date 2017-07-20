@@ -248,6 +248,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -569,15 +577,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1591,10 +1590,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1746,10 +1741,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5772,21 +5763,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5846,8 +5822,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6029,7 +6003,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6210,16 +6183,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -8826,7 +8789,7 @@
                             'Create / Re-create link'
                         ),
                         m('label.input-group',[
-                            m('.input-group-addon', m('i.fa.fa-fw.fa-copy')),
+                            m('.input-group-addon', {onclick: function() {copy$1(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
                             m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
                         ]),
                         m('.custom-control.custom-checkbox', [
@@ -8947,6 +8910,22 @@
                 ]);
         }
     };
+
+    function copy$1(text){
+        return new Promise(function (resolve, reject) {
+            var input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            try {
+                document.execCommand('copy');
+            } catch(err){
+                reject(err);
+            }
+
+            input.parentNode.removeChild(input);
+        });
+    }
 
     // it makes sense to use this for cotnrast:
     // https://24ways.org/2010/calculating-color-contrast/
