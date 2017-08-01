@@ -41,6 +41,12 @@ a.no-decoration {
 .space {
   padding-top: 10px; }
 
+.double_space {
+  margin-top: 10px; }
+
+.warning_text {
+  color: red; }
+
 #ruleGenerator {
   background-color: #bcdae2;
   border-color: #bcdae2;

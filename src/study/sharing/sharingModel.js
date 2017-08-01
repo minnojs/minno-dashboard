@@ -44,6 +44,10 @@ export let add_link = (study_id) => fetchJson(link_url(study_id), {
     method: 'post'
 });
 
+export let revoke_link = (study_id) => fetchJson(link_url(study_id), {
+    method: 'delete'
+});
+
 
 
 export let make_pulic = (study_id, is_public) => fetchJson(public_url(study_id), {

@@ -1,4 +1,4 @@
-import {get_collaborations, remove_collaboration, add_collaboration, make_pulic, add_link, edit_link} from './sharingModel';
+import {get_collaborations, remove_collaboration, add_collaboration, make_pulic, add_link, revoke_link, edit_link} from './sharingModel';
 import messages from 'utils/messagesComponent';
 
 export default collaborationComponent;
@@ -21,9 +21,11 @@ let collaborationComponent = {
             loaded:false,
             col_error:m.prop(''),
             pub_error:m.prop(''),
+            share_error:m.prop(''),
             remove,
             do_add_collaboration,
             do_add_link,
+            do_revoke_link,
             do_edit_link,
             view_link,
             add_to_link,
@@ -131,21 +133,32 @@ let collaborationComponent = {
                 }).then(m.redraw);
         }
 
+        function do_revoke_link() {
+            revoke_link(m.route.param('studyId'))
+                .then(response =>{ctrl.link('');})
+                .catch(error => {
+                    ctrl.col_error(error.message);
+                }).then(m.redraw);
+        }
+
         function do_edit_link() {
             return edit_link(m.route.param('studyId'), ctrl.link_add_list, ctrl.link_remove_list, ctrl.link_type)
                 .then(response =>{ctrl.link(response.link);})
                 .catch(error => {
-                    ctrl.col_error(error.message);
-                });
+                    ctrl.share_error(error.message);
+                }).then(m.redraw);
         }
 
 
         function view_link(){
             messages.confirm({
-                header:'Access link',
+                header:'Share link',
                 content: m.component({view: () => m('p', [
                     m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
                         'Create / Re-create link'
+                    ),
+                    m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_revoke_link},
+                        'Revoke link'
                     ),
                     m('label.input-group',[
                         m('.input-group-addon', {onclick: function() {copy(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
@@ -155,7 +168,7 @@ let collaborationComponent = {
                         m('input.custom-control-input', {
                             type: 'radio',
                             name:'template',
-                            checked:ctrl.link_type()=='Public',
+                            checked:ctrl.link_type()!='Private',
                             onclick: function(){
                                 ctrl.link_type('Public');
                             }
@@ -175,6 +188,9 @@ let collaborationComponent = {
                         m('span.custom-control-indicator'),
                         m('span.custom-control-description.m-l-1', 'Private')
                     ]),
+                    m('small.warning_text',"Select Public to create a link everyone can access, or Private to create a link for another user."),
+
+
                     ctrl.link_type()!='Private'
                     ?
                     ''
@@ -183,26 +199,40 @@ let collaborationComponent = {
                         ctrl.link_list().map(user=>m('.small',{onclick:function(){ctrl.remove_from_link(user);}}, [m('i.fa.fa-times', {
 
                         }), ` ${user}  `])),
-                        m('p', 'Enter collaborator\'s user name:'),
+                        m('span', 'Enter user name and click add:'),
                         m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
-                        m('button.btn.btn-success.btn-sm', {onclick:function(){ctrl.add_to_link(ctrl.user_name()); ctrl.user_name('');}}, 'Add')
+                        m('button.btn.btn-success.btn-sm.double_space', {onclick:function(){ctrl.add_to_link(ctrl.user_name()); ctrl.user_name('');}}, 'Add')
                     ]),
-                    m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
+                    m('p', {class: ctrl.share_error()? 'alert alert-danger' : ''}, ctrl.share_error())
                 ])
                 })})
                 .then(response => {
-                    if (response)
-                        do_edit_link()
+                    if (response){
+                        if(ctrl.link_type()=='Private' && ctrl.link_list().length==0)
+                        {
+                            ctrl.share_error('Error: Private link must to contains at least one user.');
+                            view_link();
+                            return;
+                        }
+                        if(ctrl.link_type()=='Private' && ctrl.link_list().length>0 && ctrl.link()=='')
+                        {
+                            ctrl.share_error('Error: Please genrtate a new link.');
+                            view_link();
+                            return;
+                        }
+
+                        edit_link(m.route.param('studyId'), ctrl.link_add_list, ctrl.link_remove_list, ctrl.link_type)
                             .then(()=>{
-                                ctrl.col_error('');
+                                ctrl.share_error('');
                                 load();
                             })
                             .catch(error => {
-                                ctrl.col_error(error.message);
+                                ctrl.share_error(error.message);
+                                ctrl.link_add_list([]);
                                 view_link();
                             })
                             .then(m.redraw);
-                });
+                }});
         }
         function do_make_public(is_public){
             messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
@@ -240,7 +270,7 @@ let collaborationComponent = {
                     ]),
                     m('.col-sm-6', [
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
-                            m('i.fa.fa-plus'), '  Access link'
+                            m('i.fa.fa-plus'), '  Share link'
                         ]),
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add a new collaborator'

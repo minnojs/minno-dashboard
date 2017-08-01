@@ -27,7 +27,7 @@ let sidebarButtons = ({study}) => {
                         m('i.fa.fa-fw.fa-clone'), ' Duplicate study'
                     ]),
 
-                readonly ? '' : [
+                !study.is_locked && readonly ? '' : [
                     m('button.dropdown-item.dropdown-onclick', {onmousedown: do_lock(study)}, [
                         m('i.fa.fa-fw', {class: study.is_locked ? 'fa-unlock' : 'fa-lock'}), study.is_locked  ? ' Unlock Study' :' Lock Study'
                     ]),

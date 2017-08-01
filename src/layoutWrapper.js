@@ -77,7 +77,7 @@ let layout = route => {
             }
         },
         view(ctrl){
-            return  mco('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
+            return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                 !ctrl.isloggedin || ctrl.role()=='ro'
                 ?
                 ''
