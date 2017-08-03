@@ -18,7 +18,7 @@ let editorLayoutComponent = {
             study
                 .get()
                 .catch(reason => {
-                    if(reason.status==404)
+                    if(reason.status==403)
                         m.route('/');
                 })
                 .then(m.redraw);

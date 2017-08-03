@@ -135,7 +135,7 @@ let collaborationComponent = {
 
         function do_revoke_link() {
             revoke_link(m.route.param('studyId'))
-                .then(response =>{ctrl.link('');})
+                .then(() =>{ctrl.link('');})
                 .catch(error => {
                     ctrl.col_error(error.message);
                 }).then(m.redraw);
@@ -188,7 +188,7 @@ let collaborationComponent = {
                         m('span.custom-control-indicator'),
                         m('span.custom-control-description.m-l-1', 'Private')
                     ]),
-                    m('small.warning_text',"Select Public to create a link everyone can access, or Private to create a link for another user."),
+                    m('small.warning_text','Select Public to create a link everyone can access, or Private to create a link for another user.'),
 
 
                     ctrl.link_type()!='Private'
@@ -232,7 +232,7 @@ let collaborationComponent = {
                                 view_link();
                             })
                             .then(m.redraw);
-                }});
+                    }});
         }
         function do_make_public(is_public){
             messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
