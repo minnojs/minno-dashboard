@@ -269,9 +269,9 @@ let collaborationComponent = {
                         m('h3', [ctrl.study_name(), ': Sharing'])
                     ]),
                     m('.col-sm-6', [
-                        m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
-                            m('i.fa.fa-plus'), '  Share link'
-                        ]),
+                        // m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
+                        //     m('i.fa.fa-plus'), '  Share link'
+                        // ]),
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                             m('i.fa.fa-plus'), '  Add a new collaborator'
                         ]),
