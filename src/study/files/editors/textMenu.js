@@ -59,7 +59,7 @@ let textMenuView = ({mode, file, study, observer}) => {
             //  m('strong','Validator')
             //])
         ]),
-        m('.btn-group.btn-group-sm.pull-xs-right', [
+        study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
             APItype !== 'managerAPI' ? '' : [
                 m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
                     m('strong','T') 

@@ -5454,7 +5454,7 @@
                 //  m('strong','Validator')
                 //])
             ]),
-            m('.btn-group.btn-group-sm.pull-xs-right', [
+            study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
                 APItype !== 'managerAPI' ? '' : [
                     m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
                         m('strong','T') 
@@ -8947,9 +8947,9 @@
                             m('h3', [ctrl.study_name(), ': Sharing'])
                         ]),
                         m('.col-sm-6', [
-                            // m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
-                            //     m('i.fa.fa-plus'), '  Share link'
-                            // ]),
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.view_link}, [
+                                m('i.fa.fa-plus'), '  Share link'
+                            ]),
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
                                 m('i.fa.fa-plus'), '  Add a new collaborator'
                             ]),
@@ -9377,7 +9377,8 @@
                             [strings().map(function (string) { return m('.list-group-item', [
                                 m('.row', [
                                     m('.col-sm-5', [
-                                        m('span',  string.text)
+                                        m('span',  string.text),
+                                        m('p.small.text-muted.m-y-0', string.comment)
                                     ]),
                                     m('.col-sm-7', [
                                         m('textarea.form-control', {

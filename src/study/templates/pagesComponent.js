@@ -120,7 +120,8 @@ let pagesComponent = {
                         [strings().map(string => m('.list-group-item', [
                             m('.row', [
                                 m('.col-sm-5', [
-                                    m('span',  string.text)
+                                    m('span',  string.text),
+                                    m('p.small.text-muted.m-y-0', string.comment)
                                 ]),
                                 m('.col-sm-7', [
                                     m('textarea.form-control', {
