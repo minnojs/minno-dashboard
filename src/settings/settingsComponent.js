@@ -1,4 +1,5 @@
 import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_present_templates , set_present_templates} from './settingsModel';
+import {getAuth} from 'login/authModel';
 
 import fullHeight from 'utils/fullHeight';
 import {password_body} from './changePasswordView';
@@ -13,6 +14,7 @@ let changePasswordComponent = {
     controller(){
 
         const ctrl = {
+            role:m.prop(''),
             password:m.prop(''),
             confirm:m.prop(''),
             is_dbx_synchronized: m.prop(),
@@ -32,6 +34,9 @@ let changePasswordComponent = {
             do_set_templete
 
         };
+        getAuth().then((response) => {
+            ctrl.role(response.role);
+        });
 
         get_email()
         .then((response) => {
@@ -126,8 +131,8 @@ let changePasswordComponent = {
                 [
                     password_body(ctrl),
                     emil_body(ctrl),
-                    dropbox_body(ctrl)
-                    ,templates_body(ctrl)
+                    ctrl.role()=='CU' ? '' : dropbox_body(ctrl),
+                    ctrl.role()=='CU' ? '' : templates_body(ctrl)
                     // ,gdrive_body(ctrl)
                 ]
         ]);
