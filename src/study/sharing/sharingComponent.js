@@ -136,7 +136,7 @@ let collaborationComponent = {
             m('.container.sharing-page', [
                 m('.row',[
                     m('.col-sm-7', [
-                        m('h3', [ctrl.study_name(), ': Sharing'])
+                        m('h3', [ctrl.study_name(), ' (Sharing Settings)'])
                     ]),
                     m('.col-sm-5', [
                         m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_collaboration}, [
@@ -144,16 +144,6 @@ let collaborationComponent = {
                         ]),
                         m('button.btn.btn-secondary.btn-sm', {onclick:function() {ctrl.do_make_public(!ctrl.is_public());}}, ['Make ', ctrl.is_public() ? 'Private' : 'Public'])
                     ])
-                ]),
-                m('button.btn.btn-secondary.btn-sm.m-r-1.', {onclick:ctrl.do_add_link},
-                    [m('i.fa.fa-plus'), '  Create / Re-create public link']
-                ),
-                m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_revoke_link},
-                    [m('i.fa.fa-fw.fa-remove'), '  Revoke public link']
-                ),
-                m('label.input-group.space',[
-                    m('.input-group-addon', {onclick: function() {copy(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
-                    m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
                 ]),
                 m('table', {class:'table table-striped table-hover'}, [
                     m('thead', [
@@ -170,7 +160,22 @@ let collaborationComponent = {
                             m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.USER_ID);}}, 'Remove'))
                         ]))
 
-                    ])
+                    ]),
+                    m('.row.space',
+                        m('.col-sm-12', [
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
+                                [m('i.fa.fa-plus'), '  Create / Re-create public link']
+                            ),
+                            m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_revoke_link},
+                                [m('i.fa.fa-fw.fa-remove'), '  Revoke public link']
+                            ),
+                            m('label.input-group.space',[
+                                m('.input-group-addon', {onclick: function() {copy(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
+                                m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
+                            ])
+                        ])
+                    )
+
                 ])
             ]);
     }
