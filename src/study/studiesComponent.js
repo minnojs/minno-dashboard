@@ -77,7 +77,7 @@ var mainComponent = {
                 ]),
 
                 m('.col-sm-8', [
-                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type());}}, [
+                    m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type(), studies().filter(typeFilter(type())));}}, [
                         m('i.fa.fa-plus'), '  Add new study'
                     ]),
 

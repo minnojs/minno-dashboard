@@ -4,11 +4,11 @@ import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import {update_tags_in_study} from '../tags/tagsModel';
 
-export let do_create = (type) => {
+export let do_create = (type, studies) => {
     let study_name = m.prop('');
     let templates = m.prop([]);
     let template_id = m.prop('');
-
+    let reuse_id = m.prop('');
     let error = m.prop('');
 
 
@@ -19,11 +19,11 @@ export let do_create = (type) => {
             m('p', 'Enter Study Name:'),
             m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
             !error() ? '' : m('p.alert.alert-danger', error()),
-            m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates, templates, template_id}))
+            m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates, studies, reuse_id, templates, template_id}))
         ])
     })}).then(response => response && create());
 
-    let create = () => create_study(study_name, type, template_id)
+    let create = () => create_study(study_name, type, template_id, reuse_id)
         .then(response => m.route(type == 'regular' ? `/editor/${response.study_id}` : `/translate/${response.study_id}`))
         .catch(e => {
             error(e.message);

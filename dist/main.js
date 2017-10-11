@@ -3933,9 +3933,9 @@
 
     var load_templates = function () { return fetchJson(templatesUrl, {credentials: 'same-origin'}); };
 
-    var create_study = function (study_name, type, template_id) { return fetchJson(studyUrl, {
+    var create_study = function (study_name, type, template_id, reuse_id) { return fetchJson(studyUrl, {
         method: 'post',
-        body: {study_name: study_name, type: type, template_id: template_id}
+        body: {study_name: study_name, type: type, template_id: template_id, reuse_id: reuse_id}
     }); };
 
     var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
@@ -6270,6 +6270,8 @@
     var studyTemplatesComponent$1 = {
         controller: function controller(ref){
             var load_templates = ref.load_templates;
+            var studies = ref.studies;
+            var reuse_id = ref.reuse_id;
             var templates = ref.templates;
             var template_id = ref.template_id;
 
@@ -6280,10 +6282,12 @@
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
-            return {template_id: template_id, templates: templates, loaded: loaded, error: error};
+            return {studies: studies, template_id: template_id, reuse_id: reuse_id, templates: templates, loaded: loaded, error: error};
         },
         view: function (ref) {
+            var studies = ref.studies;
             var template_id = ref.template_id;
+            var reuse_id = ref.reuse_id;
             var templates = ref.templates;
             var loaded = ref.loaded;
             var error = ref.error;
@@ -6295,7 +6299,14 @@
             m('select.form-control', {value:template_id(), onchange: m.withAttr('value',template_id)}, [
                 m('option',{value:'', disabled: true}, 'Select template'),
                 templates().filter(ownerFilter()).sort(sort_studies).map(function (study) { return m('option',{value:study.id}, study.name); })
-            ])
+            ]),
+            !template_id() ? '' :
+            m('div.space', [
+                m('select.form-control', {value:reuse_id(), onchange: m.withAttr('value',reuse_id)}, [
+                    m('option',{value:'', disabled: true}, 'Select template for reuse (optional)'),
+                    studies.map(function (study) { return m('option',{value:study.id}, study.name); })
+                ])])
+
         ]);
     }
     };
@@ -6421,11 +6432,11 @@
             .then(m.redraw); };
     }
 
-    var do_create = function (type) {
+    var do_create = function (type, studies) {
         var study_name = m.prop('');
         var templates = m.prop([]);
         var template_id = m.prop('');
-
+        var reuse_id = m.prop('');
         var error = m.prop('');
 
 
@@ -6436,11 +6447,11 @@
                 m('p', 'Enter Study Name:'),
                 m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
                 !error() ? '' : m('p.alert.alert-danger', error()),
-                m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates: load_templates, templates: templates, template_id: template_id}))
+                m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates: load_templates, studies: studies, reuse_id: reuse_id, templates: templates, template_id: template_id}))
             ]); }
         })}).then(function (response) { return response && create(); }); };
 
-        var create = function () { return create_study(study_name, type, template_id)
+        var create = function () { return create_study(study_name, type, template_id, reuse_id)
             .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
             .catch(function (e) {
                 error(e.message);
@@ -7060,7 +7071,7 @@
                     ]),
 
                     m('.col-sm-8', [
-                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type());}}, [
+                        m('button.btn.btn-success.btn-sm.pull-right', {onclick:function(){do_create(type(), studies().filter(typeFilter(type())));}}, [
                             m('i.fa.fa-plus'), '  Add new study'
                         ]),
 
