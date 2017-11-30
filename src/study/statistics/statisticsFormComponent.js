@@ -22,7 +22,13 @@ let statisticsFormComponent = {
         return m('.col-sm-12', [
             selectInput({label: 'Source', prop: query.source, values: SOURCES, form, colWidth}),
             textInput({label:'Study', prop: query.study , form, colWidth}),
-            m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
+            m('div', {style: 'padding: .375rem'},
+            [
+                dateRangePicker({startDate:query.startDate, endDate: query.endDate})
+                    ,m('small.text-muted',  'The data for the study statistics by day is saved in 24 hour increments by date in USA eastern time (EST).')
+                ]
+            ),
+
             m('.form-group.row', [
                 m('.col-sm-3', [
                     m('label.form-control-label', 'Show by')

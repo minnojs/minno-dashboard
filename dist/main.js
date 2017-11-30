@@ -169,8 +169,6 @@
     }
 
 
-
-
     function fetchJson(url, options){
         return fetchVoid(url, options)
             .then(toJSON);
@@ -247,6 +245,14 @@
             }
         } 
     };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -569,15 +575,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -680,7 +677,13 @@
             return m('.col-sm-12', [
                 selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
                 textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
-                m('div', {style: 'padding: .375rem .75rem'}, dateRangePicker({startDate:query.startDate, endDate: query.endDate})),
+                m('div', {style: 'padding: .375rem'},
+                [
+                    dateRangePicker({startDate:query.startDate, endDate: query.endDate})
+                        ,m('small.text-muted',  'The data for the study statistics by day is saved in 24 hour increments by date in USA eastern time (EST).')
+                    ]
+                ),
+
                 m('.form-group.row', [
                     m('.col-sm-3', [
                         m('label.form-control-label', 'Show by')
@@ -1591,10 +1594,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1746,10 +1745,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3699,7 +3694,7 @@
             var files = ref.files;
             var force = ref.force;
 
-            var formData = buildFormData(path === '/' ? '' : path, files);
+            var formData = buildFormData(files);
             formData.append('forceUpload', +force);
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
@@ -3711,7 +3706,7 @@
                 }); })
                 .then(this.sort.bind(this));
 
-            function buildFormData(path, files) {
+            function buildFormData(files) {
                 var formData = new FormData;
                 for (var i = 0; i < files.length; i++) {
                     formData.append(i, files[i]);
@@ -5772,21 +5767,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5846,8 +5826,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6029,7 +6007,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6210,16 +6187,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -9399,7 +9366,7 @@
                         if(ctrl.role()=='ro' && !is_view)
                             return doLogout();
                         if (!is_view &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
-                            doLogout();
+                            // doLogout();
                             var url = m.route();
                             m.route('/login');
                             location.hash = encodeURIComponent(url);

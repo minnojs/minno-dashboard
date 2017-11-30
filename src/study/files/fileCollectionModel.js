@@ -117,7 +117,7 @@ let studyPrototype = {
     },
 
     uploadFiles({path, files, force}){
-        let formData = buildFormData(path === '/' ? '' : path, files);
+        let formData = buildFormData(files);
         formData.append('forceUpload', +force);
 
         return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:formData})
@@ -129,7 +129,7 @@ let studyPrototype = {
             }))
             .then(this.sort.bind(this));
 
-        function buildFormData(path, files) {
+        function buildFormData(files) {
             var formData = new FormData;
             for (let i = 0; i < files.length; i++) {
                 formData.append(i, files[i]);

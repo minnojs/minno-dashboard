@@ -31,7 +31,7 @@ let layout = route => {
                     if(ctrl.role()=='ro' && !is_view)
                         return doLogout();
                     if (!is_view &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
-                        doLogout();
+                        // doLogout();
                         let url = m.route();
                         m.route('/login');
                         location.hash = encodeURIComponent(url);
