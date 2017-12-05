@@ -5605,23 +5605,20 @@
         controller: function(ref) {
             var study = ref.study;
 
-            var id = m.route.param('fileId');
-            var file = study.getFile(id);
-            var ctrl = {file: file,study: study};
-
-            return ctrl;
+            return {study: study};
         },
 
         view: function (ref, args) {
-            var file = ref.file;
             var study = ref.study;
             if ( args === void 0 ) args = {};
 
+            var id = m.route.param('fileId');
+            var file = study.getFile(id);
             var editor = file && editors[file.type] || unknownComponent;
 
             return m('div', {config:fullHeight}, [
                 file
-                    ? editor({file: file, study: study,  settings: args.settings})
+                    ? editor({file: file, study: study,  settings: args.settings, key:file.id})
                     : m('.centrify', [
                         m('i.fa.fa-smile-o.fa-5x'),
                         m('h5', 'Please select a file to start working')
@@ -6043,13 +6040,6 @@
     var node = function (args) { return m.component(nodeComponent, args); };
 
     var nodeComponent = {
-        controller: function (ref) {
-            var file = ref.file;
-
-            return {
-                isCurrent: m.route.param('fileId') === file.id
-            };
-        },
         view: function (ctrl, ref) {
             var file = ref.file;
             var folderHash = ref.folderHash;
@@ -6071,7 +6061,7 @@
                     m('a.wholerow', {
                         unselectable:'on',
                         class:classNames({
-                            'current': ctrl.isCurrent
+                            'current': m.route.param('fileId') === file.id
                         })
                     }, m.trust('&nbsp;')),
                     m('i.fa.fa-fw', {
@@ -6124,10 +6114,9 @@
     var select = function (file) { return function (e) {
         e.stopPropagation();
         e.preventDefault();
-        if(file.viewStudy)
-            m.route(("/view/" + (m.route.param('code')) + "/file/" + (encodeURIComponent(file.id))));
-        else
-            m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
+        if (file.viewStudy) m.route(("/view/" + (m.route.param('code')) + "/file/" + (encodeURIComponent(file.id))));
+        else m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
+        m.redraw.strategy('diff');
     }; };
 
     // checkmark a file/folder
@@ -6635,7 +6624,7 @@
         view: function (ctrl , ref) {
             var study = ref.study;
 
-            return m('.sidebar', [
+            return m('.sidebar', {}, [
                 sidebarButtons({study: study}),
                 filesList({study: study})
             ]);
@@ -6662,7 +6651,7 @@
             var left = ref$1.left; if ( left === void 0 ) left = '';
             var right = ref$1.right; if ( right === void 0 ) right = '';
 
-            return m('.split-pane', {config: config(parentWidth, parentOffset, leftWidth)}, [
+            return m('.split-pane', {config: config$1(parentWidth, parentOffset, leftWidth)}, [
                 m('.split-pane-col-left', {style: {flexBasis: leftWidth() + 'px'}}, left),
                 m('.split-pane-divider', {onmousedown: onmousedown(parentOffset, leftWidth)}),
                 m('.split-pane-col-right', right)
@@ -6670,7 +6659,7 @@
         }
     };
 
-    var config = function (parentWidth, parentLeft, leftWidth) { return function (element, isInitialized, ctx) {
+    var config$1 = function (parentWidth, parentLeft, leftWidth) { return function (element, isInitialized, ctx) {
         if (!isInitialized){
             update();
             if (leftWidth() === undefined) leftWidth(parentWidth()/6);

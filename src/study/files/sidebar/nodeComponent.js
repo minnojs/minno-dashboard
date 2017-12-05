@@ -9,11 +9,6 @@ export default node;
 let node = (args) => m.component(nodeComponent, args);
 
 let nodeComponent = {
-    controller: ({file}) => {
-        return {
-            isCurrent: m.route.param('fileId') === file.id
-        };
-    },
     view: (ctrl, {file,folderHash, study}) => {
         const vm = study.vm(file.id); // vm is created by the studyModel
         const hasChildren = !!(file.isDir && file.files && file.files.length);
@@ -31,7 +26,7 @@ let nodeComponent = {
                 m('a.wholerow', {
                     unselectable:'on',
                     class:classNames({
-                        'current': ctrl.isCurrent
+                        'current': m.route.param('fileId') === file.id
                     })
                 }, m.trust('&nbsp;')),
                 m('i.fa.fa-fw', {
@@ -84,10 +79,9 @@ const toggleOpen = vm => e => {
 const select = (file) => e => {
     e.stopPropagation();
     e.preventDefault();
-    if(file.viewStudy)
-        m.route(`/view/${m.route.param('code')}/file/${encodeURIComponent(file.id)}`);
-    else
-        m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
+    if (file.viewStudy) m.route(`/view/${m.route.param('code')}/file/${encodeURIComponent(file.id)}`);
+    else m.route(`/editor/${file.studyId}/file/${encodeURIComponent(file.id)}`);
+    m.redraw.strategy('diff'); // make sure that the route change is diffed as opposed to redraws
 };
 
 // checkmark a file/folder

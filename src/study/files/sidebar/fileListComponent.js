@@ -28,7 +28,7 @@ let filesList = ({study}) => {
 };
 
 let parseFiles = files => files.reduce((hash, file)=>{
-    let path = file.basePath;
+    const path = file.basePath;
     if (!hash[path]) hash[path] = [];
     hash[path].push(file);
     return hash;
