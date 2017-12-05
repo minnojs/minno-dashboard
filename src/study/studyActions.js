@@ -121,6 +121,9 @@ export let do_lock = (study) => e => {
 
     let lock= () => lock_study(study.id, !study.is_locked)
         .then(study.is_locked = !study.is_locked)
+        .then(study.isReadonly = study.is_locked)
+        
+
         .catch(e => {
             error(e.message);
             ask();
