@@ -2,10 +2,7 @@ import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_
 import {getAuth} from 'login/authModel';
 
 import fullHeight from 'utils/fullHeight';
-import {password_body} from './changePasswordView';
-import {emil_body} from './changeEmailView';
-import {dropbox_body} from './connect2dropboxView';
-import {templates_body} from './templateStudiesView';
+import {draw_menu} from './settingsMenu';
 // import {gdrive_body} from './connect2GdriveView';
 
 export default changePasswordComponent;
@@ -98,8 +95,6 @@ let changePasswordComponent = {
                 })
                 .then(m.redraw);
         }
-
-
         function do_set_templete(value){
             set_present_templates(value)
                 .then(() => {
@@ -110,7 +105,6 @@ let changePasswordComponent = {
                 })
                 .then(m.redraw);
         }
-
     },
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
@@ -128,13 +122,7 @@ let changePasswordComponent = {
                     m('h5', 'Email successfully updated!')
                 ]
             :
-                [
-                    password_body(ctrl),
-                    emil_body(ctrl),
-                    ctrl.role()=='CU' ? '' : dropbox_body(ctrl),
-                    ctrl.role()=='CU' ? '' : templates_body(ctrl)
-                    // ,gdrive_body(ctrl)
-                ]
+                draw_menu(ctrl)
         ]);
     }
 };

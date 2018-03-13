@@ -1,5 +1,6 @@
 import fileListComponent from './fileListComponent';
 import sidebarButtons from './sidebarButtons';
+
 export default sidebarComponent;
 
 let sidebarComponent = {

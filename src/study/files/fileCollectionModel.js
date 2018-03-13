@@ -16,7 +16,7 @@ let studyPrototype = {
                 this.istemplate = study.is_template;
                 this.is_locked = study.is_locked;
                 this.name = study.study_name;
-                this.baseUrl = study.base_url;
+                this.base_url = study.base_url;
                 let files = flattenFiles(study.files)
                     .map(assignStudyId(this.id))
                     .map(fileFactory);
@@ -167,6 +167,21 @@ let studyPrototype = {
         });
 
         this.files(filesList);
+    },
+
+    make_experiment(file, descriptive_id){
+        return fetchVoid(this.apiURL(`/file/${file.id}/experiment`),
+                        {method: 'post', body: {descriptive_id:descriptive_id}});
+    },
+
+    delete_experiment(file){
+        return fetchVoid(this.apiURL(`/file/${file.id}/experiment`),
+            {method: 'delete'});
+    },
+
+    update_experiment(file, descriptive_id){
+        return fetchVoid(this.apiURL(`/file/${file.id}/experiment`),
+            {method: 'put', body: {descriptive_id:descriptive_id}});
     },
 
     getParents(file){

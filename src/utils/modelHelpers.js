@@ -30,7 +30,7 @@ export let catchJSON = err => (err.response ? err.response.json() : Promise.reje
 
 export function fetchVoid(url, options = {}){
     let opts = Object.assign({
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -58,9 +58,6 @@ export function fetchFullJson(url, options = {}){
         .then(toJSON)
         .catch();
 }
-
-
-בש
 
 export function fetchJson(url, options){
     return fetchVoid(url, options)

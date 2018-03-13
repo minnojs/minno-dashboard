@@ -2,6 +2,7 @@ import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
+import {delete_study} from "../../studyModel";
 
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
@@ -62,6 +63,37 @@ export let renameFile = (file,study) => () => {
         .then(response => {
             if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
         });
+};
+
+export let make_experiment = (file, study) => () => {
+    let descriptive_id = m.prop(file.path);
+    let error = m.prop('');
+    return messages.confirm({
+        header:'New Name',
+        content: m('div', [
+            m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
+            !error() ? '' : m('p.alert.alert-danger', error())
+        ])}).then(response => response && study.make_experiment(file, descriptive_id()));
+};
+
+export let update_experiment = (file, study) => () => {
+    let descriptive_id = m.prop('');
+    let error = m.prop('');
+    return messages.confirm({
+        header:'New Name',
+        content: m('div', [
+            m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
+            !error() ? '' : m('p.alert.alert-danger', error())
+        ])}).then(response => response && study.update_experiment(file, descriptive_id()));
+};
+
+export let delete_experiment = (file, study) => () => {
+    messages.confirm({
+        header: 'Remove Experiment',
+        content: 'Are you sure you want to remove this experiment? This is a permanent change.'
+    })
+        .then(response => {
+            if (response) study.delete_experiment(file)});
 };
 
 function moveAction(newPath, file, study){

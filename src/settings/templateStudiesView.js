@@ -1,4 +1,4 @@
-export let templates_body = ctrl => m('.card.card-inverse.col-md-4', [
+export let templates_body = ctrl => ctrl.role()=='CU' ? '' : m('.card.card-inverse.col-md-4', [
     m('.card-block',[
         !ctrl.present_templates()
         ?

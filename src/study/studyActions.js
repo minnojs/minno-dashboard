@@ -1,4 +1,5 @@
 import messages from 'utils/messagesComponent';
+
 import {lock_study, duplicate_study, create_study, delete_study, rename_study, load_templates} from './studyModel';
 import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
@@ -10,8 +11,6 @@ export let do_create = (type, studies) => {
     let template_id = m.prop('');
     let reuse_id = m.prop('');
     let error = m.prop('');
-
-
 
     let ask = () => messages.confirm({
         header:type == 'regular' ? 'New Study' : 'New Template Study',
@@ -32,71 +31,79 @@ export let do_create = (type, studies) => {
     ask();
 };
 
-export let do_tags = ({study_id, loadTags, callback}) => e => {
+export let do_tags = (study) => e => {
     e.preventDefault();
+    let study_id = study.id;
     let  filter_tags = ()=>{return tag => tag.changed;};
     let tags = m.prop([]);
-    messages.confirm({header:'Tags', content: studyTagsComponent({loadTags, tags, study_id, callback})})
+    messages.confirm({header:'Tags', content: studyTagsComponent({tags, study_id})})
         .then(function (response) {
-            if (response)
-                update_tags_in_study(study_id, tags().filter(filter_tags()).map(tag=>(({id: tag.id, used: tag.used})))).then(callback);
-        });
+            if (response){
+                var new_tags = tags().filter(tag=> tag.used);
+                study.tags = new_tags;
+                tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
+                return update_tags_in_study(study_id, tags);
+            }
+        })
+        .then(m.redraw);
 };
 
 
-export let do_delete = (study_id, callback) => e => {
+export let do_delete = (study) => e => {
     e.preventDefault();
     return messages.confirm({header:'Delete study', content:'Are you sure?'})
         .then(response => {
-            if (response) delete_study(study_id)
-                .then(callback)
-                .then(m.redraw)
+            if (response) delete_study(study.id)
+                .then(()=>study.deleted=true)
                 .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
-                .then(m.redraw);
+                .then(m.redraw)
+                .then(m.route('./'))
+                ;
+
         });
 };
 
 
-export let do_rename = (study_id, name, callback) => e => {
+export let do_rename = (study) => e => {
     e.preventDefault();
-    let study_name = m.prop(name);
+    let study_name = m.prop('');
     let error = m.prop('');
 
     let ask = () => messages.confirm({
         header:'New Name',
         content: m('div', [
-            m('input.form-control', {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
+            m('input.form-control',  {placeholder: 'Enter Study Name', onchange: m.withAttr('value', study_name)}),
+
             !error() ? '' : m('p.alert.alert-danger', error())
         ])
     }).then(response => response && rename());
 
-    let rename = () => rename_study(study_id, study_name)
-        .then(callback.bind(null, study_name()))
+    let rename = () => rename_study(study.id, study_name)
+        .then(()=>study.name=study_name())
         .then(m.redraw)
         .catch(e => {
             error(e.message);
             ask();
-        });
-
-    // activate creation
+        }).then(m.redraw);
     ask();
 };
 
-export let do_duplicate= (study_id, name, type) => e => {
+export let do_duplicate= (study, callback) => e => {
     e.preventDefault();
-    let study_name = m.prop(name);
+    let study_name = m.prop(study.name);
     let error = m.prop('');
 
     let ask = () => messages.confirm({
         header:'New Name',
         content: m('div', [
-            m('input.form-control', {placeholder: 'Enter Study Name', value: '', onchange: m.withAttr('value', study_name)}),
+            m('input.form-control', {placeholder: 'Enter Study Name', onchange: m.withAttr('value', study_name)}),
             !error() ? '' : m('p.alert.alert-danger', error())
         ])
     }).then(response => response && duplicate());
 
-    let duplicate= () => duplicate_study(study_id, study_name, type)
-        .then(response => m.route( type==='regular' ? `/editor/${response.study_id}`: `/editor/${response.study_id}` ))
+    let duplicate= () => duplicate_study(study.id, study_name)
+        .then(response => m.route( study.type=='regular' ? `/editor/${response.study_id}`: `/editor/${response.study_id}` ))
+        .then(callback)
         .then(m.redraw)
         .catch(e => {
             error(e.message);
@@ -105,7 +112,7 @@ export let do_duplicate= (study_id, name, type) => e => {
     ask();
 };
 
-export let do_lock = (study) => e => {
+export let do_lock = (study, callback) => e => {
     e.preventDefault();
     let error = m.prop('');
 
@@ -122,7 +129,7 @@ export let do_lock = (study) => e => {
     let lock= () => lock_study(study.id, !study.is_locked)
         .then(study.is_locked = !study.is_locked)
         .then(study.isReadonly = study.is_locked)
-        
+        .then(callback)
 
         .catch(e => {
             error(e.message);
@@ -131,3 +138,44 @@ export let do_lock = (study) => e => {
         .then(m.redraw);
     ask();
 };
+
+
+
+export let do_copy_url = (study) => e => {
+    e.preventDefault();
+    let copyFail = m.prop(false);
+    let autoCopy = () => copy(study.base_url).catch(() => copyFail(true)).then(m.redraw);
+    let ask = () => messages.alert({
+        header: 'Copy URL',
+        content: m('.card-block', [
+            m('.form-group', [
+                m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
+                m('label.input-group',[
+                    m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
+                    m('input.form-control', { config: el => el.select(), value: study.base_url })
+                ]),
+                !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
+            ])
+        ]),
+        okText: 'Done'
+    });
+    ask();
+};
+
+
+function copy(text){
+    return new Promise((resolve, reject) => {
+        let input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+
+        try {
+            document.execCommand('copy');
+        } catch(err){
+            reject(err);
+        }
+
+        input.parentNode.removeChild(input);
+    });
+}

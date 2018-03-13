@@ -77,6 +77,37 @@ let layout = route => {
             }
         },
         view(ctrl){
+
+            var settings = {
+                'studies':[],
+                // 'data':['downloads', 'downloadsAccess', 'statistics'],
+                // 'pool':[],
+                'tags':[]
+                ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser'/*, 'massMail'*/]
+            };
+
+
+            var settings_hash = {
+                'studies':{text: 'Studies', href:'/studies', sub:[]},
+                'data':{text: 'Data', href:false,
+                    subs: {
+                        'downloads': {text: 'downloads', href: '/downloads'},
+                        'downloadsAccess': {text: 'Downloads Access', href: '/downloadsAccess'},
+                        'statistics': {text: 'Statistics', href: '/statistics'}
+                    }},
+                'pool':{text: 'Pool', href:'/pool', sub:[]},
+                'tags':{text: 'Tags', href:'/tags', sub:[]},
+                'admin':{text: 'Admin', href:false,
+                    subs:{'deployList': {text:'Deploy List', href: '/deployList'},
+                          'removalList': {text:'Removal List', href:'/removalList'},
+                          'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
+                          'addUser': {text:'Add User', href: '/addUser'},
+                          'massMail': {text:'Send MassMail', href: '/massMail'}
+                    }}
+
+            };
+
+
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                 !ctrl.isloggedin || ctrl.role()=='ro'
                 ?
@@ -85,59 +116,84 @@ let layout = route => {
                 m('nav.navbar.navbar-dark', [
                     m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                     m('ul.nav.navbar-nav',[
-                        ctrl.role()=='CU'
-                         ?
-                        ''
-                        :
-                        m('li.nav-item', [
-                            m('.dropdown', [
-                                m('a.nav-link',{href:'/studies', config:m.route},'Studies'),
-                                !ctrl.present_templates()
-                                    ?
-                                    ''
-                                    :
-                                    m('.dropdown-menu', [
-                                        m('a.dropdown-item',{href:'/template_studies', config:m.route},'Template Studies')
-                                    ])
-                            ])
-                        ]),
 
-                        m('li.nav-item', [
-                            m('.dropdown', [
-                                m('a.nav-link', 'Data'),
-                                m('.dropdown-menu', [
-                                    m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
-                                    m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
-                                    m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                        Object.keys(settings).map(comp=>
+
+                            settings[comp].length==0 ?
+                                m('li.nav-item',[
+                                    m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
+
                                 ])
-                            ])
-                        ]),
-                        ctrl.role()=='CU'
-                        ?
-                        ''
-                        :
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/pool', config:m.route},'Pool')
-                        ]),
-                        m('li.nav-item',[
-                            m('a.nav-link',{href:'/tags', config:m.route},'Tags')
-                        ]),
-                        ctrl.role()!='SU'
-                        ?
-                        ''
-                        :
-                        m('li.nav-item', [
-                            m('.dropdown', [
-                                m('a.nav-link', 'Admin'),
-                                m('.dropdown-menu', [
-                                    m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
-                                    m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
-                                    m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
-                                    m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User'),
-                                    m('a.dropdown-item',{href:'/massMail', config:m.route}, 'Send MassMail')
+                                :
+                                m('li.nav-item', [
+                                    m('.dropdown', [
+                                        m('a.nav-link', settings_hash[comp].text),
+                                        m('.dropdown-menu', [
+                                            settings[comp].map(sub_comp=>
+
+                                                m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text)
+
+                                            )
+
+                                        ])
+                                    ])
                                 ])
-                            ])
-                        ]),
+                        ),
+
+                        //
+                        // ctrl.role()=='CU'
+                        //  ?
+                        // ''
+                        // :
+                        // m('li.nav-item', [
+                        //     m('.dropdown', [
+                        //         m('a.nav-link',{href:'/studies', config:m.route},'Studies'),
+                        //         !ctrl.present_templates()
+                        //             ?
+                        //             ''
+                        //             :
+                        //             m('.dropdown-menu', [
+                        //                 m('a.dropdown-item',{href:'/template_studies', config:m.route},'Template Studies')
+                        //             ])
+                        //     ])
+                        // ]),
+
+                        // m('li.nav-item', [
+                        //     m('.dropdown', [
+                        //         m('a.nav-link', 'Data'),
+                        //         m('.dropdown-menu', [
+                        //             m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
+                        //             m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
+                        //             m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
+                        //         ])
+                        //     ])
+                        // ]),
+                        // ctrl.role()=='CU'
+                        // ?
+                        // ''
+                        // :
+                        // m('li.nav-item',[
+                        //     m('a.nav-link',{href:'/pool', config:m.route},'Pool')
+                        // ]),
+                        // m('li.nav-item',[
+                        //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
+                        // ]),
+                        // ctrl.role()!='SU'
+                        // ?
+                        // ''
+                        // :
+                        // m('li.nav-item', [
+                        //     m('.dropdown', [
+                        //         m('a.nav-link', 'Admin'),
+                        //         m('.dropdown-menu', [
+                        //             m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
+                        //             m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
+                        //             m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
+                        //             m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User'),
+                        //             m('a.dropdown-item',{href:'/massMail', config:m.route}, 'Send MassMail')
+                        //         ])
+                        //     ])
+                        // ]),
                         m('li.nav-item.pull-xs-right', [
                             m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
                         ]),

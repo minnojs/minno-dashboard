@@ -33,7 +33,6 @@ let fileEditorComponent = {
         const id = m.route.param('fileId');
         const file = study.getFile(id);
         const ctrl = {file,study};
-
         return ctrl;
     },
 
