@@ -6116,7 +6116,7 @@
         e.preventDefault();
         if (file.viewStudy) m.route(("/view/" + (m.route.param('code')) + "/file/" + (encodeURIComponent(file.id))));
         else m.route(("/editor/" + (file.studyId) + "/file/" + (encodeURIComponent(file.id))));
-        m.redraw.strategy('diff');
+        m.redraw.strategy('diff'); // make sure that the route change is diffed as opposed to redraws
     }; };
 
     // checkmark a file/folder
@@ -6624,12 +6624,21 @@
         view: function (ctrl , ref) {
             var study = ref.study;
 
-            return m('.sidebar', {}, [
+            return m('.sidebar', {config: config}, [
                 sidebarButtons({study: study}),
                 filesList({study: study})
             ]);
         }
     };
+
+    function config(el, isInitialized, ctx){
+        if (!isInitialized) el.addEventListener('scroll', listen, false);
+        el.scrollTop = ctx.scrollTop || 0;
+
+        function listen(){
+            ctx.scrollTop = el.scrollTop;
+        }
+    }
 
     var splitPane = function (args) { return m.component(splitComponent, args); };
 
