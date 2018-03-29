@@ -1,5 +1,5 @@
 
-const urlPrefix = 'http://localhost:3000'; // first pathname section with slashes
+const urlPrefix = 'http://localhost:3000/dashboard/'; // first pathname section with slashes
 
 export const baseUrl            = `${urlPrefix}`;
 export const studyUrl           = `${urlPrefix}studies`;

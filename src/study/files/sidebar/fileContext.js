@@ -1,5 +1,7 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
+import {launchUrl} from 'modelUrls';
+
 import {
     createDir, createEmpty, moveFile, copyFile, renameFile, downloadFile, resetFile,
     make_experiment, update_experiment, delete_experiment
@@ -32,8 +34,8 @@ let fileContext = (file, study) => {
     // Allows to use as a button without a specific file
     if (file) {
         console.log(file);
-        let isExpt = /\.expt\.xml$/.test(file.name) || file.exp_data;
-        // let isExpt = file.exp_data;
+        // let isExpt = /\.expt\.xml$/.test(file.name) && file.exp_data;
+        let isExpt = file.exp_data;
 
         if (!isReadonly) menu.push({separator:true});
 
@@ -41,12 +43,12 @@ let fileContext = (file, study) => {
             {icon:'fa-refresh', text: 'Refresh/Reset', action: resetFile(file), disabled: isReadonly || file.content() == file.sourceContent()},
             {icon:'fa-download', text:'Download', action: downloadFile(study, file)},
             {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
-            isExpt ?  '' : {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly },
 
-            !isExpt ?  '' : {icon:'fa-desktop', text:'Experiment options', menu: [
+            !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
+                    :  {icon:'fa-desktop', text:'Experiment options', menu: [
                         {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                         {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
-                        { icon:'fa-play', href:`http://localhost:3000/launch/${file.exp_data.id}    `, text:'Play this task'},
+                        { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}    `, text:'Play this task'},
                         {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)}
                     ]},
 

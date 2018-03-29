@@ -1,8 +1,10 @@
 /**/
-const urlPrefix = 'http://localhost:3000'; // first pathname section with slashes
+const urlPrefix = window.location.origin; // first pathname section with slashes
+
 
 export const baseUrl            = `${urlPrefix}`;
 export const studyUrl           = `${urlPrefix}/studies`;
+export const launchUrl          = `${urlPrefix}/launch`;
 export const templatesUrl       = `${urlPrefix}/templates`;
 export const tagsUrl            = `${urlPrefix}/tags`;
 export const translateUrl       = `${urlPrefix}/translate`;
