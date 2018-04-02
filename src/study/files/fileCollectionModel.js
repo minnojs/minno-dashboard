@@ -170,8 +170,8 @@ let studyPrototype = {
     },
 
     make_experiment(file, descriptive_id){
-        return fetchVoid(this.apiURL(`/file/${file.id}/experiment`),
-                        {method: 'post', body: {descriptive_id:descriptive_id}});
+        return fetchJson(this.apiURL(`/file/${file.id}/experiment`),
+                        {method: 'post', body: {descriptive_id:descriptive_id}}).then((exp_data)=>file.exp_data=exp_data);
     },
 
     delete_experiment(file){

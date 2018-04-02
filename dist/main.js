@@ -3771,8 +3771,8 @@
         },
 
         make_experiment: function make_experiment(file, descriptive_id){
-            return fetchVoid(this.apiURL(("/file/" + (file.id) + "/experiment")),
-                            {method: 'post', body: {descriptive_id:descriptive_id}});
+            return fetchJson(this.apiURL(("/file/" + (file.id) + "/experiment")),
+                            {method: 'post', body: {descriptive_id:descriptive_id}}).then(function (exp_data){ return file.exp_data=exp_data; });
         },
 
         delete_experiment: function delete_experiment(file){
@@ -4105,7 +4105,9 @@
             content: m('div', [
                 m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
                 !error() ? '' : m('p.alert.alert-danger', error())
-            ])}).then(function (response) { return response && study.make_experiment(file, descriptive_id()); });
+            ])}).then(function (response) { return response && study.make_experiment(file, descriptive_id()).then(function (){ return m.redraw(); }); });
+
+
     }; };
 
     var update_experiment = function (file, study) { return function () {
@@ -4116,7 +4118,9 @@
             content: m('div', [
                 m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
                 !error() ? '' : m('p.alert.alert-danger', error())
-            ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); });
+            ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); })
+            .then(function (){file.exp_data.descriptive_id=descriptive_id; m.redraw();});
+        ;
     }; };
 
     var delete_experiment = function (file, study) { return function () {
@@ -4125,7 +4129,9 @@
             content: 'Are you sure you want to remove this experiment? This is a permanent change.'
         })
             .then(function (response) {
-                if (response) study.delete_experiment(file)});
+                if (response) study.delete_experiment(file);})
+            .then(function (){delete file.exp_data; m.redraw();});
+
     }; };
 
     function moveAction(newPath, file, study){
@@ -4896,23 +4902,22 @@
         });
     }
 
-    var copyUrl = function (study) { return function () {
+    var copyUrl = function (url) { return function () {
         messages.alert({
             header: 'Copy URL',
-            content: m.component(copyComponent, {study: study}),
+            content: m.component(copyComponent, url),
             okText: 'Done'
         });
     }; };
 
     var copyComponent = {
-        controller: function (ref) {
-            var study = ref.study;
-
+        controller: function (url) {
+            console.log(url);
             var copyFail = m.prop(false);
-            var autoCopy = function () { return copy(study).catch(function () { return copyFail(true); }).then(m.redraw); };
+            var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
             return {autoCopy: autoCopy, copyFail: copyFail};
         },
-        view: function (ref, study) {
+        view: function (ref, url) {
             var autoCopy = ref.autoCopy;
             var copyFail = ref.copyFail;
 
@@ -4921,7 +4926,7 @@
                 m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
                 m('label.input-group',[
                     m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
-                    m('input.form-control', { config: function (el) { return el.select(); }, value: study.base_url })
+                    m('input.form-control', { config: function (el) { return el.select(); }, value: url })
                 ]),
                 !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
             ])
@@ -5981,7 +5986,7 @@
 
         // Allows to use as a button without a specific file
         if (file) {
-            console.log(file);
+            // console.log(file);
             // let isExpt = /\.expt\.xml$/.test(file.name) && file.exp_data;
             var isExpt = file.exp_data;
 
@@ -5996,8 +6001,8 @@
                         :  {icon:'fa-desktop', text:'Experiment options', menu: [
                             {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                             {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
-                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "    "), text:'Play this task'},
-                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))}
+                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id)), text:'Play this task'},
+                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id)))}
                         ]},
 
                 //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',

@@ -2,7 +2,6 @@ import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
-import {delete_study} from "../../studyModel";
 
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
@@ -73,7 +72,9 @@ export let make_experiment = (file, study) => () => {
         content: m('div', [
             m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
             !error() ? '' : m('p.alert.alert-danger', error())
-        ])}).then(response => response && study.make_experiment(file, descriptive_id()));
+        ])}).then(response => response && study.make_experiment(file, descriptive_id()).then(()=>m.redraw()));
+
+
 };
 
 export let update_experiment = (file, study) => () => {
@@ -84,7 +85,9 @@ export let update_experiment = (file, study) => () => {
         content: m('div', [
             m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
             !error() ? '' : m('p.alert.alert-danger', error())
-        ])}).then(response => response && study.update_experiment(file, descriptive_id()));
+        ])}).then(response => response && study.update_experiment(file, descriptive_id()))
+        .then(()=>{file.exp_data.descriptive_id=descriptive_id; m.redraw();});
+    ;
 };
 
 export let delete_experiment = (file, study) => () => {
@@ -93,7 +96,9 @@ export let delete_experiment = (file, study) => () => {
         content: 'Are you sure you want to remove this experiment? This is a permanent change.'
     })
         .then(response => {
-            if (response) study.delete_experiment(file)});
+            if (response) study.delete_experiment(file);})
+        .then(()=>{delete file.exp_data; m.redraw();});
+
 };
 
 function moveAction(newPath, file, study){
