@@ -3348,7 +3348,9 @@
                                 placeholder: 'Username / Email',
                                 value: ctrl.username(),
                                 name: 'username',
+                                autofocus:true,
                                 oninput: m.withAttr('value', ctrl.username),
+                                onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 onchange: m.withAttr('value', ctrl.username),
                                 config: getStartValue(ctrl.username)
                             }),
@@ -3358,6 +3360,7 @@
                                 placeholder: 'Password',
                                 value: ctrl.password(),
                                 oninput: m.withAttr('value', ctrl.password),
+                                onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 onchange: m.withAttr('value', ctrl.password),
                                 config: getStartValue(ctrl.password)
                             })
@@ -4070,6 +4073,18 @@
                 if (response && newPath() !== file.basePath) return moveAction(targetPath, file,study);
             });
     }; };
+
+    var duplicateFile = function (file,study) { return function () {
+            var newPath = m.prop(file.path);
+            return messages.prompt({
+                    header: 'Duplicate File',
+                    postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+                    prop: newPath
+            })
+                .then(function (response) {
+                        if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+                    });
+        }; };
 
     var copyFile = function (file, study) { return function () {
         var filePath = m.prop(file.basePath);
@@ -6009,6 +6024,7 @@
                 // isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
                 {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
+                {icon:'fa-clone', text:'Duplicate', action: duplicateFile(file, study), disabled: isReadonly },
                 {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
                 {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
             ]);

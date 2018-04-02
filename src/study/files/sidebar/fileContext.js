@@ -3,7 +3,7 @@ import messages from 'utils/messagesComponent';
 import {launchUrl} from 'modelUrls';
 
 import {
-    createDir, createEmpty, moveFile, copyFile, renameFile, downloadFile, resetFile,
+    createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile,
     make_experiment, update_experiment, delete_experiment
 } from './fileActions';
 import {createFromTemplate} from './wizardActions';
@@ -16,7 +16,7 @@ let fileContext = (file, study) => {
     let path = !file ? '/' : file.isDir ? file.path : file.basePath;
     let isReadonly = study.isReadonly;
     let menu = [];
-dd
+
     if (!isReadonly) {
         menu = menu.concat([
             {icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
@@ -56,6 +56,7 @@ dd
             // isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
             {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
             {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
+            {icon:'fa-clone', text:'Duplicate', action: duplicateFile(file, study), disabled: isReadonly },
             {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
             {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
         ]);

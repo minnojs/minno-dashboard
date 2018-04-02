@@ -46,7 +46,9 @@ let loginComponent = {
                             placeholder: 'Username / Email',
                             value: ctrl.username(),
                             name: 'username',
+                            autofocus:true,
                             oninput: m.withAttr('value', ctrl.username),
+                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             onchange: m.withAttr('value', ctrl.username),
                             config: getStartValue(ctrl.username)
                         }),
@@ -56,6 +58,7 @@ let loginComponent = {
                             placeholder: 'Password',
                             value: ctrl.password(),
                             oninput: m.withAttr('value', ctrl.password),
+                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             onchange: m.withAttr('value', ctrl.password),
                             config: getStartValue(ctrl.password)
                         })
