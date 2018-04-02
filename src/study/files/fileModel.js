@@ -41,7 +41,7 @@ let filePrototype = {
             });
     },
 
-    duplicate(path, study, remove){
+    move(path, study){
         let basePath = (path.substring(0, path.lastIndexOf('/')));
         let folderExists = basePath === '' || study.files().some(f => f.isDir && f.path === basePath);
 
@@ -54,7 +54,7 @@ let filePrototype = {
 
         return fetchJson(this.apiUrl() + `/move/` , {
             method:'put',
-            body: {path, url:this.url, remove:remove}
+            body: {path, url:this.url}
         })
             .then(response => {
                 this.id = response.id;

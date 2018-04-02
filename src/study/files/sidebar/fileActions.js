@@ -60,7 +60,7 @@ export let renameFile = (file,study) => () => {
         prop: newPath
     })
         .then(response => {
-            if (response && newPath() !== file.name) return moveAction(newPath(), file, study, true);
+            if (response && newPath() !== file.name) return moveAction(newPath(), file, study);
         });
 };
 
@@ -68,7 +68,7 @@ export let duplicateFile = (file,study) => () => {
     let newPath = m.prop(file.path);
     return messages.prompt({
         header: 'Duplicate File',
-        postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+        postContent: m('p.text-muted', 'You can duplicate a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
         prop: newPath
     })
         .then(response => {
@@ -77,11 +77,11 @@ export let duplicateFile = (file,study) => () => {
 };
 
 
-function moveAction(newPath, file, study, remove){
+function moveAction(newPath, file, study){
     let isFocused = file.id === m.route.param('fileId');
 
     let def = file
-    .duplicate(newPath, study, remove) // the actual movement
+    .move(newPath, study) // the actual movement
     .then(redirect)
     .catch(response => messages.alert({
         header: 'Move/Rename File',

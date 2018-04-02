@@ -3437,7 +3437,7 @@
                 });
         },
 
-        duplicate: function duplicate(path, study, remove){
+        move: function move(path, study){
             var this$1 = this;
 
             var basePath = (path.substring(0, path.lastIndexOf('/')));
@@ -3452,7 +3452,7 @@
 
             return fetchJson(this.apiUrl() + "/move/" , {
                 method:'put',
-                body: {path: path, url:this.url, remove:remove}
+                body: {path: path, url:this.url}
             })
                 .then(function (response) {
                     this$1.id = response.id;
@@ -4075,7 +4075,7 @@
             prop: newPath
         })
             .then(function (response) {
-                if (response && newPath() !== file.name) return moveAction(newPath(), file, study, true);
+                if (response && newPath() !== file.name) return moveAction(newPath(), file, study);
             });
     }; };
 
@@ -4083,7 +4083,7 @@
         var newPath = m.prop(file.path);
         return messages.prompt({
             header: 'Duplicate File',
-            postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+            postContent: m('p.text-muted', 'You can duplicate a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
             prop: newPath
         })
             .then(function (response) {
@@ -4096,7 +4096,7 @@
         var isFocused = file.id === m.route.param('fileId');
 
         var def = file
-        .duplicate(newPath, study, remove) // the actual movement
+        .move(newPath, study) // the actual movement
         .then(redirect)
         .catch(function (response) { return messages.alert({
             header: 'Move/Rename File',

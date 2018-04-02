@@ -59,9 +59,6 @@ export function fetchFullJson(url, options = {}){
         .catch();
 }
 
-
-בש
-
 export function fetchJson(url, options){
     return fetchVoid(url, options)
         .then(toJSON);
