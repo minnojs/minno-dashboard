@@ -1,6 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createEmpty, moveFile, copyFile, renameFile, downloadFile, resetFile} from './fileActions';
+import {createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile} from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';
 import copyUrl from 'utils/copyUrl';
@@ -37,8 +37,9 @@ let fileContext = (file, study) => {
             isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
             {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
             {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
-            {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
-            {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
+            {icon:'fa-clone', text:'Duplicate', action: duplicateFile(file, study), disabled: isReadonly },
+            {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file, study), disabled: isReadonly },
+            {icon:'fa-exchange', text:'Rename...', action: renameFile(file, study), disabled: isReadonly }
         ]);
     }
 

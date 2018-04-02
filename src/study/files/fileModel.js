@@ -41,7 +41,7 @@ let filePrototype = {
             });
     },
 
-    move(path, study){
+    duplicate(path, study, remove){
         let basePath = (path.substring(0, path.lastIndexOf('/')));
         let folderExists = basePath === '' || study.files().some(f => f.isDir && f.path === basePath);
 
@@ -52,9 +52,9 @@ let filePrototype = {
         this.setPath(path);
         this.content(this.content()); // in case where changing into a file type that needs syntax checking
 
-        return fetchJson(this.apiUrl() + `/move/`, {
+        return fetchJson(this.apiUrl() + `/move/` , {
             method:'put',
-            body: {path, url:this.url}
+            body: {path, url:this.url, remove:remove}
         })
             .then(response => {
                 this.id = response.id;
@@ -65,6 +65,7 @@ let filePrototype = {
                 return Promise.reject(response);
             });
     },
+
     copy(path, study_id, new_study_id){
         return fetchJson(this.apiUrl() + `/copy/`, {
             method:'put',

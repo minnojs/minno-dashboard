@@ -9,12 +9,14 @@ let loginComponent = {
             password:m.prop(''),
             isloggedin: false,
             loginAction,
+            submit_by_enter,
             error: m.prop('')
         };
         is_loggedin();
         return ctrl;
 
         function loginAction(){
+            console.log('xx');
             if(ctrl.username() && ctrl.password())
                 login(ctrl.username, ctrl.password)
                     .then(() => {
@@ -26,6 +28,17 @@ let loginComponent = {
                     })
                 ;
         }
+        function submit_by_enter(e) {
+
+                if (e.keyCode == 13)
+                {
+                    ctrl.loginAction();
+                    return false;
+                }
+                // var key = e.keyCode + "";
+                // console.log(key);
+        };
+
 
         function is_loggedin(){
             getAuth().then((response) => {
@@ -40,13 +53,15 @@ let loginComponent = {
                 m('.card-block',[
                     m('h4', 'Please sign in'),
 
-                    m('form', {onsubmit:ctrl.login}, [
+                    m('form', {onsubmit:ctrl.loginAction}, [
                         m('input.form-control', {
                             type:'username',
                             placeholder: 'Username / Email',
                             value: ctrl.username(),
                             name: 'username',
+                            autofocus:true,
                             oninput: m.withAttr('value', ctrl.username),
+                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             onchange: m.withAttr('value', ctrl.username),
                             config: getStartValue(ctrl.username)
                         }),
@@ -57,6 +72,7 @@ let loginComponent = {
                             value: ctrl.password(),
                             oninput: m.withAttr('value', ctrl.password),
                             onchange: m.withAttr('value', ctrl.password),
+                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             config: getStartValue(ctrl.password)
                         })
                     ]),

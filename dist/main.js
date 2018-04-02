@@ -246,6 +246,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -567,15 +575,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1595,10 +1594,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1750,10 +1745,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3300,12 +3291,14 @@
                 password:m.prop(''),
                 isloggedin: false,
                 loginAction: loginAction,
+                submit_by_enter: submit_by_enter,
                 error: m.prop('')
             };
             is_loggedin();
             return ctrl;
 
             function loginAction(){
+                console.log('xx');
                 if(ctrl.username() && ctrl.password())
                     login(ctrl.username, ctrl.password)
                         .then(function () {
@@ -3317,6 +3310,17 @@
                         })
                     ;
             }
+            function submit_by_enter(e) {
+
+                    if (e.keyCode == 13)
+                    {
+                        ctrl.loginAction();
+                        return false;
+                    }
+                    // var key = e.keyCode + "";
+                    // console.log(key);
+            };
+
 
             function is_loggedin(){
                 getAuth().then(function (response) {
@@ -3331,13 +3335,15 @@
                     m('.card-block',[
                         m('h4', 'Please sign in'),
 
-                        m('form', {onsubmit:ctrl.login}, [
+                        m('form', {onsubmit:ctrl.loginAction}, [
                             m('input.form-control', {
                                 type:'username',
                                 placeholder: 'Username / Email',
                                 value: ctrl.username(),
                                 name: 'username',
+                                autofocus:true,
                                 oninput: m.withAttr('value', ctrl.username),
+                                onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 onchange: m.withAttr('value', ctrl.username),
                                 config: getStartValue(ctrl.username)
                             }),
@@ -3348,6 +3354,7 @@
                                 value: ctrl.password(),
                                 oninput: m.withAttr('value', ctrl.password),
                                 onchange: m.withAttr('value', ctrl.password),
+                                onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 config: getStartValue(ctrl.password)
                             })
                         ]),
@@ -3430,7 +3437,7 @@
                 });
         },
 
-        move: function move(path, study){
+        duplicate: function duplicate(path, study, remove){
             var this$1 = this;
 
             var basePath = (path.substring(0, path.lastIndexOf('/')));
@@ -3443,9 +3450,9 @@
             this.setPath(path);
             this.content(this.content()); // in case where changing into a file type that needs syntax checking
 
-            return fetchJson(this.apiUrl() + "/move/", {
+            return fetchJson(this.apiUrl() + "/move/" , {
                 method:'put',
-                body: {path: path, url:this.url}
+                body: {path: path, url:this.url, remove:remove}
             })
                 .then(function (response) {
                     this$1.id = response.id;
@@ -3456,6 +3463,7 @@
                     return Promise.reject(response);
                 });
         },
+
         copy: function copy(path, study_id, new_study_id){
             return fetchJson(this.apiUrl() + "/copy/", {
                 method:'put',
@@ -4067,15 +4075,28 @@
             prop: newPath
         })
             .then(function (response) {
-                if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
+                if (response && newPath() !== file.name) return moveAction(newPath(), file, study, true);
             });
     }; };
 
-    function moveAction(newPath, file, study){
+    var duplicateFile = function (file,study) { return function () {
+        var newPath = m.prop(file.path);
+        return messages.prompt({
+            header: 'Duplicate File',
+            postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+            prop: newPath
+        })
+            .then(function (response) {
+                if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+            });
+    }; };
+
+
+    function moveAction(newPath, file, study, remove){
         var isFocused = file.id === m.route.param('fileId');
 
         var def = file
-        .move(newPath,study) // the actual movement
+        .duplicate(newPath, study, remove) // the actual movement
         .then(redirect)
         .catch(function (response) { return messages.alert({
             header: 'Move/Rename File',
@@ -4088,6 +4109,7 @@
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
+
             if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id)));
             return response;
         }
@@ -5773,21 +5795,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5847,8 +5854,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -5950,8 +5955,9 @@
                 isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
                 {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
-                {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
-                {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
+                {icon:'fa-clone', text:'Duplicate', action: duplicateFile(file, study), disabled: isReadonly },
+                {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file, study), disabled: isReadonly },
+                {icon:'fa-exchange', text:'Rename...', action: renameFile(file, study), disabled: isReadonly }
             ]);
         }
 
@@ -6030,7 +6036,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6203,16 +6208,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
