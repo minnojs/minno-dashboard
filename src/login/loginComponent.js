@@ -40,7 +40,7 @@ let loginComponent = {
                 m('.card-block',[
                     m('h4', 'Please sign in'),
 
-                    m('form', {onsubmit:ctrl.login}, [
+                    m('form', {onsubmit:ctrl.loginAction}, [
                         m('input.form-control', {
                             type:'username',
                             placeholder: 'Username / Email',
@@ -60,6 +60,7 @@ let loginComponent = {
                             oninput: m.withAttr('value', ctrl.password),
                             onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             onchange: m.withAttr('value', ctrl.password),
+                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             config: getStartValue(ctrl.password)
                         })
                     ]),

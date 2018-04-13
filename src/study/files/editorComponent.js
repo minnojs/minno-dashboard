@@ -30,18 +30,17 @@ let editors = {
 
 let fileEditorComponent = {
     controller: function({study}) {
-        const id = m.route.param('fileId');
-        const file = study.getFile(id);
-        const ctrl = {file,study};
-        return ctrl;
+        return {study};
     },
 
-    view: ({file, study}, args = {}) => {
+    view: ({study}, args = {}) => {
+        const id = m.route.param('fileId');
+        const file = study.getFile(id);
         let editor = file && editors[file.type] || unknowEditor;
 
         return m('div', {config:fullHeight}, [
             file
-                ? editor({file, study,  settings: args.settings})
+                ? editor({file, study,  settings: args.settings, key:file.id})
                 : m('.centrify', [
                     m('i.fa.fa-smile-o.fa-5x'),
                     m('h5', 'Please select a file to start working')

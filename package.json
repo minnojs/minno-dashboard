@@ -2,7 +2,6 @@
   "name": "pi-validator",
   "version": "1.0.0",
   "description": "Dashboard expanssion for PI",
-  "repository": "https://github.com/ProjectImplicit/pi-validator.git",
   "main": "index.js",
   "scripts": {
     "install": "bower install",
@@ -23,7 +22,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "bower": "^1.6.8"
+    "bower": "^1.6.8",
+    "mithril": "^0.2.8"
   },
   "devDependencies": {
     "body-parser": "^1.14.2",

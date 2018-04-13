@@ -38,18 +38,6 @@ export let moveFile = (file, study) => () => {
         });
 };
 
-export let duplicateFile = (file,study) => () => {
-        let newPath = m.prop(file.path);
-        return messages.prompt({
-                header: 'Duplicate File',
-                postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
-                prop: newPath
-        })
-            .then(response => {
-                    if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-                });
-    };
-
 export let copyFile = (file, study) => () => {
     let filePath = m.prop(file.basePath);
     let study_id = m.prop(study.id);
@@ -72,52 +60,28 @@ export let renameFile = (file,study) => () => {
         prop: newPath
     })
         .then(response => {
-            if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
+            if (response && newPath() !== file.name) return moveAction(newPath(), file, study);
         });
 };
 
-export let make_experiment = (file, study) => () => {
-    let descriptive_id = m.prop(file.path);
-    let error = m.prop('');
-    return messages.confirm({
-        header:'New Name',
-        content: m('div', [
-            m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
-            !error() ? '' : m('p.alert.alert-danger', error())
-        ])}).then(response => response && study.make_experiment(file, descriptive_id()).then(()=>m.redraw()));
-
-
-};
-
-export let update_experiment = (file, study) => () => {
-    let descriptive_id = m.prop('');
-    let error = m.prop('');
-    return messages.confirm({
-        header:'New Name',
-        content: m('div', [
-            m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
-            !error() ? '' : m('p.alert.alert-danger', error())
-        ])}).then(response => response && study.update_experiment(file, descriptive_id()))
-        .then(()=>{file.exp_data.descriptive_id=descriptive_id; m.redraw();});
-    ;
-};
-
-export let delete_experiment = (file, study) => () => {
-    messages.confirm({
-        header: 'Remove Experiment',
-        content: 'Are you sure you want to remove this experiment? This is a permanent change.'
+export let duplicateFile = (file,study) => () => {
+    let newPath = m.prop(file.path);
+    return messages.prompt({
+        header: 'Duplicate File',
+        postContent: m('p.text-muted', 'You can duplicate a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+        prop: newPath
     })
         .then(response => {
-            if (response) study.delete_experiment(file);})
-        .then(()=>{delete file.exp_data; m.redraw();});
-
+            if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+        });
 };
+
 
 function moveAction(newPath, file, study){
     let isFocused = file.id === m.route.param('fileId');
 
     let def = file
-    .move(newPath,study) // the actual movement
+    .move(newPath, study) // the actual movement
     .then(redirect)
     .catch(response => messages.alert({
         header: 'Move/Rename File',
@@ -130,6 +94,7 @@ function moveAction(newPath, file, study){
 
     function redirect(response){
         // redirect only if the file is chosen, otherwise we can stay right here...
+
         if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`);
         return response;
     }

@@ -25,7 +25,7 @@ let statisticsFormComponent = {
             m('div', {style: 'padding: .375rem'},
                 [
                     dateRangePicker({startDate:query.startDate, endDate: query.endDate})
-                        ,m('small.text-muted',  'The data for the study statistics by day is saved in 24 hour increments by date in USA eastern time (EST).')
+                    ,m('small.text-muted',  'The data for the study statistics by day is saved in 24 hour increments by date in USA eastern time (EST).')
                 ]
             ),
 
