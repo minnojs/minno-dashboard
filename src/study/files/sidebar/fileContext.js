@@ -4,7 +4,7 @@ import {launchUrl} from 'modelUrls';
 
 import {
     createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile,
-    make_experiment, update_experiment, delete_experiment
+    make_experiment, update_experiment, sdelete_experiment
 } from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';

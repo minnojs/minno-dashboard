@@ -190,9 +190,9 @@
     }
 
     /**/
-    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    var urlPrefix = window.location.origin; // first pathname section with slashes
+    // const urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -4149,17 +4149,6 @@
             ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); })
             .then(function (){file.exp_data.descriptive_id=descriptive_id; m.redraw();});
         ;
-    }; };
-
-    var delete_experiment = function (file, study) { return function () {
-        messages.confirm({
-            header: 'Remove Experiment',
-            content: 'Are you sure you want to remove this experiment? This is a permanent change.'
-        })
-            .then(function (response) {
-                if (response) study.delete_experiment(file);})
-            .then(function (){delete file.exp_data; m.redraw();});
-
     }; };
 
     function moveAction(newPath, file, study){
