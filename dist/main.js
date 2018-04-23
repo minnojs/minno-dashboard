@@ -190,12 +190,14 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
+    var urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
     var studyUrl           = urlPrefix + "/studies";
+    var launchUrl          = urlPrefix + "/launch";
     var templatesUrl       = urlPrefix + "/templates";
     var tagsUrl            = urlPrefix + "/tags";
     var translateUrl       = urlPrefix + "/translate";
@@ -4085,6 +4087,18 @@
             });
     }; };
 
+    var duplicateFile = function (file,study) { return function () {
+            var newPath = m.prop(file.path);
+            return messages.prompt({
+                    header: 'Duplicate File',
+                    postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+                    prop: newPath
+            })
+                .then(function (response) {
+                        if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+                    });
+        }; };
+
     var copyFile = function (file, study) { return function () {
         var filePath = m.prop(file.basePath);
         var study_id = m.prop(study.id);
@@ -4107,28 +4121,52 @@
             prop: newPath
         })
             .then(function (response) {
-                if (response && newPath() !== file.name) return moveAction(newPath(), file, study);
+                if (response && newPath() !== file.name) return moveAction(newPath(), file,study);
             });
     }; };
 
-    var duplicateFile = function (file,study) { return function () {
-        var newPath = m.prop(file.path);
-        return messages.prompt({
-            header: 'Duplicate File',
-            postContent: m('p.text-muted', 'You can duplicate a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
-            prop: newPath
+    var make_experiment = function (file, study) { return function () {
+        var descriptive_id = m.prop(file.path);
+        var error = m.prop('');
+        return messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])}).then(function (response) { return response && study.make_experiment(file, descriptive_id()).then(function (){ return m.redraw(); }); });
+
+
+    }; };
+
+    var update_experiment = function (file, study) { return function () {
+        var descriptive_id = m.prop('');
+        var error = m.prop('');
+        return messages.confirm({
+            header:'New Name',
+            content: m('div', [
+                m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
+                !error() ? '' : m('p.alert.alert-danger', error())
+            ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); })
+            .then(function (){file.exp_data.descriptive_id=descriptive_id; m.redraw();});
+        ;
+    }; };
+
+    var delete_experiment = function (file, study) { return function () {
+        messages.confirm({
+            header: 'Remove Experiment',
+            content: 'Are you sure you want to remove this experiment? This is a permanent change.'
         })
             .then(function (response) {
-                if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-            });
-    }; };
+                if (response) study.delete_experiment(file);})
+            .then(function (){delete file.exp_data; m.redraw();});
 
+    }; };
 
     function moveAction(newPath, file, study){
         var isFocused = file.id === m.route.param('fileId');
 
         var def = file
-        .move(newPath, study) // the actual movement
+        .move(newPath,study) // the actual movement
         .then(redirect)
         .catch(function (response) { return messages.alert({
             header: 'Move/Rename File',
@@ -4141,7 +4179,6 @@
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
-
             if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id)));
             return response;
         }
@@ -5986,10 +6023,15 @@
                 ]}
             ]);
         }
-         
+
+
+
+
         // Allows to use as a button without a specific file
         if (file) {
-            var isExpt = /\.expt\.xml$/.test(file.name);
+            // console.log(file);
+            // let isExpt = /\.expt\.xml$/.test(file.name) && file.exp_data;
+            var isExpt = file.exp_data;
 
             if (!isReadonly) menu.push({separator:true});
 
@@ -5997,13 +6039,22 @@
                 {icon:'fa-refresh', text: 'Refresh/Reset', action: resetFile(file), disabled: isReadonly || file.content() == file.sourceContent()},
                 {icon:'fa-download', text:'Download', action: downloadFile$2(study, file)},
                 {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
-                isExpt ?  { icon:'fa-play', href:("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))), text:'Play this task'} : '',
-                isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(("https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=" + (file.url.replace(/^.*?\/implicit/, ''))))} : '',
+
+                !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
+                        :  {icon:'fa-desktop', text:'Experiment options', menu: [
+                            {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
+                            {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
+                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id)), text:'Play this task'},
+                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id)))}
+                        ]},
+
+                //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
+                // isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
                 {icon:'fa-close', text:'Delete', action: deleteFile, disabled: isReadonly },
                 {icon:'fa-arrows-v', text:'Move', action: moveFile(file,study), disabled: isReadonly },
                 {icon:'fa-clone', text:'Duplicate', action: duplicateFile(file, study), disabled: isReadonly },
-                {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file, study), disabled: isReadonly },
-                {icon:'fa-exchange', text:'Rename...', action: renameFile(file, study), disabled: isReadonly }
+                {icon:'fa-clone', text:'Copy to Different Study', action: copyFile(file,study), disabled: isReadonly },
+                {icon:'fa-exchange', text:'Rename...', action: renameFile(file,study), disabled: isReadonly }
             ]);
         }
 
