@@ -4151,6 +4151,17 @@
         ;
     }; };
 
+    var delete_experiment = function (file, study) { return function () {
+        messages.confirm({
+            header: 'Remove Experiment',
+            content: 'Are you sure you want to remove this experiment? This is a permanent change.'
+        })
+            .then(function (response) {
+                if (response) study.delete_experiment(file);})
+            .then(function (){delete file.exp_data; m.redraw();});
+
+    }; };
+
     function moveAction(newPath, file, study){
         var isFocused = file.id === m.route.param('fileId');
 
