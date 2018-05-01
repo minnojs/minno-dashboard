@@ -125,9 +125,9 @@ let deployComponent = {
                 }),
                 checkbox({
                     description:  [
-                        'All items on "Study Testing" and "Study Approval" from ',  
-                        m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'Project Implicit Study Development Checklist'), 
-                        ' completed (items 9 - 17) '
+                        'The study is compliant with ',
+                        m('a', {href:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit?usp=sharing', target:'_blank'}, 'PI Research Pool Guidelines and Required Elements & Study Conventions'),
+                        ' .'
                     ],
                     prop: ctrl.completed_checklist,
                     form, isStack:true,
