@@ -8,7 +8,7 @@
 		<meta name="viewport" content="user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1" />
 		<meta name="pinterest" content="nopin" />
 
-		<link rel="stylesheet" href="/dist/main.css" />
+		<link rel="stylesheet" href="/minno-manager/main.css" />
 
 		<style type="text/css">
 			.container {padding-top: 15px;}
@@ -31,14 +31,14 @@
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 
-		<div class="container" id="minno-app">
+		<div class="container" id="minno-container">
 			<img class="pi-spinner" ng-hide="1"/>
 			<div id="task"></div>
 		</div>
 	</body>
 
-    <script src="/dist/minno-debug.js" type="text/javascript"></script>
-    <script src="/dist/pi-minno.js" type="text/javascript"></script>
+    <script src="/minno-manager/minno-debug.js" type="text/javascript"></script>
+    <script src="/minno-manager/pi-minno.js" type="text/javascript"></script>
     <script type="text/javascript">
         window.DEBUG = true;
 
@@ -46,20 +46,20 @@
 			var name = file.url;
 			var element = document.getElementById('task');
 
-			new Promise(function(resolve,reject) {require(['pibootstrap'], resolve, reject);})
+			Promise.resolve()
 
 				.then(function() {return file.require(window);})
 				.then(function(script){
 					var type = String(script.type).toLowerCase();
-
+    
 					switch (type) {
-					case 'quest' :
+					case 'minno-quest' :
 						element.setAttribute('pi-manager-task', JSON.stringify({type:'quest', scriptUrl:name}));
 						break;
 					case 'pip' :
 						element.setAttribute('pi-manager-task', JSON.stringify({type:'pip', scriptUrl:name, version:'0.3'}));
 						break;
-					case 'time' :
+					case 'minno-time' :
 						element.setAttribute('pi-manager-task', JSON.stringify({type:'time', scriptUrl:name}));
 						break;
 					case 'manager' :
@@ -76,12 +76,12 @@
 					script.settings.hooks = {endTask:window.close.bind(window)};
 				})
 				.then(function(){
-					require(['angular','app'], function(angular, app) {
+
 						angular.element(document).ready(function() {
-							var el = document.getElementById('minno-app');
-							angular.bootstrap(el, [app.name]);
+							var el = document.getElementById('minno-container');
+							angular.bootstrap(el, ['piApp']);
 						});
-					});
+
 				});
 
 		};
