@@ -112,7 +112,11 @@ let changePasswordComponent = {
             ?
                 [
                     m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Password successfully updated!')
+                    m('h5', 'Password successfully updated!'),
+                    m('p.text-center',
+                        m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
+                    )
+
                 ]
             :
             ctrl.email_changed

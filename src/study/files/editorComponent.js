@@ -22,6 +22,7 @@ let editors = {
     xml: textEditor,
 
     jpg: imgEditor,
+    jpeg: imgEditor,
     bmp: imgEditor,
     png: imgEditor,
 

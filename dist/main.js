@@ -190,9 +190,9 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    // const urlPrefix = window.location.origin; // first pathname section with slashes
+    var urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -5683,6 +5683,7 @@
         xml: textEditor,
 
         jpg: imgEditor,
+        jpeg: imgEditor,
         bmp: imgEditor,
         png: imgEditor,
 
@@ -8541,7 +8542,11 @@
                 ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!')
+                        m('h5', 'Password successfully updated!'),
+                        m('p.text-center',
+                            m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
+                        )
+
                     ]
                 :
                 ctrl.email_changed
@@ -8790,7 +8795,10 @@
                 ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!')
+                        m('h5', 'Password successfully updated!'),
+                        m('p.text-center',
+                            m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
+                        )
                     ]
                 :
                 password_body(ctrl)
