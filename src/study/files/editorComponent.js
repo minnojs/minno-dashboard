@@ -17,6 +17,7 @@ let editors = {
     m: textEditor,
     c: textEditor,
     cs: textEditor,
+    css: textEditor,
     h: textEditor,
     py: textEditor,
     xml: textEditor,
