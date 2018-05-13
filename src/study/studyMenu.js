@@ -1,4 +1,4 @@
-import {do_delete, do_duplicate, do_rename, do_tags, do_lock, do_copy_url} from './studyActions';
+import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_copy_url} from './studyActions';
 
 function edit_permission(study){
     return study.permission !== 'read only';
@@ -11,6 +11,7 @@ function unlock_permission(study){
 }
 
 const settings = {'tags':[],
+    'data':[],
     'delete':[],
     'rename':[],
     'duplicate':[],
@@ -28,6 +29,11 @@ const settings_hash = {
         config: {
             onmousedown: do_tags,
             class: 'fa-tags'
+        }},
+    data: {text: 'Data',
+        config: {
+            onmousedown: do_data,
+            class: 'fa-download'
         }},
     delete: {text: 'Delete Study',
         config: {

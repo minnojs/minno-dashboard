@@ -1,9 +1,14 @@
 import messages from 'utils/messagesComponent';
 
-import {lock_study, duplicate_study, create_study, delete_study, rename_study, load_templates} from './studyModel';
+import {lock_study, duplicate_study, create_study, delete_study, rename_study, load_templates, get_exps} from './studyModel';
 import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
+import createMessage from '../downloads/dataComp';
+
+
 import {update_tags_in_study} from '../tags/tagsModel';
+import {getAll} from "../downloads/downloadsActions";
+import {createDownload, STATUS_RUNNING} from "../downloads/downloadsModel";
 
 export let do_create = (type, studies) => {
     let study_name = m.prop('');
@@ -43,6 +48,30 @@ export let do_tags = (study) => e => {
                 study.tags = new_tags;
                 tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
                 return update_tags_in_study(study_id, tags);
+            }
+        })
+        .then(m.redraw);
+};
+
+export let do_data = (study) => e => {
+    e.preventDefault();
+    let output = m.prop();
+    // let exps = get_exps[]);
+    // console.log(exps);
+    let study_id = study.id;
+    let exps = m.prop([]);
+    let tags = m.prop([]);
+    let dates = m.prop();
+
+
+    messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id})})
+        .then(function (response) {
+            if (response){
+                console.log(dates());
+                // var new_tags = tags().filter(tag=> tag.used);
+                // study.tags = new_tags;
+                // tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
+                // return update_tags_in_study(study_id, tags);
             }
         })
         .then(m.redraw);

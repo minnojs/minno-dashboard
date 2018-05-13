@@ -190,9 +190,9 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    // const urlPrefix = window.location.origin; // first pathname section with slashes
+    var urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -3868,6 +3868,7 @@
     var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
     var downloadLink = function (url, name) {
+        console.log(url);
         if (downloadSupport){
             var link = document.createElement('a');
             link.href = url;
@@ -3958,6 +3959,12 @@
     function get_duplicate_url(study_id) {
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
     }
+
+
+    function get_exps_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/experiments");
+    }
+
     function get_lock_url(study_id , lock) {
 
         if (lock)
@@ -3974,6 +3981,14 @@
         method: 'post',
         body: {study_name: study_name, type: type, template_id: template_id, reuse_id: reuse_id}
     }); };
+
+    var get_exps = function (study_id) { return fetchJson(get_exps_url(study_id)); };
+
+    var get_data = function (study_id, exp_id, file_format, start_date, end_date) { return fetchJson(get_exps_url(study_id), {
+        method: 'post',
+        body: {exp_id: exp_id, file_format: file_format, start_date: start_date, end_date: end_date}
+    }); }
+    ;
 
     var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
         method: 'put',
@@ -6490,6 +6505,117 @@
             .then(m.redraw); };
     }
 
+    function createMessage$3 (args) { return m.component(createMessage$4, args); };
+    var createMessage$4 = {
+        controller: function controller(ref){
+            var tags = ref.tags;
+            var exps = ref.exps;
+            var dates = ref.dates;
+            var study_id = ref.study_id;
+
+            var exp_id = m.prop('all');
+            var file_format = m.prop('csv');
+            var loaded = m.prop(false);
+            var error = m.prop(null);
+            dates ={
+                startDate: m.prop(daysAgo$1(3650)),
+                endDate: m.prop(new Date())
+            };
+            get_exps(study_id)
+                .then(function (response) { return exps(response.experiments); })
+                .catch(error)
+                .then(loaded.bind(null, true))
+                .then(m.redraw);
+
+            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, loaded: loaded, error: error, dates: dates};
+        },
+        view: function (ref) {
+            var study_id = ref.study_id;
+            var exp_id = ref.exp_id;
+            var file_format = ref.file_format;
+            var exps = ref.exps;
+            var loaded = ref.loaded;
+            var error = ref.error;
+            var dates = ref.dates;
+
+            return m('div', [
+            m('.card-block', [
+
+                m('.row', [
+                    m('.col-sm-5', [
+                        m('.input-group', [
+                        m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
+                            m('option', {value:'all'}, 'Show all my experiments'),
+                            exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
+                        ])
+                    ])]),
+                    m('.col-sm-5', [
+                        m('.input-group', [
+                        m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
+                            m('option', {value:'all'}, 'csv'),
+                            m('option', {value:'all'}, 'tsv')
+                        ])
+                    ])])
+                ]),
+                m('.row', [
+                    m('.col-sm-12', [
+                        m('.form-group', [
+                            dateRangePicker(dates),
+                            m('p.text-muted.btn-toolbar', [
+                                dayButtonView$2(dates, 'Last 7 Days', 7),
+                                dayButtonView$2(dates, 'Last 30 Days', 30),
+                                dayButtonView$2(dates, 'Last 90 Days', 90),
+                                dayButtonView$2(dates, 'All time', 3650)
+                            ])
+                        ])
+                    ])
+                ])
+            ]),
+            loaded() ? '' : m('.loader'),
+            error() ? m('.alert.alert-warning', error().message): '',
+            loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
+            m('.text-xs-right.btn-toolbar',[
+                m('a.btn.btn-secondary.btn-sm', {onclick:''}, 'Cancel'),
+                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, dates, error);}}, 'OK')
+            ])
+
+        ]);
+    }
+    };
+
+    function ask_get_data(study_id, exp_id, file_format, dates, error){
+        console.log(file_format);
+        return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
+            .then(function (response) {var file_data = response.data_file;
+                                console.log(file_data);
+                                downloadLink((baseUrl + "/download?path=" + file_data), file_data)
+                                })
+            .catch(error)
+            .then(m.redraw);
+    }
+
+    // helper functions for the day buttons
+    var daysAgo$1 = function (days) {
+        var d = new Date();
+        d.setDate(d.getDate() - days);
+        return d;
+    };
+    var equalDates$1 = function (date1, date2) { return date1.getDate() === date2.getDate(); };
+    var activeDate$1 = function (ref, days) {
+        var startDate = ref.startDate;
+        var endDate = ref.endDate;
+
+        return equalDates$1(startDate(), daysAgo$1(days)) && equalDates$1(endDate(), new Date());
+    };
+
+    var dayButtonView$2 = function (dates, name, days) { return m('button.btn.btn-secondary.btn-sm', {
+        class: activeDate$1(dates, days)? 'active' : '',
+        onclick: function () {
+            dates.startDate(daysAgo$1(days));
+            dates.endDate(new Date());
+        }
+    }, name); };
+
     var do_create = function (type, studies) {
         var study_name = m.prop('');
         var templates = m.prop([]);
@@ -6528,6 +6654,30 @@
                     study.tags = new_tags;
                     tags(tags().filter(filter_tags()).map(function (tag){ return (({text: tag.text, id: tag.id, used: tag.used})); }));
                     return update_tags_in_study(study_id, tags);
+                }
+            })
+            .then(m.redraw);
+    }; };
+
+    var do_data = function (study) { return function (e) {
+        e.preventDefault();
+        var output = m.prop();
+        // let exps = get_exps[]);
+        // console.log(exps);
+        var study_id = study.id;
+        var exps = m.prop([]);
+        var tags = m.prop([]);
+        var dates = m.prop();
+
+
+        messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id})})
+            .then(function (response) {
+                if (response){
+                    console.log(dates());
+                    // var new_tags = tags().filter(tag=> tag.used);
+                    // study.tags = new_tags;
+                    // tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
+                    // return update_tags_in_study(study_id, tags);
                 }
             })
             .then(m.redraw);
@@ -6676,6 +6826,7 @@
     }
 
     var settings = {'tags':[],
+        'data':[],
         'delete':[],
         'rename':[],
         'duplicate':[],
@@ -6693,6 +6844,11 @@
             config: {
                 onmousedown: do_tags,
                 class: 'fa-tags'
+            }},
+        data: {text: 'Data',
+            config: {
+                onmousedown: do_data,
+                class: 'fa-download'
             }},
         delete: {text: 'Delete Study',
             config: {

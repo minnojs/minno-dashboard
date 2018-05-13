@@ -4,6 +4,7 @@ const downloadSupport = !window.externalHost && 'download' in document.createEle
 export default downloadLink;
 
 const downloadLink = (url, name) => {
+    console.log(url);
     if (downloadSupport){
         let link = document.createElement('a');
         link.href = url;
