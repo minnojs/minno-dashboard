@@ -79,6 +79,10 @@
 	input,button {color: initial; font-size:12px;font-family:initial;}
 }
 
+.ace_editor, .ace_editor div{
+    font-family: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+}
+
 .study-tag {
     display: inline-block;
     padding: .25em .4em;
