@@ -12,7 +12,10 @@ let filePrototype = {
     get(){
         return fetchJson(this.apiUrl())
             .then(response => {
-                let content = response.content.replace(/\r\n?|\n?$/g, '\n'); // replace carriage returns and add new line to EOF. this makes sure all files are unix encoded...
+                const content = response.content
+                    .replace(/\r\n/g, '\n') // Replace carriage returns 
+                    .replace(/([^\n])$/,'$1\n'); //  Make sure all files are unix EOF encoded...
+
                 this.sourceContent(content);
                 this.content(content);
                 this.loaded = true;
