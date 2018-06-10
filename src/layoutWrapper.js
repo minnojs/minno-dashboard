@@ -83,7 +83,7 @@ let layout = route => {
                 // 'data':['downloads', 'downloadsAccess', 'statistics'],
                 // 'pool':[],
                 'tags':[]
-                ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser'/*, 'massMail'*/]
+                ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser', 'users'/*, 'massMail'*/]
             };
 
 
@@ -102,7 +102,8 @@ let layout = route => {
                           'removalList': {text:'Removal List', href:'/removalList'},
                           'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
                           'addUser': {text:'Add User', href: '/addUser'},
-                          'massMail': {text:'Send MassMail', href: '/massMail'}
+                          'massMail': {text:'Send MassMail', href: '/massMail'},
+                          'users': {text:'Users Management', href: '/users'}
                     }}
 
             };

@@ -126,7 +126,7 @@ let deployComponent = {
                 checkbox({
                     description:  [
                         'The study is compliant with ',
-                        m('a', {href:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit?usp=sharing', target:'_blank'}, 'PI Research Pool Guidelines and Required Elements & Study Conventions'),
+                        m('a', {hxref:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit?usp=sharing', target:'_blank'}, 'PI Research Pool Guidelines and Required Elements & Study Conventions'),
                         ' .'
                     ],
                     prop: ctrl.completed_checklist,

@@ -23,7 +23,10 @@ let copyComponent = {
             m('label.input-group',[
                 m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
                 m('input.form-control', { config: el => el.select(), value: url })
+
             ]),
+            m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
+            m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
             !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
         ])
     ])

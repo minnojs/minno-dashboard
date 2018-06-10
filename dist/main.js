@@ -268,6 +268,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -589,15 +597,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1617,10 +1616,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1772,10 +1767,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4973,7 +4964,10 @@
                 m('label.input-group',[
                     m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
                     m('input.form-control', { config: function (el) { return el.select(); }, value: url })
+
                 ]),
+                m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
+                m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
                 !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
             ])
         ]);
@@ -5881,21 +5875,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5955,8 +5934,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6153,7 +6130,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6326,16 +6302,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6634,7 +6600,6 @@
             .then(m.redraw);
     }
 
-    // helper functions for the day buttons
     var daysAgo$1 = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
@@ -8013,7 +7978,7 @@
                     checkbox({
                         description:  [
                             'The study is compliant with ',
-                            m('a', {href:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit?usp=sharing', target:'_blank'}, 'PI Research Pool Guidelines and Required Elements & Study Conventions'),
+                            m('a', {hxref:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit?usp=sharing', target:'_blank'}, 'PI Research Pool Guidelines and Required Elements & Study Conventions'),
                             ' .'
                         ],
                         prop: ctrl.completed_checklist,
@@ -9839,7 +9804,7 @@
                     // 'data':['downloads', 'downloadsAccess', 'statistics'],
                     // 'pool':[],
                     'tags':[]
-                    ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser'/*, 'massMail'*/]
+                    ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser', 'users'/*, 'massMail'*/]
                 };
 
 
@@ -9858,7 +9823,8 @@
                               'removalList': {text:'Removal List', href:'/removalList'},
                               'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
                               'addUser': {text:'Add User', href: '/addUser'},
-                              'massMail': {text:'Send MassMail', href: '/massMail'}
+                              'massMail': {text:'Send MassMail', href: '/massMail'},
+                              'users': {text:'Users Management', href: '/users'}
                         }}
 
                 };
