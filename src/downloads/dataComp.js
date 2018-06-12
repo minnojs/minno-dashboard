@@ -6,7 +6,8 @@ import downloadUrl from 'utils/downloadUrl';
 
 let createMessage = {
     controller({tags, exps, dates, study_id}){
-        let exp_id = m.prop('all');
+        let exp_id = m.prop('');
+        let all_exps = m.prop('');
         let file_format = m.prop('csv');
         let loaded = m.prop(false);
         let error = m.prop(null);
@@ -15,29 +16,29 @@ let createMessage = {
             endDate: m.prop(new Date())
         };
         get_exps(study_id)
-            .then(response => exps(response.experiments))
+            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id)); exp_id(all_exps())})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {study_id, exp_id, file_format, exps, loaded, error, dates};
+        return {study_id, exp_id, file_format, exps, all_exps, loaded, error, dates};
     },
-    view: ({study_id, exp_id, file_format, exps, loaded, error, dates}) => m('div', [
+    view: ({study_id, exp_id, file_format, exps, all_exps, loaded, error, dates}) => m('div', [
         m('.card-block', [
 
             m('.row', [
                 m('.col-sm-5', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
-                        m('option', {value:'all'}, 'Show all my experiments'),
+                        m('option', {value:all_exps()}, 'Show all my experiments'),
                         exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                     ])
                 ])]),
                 m('.col-sm-5', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
-                        m('option', {value:'all'}, 'csv'),
-                        m('option', {value:'all'}, 'tsv')
+                        m('option', {value:'csv'}, 'csv'),
+                        m('option', {value:'tsv'}, 'tsv')
                     ])
                 ])])
             ]),
@@ -67,10 +68,11 @@ let createMessage = {
 };
 
 function ask_get_data(study_id, exp_id, file_format, dates, error){
-    console.log(file_format);
+    if(!Array.isArray(exp_id()))
+        exp_id(exp_id().split(','));
+
     return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
         .then(response => {var file_data = response.data_file;
-                            console.log(file_data);
                             downloadUrl(`${baseUrl}/download?path=${file_data}`, file_data)
                             })
         .catch(error)

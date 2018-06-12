@@ -6519,7 +6519,8 @@
             var dates = ref.dates;
             var study_id = ref.study_id;
 
-            var exp_id = m.prop('all');
+            var exp_id = m.prop('');
+            var all_exps = m.prop('');
             var file_format = m.prop('csv');
             var loaded = m.prop(false);
             var error = m.prop(null);
@@ -6528,18 +6529,19 @@
                 endDate: m.prop(new Date())
             };
             get_exps(study_id)
-                .then(function (response) { return exps(response.experiments); })
+                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; })); exp_id(all_exps())})
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, loaded: loaded, error: error, dates: dates};
+            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, all_exps: all_exps, loaded: loaded, error: error, dates: dates};
         },
         view: function (ref) {
             var study_id = ref.study_id;
             var exp_id = ref.exp_id;
             var file_format = ref.file_format;
             var exps = ref.exps;
+            var all_exps = ref.all_exps;
             var loaded = ref.loaded;
             var error = ref.error;
             var dates = ref.dates;
@@ -6551,15 +6553,15 @@
                     m('.col-sm-5', [
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                            m('option', {value:'all'}, 'Show all my experiments'),
+                            m('option', {value:all_exps()}, 'Show all my experiments'),
                             exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
                         ])
                     ])]),
                     m('.col-sm-5', [
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
-                            m('option', {value:'all'}, 'csv'),
-                            m('option', {value:'all'}, 'tsv')
+                            m('option', {value:'csv'}, 'csv'),
+                            m('option', {value:'tsv'}, 'tsv')
                         ])
                     ])])
                 ]),
@@ -6590,16 +6592,18 @@
     };
 
     function ask_get_data(study_id, exp_id, file_format, dates, error){
-        console.log(file_format);
+        if(!Array.isArray(exp_id()))
+            exp_id(exp_id().split(','));
+
         return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
             .then(function (response) {var file_data = response.data_file;
-                                console.log(file_data);
                                 downloadLink((baseUrl + "/download?path=" + file_data), file_data)
                                 })
             .catch(error)
             .then(m.redraw);
     }
 
+    // helper functions for the day buttons
     var daysAgo$1 = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
