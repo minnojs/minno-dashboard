@@ -6529,7 +6529,7 @@
                 endDate: m.prop(new Date())
             };
             get_exps(study_id)
-                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; })); exp_id(all_exps())})
+                .then(function (response) {exps(response.experiments); all_exps(response.experiments); exp_id(response.experiments)})
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
@@ -6554,7 +6554,7 @@
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
                             m('option', {value:all_exps()}, 'Show all my experiments'),
-                            exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
+                            exps().map(function (exp){ return m('option', {value:{exp_id: exp.id, descriptive_id:exp.descriptive_id}}, exp.descriptive_id); })
                         ])
                     ])]),
                     m('.col-sm-5', [
@@ -6592,8 +6592,8 @@
     };
 
     function ask_get_data(study_id, exp_id, file_format, dates, error){
-        if(!Array.isArray(exp_id()))
-            exp_id(exp_id().split(','));
+        // if(!Array.isArray(exp_id()))
+        //     exp_id(exp_id().split(','));
 
         return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
             .then(function (response) {var file_data = response.data_file;
