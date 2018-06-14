@@ -16,7 +16,7 @@ let createMessage = {
             endDate: m.prop(new Date())
         };
         get_exps(study_id)
-            .then(response => {exps(response.experiments); all_exps(response.experiments); exp_id(response.experiments)})
+            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id)); exp_id(all_exps())})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
@@ -31,7 +31,7 @@ let createMessage = {
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
                         m('option', {value:all_exps()}, 'Show all my experiments'),
-                        exps().map(exp=> m('option', {value:{exp_id: exp.id, descriptive_id:exp.descriptive_id}}, exp.descriptive_id))
+                        exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                     ])
                 ])]),
                 m('.col-sm-5', [
@@ -68,8 +68,9 @@ let createMessage = {
 };
 
 function ask_get_data(study_id, exp_id, file_format, dates, error){
-    // if(!Array.isArray(exp_id()))
-    //     exp_id(exp_id().split(','));
+    console.log(exp_id());
+    if(!Array.isArray(exp_id()))
+        exp_id(exp_id().split(','));
 
     return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
         .then(response => {var file_data = response.data_file;
