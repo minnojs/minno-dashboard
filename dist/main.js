@@ -190,9 +190,9 @@
     }
 
     /**/
-    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    var urlPrefix = window.location.origin; // first pathname section with slashes
+    // const urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
