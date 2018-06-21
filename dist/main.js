@@ -190,9 +190,9 @@
     }
 
     /**/
-    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    var urlPrefix = window.location.origin; // first pathname section with slashes
+    // const urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -6615,7 +6615,6 @@
             .then(m.redraw);
     }
 
-    // helper functions for the day buttons
     var daysAgo$1 = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
