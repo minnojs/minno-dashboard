@@ -5,10 +5,12 @@ import {baseUrl} from 'modelUrls';
 import downloadUrl from 'utils/downloadUrl';
 
 let createMessage = {
-    controller({tags, exps, dates, study_id}){
+    controller({tags, exps, dates, study_id, close}){
         let exp_id = m.prop('');
         let all_exps = m.prop('');
         let file_format = m.prop('csv');
+        let file_split = m.prop('');
+
         let loaded = m.prop(false);
         let error = m.prop(null);
         dates ={
@@ -21,11 +23,10 @@ let createMessage = {
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {study_id, exp_id, file_format, exps, all_exps, loaded, error, dates};
+        return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, error, dates, close};
     },
-    view: ({study_id, exp_id, file_format, exps, all_exps, loaded, error, dates}) => m('div', [
+    view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, error, dates, close}) => m('div', [
         m('.card-block', [
-
             m('.row', [
                 m('.col-sm-5', [
                     m('.input-group', [
@@ -34,15 +35,23 @@ let createMessage = {
                         exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                     ])
                 ])]),
-                m('.col-sm-5', [
+                m('.col-sm-2', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
                         m('option', {value:'csv'}, 'csv'),
                         m('option', {value:'tsv'}, 'tsv')
                     ])
-                ])])
+                ])]),
+                m('.col-sm-5', [
+
+                    m('input.form-control', {
+                        placeholder: 'File split variable',
+                        value: file_split(),
+                        oninput: m.withAttr('value', file_split)
+                    }),
+                ])
             ]),
-            m('.row', [
+            m('.row.space', [
                 m('.col-sm-12', [
                     m('.form-group', [
                         dateRangePicker(dates),
@@ -60,19 +69,18 @@ let createMessage = {
         error() ? m('.alert.alert-warning', error().message): '',
         loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
         m('.text-xs-right.btn-toolbar',[
-            m('a.btn.btn-secondary.btn-sm', {onclick:''}, 'Cancel'),
-            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, file_format, dates, error);}}, 'OK')
+            m('a.btn.btn-secondary.btn-sm', {onclick:()=>{close(null);}}, 'Cancel'),
+            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, file_format, file_split, dates, error); close(null);}}, 'OK')
         ])
 
     ])
 };
 
-function ask_get_data(study_id, exp_id, file_format, dates, error){
-    console.log(exp_id());
+function ask_get_data(study_id, exp_id, file_format, file_split, dates, error){
     if(!Array.isArray(exp_id()))
         exp_id(exp_id().split(','));
 
-    return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
+    return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
         .then(response => {var file_data = response.data_file;
                             downloadUrl(`${baseUrl}/download?path=${file_data}`, file_data)
                             })

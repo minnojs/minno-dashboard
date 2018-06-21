@@ -190,9 +190,9 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    // const urlPrefix = window.location.origin; // first pathname section with slashes
+    var urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -267,6 +267,14 @@
             }
         } 
     };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -589,15 +597,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1617,10 +1616,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1772,10 +1767,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3996,9 +3987,9 @@
 
     var get_exps = function (study_id) { return fetchJson(get_exps_url(study_id)); };
 
-    var get_data = function (study_id, exp_id, file_format, start_date, end_date) { return fetchJson(get_exps_url(study_id), {
+    var get_data = function (study_id, exp_id, file_format, file_split, start_date, end_date) { return fetchJson(get_exps_url(study_id), {
         method: 'post',
-        body: {exp_id: exp_id, file_format: file_format, start_date: start_date, end_date: end_date}
+        body: {exp_id: exp_id, file_format: file_format, file_split: file_split, start_date: start_date, end_date: end_date}
     }); }
     ;
 
@@ -5884,21 +5875,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5958,8 +5934,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6156,7 +6130,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6329,16 +6302,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6555,10 +6518,13 @@
             var exps = ref.exps;
             var dates = ref.dates;
             var study_id = ref.study_id;
+            var close = ref.close;
 
             var exp_id = m.prop('');
             var all_exps = m.prop('');
             var file_format = m.prop('csv');
+            var file_split = m.prop('');
+
             var loaded = m.prop(false);
             var error = m.prop(null);
             dates ={
@@ -6571,21 +6537,22 @@
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, all_exps: all_exps, loaded: loaded, error: error, dates: dates};
+            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, file_split: file_split, all_exps: all_exps, loaded: loaded, error: error, dates: dates, close: close};
         },
         view: function (ref) {
             var study_id = ref.study_id;
             var exp_id = ref.exp_id;
             var file_format = ref.file_format;
+            var file_split = ref.file_split;
             var exps = ref.exps;
             var all_exps = ref.all_exps;
             var loaded = ref.loaded;
             var error = ref.error;
             var dates = ref.dates;
+            var close = ref.close;
 
             return m('div', [
             m('.card-block', [
-
                 m('.row', [
                     m('.col-sm-5', [
                         m('.input-group', [
@@ -6594,15 +6561,23 @@
                             exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
                         ])
                     ])]),
-                    m('.col-sm-5', [
+                    m('.col-sm-2', [
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
                             m('option', {value:'csv'}, 'csv'),
                             m('option', {value:'tsv'}, 'tsv')
                         ])
-                    ])])
+                    ])]),
+                    m('.col-sm-5', [
+
+                        m('input.form-control', {
+                            placeholder: 'File split variable',
+                            value: file_split(),
+                            oninput: m.withAttr('value', file_split)
+                        }),
+                    ])
                 ]),
-                m('.row', [
+                m('.row.space', [
                     m('.col-sm-12', [
                         m('.form-group', [
                             dateRangePicker(dates),
@@ -6620,20 +6595,19 @@
             error() ? m('.alert.alert-warning', error().message): '',
             loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
             m('.text-xs-right.btn-toolbar',[
-                m('a.btn.btn-secondary.btn-sm', {onclick:''}, 'Cancel'),
-                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, dates, error);}}, 'OK')
+                m('a.btn.btn-secondary.btn-sm', {onclick:function (){close(null);}}, 'Cancel'),
+                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, file_split, dates, error); close(null);}}, 'OK')
             ])
 
         ]);
     }
     };
 
-    function ask_get_data(study_id, exp_id, file_format, dates, error){
-        console.log(exp_id());
+    function ask_get_data(study_id, exp_id, file_format, file_split, dates, error){
         if(!Array.isArray(exp_id()))
             exp_id(exp_id().split(','));
 
-        return get_data(study_id, exp_id(), file_format(), dates.startDate(), dates.endDate())
+        return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
             .then(function (response) {var file_data = response.data_file;
                                 downloadLink((baseUrl + "/download?path=" + file_data), file_data)
                                 })
@@ -6716,8 +6690,8 @@
         var tags = m.prop([]);
         var dates = m.prop();
 
-
-        messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id})})
+        var close = messages.close;
+        messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id, close: close})})
             .then(function (response) {
                 if (response){
                     console.log(dates());

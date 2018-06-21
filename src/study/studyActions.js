@@ -63,8 +63,8 @@ export let do_data = (study) => e => {
     let tags = m.prop([]);
     let dates = m.prop();
 
-
-    messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id})})
+    let close = messages.close;
+    messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id, close})})
         .then(function (response) {
             if (response){
                 console.log(dates());
