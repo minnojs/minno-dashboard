@@ -35,14 +35,16 @@ let createMessage = {
                         exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                     ])
                 ])]),
-                m('.col-sm-2', [
+                m('.col-sm-3', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
                         m('option', {value:'csv'}, 'csv'),
                         m('option', {value:'tsv'}, 'tsv')
                     ])
                 ])]),
-                m('.col-sm-5', [
+            ]),
+            m('.row.space', [
+                m('.col-sm-4', [
 
                     m('input.form-control', {
                         placeholder: 'File split variable',
@@ -50,8 +52,9 @@ let createMessage = {
                         oninput: m.withAttr('value', file_split)
                     }),
                 ])
+
             ]),
-            m('.row.space', [
+                m('.row.space', [
                 m('.col-sm-12', [
                     m('.form-group', [
                         dateRangePicker(dates),
