@@ -75,7 +75,7 @@ let createMessage = {
         ]),
         loaded() ? '' : m('.loader'),
         error() ? m('.alert.alert-warning', error()): '',
-        loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
+        !loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
         !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
 
         downloaded() ? '' : m('.loader'),
