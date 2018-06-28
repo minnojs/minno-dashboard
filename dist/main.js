@@ -268,6 +268,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -589,15 +597,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1617,10 +1616,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1772,10 +1767,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5884,21 +5875,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5958,8 +5934,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6156,7 +6130,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6329,16 +6302,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6560,21 +6523,23 @@
             var exp_id = m.prop('');
             var all_exps = m.prop('');
             var file_format = m.prop('csv');
-            var file_split = m.prop('');
+            var file_split = m.prop('taskName');
 
-            var loaded = m.prop(false);
+            var loaded     = m.prop(false);
+            var downloaded = m.prop(true);
+            var link = m.prop('');
             var error = m.prop(null);
             dates ={
                 startDate: m.prop(daysAgo$1(3650)),
                 endDate: m.prop(new Date())
             };
             get_exps(study_id)
-                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; })); exp_id(all_exps())})
+                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; }));})
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, file_split: file_split, all_exps: all_exps, loaded: loaded, error: error, dates: dates, close: close};
+            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, file_split: file_split, all_exps: all_exps, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
         },
         view: function (ref) {
             var study_id = ref.study_id;
@@ -6584,20 +6549,25 @@
             var exps = ref.exps;
             var all_exps = ref.all_exps;
             var loaded = ref.loaded;
+            var downloaded = ref.downloaded;
+            var link = ref.link;
             var error = ref.error;
             var dates = ref.dates;
             var close = ref.close;
 
             return m('div', [
+            exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet'):
             m('.card-block', [
                 m('.row', [
                     m('.col-sm-5', [
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                            m('option', {value:all_exps()}, 'Show all my experiments'),
+                            m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
+                            exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
                             exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
                         ])
                     ])]),
+                    m('p',exp_id),
                     m('.col-sm-3', [
                         m('.input-group', [
                         m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
@@ -6608,7 +6578,7 @@
                 ]),
                 m('.row.space', [
                     m('.col-sm-4', [
-
+                        m('span', 'Split to files by:'),
                         m('input.form-control', {
                             placeholder: 'File split variable',
                             value: file_split(),
@@ -6632,44 +6602,52 @@
                 ])
             ]),
             loaded() ? '' : m('.loader'),
-            error() ? m('.alert.alert-warning', error().message): '',
+            error() ? m('.alert.alert-warning', error()): '',
             loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
+            !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+
+            downloaded() ? '' : m('.loader'),
             m('.text-xs-right.btn-toolbar',[
                 m('a.btn.btn-secondary.btn-sm', {onclick:function (){close(null);}}, 'Cancel'),
-                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, file_split, dates, error); close(null);}}, 'OK')
+                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
             ])
-
         ]);
     }
     };
 
-    function ask_get_data(study_id, exp_id, file_format, file_split, dates, error){
+    function ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error){
+        error('');
+        if(exp_id() =='')
+            return error('Please select experiment id');
+
         if(!Array.isArray(exp_id()))
             exp_id(exp_id().split(','));
+        downloaded(false);
 
         return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
-            .then(function (response) {var file_data = response.data_file;
-                                downloadLink((baseUrl + "/download?path=" + file_data), file_data)
-                                })
+            .then(function (response) {
+                    var file_data = response.data_file;
+                    link((baseUrl + "/download?path=" + file_data), file_data);
+                    downloaded(true);
+            })
             .catch(error)
             .then(m.redraw);
     }
 
-    // helper functions for the day buttons
     var daysAgo$1 = function (days) {
         var d = new Date();
         d.setDate(d.getDate() - days);
         return d;
     };
-    var equalDates$1 = function (date1, date2) { return date1.getDate() === date2.getDate(); };
+    var equalDates$1 = function (date1, date2) { return date1.getDate() === date2.getDate() && date1.getMonth() === date2.getMonth(); };
     var activeDate$1 = function (ref, days) {
         var startDate = ref.startDate;
         var endDate = ref.endDate;
 
         return equalDates$1(startDate(), daysAgo$1(days)) && equalDates$1(endDate(), new Date());
     };
-
     var dayButtonView$2 = function (dates, name, days) { return m('button.btn.btn-secondary.btn-sm', {
+
         class: activeDate$1(dates, days)? 'active' : '',
         onclick: function () {
             dates.startDate(daysAgo$1(days));

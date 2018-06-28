@@ -9,32 +9,37 @@ let createMessage = {
         let exp_id = m.prop('');
         let all_exps = m.prop('');
         let file_format = m.prop('csv');
-        let file_split = m.prop('');
+        let file_split = m.prop('taskName');
 
-        let loaded = m.prop(false);
+        let loaded     = m.prop(false);
+        let downloaded = m.prop(true);
+        let link = m.prop('');
         let error = m.prop(null);
         dates ={
             startDate: m.prop(daysAgo(3650)),
             endDate: m.prop(new Date())
         };
         get_exps(study_id)
-            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id)); exp_id(all_exps())})
+            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id));})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, error, dates, close};
+        return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, downloaded, link, error, dates, close};
     },
-    view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, error, dates, close}) => m('div', [
+    view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, downloaded, link, error, dates, close}) => m('div', [
+        exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet'):
         m('.card-block', [
             m('.row', [
                 m('.col-sm-5', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
-                        m('option', {value:all_exps()}, 'Show all my experiments'),
+                        m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
+                        exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
                         exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                     ])
                 ])]),
+                m('p',exp_id),
                 m('.col-sm-3', [
                     m('.input-group', [
                     m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
@@ -45,7 +50,7 @@ let createMessage = {
             ]),
             m('.row.space', [
                 m('.col-sm-4', [
-
+                    m('span', 'Split to files by:'),
                     m('input.form-control', {
                         placeholder: 'File split variable',
                         value: file_split(),
@@ -69,24 +74,33 @@ let createMessage = {
             ])
         ]),
         loaded() ? '' : m('.loader'),
-        error() ? m('.alert.alert-warning', error().message): '',
+        error() ? m('.alert.alert-warning', error()): '',
         loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
+        !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+
+        downloaded() ? '' : m('.loader'),
         m('.text-xs-right.btn-toolbar',[
             m('a.btn.btn-secondary.btn-sm', {onclick:()=>{close(null);}}, 'Cancel'),
-            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, file_format, file_split, dates, error); close(null);}}, 'OK')
+            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
         ])
-
     ])
 };
 
-function ask_get_data(study_id, exp_id, file_format, file_split, dates, error){
+function ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error){
+    error('');
+    if(exp_id() =='')
+        return error('Please select experiment id');
+
     if(!Array.isArray(exp_id()))
         exp_id(exp_id().split(','));
+    downloaded(false);
 
     return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
-        .then(response => {var file_data = response.data_file;
-                            downloadUrl(`${baseUrl}/download?path=${file_data}`, file_data)
-                            })
+        .then(response => {
+                var file_data = response.data_file;
+                link(`${baseUrl}/download?path=${file_data}`, file_data);
+                downloaded(true);
+        })
         .catch(error)
         .then(m.redraw);
 }
@@ -101,10 +115,10 @@ let daysAgo = (days) => {
     d.setDate(d.getDate() - days);
     return d;
 };
-let equalDates = (date1, date2) => date1.getDate() === date2.getDate();
+let equalDates = (date1, date2) => date1.getDate() === date2.getDate() && date1.getMonth() === date2.getMonth();
 let activeDate = ({startDate, endDate}, days) => equalDates(startDate(), daysAgo(days)) && equalDates(endDate(), new Date());
-
 let dayButtonView = (dates, name, days) => m('button.btn.btn-secondary.btn-sm', {
+
     class: activeDate(dates, days)? 'active' : '',
     onclick: () => {
         dates.startDate(daysAgo(days));
