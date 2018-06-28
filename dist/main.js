@@ -6593,7 +6593,6 @@
             var close = ref.close;
 
             return m('div', [
-            exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet'):
             m('.card-block', [
                 m('.row', [
                     m('.col-sm-5', [
@@ -6640,8 +6639,9 @@
             ]),
             loaded() ? '' : m('.loader'),
             error() ? m('.alert.alert-warning', error()): '',
-            !loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
-            !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+            !loaded() && !exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet') : '',
+
+                !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
 
             downloaded() ? '' : m('.loader'),
             m('.text-xs-right.btn-toolbar',[

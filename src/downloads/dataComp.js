@@ -28,7 +28,6 @@ let createMessage = {
         return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, downloaded, link, error, dates, close};
     },
     view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, downloaded, link, error, dates, close}) => m('div', [
-        exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet'):
         m('.card-block', [
             m('.row', [
                 m('.col-sm-5', [
@@ -75,8 +74,9 @@ let createMessage = {
         ]),
         loaded() ? '' : m('.loader'),
         error() ? m('.alert.alert-warning', error()): '',
-        !loaded() && !exps().length ? m('.alert.alert-info', 'You have no experiments yet') : '',
-        !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+        !loaded() && !exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet') : '',
+
+            !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
 
         downloaded() ? '' : m('.loader'),
         m('.text-xs-right.btn-toolbar',[
