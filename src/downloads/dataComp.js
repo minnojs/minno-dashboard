@@ -48,7 +48,7 @@ let createMessage = {
                 ])]),
             ]),
             m('.row.space', [
-                m('.col-sm-4', [
+                m('.col-sm-9', [
                     m('span', 'Split to files by (clear text to download in one file):'),
                     m('input.form-control', {
                         placeholder: 'File split variable',

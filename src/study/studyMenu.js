@@ -1,4 +1,4 @@
-import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_copy_url} from './studyActions';
+import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url} from './studyActions';
 
 function edit_permission(study){
     return study.permission !== 'read only';
@@ -10,19 +10,21 @@ function unlock_permission(study){
     return study.is_locked ===true;
 }
 
-const settings = {'tags':[],
-    'data':[],
-    'delete':[],
-    'rename':[],
-    'duplicate':[],
-    'lock':[],
-    'unlock':[],
-    // 'deploy':[],
-    // 'studyChangeRequest':[],
-    // 'studyRemoval':[],
-    // 'sharing':[],
-    'copyUrl':[]
-};
+const settings = {
+            'tags':[],
+            'data':[],
+            'delete':[],
+            'rename':[],
+            'duplicate':[],
+            'publish':[],
+            'lock':[],
+            'unlock':[],
+            // 'deploy':[],
+            // 'studyChangeRequest':[],
+            // 'studyRemoval':[],
+            // 'sharing':[],
+            'copyUrl':[]
+        };
 
 const settings_hash = {
     tags: {text: 'Tags',
@@ -60,6 +62,13 @@ const settings_hash = {
             permission: edit_permission,
             lock: lock_permission,
             onmousedown: do_lock,
+            class: 'fa-lock'
+        }},
+    publish: {text: 'Publish Study',
+        config: {
+            permission: edit_permission,
+            lock: lock_permission,
+            onmousedown: do_publish,
             class: 'fa-lock'
         }},
     unlock: {text: 'Unlock Study',

@@ -168,6 +168,37 @@ export let do_lock = (study, callback) => e => {
     ask();
 };
 
+export let do_publish = (study, callback) => e => {
+    e.preventDefault();
+    let error = m.prop('');
+
+    let ask = () => messages.confirm({okText: ['Yes, ', study.is_locked ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_locked ? 'Unpublish' : 'Publish', ' the study?'], content:m('p', [m('p', study.is_locked
+            ?
+            'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+            :
+            [
+                m('p', 'This will create a link that participants can use to launch the study.'),
+                m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
+                m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
+                m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
+            ]),
+            !error() ? '' : m('p.alert.alert-danger', error())])
+    })
+
+        .then(response => response && lock());
+
+    let lock= () => lock_study(study.id, !study.is_locked)
+        .then(study.is_locked = !study.is_locked)
+        .then(study.isReadonly = study.is_locked)
+        .then(callback)
+
+        .catch(e => {
+            error(e.message);
+            ask();
+        })
+        .then(m.redraw);
+    ask();
+};
 
 
 export let do_copy_url = (study) => e => {

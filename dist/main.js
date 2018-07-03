@@ -6576,7 +6576,7 @@
                     ])]),
                 ]),
                 m('.row.space', [
-                    m('.col-sm-4', [
+                    m('.col-sm-9', [
                         m('span', 'Split to files by (clear text to download in one file):'),
                         m('input.form-control', {
                             placeholder: 'File split variable',
@@ -6814,6 +6814,37 @@
         ask();
     }; };
 
+    var do_publish = function (study, callback) { return function (e) {
+        e.preventDefault();
+        var error = m.prop('');
+
+        var ask = function () { return messages.confirm({okText: ['Yes, ', study.is_locked ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_locked ? 'Unpublish' : 'Publish', ' the study?'], content:m('p', [m('p', study.is_locked
+                ?
+                'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+                :
+                [
+                    m('p', 'This will create a link that participants can use to launch the study.'),
+                    m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
+                    m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
+                    m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
+                ]),
+                !error() ? '' : m('p.alert.alert-danger', error())])
+        })
+
+            .then(function (response) { return response && lock(); }); };
+
+        var lock= function () { return lock_study(study.id, !study.is_locked)
+            .then(study.is_locked = !study.is_locked)
+            .then(study.isReadonly = study.is_locked)
+            .then(callback)
+
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            })
+            .then(m.redraw); };
+        ask();
+    }; };
 
 
     var do_copy_url = function (study) { return function (e) {
@@ -6865,19 +6896,21 @@
         return study.is_locked ===true;
     }
 
-    var settings = {'tags':[],
-        'data':[],
-        'delete':[],
-        'rename':[],
-        'duplicate':[],
-        'lock':[],
-        'unlock':[],
-        // 'deploy':[],
-        // 'studyChangeRequest':[],
-        // 'studyRemoval':[],
-        // 'sharing':[],
-        'copyUrl':[]
-    };
+    var settings = {
+                'tags':[],
+                'data':[],
+                'delete':[],
+                'rename':[],
+                'duplicate':[],
+                'publish':[],
+                'lock':[],
+                'unlock':[],
+                // 'deploy':[],
+                // 'studyChangeRequest':[],
+                // 'studyRemoval':[],
+                // 'sharing':[],
+                'copyUrl':[]
+            };
 
     var settings_hash = {
         tags: {text: 'Tags',
@@ -6915,6 +6948,13 @@
                 permission: edit_permission,
                 lock: lock_permission,
                 onmousedown: do_lock,
+                class: 'fa-lock'
+            }},
+        publish: {text: 'Publish Study',
+            config: {
+                permission: edit_permission,
+                lock: lock_permission,
+                onmousedown: do_publish,
                 class: 'fa-lock'
             }},
         unlock: {text: 'Unlock Study',
