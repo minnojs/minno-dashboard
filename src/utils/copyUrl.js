@@ -12,7 +12,6 @@ let copyUrl = url => () => {
 
 let copyComponent = {
     controller: (url) => {
-        console.log(url);
         let copyFail = m.prop(false);
         let autoCopy = () => copy(url).catch(() => copyFail(true)).then(m.redraw);
         return {autoCopy, copyFail};

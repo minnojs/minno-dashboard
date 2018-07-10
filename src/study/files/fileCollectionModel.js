@@ -12,11 +12,14 @@ let studyPrototype = {
         return fetchJson(this.apiURL())
             .then(study => {
                 this.loaded = true;
-                this.isReadonly = study.is_readonly;
+                this.isReadonly = study.is_readonly || study.is_locked;
                 this.istemplate = study.is_template;
                 this.is_locked = study.is_locked;
+                this.is_publish = study.is_published;
                 this.name = study.study_name;
                 this.base_url = study.base_url;
+                this.versions = study.versions ? study.versions : [];
+
                 let files = flattenFiles(study.files)
                     .map(assignStudyId(this.id))
                     .map(fileFactory);

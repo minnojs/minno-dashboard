@@ -160,7 +160,6 @@ const fileFactory = fileObj => {
 
     return file;
 
-
     function contentProvider (store) {
         var prop = (...args) => {
             if (args.length) {
@@ -169,9 +168,7 @@ const fileFactory = fileObj => {
             }
             return store;
         };
-
         prop.toJSON = () => store;
-
         return prop;
     }
 };

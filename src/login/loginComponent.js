@@ -60,7 +60,6 @@ let loginComponent = {
                             oninput: m.withAttr('value', ctrl.password),
                             onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             onchange: m.withAttr('value', ctrl.password),
-                            onkeydown: (e)=>{(e.keyCode == 13) ? ctrl.loginAction(): false;},
                             config: getStartValue(ctrl.password)
                         })
                     ]),

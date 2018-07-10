@@ -1,6 +1,5 @@
 import {fetchJson} from 'utils/modelHelpers';
 import {templatesUrl, studyUrl as baseUrl} from 'modelUrls';
-import downloadUrl from 'utils/downloadUrl';
 
 
 function get_url(study_id) {
@@ -21,6 +20,10 @@ function get_lock_url(study_id , lock) {
     if (lock)
         return `${baseUrl}/${encodeURIComponent(study_id)}/lock`;
     return `${baseUrl}/${encodeURIComponent(study_id)}/unlock`;
+}
+
+function get_publish_url(study_id) {
+    return `${baseUrl}/${encodeURIComponent(study_id)}/publish`;
 }
 
 /*CRUD*/
@@ -55,6 +58,10 @@ export let lock_study = (study_id, lock) => fetchJson(get_lock_url(study_id, loc
     method: 'post'
 });
 
+export let publish_study = (study_id, publish, update_url) => fetchJson(get_publish_url(study_id), {
+    method: 'post',
+    body: {publish, update_url}
+});
 
 export let delete_study = (study_id) => fetchJson(get_url(study_id), {method: 'delete'});
 

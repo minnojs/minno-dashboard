@@ -39,16 +39,16 @@ export let moveFile = (file, study) => () => {
 };
 
 export let duplicateFile = (file,study) => () => {
-        let newPath = m.prop(file.path);
-        return messages.prompt({
-                header: 'Duplicate File',
-                postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
-                prop: newPath
-        })
-            .then(response => {
-                    if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-                });
-    };
+    let newPath = m.prop(file.path);
+    return messages.prompt({
+        header: 'Duplicate File',
+        postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+        prop: newPath
+    })
+    .then(response => {
+        if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+    });
+};
 
 export let copyFile = (file, study) => () => {
     let filePath = m.prop(file.basePath);
@@ -99,7 +99,6 @@ export let update_experiment = (file, study) => () => {
             !error() ? '' : m('p.alert.alert-danger', error())
         ])}).then(response => response && study.update_experiment(file, descriptive_id()))
         .then(()=>{file.exp_data.descriptive_id=descriptive_id; m.redraw();});
-    ;
 };
 
 export let delete_experiment = (file, study) => () => {

@@ -190,9 +190,9 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
-    // const urlPrefix = window.location.origin; // first pathname section with slashes
+    var urlPrefix = window.location.origin; // first pathname section with slashes
 
 
     var baseUrl            = "" + urlPrefix;
@@ -207,25 +207,6 @@
     var activation1_url      = urlPrefix + "/activation";
     var collaboration_url   = urlPrefix + "/collaboration";
     var url$2 = urlPrefix + "/DownloadsAccess";
-    /*
-
-
-    const urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
-
-    export const baseUrl            = `${urlPrefix}dashboard`;
-    export const studyUrl           = `${urlPrefix}dashboard/studies`;
-    export const templatesUrl       = `${urlPrefix}dashboard/templates`;
-    export const tagsUrl            = `${urlPrefix}dashboard/tags`;
-    export const translateUrl       = `${urlPrefix}dashboard/translate`;
-    export const poolUrl            = `${urlPrefix}StudyData`;
-    export const fileUrl            = `${urlPrefix}dashboard`;
-    export const statisticsUrl      = `${urlPrefix}PITracking`;
-    export const downloadsUrl       = `${urlPrefix}DashboardData`;
-    export const activationUrl      = `${urlPrefix}dashboard/activation`;
-    export const collaborationUrl   = `${urlPrefix}dashboard/collaboration`;
-    export const downloadsAccessUrl = `${urlPrefix}DownloadsAccess`;
-
-    /**/
 
     var getStatistics = function (query) {
         return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
@@ -3364,7 +3345,6 @@
                                 oninput: m.withAttr('value', ctrl.password),
                                 onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 onchange: m.withAttr('value', ctrl.password),
-                                onkeydown: function (e){(e.keyCode == 13) ? ctrl.loginAction(): false;},
                                 config: getStartValue(ctrl.password)
                             })
                         ]),
@@ -3575,7 +3555,6 @@
 
         return file;
 
-
         function contentProvider (store) {
             var this$1 = this;
 
@@ -3589,9 +3568,7 @@
                 }
                 return store;
             };
-
             prop.toJSON = function () { return store; };
-
             return prop;
         }
     };
@@ -3609,11 +3586,14 @@
             return fetchJson(this.apiURL())
                 .then(function (study) {
                     this$1.loaded = true;
-                    this$1.isReadonly = study.is_readonly;
+                    this$1.isReadonly = study.is_readonly || study.is_locked;
                     this$1.istemplate = study.is_template;
                     this$1.is_locked = study.is_locked;
+                    this$1.is_publish = study.is_published;
                     this$1.name = study.study_name;
                     this$1.base_url = study.base_url;
+                    this$1.versions = study.versions ? study.versions : [];
+
                     var files = flattenFiles(study.files)
                         .map(assignStudyId(this$1.id))
                         .map(fileFactory);
@@ -3871,7 +3851,6 @@
     var downloadSupport = !window.externalHost && 'download' in document.createElement('a');
 
     var downloadLink = function (url, name) {
-        console.log(url);
         if (downloadSupport){
             var link = document.createElement('a');
             link.href = url;
@@ -3975,6 +3954,10 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/unlock");
     }
 
+    function get_publish_url(study_id) {
+        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/publish");
+    }
+
     /*CRUD*/
     var load_studies = function () { return fetchJson(studyUrl); };
 
@@ -4007,6 +3990,10 @@
         method: 'post'
     }); };
 
+    var publish_study = function (study_id, publish, update_url) { return fetchJson(get_publish_url(study_id), {
+        method: 'post',
+        body: {publish: publish, update_url: update_url}
+    }); };
 
     var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
 
@@ -4097,16 +4084,16 @@
     }; };
 
     var duplicateFile = function (file,study) { return function () {
-            var newPath = m.prop(file.path);
-            return messages.prompt({
-                    header: 'Duplicate File',
-                    postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
-                    prop: newPath
-            })
-                .then(function (response) {
-                        if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-                    });
-        }; };
+        var newPath = m.prop(file.path);
+        return messages.prompt({
+            header: 'Duplicate File',
+            postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
+            prop: newPath
+        })
+        .then(function (response) {
+            if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+        });
+    }; };
 
     var copyFile = function (file, study) { return function () {
         var filePath = m.prop(file.basePath);
@@ -4157,7 +4144,6 @@
                 !error() ? '' : m('p.alert.alert-danger', error())
             ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); })
             .then(function (){file.exp_data.descriptive_id=descriptive_id; m.redraw();});
-        ;
     }; };
 
     var delete_experiment = function (file, study) { return function () {
@@ -4949,7 +4935,6 @@
 
     var copyComponent = {
         controller: function (url) {
-            console.log(url);
             var copyFail = m.prop(false);
             var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
             return {autoCopy: autoCopy, copyFail: copyFail};
@@ -6021,7 +6006,7 @@
             ]);
         }
 
-
+        var version_id = study.versions.length? study.versions[study.versions.length-1].id : '';
 
 
         // Allows to use as a button without a specific file
@@ -6042,7 +6027,7 @@
                             {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                             {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
                             { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id)), text:'Play this task'},
-                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id)))}
+                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id))}
                         ]},
 
                 //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
@@ -6560,20 +6545,22 @@
                 m('.row', [
                     m('.col-sm-5', [
                         m('.input-group', [
-                        m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                            m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
-                            exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
-                            exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
+                            m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
+                                m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
+                                exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
+                                exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
+                            ])
                         ])
-                    ])]),
+                    ]),
                     m('p',exp_id),
                     m('.col-sm-3', [
                         m('.input-group', [
-                        m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
-                            m('option', {value:'csv'}, 'csv'),
-                            m('option', {value:'tsv'}, 'tsv')
+                            m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
+                                m('option', {value:'csv'}, 'csv'),
+                                m('option', {value:'tsv'}, 'tsv')
+                            ])
                         ])
-                    ])]),
+                    ])
                 ]),
                 m('.row.space', [
                     m('.col-sm-9', [
@@ -6582,11 +6569,11 @@
                             placeholder: 'File split variable',
                             value: file_split(),
                             oninput: m.withAttr('value', file_split)
-                        }),
+                        })
                     ])
 
                 ]),
-                    m('.row.space', [
+                m('.row.space', [
                     m('.col-sm-12', [
                         m('.form-group', [
                             dateRangePicker(dates),
@@ -6604,7 +6591,7 @@
             error() ? m('.alert.alert-warning', error()): '',
             !loaded() && exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet') : '',
 
-                !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+            !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
 
             downloaded() ? '' : m('.loader'),
             m('.text-xs-right.btn-toolbar',[
@@ -6626,9 +6613,9 @@
 
         return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
             .then(function (response) {
-                    var file_data = response.data_file;
-                    link((baseUrl + "/download?path=" + file_data), file_data);
-                    downloaded(true);
+                var file_data = response.data_file;
+                link((baseUrl + "/download?path=" + file_data), file_data);
+                downloaded(true);
             })
             .catch(error)
             .then(m.redraw);
@@ -6701,7 +6688,6 @@
 
     var do_data = function (study) { return function (e) {
         e.preventDefault();
-        var output = m.prop();
         // let exps = get_exps[]);
         // console.log(exps);
         var study_id = study.id;
@@ -6711,15 +6697,6 @@
 
         var close = messages.close;
         messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id, close: close})})
-            .then(function (response) {
-                if (response){
-                    console.log(dates());
-                    // var new_tags = tags().filter(tag=> tag.used);
-                    // study.tags = new_tags;
-                    // tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
-                    // return update_tags_in_study(study_id, tags);
-                }
-            })
             .then(m.redraw);
     }; };
 
@@ -6817,23 +6794,38 @@
     var do_publish = function (study, callback) { return function (e) {
         e.preventDefault();
         var error = m.prop('');
+        var update_url =m.prop('update');
 
-        var ask = function () { return messages.confirm({okText: ['Yes, ', study.is_locked ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_locked ? 'Unpublish' : 'Publish', ' the study?'], content:m('p', [m('p', study.is_locked
-                ?
-                'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
-                :
-                [
-                    m('p', 'This will create a link that participants can use to launch the study.'),
-                    m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
-                    m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
-                    m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
-                ]),
-                !error() ? '' : m('p.alert.alert-danger', error())])
+        var ask = function () { return messages.confirm({okText: ['Yes, ', study.is_published ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_published ? 'Unpublish' : 'Publish', ' the study?'],
+            content:m('p',
+                [m('p', study.is_published
+                    ?
+                    'The launch URL participants used to run the study will be removed. Participants using this link will see an error page. Use it if you completed running the study, or if you want to pause the study and prevent participants from taking it for a while. You will be able to publish the study again, if you want.'
+                    :
+                    [
+                        m('p', 'This will create a link that participants can use to launch the study.'),
+                        m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
+                        m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
+                        m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
+
+                        ,m('.input-group', [
+                            m('select.c-select.form-control',{onchange: function (e) { return update_url(e.target.value); }}, [
+                                m('option', {value:'update', selected:true}, 'Update the launch URL'),
+                                m('option', {value:'keep'}, 'Keep the launch URL'),
+                                m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
+                            ])
+
+                        ])
+
+
+                    ]),
+                    !error() ? '' : m('p.alert.alert-danger', error())])
         })
 
-            .then(function (response) { return response && lock(); }); };
+            .then(function (response) { return response && publish(); }); };
 
-        var lock= function () { return lock_study(study.id, !study.is_locked)
+        var publish= function () { return publish_study(study.id, !study.is_published, update_url)
+            .then(study.is_published = !study.is_published)
             .then(study.is_locked = !study.is_locked)
             .then(study.isReadonly = study.is_locked)
             .then(callback)
@@ -6892,25 +6884,35 @@
     function lock_permission(study){
         return study.is_locked !==true;
     }
+
     function unlock_permission(study){
         return study.is_locked ===true;
     }
 
+    function publish_permission(study){
+        return study.is_published !==true;
+    }
+
+    function unpublish_permission(study){
+        return study.is_published ===true;
+    }
+
     var settings = {
-                'tags':[],
-                'data':[],
-                'delete':[],
-                'rename':[],
-                'duplicate':[],
-                'publish':[],
-                'lock':[],
-                'unlock':[],
-                // 'deploy':[],
-                // 'studyChangeRequest':[],
-                // 'studyRemoval':[],
-                // 'sharing':[],
-                'copyUrl':[]
-            };
+        'tags':[],
+        'data':[],
+        'delete':[],
+        'rename':[],
+        'duplicate':[],
+        'publish':[],
+        'unpublish':[],
+        'lock':[],
+        'unlock':[],
+        // 'deploy':[],
+        // 'studyChangeRequest':[],
+        // 'studyRemoval':[],
+        // 'sharing':[],
+        'copyUrl':[]
+    };
 
     var settings_hash = {
         tags: {text: 'Tags',
@@ -6953,10 +6955,22 @@
         publish: {text: 'Publish Study',
             config: {
                 permission: edit_permission,
-                lock: lock_permission,
+                lock: publish_permission,
                 onmousedown: do_publish,
-                class: 'fa-lock'
+                class: 'fa-cloud-upload'
             }},
+        unpublish: {text: 'Unpublish Study', config: {
+            permission: edit_permission,
+            lock: unpublish_permission,
+            onmousedown: do_publish,
+            class: 'fa-cloud-upload'
+        }},
+        republish: {text: 'Unpublish Study', config: {
+            permission: edit_permission,
+            lock: unpublish_permission,
+            onmousedown: do_publish,
+            class: 'fa-cloud-upload'
+        }},
         unlock: {text: 'Unlock Study',
             config: {
                 permission: edit_permission,

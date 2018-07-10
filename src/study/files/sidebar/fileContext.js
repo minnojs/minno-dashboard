@@ -28,7 +28,7 @@ let fileContext = (file, study) => {
         ]);
     }
 
-
+    let version_id = study.versions.length? study.versions[study.versions.length-1].id : '';
 
 
     // Allows to use as a button without a specific file
@@ -49,7 +49,7 @@ let fileContext = (file, study) => {
                         {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                         {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
                         { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}`, text:'Play this task'},
-                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`${launchUrl}/${file.exp_data.id}`)}
+                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`)}
                     ]},
 
             //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',

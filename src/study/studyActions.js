@@ -1,14 +1,12 @@
 import messages from 'utils/messagesComponent';
 
-import {lock_study, duplicate_study, create_study, delete_study, rename_study, load_templates, get_exps} from './studyModel';
+import {lock_study, publish_study, duplicate_study, create_study, delete_study, rename_study, load_templates} from './studyModel';
 import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import createMessage from '../downloads/dataComp';
 
 
 import {update_tags_in_study} from '../tags/tagsModel';
-import {getAll} from "../downloads/downloadsActions";
-import {createDownload, STATUS_RUNNING} from "../downloads/downloadsModel";
 
 export let do_create = (type, studies) => {
     let study_name = m.prop('');
@@ -55,7 +53,6 @@ export let do_tags = (study) => e => {
 
 export let do_data = (study) => e => {
     e.preventDefault();
-    let output = m.prop();
     // let exps = get_exps[]);
     // console.log(exps);
     let study_id = study.id;
@@ -65,15 +62,6 @@ export let do_data = (study) => e => {
 
     let close = messages.close;
     messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id, close})})
-        .then(function (response) {
-            if (response){
-                console.log(dates());
-                // var new_tags = tags().filter(tag=> tag.used);
-                // study.tags = new_tags;
-                // tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
-                // return update_tags_in_study(study_id, tags);
-            }
-        })
         .then(m.redraw);
 };
 
@@ -171,23 +159,38 @@ export let do_lock = (study, callback) => e => {
 export let do_publish = (study, callback) => e => {
     e.preventDefault();
     let error = m.prop('');
+    let update_url =m.prop('update');
 
-    let ask = () => messages.confirm({okText: ['Yes, ', study.is_locked ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_locked ? 'Unpublish' : 'Publish', ' the study?'], content:m('p', [m('p', study.is_locked
-            ?
-            'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
-            :
-            [
-                m('p', 'This will create a link that participants can use to launch the study.'),
-                m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
-                m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
-                m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
-            ]),
-            !error() ? '' : m('p.alert.alert-danger', error())])
+    let ask = () => messages.confirm({okText: ['Yes, ', study.is_published ? 'Unpublish' : 'Publish' , ' the study'], cancelText: 'Cancel', header:[study.is_published ? 'Unpublish' : 'Publish', ' the study?'],
+        content:m('p',
+            [m('p', study.is_published
+                ?
+                'The launch URL participants used to run the study will be removed. Participants using this link will see an error page. Use it if you completed running the study, or if you want to pause the study and prevent participants from taking it for a while. You will be able to publish the study again, if you want.'
+                :
+                [
+                    m('p', 'This will create a link that participants can use to launch the study.'),
+                    m('p', 'Publishing locks the study for editing to prevent you from modifying the files while participants take the study. To make changes to the study, you will be able to unpublish it later.'),
+                    m('p', 'Although it is strongly not recommended, you can also unlock the study after it is published by using Unlock Study in the Study menu.'),
+                    m('p', 'After you publish the study, you can obtain the new launch URL by right clicking on the experiment file and choosing Experiment options->Copy Launch URL')
+
+                    ,m('.input-group', [
+                        m('select.c-select.form-control',{onchange: e => update_url(e.target.value)}, [
+                            m('option', {value:'update', selected:true}, 'Update the launch URL'),
+                            m('option', {value:'keep'}, 'Keep the launch URL'),
+                            m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
+                        ])
+
+                    ])
+
+
+                ]),
+                !error() ? '' : m('p.alert.alert-danger', error())])
     })
 
-        .then(response => response && lock());
+        .then(response => response && publish());
 
-    let lock= () => lock_study(study.id, !study.is_locked)
+    let publish= () => publish_study(study.id, !study.is_published, update_url)
+        .then(study.is_published = !study.is_published)
         .then(study.is_locked = !study.is_locked)
         .then(study.isReadonly = study.is_locked)
         .then(callback)

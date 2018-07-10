@@ -6,25 +6,35 @@ function edit_permission(study){
 function lock_permission(study){
     return study.is_locked !==true;
 }
+
 function unlock_permission(study){
     return study.is_locked ===true;
 }
 
+function publish_permission(study){
+    return study.is_published !==true;
+}
+
+function unpublish_permission(study){
+    return study.is_published ===true;
+}
+
 const settings = {
-            'tags':[],
-            'data':[],
-            'delete':[],
-            'rename':[],
-            'duplicate':[],
-            'publish':[],
-            'lock':[],
-            'unlock':[],
-            // 'deploy':[],
-            // 'studyChangeRequest':[],
-            // 'studyRemoval':[],
-            // 'sharing':[],
-            'copyUrl':[]
-        };
+    'tags':[],
+    'data':[],
+    'delete':[],
+    'rename':[],
+    'duplicate':[],
+    'publish':[],
+    'unpublish':[],
+    'lock':[],
+    'unlock':[],
+    // 'deploy':[],
+    // 'studyChangeRequest':[],
+    // 'studyRemoval':[],
+    // 'sharing':[],
+    'copyUrl':[]
+};
 
 const settings_hash = {
     tags: {text: 'Tags',
@@ -67,10 +77,22 @@ const settings_hash = {
     publish: {text: 'Publish Study',
         config: {
             permission: edit_permission,
-            lock: lock_permission,
+            lock: publish_permission,
             onmousedown: do_publish,
-            class: 'fa-lock'
+            class: 'fa-cloud-upload'
         }},
+    unpublish: {text: 'Unpublish Study', config: {
+        permission: edit_permission,
+        lock: unpublish_permission,
+        onmousedown: do_publish,
+        class: 'fa-cloud-upload'
+    }},
+    republish: {text: 'Unpublish Study', config: {
+        permission: edit_permission,
+        lock: unpublish_permission,
+        onmousedown: do_publish,
+        class: 'fa-cloud-upload'
+    }},
     unlock: {text: 'Unlock Study',
         config: {
             permission: edit_permission,
