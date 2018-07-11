@@ -3589,7 +3589,7 @@
                     this$1.isReadonly = study.is_readonly || study.is_locked;
                     this$1.istemplate = study.is_template;
                     this$1.is_locked = study.is_locked;
-                    this$1.is_publish = study.is_published;
+                    this$1.is_published = study.is_published;
                     this$1.name = study.study_name;
                     this$1.base_url = study.base_url;
                     this$1.versions = study.versions ? study.versions : [];
@@ -6005,7 +6005,6 @@
                 ]}
             ]);
         }
-
         var version_id = study.versions.length? study.versions[study.versions.length-1].id : '';
 
 
@@ -6026,7 +6025,7 @@
                         :  {icon:'fa-desktop', text:'Experiment options', menu: [
                             {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                             {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
-                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id)), text:'Play this task'},
+                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
                             {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id))}
                         ]},
 
@@ -6499,7 +6498,6 @@
     function createMessage$3 (args) { return m.component(createMessage$4, args); };
     var createMessage$4 = {
         controller: function controller(ref){
-            var tags = ref.tags;
             var exps = ref.exps;
             var dates = ref.dates;
             var study_id = ref.study_id;
@@ -6541,6 +6539,7 @@
             var close = ref.close;
 
             return m('div', [
+            
             m('.card-block', [
                 m('.row', [
                     m('.col-sm-5', [
@@ -6770,7 +6769,14 @@
 
         var ask = function () { return messages.confirm({okText: ['Yes, ', study.is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', study.is_locked
             ?
-            'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+            !study.is_published
+                ?
+                'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+                :
+                [
+                    m('p','Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'),
+                    m('p','However, the study is currently published so you might want to make sure participants are not taking it. We recommend unlocking a published study only if you know that participants are not taking it while you modify the files, or if you know exactly what you are going to change and you are confident that you will not make mistakes that will break the study.')
+                ]
             :
             'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
             !error() ? '' : m('p.alert.alert-danger', error())])
@@ -6826,7 +6832,7 @@
 
         var publish= function () { return publish_study(study.id, !study.is_published, update_url)
             .then(study.is_published = !study.is_published)
-            .then(study.is_locked = !study.is_locked)
+            .then(study.is_locked = study.is_published || study.is_locked)
             .then(study.isReadonly = study.is_locked)
             .then(callback)
 

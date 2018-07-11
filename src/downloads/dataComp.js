@@ -4,7 +4,7 @@ import {get_exps, get_data} from '../study/studyModel';
 import {baseUrl} from 'modelUrls';
 
 let createMessage = {
-    controller({tags, exps, dates, study_id, close}){
+    controller({exps, dates, study_id, close}){
         let exp_id = m.prop('');
         let all_exps = m.prop('');
         let file_format = m.prop('csv');
@@ -27,6 +27,7 @@ let createMessage = {
         return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, downloaded, link, error, dates, close};
     },
     view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, downloaded, link, error, dates, close}) => m('div', [
+        
         m('.card-block', [
             m('.row', [
                 m('.col-sm-5', [

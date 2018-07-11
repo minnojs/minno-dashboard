@@ -135,7 +135,14 @@ export let do_lock = (study, callback) => e => {
 
     let ask = () => messages.confirm({okText: ['Yes, ', study.is_locked ? 'unlock' : 'lock' , ' the study'], cancelText: 'Cancel', header:'Are you sure?', content:m('p', [m('p', study.is_locked
         ?
-        'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+        !study.is_published
+            ?
+            'Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'
+            :
+            [
+                m('p','Unlocking the study will let you modifying the study. When a study is Unlocked, you can add files, delete files, rename files, edit files, rename the study, or delete the study.'),
+                m('p','However, the study is currently published so you might want to make sure participants are not taking it. We recommend unlocking a published study only if you know that participants are not taking it while you modify the files, or if you know exactly what you are going to change and you are confident that you will not make mistakes that will break the study.')
+            ]
         :
         'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
         !error() ? '' : m('p.alert.alert-danger', error())])
@@ -191,7 +198,7 @@ export let do_publish = (study, callback) => e => {
 
     let publish= () => publish_study(study.id, !study.is_published, update_url)
         .then(study.is_published = !study.is_published)
-        .then(study.is_locked = !study.is_locked)
+        .then(study.is_locked = study.is_published || study.is_locked)
         .then(study.isReadonly = study.is_locked)
         .then(callback)
 
