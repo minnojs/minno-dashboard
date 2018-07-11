@@ -6539,7 +6539,7 @@
             var close = ref.close;
 
             return m('div', [
-            
+
             m('.card-block', [
                 m('.row', [
                     m('.col-sm-5', [
@@ -6818,7 +6818,7 @@
                             m('select.c-select.form-control',{onchange: function (e) { return update_url(e.target.value); }}, [
                                 m('option', {value:'update', selected:true}, 'Update the launch URL'),
                                 m('option', {value:'keep'}, 'Keep the launch URL'),
-                                m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
+                                study.versions.length<2 ? '' : m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
                             ])
 
                         ])

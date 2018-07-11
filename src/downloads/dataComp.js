@@ -27,7 +27,7 @@ let createMessage = {
         return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, downloaded, link, error, dates, close};
     },
     view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, downloaded, link, error, dates, close}) => m('div', [
-        
+
         m('.card-block', [
             m('.row', [
                 m('.col-sm-5', [

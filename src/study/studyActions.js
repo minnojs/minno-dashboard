@@ -184,7 +184,7 @@ export let do_publish = (study, callback) => e => {
                         m('select.c-select.form-control',{onchange: e => update_url(e.target.value)}, [
                             m('option', {value:'update', selected:true}, 'Update the launch URL'),
                             m('option', {value:'keep'}, 'Keep the launch URL'),
-                            m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
+                            study.versions.length<2 ? '' : m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
                         ])
 
                     ])
