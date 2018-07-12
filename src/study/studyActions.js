@@ -30,7 +30,7 @@ export let do_create = (type, studies) => {
                     m('label', 'Pick Study Player:'),
                     m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
                         m('option', {value:'minno02'}, 'MinnoJS v0.2'),
-                        m('option', {value:'html'}, 'Custom (run any HTML)')
+                        m('option', {value:'html'}, 'JSPysch (run any HTML)')
                     ])
                 ]),
                 !error() ? '' : m('p.alert.alert-danger', error()),
