@@ -3,7 +3,6 @@
 
 const urlPrefix = window.location.origin; // first pathname section with slashes
 
-
 export const baseUrl            = `${urlPrefix}`;
 export const studyUrl           = `${urlPrefix}/studies`;
 export const launchUrl          = `${urlPrefix}/launch`;

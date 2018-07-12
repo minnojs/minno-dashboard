@@ -14,20 +14,34 @@ export let do_create = (type, studies) => {
     let template_id = m.prop('');
     let reuse_id = m.prop('');
     let error = m.prop('');
+    const isOpenServer = true;
+    const study_type = m.prop('minno02');
+    const isTemplate = type !== 'regular';
 
     let ask = () => messages.confirm({
-        header:type == 'regular' ? 'New Study' : 'New Template Study',
-        content: m.component({view: () => m('p', [
-            m('p', 'Enter Study Name:'),
-            m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
-            !error() ? '' : m('p.alert.alert-danger', error()),
-            m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates, studies, reuse_id, templates, template_id}))
-        ])
-    })}).then(response => response && create());
+        header: isTemplate ? 'New Template Study' : 'New Study',
+        content: m.component({
+            view: () => m('p', [
+                m('.form-group', [
+                    m('label', 'Enter Study Name:'),
+                    m('input.form-control',  {oninput: m.withAttr('value', study_name)})
+                ]),
+                isTemplate || !isOpenServer ? '' : m('.form-group', [
+                    m('label', 'Pick Study Player:'),
+                    m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
+                        m('option', {value:'minno02'}, 'MinnoJS v0.2'),
+                        m('option', {value:'html'}, 'Custom (run any HTML)')
+                    ])
+                ]),
+                !error() ? '' : m('p.alert.alert-danger', error()),
+                !isTemplate ? '' : m('p', studyTemplatesComponent({load_templates, studies, reuse_id, templates, template_id}))
+            ])
+        })
+    }).then(response => response && create());
 
-    let create = () => create_study(study_name, type, template_id, reuse_id)
+    let create = () => create_study({study_name, study_type, type, template_id, reuse_id})
         .then(response => m.route(type == 'regular' ? `/editor/${response.study_id}` : `/translate/${response.study_id}`))
-        .catch(e => {
+        .catch(e => { 
             error(e.message);
             ask();
         });

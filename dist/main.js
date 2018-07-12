@@ -194,7 +194,6 @@
 
     var urlPrefix = window.location.origin; // first pathname section with slashes
 
-
     var baseUrl            = "" + urlPrefix;
     var studyUrl           = urlPrefix + "/studies";
     var launchUrl          = urlPrefix + "/launch";
@@ -248,14 +247,6 @@
             }
         } 
     };
-
-
-    /* eslint-disable */
-
-    // ref: http://stackoverflow.com/a/1293163/2343
-    // This will parse a delimited string into an array of
-    // arrays. The default delimiter is the comma, but this
-    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -578,6 +569,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1597,6 +1597,10 @@
         return classes.substr(1);
     }
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1748,6 +1752,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3591,6 +3599,7 @@
                     this$1.is_locked = study.is_locked;
                     this$1.is_published = study.is_published;
                     this$1.name = study.study_name;
+                    this$1.type = study.type || 'minno02';
                     this$1.base_url = study.base_url;
                     this$1.versions = study.versions ? study.versions : [];
 
@@ -3963,10 +3972,7 @@
 
     var load_templates = function () { return fetchJson(templatesUrl); };
 
-    var create_study = function (study_name, type, template_id, reuse_id) { return fetchJson(studyUrl, {
-        method: 'post',
-        body: {study_name: study_name, type: type, template_id: template_id, reuse_id: reuse_id}
-    }); };
+    var create_study = function (body) { return fetchJson(studyUrl, { method: 'post', body: body }); };
 
     var get_exps = function (study_id) { return fetchJson(get_exps_url(study_id)); };
 
@@ -4195,6 +4201,8 @@
     var playground;
     var play$2 = function (file,study) { return function () {
         var isSaved = study.files().every(function (file) { return !file.hasChanged(); });  
+        var isOpenServer = true;
+        var open = isOpenServer ? openNew : openOld;
 
         if (isSaved) open();
         else messages.confirm({
@@ -4202,7 +4210,19 @@
             content: 'You have unsaved files, the player will use the saved version, are you sure you want to proceed?' 
         }).then(function (response) { return response && open(); });
 
-        function open(){
+        function openNew(){
+            if (playground && !playground.closed) playground.close();
+
+            playground = window.open((baseUrl + "/play/" + (study.id) + "/" + (file.id)), 'Playground');
+            playground.onload = function(){
+                playground.addEventListener('unload', function() {
+                    window.focus();
+                });
+                playground.focus();
+            };
+        }
+
+        function openOld(){
             // this is important, if we don't close the original window we get problems with onload
             if (playground && !playground.closed) playground.close();
 
@@ -5539,45 +5559,72 @@
                             : m('span.label.label-danger', file.syntaxData.errors.length)
                     )
                 ])
-                //m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
-                //  m('strong','Validator')
-                //])
             ]),
-            study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
-                APItype !== 'managerAPI' ? '' : [
-                    m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
-                        m('strong','T') 
-                    ])
-                ],
-                APItype !== 'questAPI' ? '' : [
-                    m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
-                        m('strong','Q') 
-                    ]),
-                    m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
-                        m('strong','P') 
-                    ])
-                ],
-                m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '{\n<%= %>\n}'); }, title:'Paste a template wizard'},[
-                    m('strong.fa.fa-percent')
-                ])
-            ]),
-            m('.btn-group.btn-group-sm.pull-xs-right', [
-                !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play$2(file,study), title:'Play this task'},[
-                    m('strong.fa.fa-play')
-                ]),
 
-                !isExpt ? '' :  [
-                    m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+            /**
+             * Snippets
+             **/
+            study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
+                !/^minno/.test(study.type) ? '' : [
+                    APItype !== 'managerAPI' ? '' : [
+                        m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
+                            m('strong','T') 
+                        ])
+                    ],
+                    APItype !== 'questAPI' ? '' : [
+                        m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
+                            m('strong','Q') 
+                        ]),
+                        m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
+                            m('strong','P') 
+                        ])
+                    ],
+                    m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '{\n<%= %>\n}'); }, title:'Paste a template wizard'},[
+                        m('strong.fa.fa-percent')
+                    ])
+                ],
+
+                study.type !== 'html' || !isHtml ? '' : [
+                    m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '<!-- os:base -->'); }, title:'Paste a base url template'},[
+                        m('strong','base')
+                    ]),
+                    m('a.btn.btn-secondary', {onclick:function () { return observer.trigger('paste', '<!-- os:vars -->'); }, title:'Paste a variables template'},[
+                        m('strong','vars')
+                    ])
+                ]
+
+
+            ]),
+
+            /**
+             * Play
+             **/
+            m('.btn-group.btn-group-sm.pull-xs-right', [
+
+                !/^minno/.test(study.type) ? '' : [
+                    !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play$2(file,study), title:'Play this task'},[
                         m('strong.fa.fa-play')
                     ]),
-                    m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
-                        m('strong.fa.fa-link')
-                    ])
+
+                    !isExpt ? '' :  [
+                        m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+                            m('strong.fa.fa-play')
+                        ]),
+                        m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
+                            m('strong.fa.fa-link')
+                        ])
+                    ],
+
+                    !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
+                        m('strong.fa.fa-eye')
+                    ]),
                 ],
 
-                !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
-                    m('strong.fa.fa-eye')
-                ]),
+                study.type !== 'html' ? '' : [
+                    !isHtml ? '' :  m('a.btn.btn-secondary', {onclick: play$2(file,study), title:'Play this task'},[
+                        m('strong.fa.fa-play')
+                    ]),
+                ],
 
                 m('a.btn.btn-secondary', {onclick: hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
                     m('strong.fa.fa-save')
@@ -5860,6 +5907,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5919,6 +5981,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6114,6 +6178,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6286,6 +6351,16 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6648,20 +6723,34 @@
         var template_id = m.prop('');
         var reuse_id = m.prop('');
         var error = m.prop('');
+        var isOpenServer = true;
+        var study_type = m.prop('minno02');
+        var isTemplate = type !== 'regular';
 
         var ask = function () { return messages.confirm({
-            header:type == 'regular' ? 'New Study' : 'New Template Study',
-            content: m.component({view: function () { return m('p', [
-                m('p', 'Enter Study Name:'),
-                m('input.form-control',  {oninput: m.withAttr('value', study_name)}),
-                !error() ? '' : m('p.alert.alert-danger', error()),
-                m('p', type == 'regular' ? '' : studyTemplatesComponent({load_templates: load_templates, studies: studies, reuse_id: reuse_id, templates: templates, template_id: template_id}))
-            ]); }
-        })}).then(function (response) { return response && create(); }); };
+            header: isTemplate ? 'New Template Study' : 'New Study',
+            content: m.component({
+                view: function () { return m('p', [
+                    m('.form-group', [
+                        m('label', 'Enter Study Name:'),
+                        m('input.form-control',  {oninput: m.withAttr('value', study_name)})
+                    ]),
+                    isTemplate || !isOpenServer ? '' : m('.form-group', [
+                        m('label', 'Pick Study Player:'),
+                        m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
+                            m('option', {value:'minno02'}, 'MinnoJS v0.2'),
+                            m('option', {value:'html'}, 'Custom (run any HTML)')
+                        ])
+                    ]),
+                    !error() ? '' : m('p.alert.alert-danger', error()),
+                    !isTemplate ? '' : m('p', studyTemplatesComponent({load_templates: load_templates, studies: studies, reuse_id: reuse_id, templates: templates, template_id: template_id}))
+                ]); }
+            })
+        }).then(function (response) { return response && create(); }); };
 
-        var create = function () { return create_study(study_name, type, template_id, reuse_id)
+        var create = function () { return create_study({study_name: study_name, study_type: study_type, type: type, template_id: template_id, reuse_id: reuse_id})
             .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
-            .catch(function (e) {
+            .catch(function (e) { 
                 error(e.message);
                 ask();
             }); };

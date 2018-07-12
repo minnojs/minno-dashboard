@@ -7,7 +7,7 @@ export default textMenuView;
 
 const amdReg = /(?:define\(\[['"])(.*?)(?=['"])/;
 
-let textMenuView = ({mode, file, study, observer}) => {
+const textMenuView = ({mode, file, study, observer}) => {
     let setMode = value => () => mode(value);
     let modeClass = value => mode() === value ? 'active' : '';
     let isJs = file.type === 'js';
@@ -55,45 +55,72 @@ let textMenuView = ({mode, file, study, observer}) => {
                         : m('span.label.label-danger', file.syntaxData.errors.length)
                 )
             ])
-            //m('a.btn.btn-secondary', {onclick: setMode('validator'), class: modeClass('validator')},[
-            //  m('strong','Validator')
-            //])
         ]),
-        study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
-            APItype !== 'managerAPI' ? '' : [
-                m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
-                    m('strong','T') 
-                ])
-            ],
-            APItype !== 'questAPI' ? '' : [
-                m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
-                    m('strong','Q') 
-                ]),
-                m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
-                    m('strong','P') 
-                ])
-            ],
-            m('a.btn.btn-secondary', {onclick:() => observer.trigger('paste', '{\n<%= %>\n}'), title:'Paste a template wizard'},[
-                m('strong.fa.fa-percent')
-            ])
-        ]),
-        m('.btn-group.btn-group-sm.pull-xs-right', [
-            !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
-                m('strong.fa.fa-play')
-            ]),
 
-            !isExpt ? '' :  [
-                m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+        /**
+         * Snippets
+         **/
+        study.isReadonly ? '' : m('.btn-group.btn-group-sm.pull-xs-right', [
+            !/^minno/.test(study.type) ? '' : [
+                APItype !== 'managerAPI' ? '' : [
+                    m('a.btn.btn-secondary', {onclick: taskSnippet(observer), title: 'Add task element'}, [
+                        m('strong','T') 
+                    ])
+                ],
+                APItype !== 'questAPI' ? '' : [
+                    m('a.btn.btn-secondary', {onclick: questSnippet(observer), title: 'Add question element'}, [
+                        m('strong','Q') 
+                    ]),
+                    m('a.btn.btn-secondary', {onclick: pageSnippet(observer), title: 'Add page element'}, [
+                        m('strong','P') 
+                    ])
+                ],
+                m('a.btn.btn-secondary', {onclick:() => observer.trigger('paste', '{\n<%= %>\n}'), title:'Paste a template wizard'},[
+                    m('strong.fa.fa-percent')
+                ])
+            ],
+
+            study.type !== 'html' || !isHtml ? '' : [
+                m('a.btn.btn-secondary', {onclick:() => observer.trigger('paste', '<!-- os:base -->'), title:'Paste a base url template'},[
+                    m('strong','base')
+                ]),
+                m('a.btn.btn-secondary', {onclick:() => observer.trigger('paste', '<!-- os:vars -->'), title:'Paste a variables template'},[
+                    m('strong','vars')
+                ])
+            ]
+
+
+        ]),
+
+        /**
+         * Play
+         **/
+        m('.btn-group.btn-group-sm.pull-xs-right', [
+
+            !/^minno/.test(study.type) ? '' : [
+                !isJs ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
                     m('strong.fa.fa-play')
                 ]),
-                m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
-                    m('strong.fa.fa-link')
-                ])
+
+                !isExpt ? '' :  [
+                    m('a.btn.btn-secondary', {href: launchUrl, target: '_blank', title:'Play this task'},[
+                        m('strong.fa.fa-play')
+                    ]),
+                    m('a.btn.btn-secondary', {onmousedown: copyUrl(launchUrl), title:'Copy Launch URL'},[
+                        m('strong.fa.fa-link')
+                    ])
+                ],
+
+                !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
+                    m('strong.fa.fa-eye')
+                ]),
             ],
 
-            !isHtml ? '' :  m('a.btn.btn-secondary', {href: file.url, target: '_blank', title:'View this file'},[
-                m('strong.fa.fa-eye')
-            ]),
+            study.type !== 'html' ? '' : [
+                !isHtml ? '' :  m('a.btn.btn-secondary', {onclick: play(file,study), title:'Play this task'},[
+                    m('strong.fa.fa-play')
+                ]),
+            ],
 
             m('a.btn.btn-secondary', {onclick: hasChanged && save(file), title:'Save (ctrl+s)',class: classNames({'btn-danger-outline' : hasChanged, 'disabled': !hasChanged || study.isReadonly})},[
                 m('strong.fa.fa-save')

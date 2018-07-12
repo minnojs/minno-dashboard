@@ -2,6 +2,7 @@ import messages from 'utils/messagesComponent';
 import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
+import {baseUrl} from 'modelUrls';
 
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
@@ -148,8 +149,10 @@ function copyAction(path, file, study_id, new_study_id){
 }
 
 let playground;
-export let play = (file,study) => () => {
-    let isSaved = study.files().every(file => !file.hasChanged());  
+export const play = (file,study) => () => {
+    const isSaved = study.files().every(file => !file.hasChanged());  
+    const isOpenServer = true;
+    const open = isOpenServer ? openNew : openOld;
 
     if (isSaved) open();
     else messages.confirm({
@@ -157,7 +160,19 @@ export let play = (file,study) => () => {
         content: 'You have unsaved files, the player will use the saved version, are you sure you want to proceed?' 
     }).then(response => response && open());
 
-    function open(){
+    function openNew(){
+        if (playground && !playground.closed) playground.close();
+
+        playground = window.open(`${baseUrl}/play/${study.id}/${file.id}`, 'Playground');
+        playground.onload = function(){
+            playground.addEventListener('unload', function() {
+                window.focus();
+            });
+            playground.focus();
+        };
+    }
+
+    function openOld(){
         // this is important, if we don't close the original window we get problems with onload
         if (playground && !playground.closed) playground.close();
 

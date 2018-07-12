@@ -31,10 +31,7 @@ export let load_studies = () => fetchJson(baseUrl);
 
 export let load_templates = () => fetchJson(templatesUrl);
 
-export let create_study = (study_name, type, template_id, reuse_id) => fetchJson(baseUrl, {
-    method: 'post',
-    body: {study_name, type, template_id, reuse_id}
-});
+export let create_study = body => fetchJson(baseUrl, { method: 'post', body });
 
 export let get_exps = (study_id) => fetchJson(get_exps_url(study_id));
 
