@@ -23,13 +23,13 @@ function dragdrop(element, options) {
     }
 }
 
-export let uploadConfig = ctrl => (element, isInitialized) => {
+export const uploadConfig = ctrl => (element, isInitialized) => {
     if (!isInitialized) {
         dragdrop(element, {onchange: ctrl.onchange});
     }
 };
 
-export let uploadBox = args => m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(args)},[
+export const uploadBox = args => m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(args)},[
     m('i.fa.fa-download .fa-3x.m-b-1'),
     m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange:onchange(args)}),
     m('label', {for:'upload'},
@@ -39,7 +39,7 @@ export let uploadBox = args => m('form.upload', {method:'post', enctype:'multipa
 ]);
 
 // call onchange with files
-let onchange = args => e => {
+const onchange = args => e => {
     if (typeof args.onchange == 'function') {
         args.onchange((e.dataTransfer || e.target).files);
     }

@@ -99,9 +99,10 @@ function ask_get_data(study_id, exp_id, file_format, file_split, dates, download
 
     return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
         .then(response => {
-            var file_data = response.data_file;
-            link(`${baseUrl}/download?path=${file_data}`, file_data);
             downloaded(true);
+            var file_data = response.data_file;
+            if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
+            link(`${baseUrl}/download?path=${file_data}`, file_data);
         })
         .catch(error)
         .then(m.redraw);

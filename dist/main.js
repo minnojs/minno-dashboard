@@ -6687,9 +6687,10 @@
 
         return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
             .then(function (response) {
-                var file_data = response.data_file;
-                link((baseUrl + "/download?path=" + file_data), file_data);
                 downloaded(true);
+                var file_data = response.data_file;
+                if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
+                link((baseUrl + "/download?path=" + file_data), file_data);
             })
             .catch(error)
             .then(m.redraw);
@@ -6739,7 +6740,7 @@
                         m('label', 'Pick Study Player:'),
                         m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
                             m('option', {value:'minno02'}, 'MinnoJS v0.2'),
-                            m('option', {value:'html'}, 'Custom (run any HTML)')
+                            m('option', {value:'html'}, 'JSPysch (run any HTML)')
                         ])
                     ]),
                     !error() ? '' : m('p.alert.alert-danger', error()),
