@@ -11,6 +11,8 @@ let studyPrototype = {
     get(){
         return fetchJson(this.apiURL())
             .then(study => {
+                const files = this.parseFiles(study.files).map(fileFactory);
+
                 this.loaded = true;
                 this.isReadonly = study.is_readonly || study.is_locked;
                 this.istemplate = study.is_template;
@@ -20,11 +22,6 @@ let studyPrototype = {
                 this.type = study.type || 'minno02';
                 this.base_url = study.base_url;
                 this.versions = study.versions ? study.versions : [];
-
-                let files = flattenFiles(study.files)
-                    .map(assignStudyId(this.id))
-                    .map(fileFactory);
-
                 this.files(files);
                 this.sort();
             })
@@ -33,21 +30,23 @@ let studyPrototype = {
                 return Promise.reject(reason); // do not swallow error
             });
 
-        function flattenFiles(files){
-            if (!files) return [];
-            return files
-                    .map(spreadFile)
-                    .reduce((result, fileArr) => result.concat(fileArr),[]);
-        }
 
-        function assignStudyId(id){
-            return f => Object.assign(f, {studyId: id});
-        }
+    },
+
+    parseFiles(files){
+        const study = this;
+        if (!files) return [];
+        return ensureArray(files)
+            .map(spreadFile)
+            .reduce(flatten, [])
+            .map(assignStudyId);
+
+        function ensureArray(arr){ return arr || []; }
+        function flatten(acc, val){ return acc.concat(val); }
+        function assignStudyId(file){ return Object.assign(file, {studyId: study.id}); }
 
         // create an array including file and all its children
-        function spreadFile(file){
-            return [file].concat(flattenFiles(file.files));
-        }
+        function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
     },
 
     getFile(id){
@@ -74,9 +73,14 @@ let studyPrototype = {
     },
 
     addFile(file){
-        this.files().push(file);
+        const files = this.files();
+        files.push(file);
+
         // update the parent folder
-        let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+        const parent = this
+            .getParents(file)
+            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+
         if (parent) {
             parent.files || (parent.files = []);
             parent.files.push(file);
@@ -88,17 +92,17 @@ let studyPrototype = {
         if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: `The file name "${name}" is not valid`});
 
         // validation (make sure file does not already exist)
-        let exists = this.files().some(file => file.path === name);
+        const exists = this.files().some(file => file.path === name);
         if (exists) return Promise.reject({message: `The file "${name}" already exists`});
 
         // validateion (make sure direcotry exists)
-        let basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
-        let dirExists = basePath === '' || this.files().some(file => file.isDir && file.path === basePath);
+        const basePath = (name.substring(0, name.lastIndexOf('/'))).replace(/^\//, '');
+        const dirExists = basePath === '' || this.files().some(file => file.isDir && file.path === basePath);
         if (!dirExists) return Promise.reject({message: `The directory "${basePath}" does not exist`});
         return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content, isDir}})
             .then(response => {
                 Object.assign(response, {studyId: this.id, content, path:name, isDir});
-                let file = fileFactory(response);
+                const file = fileFactory(response);
                 file.loaded = true;
                 this.addFile(file);
                 return response;
@@ -120,26 +124,23 @@ let studyPrototype = {
         }
     },
 
-    uploadFiles({path, files, force}){
-        let formData = buildFormData(files);
-        formData.append('forceUpload', +force);
+    uploadFiles({path, fd, files, force}){
+        //let formData = buildFormData(files);
+        //formData.append('forceUpload', +force);
+        fd.append('forceUpload', +force);
 
-        return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:formData})
-            .then(response => response.forEach(src => {
-                let file = fileFactory(Object.assign({studyId: this.id},src));
-                // if file already exists, remove it
-                if (force && this.files().find(f => f.path === file.path)) this.removeFiles([file]);
-                this.addFile(file);
-            }))
+        return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:fd})
+            .then(this.parseFiles.bind(this))
+            .then(newfiles => {
+                let oldfiles = this.files();
+                if (force) oldfiles = oldfiles.filter(file => files.indexOf(file.path) != -1);
+                newfiles
+                    .filter(newfile => !oldfiles.some(oldfile => oldfile.path == newfile.path))
+                    .map(newfile => Object.assign(Object.assign({studyId: this.id},newfile)))
+                    .map(fileFactory)
+                    .forEach(this.addFile.bind(this))
+            })
             .then(this.sort.bind(this));
-
-        function buildFormData(files) {
-            var formData = new FormData;
-            for (let i = 0; i < files.length; i++) {
-                formData.append(i, files[i]);
-            }
-            return formData;
-        }
     },
 
     /*

@@ -248,6 +248,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -569,15 +577,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1597,10 +1596,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1752,10 +1747,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3447,6 +3438,7 @@
             if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
             if (study.files().some(function (f){ return f.path === path; })) return Promise.reject({message: ("File " + path + " already exists.")});
 
+
             var oldPath = this.path;
             this.setPath(path);
             this.content(this.content()); // in case where changing into a file type that needs syntax checking
@@ -3593,6 +3585,8 @@
 
             return fetchJson(this.apiURL())
                 .then(function (study) {
+                    var files = this$1.parseFiles(study.files).map(fileFactory);
+
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly || study.is_locked;
                     this$1.istemplate = study.is_template;
@@ -3602,11 +3596,6 @@
                     this$1.type = study.type || 'minno02';
                     this$1.base_url = study.base_url;
                     this$1.versions = study.versions ? study.versions : [];
-
-                    var files = flattenFiles(study.files)
-                        .map(assignStudyId(this$1.id))
-                        .map(fileFactory);
-
                     this$1.files(files);
                     this$1.sort();
                 })
@@ -3615,21 +3604,23 @@
                     return Promise.reject(reason); // do not swallow error
                 });
 
-            function flattenFiles(files){
-                if (!files) return [];
-                return files
-                        .map(spreadFile)
-                        .reduce(function (result, fileArr) { return result.concat(fileArr); },[]);
-            }
 
-            function assignStudyId(id){
-                return function (f) { return Object.assign(f, {studyId: id}); };
-            }
+        },
+
+        parseFiles: function parseFiles(files){
+            var study = this;
+            if (!files) return [];
+            return ensureArray(files)
+                .map(spreadFile)
+                .reduce(flatten, [])
+                .map(assignStudyId);
+
+            function ensureArray(arr){ return arr || []; }
+            function flatten(acc, val){ return acc.concat(val); }
+            function assignStudyId(file){ return Object.assign(file, {studyId: study.id}); }
 
             // create an array including file and all its children
-            function spreadFile(file){
-                return [file].concat(flattenFiles(file.files));
-            }
+            function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
         },
 
         getFile: function getFile(id){
@@ -3656,9 +3647,14 @@
         },
 
         addFile: function addFile(file){
-            this.files().push(file);
+            var files = this.files();
+            files.push(file);
+
             // update the parent folder
-            var parent = this.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+            var parent = this
+                .getParents(file)
+                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+
             if (parent) {
                 parent.files || (parent.files = []);
                 parent.files.push(file);
@@ -3710,28 +3706,26 @@
         uploadFiles: function uploadFiles(ref){
             var this$1 = this;
             var path = ref.path;
+            var fd = ref.fd;
             var files = ref.files;
             var force = ref.force;
 
-            var formData = buildFormData(files);
-            formData.append('forceUpload', +force);
+            //let formData = buildFormData(files);
+            //formData.append('forceUpload', +force);
+            fd.append('forceUpload', +force);
 
-            return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:formData})
-                .then(function (response) { return response.forEach(function (src) {
-                    var file = fileFactory(Object.assign({studyId: this$1.id},src));
-                    // if file already exists, remove it
-                    if (force && this$1.files().find(function (f) { return f.path === file.path; })) this$1.removeFiles([file]);
-                    this$1.addFile(file);
-                }); })
+            return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:fd})
+                .then(this.parseFiles.bind(this))
+                .then(function (newfiles) {
+                    var oldfiles = this$1.files();
+                    if (force) oldfiles = oldfiles.filter(function (file) { return files.indexOf(file.path) != -1; });
+                    newfiles
+                        .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path == newfile.path; }); })
+                        .map(function (newfile) { return Object.assign(Object.assign({studyId: this$1.id},newfile)); })
+                        .map(fileFactory)
+                        .forEach(this$1.addFile.bind(this$1))
+                })
                 .then(this.sort.bind(this));
-
-            function buildFormData(files) {
-                var formData = new FormData;
-                for (var i = 0; i < files.length; i++) {
-                    formData.append(i, files[i]);
-                }
-                return formData;
-            }
         },
 
         /*
@@ -4051,9 +4045,9 @@
         return study.study_type === 'regular' && !study.is_template;
     }; };
 
-    var uploadFiles = function (path,study) { return function (files) {
+    var uploadFiles = function (path,study) { return function (fd, files) {
         // validation (make sure files do not already exist)
-        var filePaths = Array.from(files, function (file) { return path === '/' ? file.name : path + '/' + file.name; });
+        var filePaths = files.map(function (file) { return path === '/' ? file : path + '/' + file; });
         var exist = study.files().filter(function (file) { return filePaths.includes(file.path); }).map(function (f) { return f.path; });
 
         if (!exist.length) return upload({force:false});
@@ -4068,7 +4062,7 @@
             if ( ref === void 0 ) ref = {force:false};
             var force = ref.force;
 
-            return study.uploadFiles({path: path, files: files, force: force})
+            return study.uploadFiles({path: path, fd: fd, files: files, force: force})
                 .catch(function (response) { return messages.alert({
                     header: 'Upload File',
                     content: response.message
@@ -5907,21 +5901,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5981,8 +5960,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6178,12 +6155,114 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
-        if (typeof args.onchange == 'function') {
-            args.onchange((e.dataTransfer || e.target).files);
-        }
+        var dt = e.dataTransfer;
+        var cb = args.onchange;
+        if (typeof cb !== 'function') return;
+
+        if (dt.items && dt.items.length && 'webkitGetAsEntry' in dt.items[0]) {
+            entriesApi(dt.items, cb);
+        } else if ('getFilesAndDirectories' in dt) {
+            newDirectoryApi(dt, cb);
+        } else if (dt.files) {
+            arrayApi(dt, cb);
+        } else cb();
     }; };
+
+    // API implemented in Firefox 42+ and Edge
+    function newDirectoryApi(input, cb) {
+        var fd = new FormData(), files = [];
+        var iterate = function(entries, path, resolve) {
+            var promises = [];
+            entries.forEach(function(entry) {
+                promises.push(new Promise(function(resolve) {
+                    if ('getFilesAndDirectories' in entry) {
+                        entry.getFilesAndDirectories().then(function(entries) {
+                            iterate(entries, entry.path + '/', resolve);
+                        });
+                    } else {
+                        if (entry.name) {
+                            var p = (path + entry.name).replace(/^[/\\]/, '');
+                            fd.append('files[]', entry, p);
+                            files.push(p);
+                        }
+                        resolve();
+                    }
+                }));
+            });
+            Promise.all(promises).then(resolve);
+        };
+        input.getFilesAndDirectories().then(function(entries) {
+            new Promise(function(resolve) {
+                iterate(entries, '/', resolve);
+            }).then(cb.bind(null, fd, files));
+        });
+    }
+
+    // old prefixed API implemented in Chrome 11+ as well as array fallback
+    function arrayApi(input, cb) {
+        var fd = new FormData(), files = [];
+        [].slice.call(input.files).forEach(function(file) {
+            fd.append('files[]', file, file.webkitRelativePath || file.name);
+            files.push(file.webkitRelativePath || file.name);
+        });
+        cb(fd, files);
+    }
+
+    // old drag and drop API implemented in Chrome 11+
+    function entriesApi(items, cb) {
+        var fd = new FormData(), files = [], rootPromises = [];
+
+        function readEntries(entry, reader, oldEntries, cb) {
+            var dirReader = reader || entry.createReader();
+            dirReader.readEntries(function(entries) {
+                var newEntries = oldEntries ? oldEntries.concat(entries) : entries;
+                if (entries.length) {
+                    setTimeout(readEntries.bind(null, entry, dirReader, newEntries, cb), 0);
+                } else {
+                    cb(newEntries);
+                }
+            });
+        }
+
+        function readDirectory(entry, path, resolve) {
+            if (!path) path = entry.name;
+            readEntries(entry, 0, 0, function(entries) {
+                var promises = [];
+                entries.forEach(function(entry) {
+                    promises.push(new Promise(function(resolve) {
+                        if (entry.isFile) {
+                            entry.file(function(file) {
+                                var p = path + '/' + file.name;
+                                fd.append('files[]', file, p);
+                                files.push(p);
+                                resolve();
+                            }, resolve.bind());
+                        } else readDirectory(entry, path + '/' + entry.name, resolve);
+                    }));
+                });
+                Promise.all(promises).then(resolve.bind());
+            });
+        }
+
+        [].slice.call(items).forEach(function(entry) {
+            entry = entry.webkitGetAsEntry();
+            if (entry) {
+                rootPromises.push(new Promise(function(resolve) {
+                    if (entry.isFile) {
+                        entry.file(function(file) {
+                            fd.append('files[]', file, file.name);
+                            files.push(file.name);
+                            resolve();
+                        }, resolve.bind());
+                    } else if (entry.isDirectory) {
+                        readDirectory(entry, null, resolve);
+                    }
+                }));
+            }
+        });
+        Promise.all(rootPromises).then(cb.bind(null, fd, files));
+    }
 
     var node = function (args) { return m.component(nodeComponent, args); };
 
@@ -6351,16 +6430,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {

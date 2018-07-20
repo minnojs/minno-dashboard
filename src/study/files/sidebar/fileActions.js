@@ -4,10 +4,10 @@ import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
 import {baseUrl} from 'modelUrls';
 
-export let uploadFiles = (path,study) => files => {
+export const uploadFiles = (path,study) => (fd, files) => {
     // validation (make sure files do not already exist)
-    let filePaths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
-    let exist = study.files().filter(file => filePaths.includes(file.path)).map(f => f.path);
+    const filePaths = files.map(file => path === '/' ? file : path + '/' + file);
+    const exist = study.files().filter(file => filePaths.includes(file.path)).map(f => f.path);
 
     if (!exist.length) return upload({force:false});
     else return messages.confirm({
@@ -18,7 +18,7 @@ export let uploadFiles = (path,study) => files => {
         .then(response => response && upload({force:true}));
 
     function upload({force} = {force:false}) {
-        return study.uploadFiles({path, files, force})
+        return study.uploadFiles({path, fd, files, force})
             .catch(response => messages.alert({
                 header: 'Upload File',
                 content: response.message

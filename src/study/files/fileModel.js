@@ -51,6 +51,7 @@ let filePrototype = {
         if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});
         if (study.files().some(f=>f.path === path)) return Promise.reject({message: `File ${path} already exists.`});
 
+
         let oldPath = this.path;
         this.setPath(path);
         this.content(this.content()); // in case where changing into a file type that needs syntax checking
