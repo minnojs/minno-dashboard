@@ -5901,6 +5901,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5922,12 +5937,14 @@
             e.preventDefault();
             e.stopPropagation();
 
+            var left = e.pageX + 'px';
+            var top = e.pageY + 'px';
+            var bottom = (window.innerHeight - e.pageY) + 'px';
+            var style = window.innerHeight/2 > e.pageY ? {left: left,top: top} : {left: left,bottom: bottom};
+
             contextMenuComponent.vm.menu(menu);
             contextMenuComponent.vm.show(true);
-            contextMenuComponent.vm.style({
-                left:e.pageX + 'px',
-                top:e.pageY + 'px'
-            });
+            contextMenuComponent.vm.style(style);
 
             document.addEventListener('mousedown', onClick, false);
             function onClick(){

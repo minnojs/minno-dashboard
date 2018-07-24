@@ -16,7 +16,7 @@ export default contextMenuComponent;
  * ]
  */
 
-let contextMenuComponent = {
+const contextMenuComponent = {
     vm: {
         show: m.prop(false),
         style: m.prop({}),
@@ -37,12 +37,14 @@ let contextMenuComponent = {
         e.preventDefault();
         e.stopPropagation();
 
+        const left = e.pageX + 'px';
+        const top = e.pageY + 'px';
+        const bottom = (window.innerHeight - e.pageY) + 'px';
+        const style = window.innerHeight/2 > e.pageY ? {left,top} : {left,bottom};
+
         contextMenuComponent.vm.menu(menu);
         contextMenuComponent.vm.show(true);
-        contextMenuComponent.vm.style({
-            left:e.pageX + 'px',
-            top:e.pageY + 'px'
-        });
+        contextMenuComponent.vm.style(style);
 
         document.addEventListener('mousedown', onClick, false);
         function onClick(){
