@@ -1,8 +1,12 @@
 /**/
-const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+// const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
 // const urlPrefix = window.location.origin; // first pathname section with slashes
 
+const urlPrefix = '..';//location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+
+
+// console.log(location.href);
 export const baseUrl            = `${urlPrefix}`;
 export const studyUrl           = `${urlPrefix}/studies`;
 export const launchUrl          = `${urlPrefix}/launch`;
