@@ -9,7 +9,7 @@ let filesList = ({study}) => {
     let config = uploadConfig({onchange:uploadFiles('/', study)});
     let chooseState = getCurrentState(study); 
 
-    return m('div', {config}, [
+    return m('.sidebar-files', {config}, [
         m('h5', [
             m('small', [
                 m('i.fa.fa-fw', {

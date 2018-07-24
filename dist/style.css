@@ -514,9 +514,14 @@ select.c-select {
   overflow-y: auto;
   top: 54px;
   bottom: 0;
-  z-index: 10; }
-  .study .sidebar .btn-group {
-    margin: 10px; }
+  z-index: 10;
+  display: flex;
+  flex-direction: column; }
+  .study .sidebar .sidebar-buttons {
+    margin: 10px;
+    flex-shrink: 1; }
+  .study .sidebar .sidebar-files {
+    flex-grow: 1; }
 
 .is-iframe .study > .col-md-2 {
   display: none; }

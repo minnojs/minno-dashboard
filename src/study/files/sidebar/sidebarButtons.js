@@ -6,10 +6,10 @@ import {draw_menu} from '../../studyMenu';
 
 export default sidebarButtons;
 
-let sidebarButtons = ({study}) => {
-    let readonly = study.isReadonly;
+const sidebarButtons = ({study}) => {
+    const readonly = study.isReadonly;
 
-    return m('.btn-toolbar', [
+    return m('.sidebar-buttons.btn-toolbar', [
         m('.btn-group.btn-group-sm', [
             dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), elements: [
                 draw_menu(study)

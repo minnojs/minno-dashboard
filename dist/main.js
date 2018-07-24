@@ -6423,7 +6423,7 @@
         var config = uploadConfig({onchange:uploadFiles('/', study)});
         var chooseState = getCurrentState(study); 
 
-        return m('div', {config: config}, [
+        return m('.sidebar-files', {config: config}, [
             m('h5', [
                 m('small', [
                     m('i.fa.fa-fw', {
@@ -7234,7 +7234,7 @@
 
         var readonly = study.isReadonly;
 
-        return m('.btn-toolbar', [
+        return m('.sidebar-buttons.btn-toolbar', [
             m('.btn-group.btn-group-sm', [
                 dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-menu-right', toggleContent: m('i.fa.fa-bars'), elements: [
                     draw_menu(study)

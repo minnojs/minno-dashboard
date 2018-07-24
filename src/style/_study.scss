@@ -65,9 +65,15 @@
         top: $navbar-height;
         bottom: 0;
         z-index:10;
+        display:flex;
+        flex-direction: column;
 
-        .btn-group {
+        .sidebar-buttons {
             margin: 10px;
+            flex-shrink:1;
+        }
+        .sidebar-files {
+            flex-grow:1;
         }
     }
 
