@@ -4,6 +4,8 @@ export default studyFactory;
 import {baseUrl} from 'modelUrls';
 
 let studyPrototype = {
+    loaded: false,
+    isUploading: false,
     apiURL(path = ''){
         return `${baseUrl}/files/${encodeURIComponent(this.id)}${path}`;
     },
@@ -125,9 +127,9 @@ let studyPrototype = {
     },
 
     uploadFiles({path, fd, files, force}){
-        //let formData = buildFormData(files);
-        //formData.append('forceUpload', +force);
         fd.append('forceUpload', +force);
+        this.isUploading = true;
+        m.redraw();
 
         return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:fd})
             .then(this.parseFiles.bind(this))
@@ -140,7 +142,9 @@ let studyPrototype = {
                     .map(fileFactory)
                     .forEach(this.addFile.bind(this))
             })
-            .then(this.sort.bind(this));
+            .then(this.sort.bind(this))
+            .then(() => this.isUploading = false)
+            .catch(() => this.isUploading = false);
     },
 
     /*
@@ -206,8 +210,8 @@ let studyPrototype = {
     }
 };
 
-let studyFactory =  id =>{
-    let study = Object.create(studyPrototype);
+const studyFactory =  id =>{
+    const study = Object.create(studyPrototype);
     Object.assign(study, {
         id      : id,
         files   : m.prop([]),
@@ -224,12 +228,12 @@ let studyFactory =  id =>{
 };
 
 // http://lhorie.github.io/mithril-blog/mapping-view-models.html
-var viewModelMap = function(signature) {
-    var map = {};
+const viewModelMap = function(signature) {
+    const map = {};
     return function(key) {
         if (!map[key]) {
             map[key] = {};
-            for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
+            for (let prop in signature) map[key][prop] = m.prop(signature[prop]());
         }
         return map[key];
     };

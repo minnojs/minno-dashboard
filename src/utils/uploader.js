@@ -20,6 +20,7 @@ function dragdrop(element, options) {
         e.preventDefault();
         e.stopPropagation();
         onchange(options)(e);
+        m.redraw();
     }
 }
 
