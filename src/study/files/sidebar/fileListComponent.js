@@ -23,11 +23,18 @@ let filesList = ({study}) => {
             ]),
             m('a.no-decoration', {href:`/editor/${study.id}`, config:m.route}, study.name)
         ]),
-        folderComponent({path:'/',folderHash, study})
+        study.isUploading
+            ? m('div', [
+                m('.loader'),
+                m('.text-sm-center', [
+                    m('strong', 'UPLOADING...')
+                ])
+            ])
+            : folderComponent({path:'/',folderHash, study})
     ]);
 };
 
-let parseFiles = files => files.reduce((hash, file)=>{
+const parseFiles = files => files.reduce((hash, file)=>{
     const path = file.basePath;
     if (!hash[path]) hash[path] = [];
     hash[path].push(file);
@@ -39,8 +46,8 @@ function choose(currentState, study){
 }
 
 function getCurrentState(study){
-    let vm = study.vm;
-    let filesCount = study.files().length;
-    let chosenCount = study.files().reduce((result, file) => vm(file.id).isChosen() ? result + 1 : result, 0);
+    const vm = study.vm;
+    const filesCount = study.files().length;
+    const chosenCount = study.files().reduce((result, file) => vm(file.id).isChosen() ? result + 1 : result, 0);
     return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
 }
