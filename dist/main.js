@@ -190,10 +190,14 @@
     }
 
     /**/
-    var urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
+    // const urlPrefix = 'http://app-prod-03.implicit.harvard.edu/openserver'; // first pathname section with slashes
 
     // const urlPrefix = window.location.origin; // first pathname section with slashes
 
+    var urlPrefix = '..';//location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+
+
+    // console.log(location.href);
     var baseUrl            = "" + urlPrefix;
     var studyUrl           = urlPrefix + "/studies";
     var launchUrl          = urlPrefix + "/launch";
@@ -247,6 +251,14 @@
             }
         } 
     };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -569,15 +581,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1597,10 +1600,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1752,10 +1751,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4948,21 +4943,21 @@
         });
     }
 
-    var copyUrl = function (url) { return function () {
+    var copyUrl = function (url, launch) { return function () {
         messages.alert({
             header: 'Copy URL',
-            content: m.component(copyComponent, url),
+            content: m.component(copyComponent, url, launch),
             okText: 'Done'
         });
     }; };
 
     var copyComponent = {
-        controller: function (url) {
+        controller: function (url, launch) {
             var copyFail = m.prop(false);
             var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
             return {autoCopy: autoCopy, copyFail: copyFail};
         },
-        view: function (ref, url) {
+        view: function (ref, url, launch) {
             var autoCopy = ref.autoCopy;
             var copyFail = ref.copyFail;
 
@@ -4974,8 +4969,11 @@
                     m('input.form-control', { config: function (el) { return el.select(); }, value: url })
 
                 ]),
+                !launch ? '' : [
+
                 m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
                 m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
+                ],
                 !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
             ])
         ]);
@@ -5910,21 +5908,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5986,8 +5969,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6095,7 +6076,7 @@
                             {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                             {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
                             { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
-                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id))}
+                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id), true)}
                         ]},
 
                 //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
@@ -6183,7 +6164,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6459,16 +6439,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {

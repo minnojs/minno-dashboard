@@ -2,21 +2,21 @@ import messages from 'utils/messagesComponent';
 
 export default copyUrl;
 
-let copyUrl = url => () => {
+let copyUrl = (url, launch) => () => {
     messages.alert({
         header: 'Copy URL',
-        content: m.component(copyComponent, url),
+        content: m.component(copyComponent, url, launch),
         okText: 'Done'
     });
 };
 
 let copyComponent = {
-    controller: (url) => {
+    controller: (url, launch) => {
         let copyFail = m.prop(false);
         let autoCopy = () => copy(url).catch(() => copyFail(true)).then(m.redraw);
         return {autoCopy, copyFail};
     },
-    view: ({autoCopy, copyFail}, url) => m('.card-block', [
+    view: ({autoCopy, copyFail}, url, launch) => m('.card-block', [
         m('.form-group', [
             m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
             m('label.input-group',[
@@ -24,8 +24,11 @@ let copyComponent = {
                 m('input.form-control', { config: el => el.select(), value: url })
 
             ]),
+            !launch ? '' : [
+
             m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
             m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
+            ],
             !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
         ])
     ])
