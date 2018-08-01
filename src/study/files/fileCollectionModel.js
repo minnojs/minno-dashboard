@@ -20,6 +20,7 @@ let studyPrototype = {
                 this.istemplate = study.is_template;
                 this.is_locked = study.is_locked;
                 this.is_published = study.is_published;
+                this.is_public = study.is_public;
                 this.name = study.study_name;
                 this.type = study.type || 'minno02';
                 this.base_url = study.base_url;

@@ -199,7 +199,7 @@
 
     // console.log(location.href);
     var baseUrl            = "" + urlPrefix;
-    var studyUrl           = urlPrefix + "/studies";
+    var baseUrl$1           = urlPrefix + "/studies";
     var launchUrl          = urlPrefix + "/launch";
     var templatesUrl       = urlPrefix + "/templates";
     var tagsUrl            = urlPrefix + "/tags";
@@ -251,6 +251,14 @@
             }
         } 
     };
+
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
@@ -573,15 +581,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1601,10 +1600,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1756,10 +1751,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -3607,6 +3598,7 @@
                     this$1.istemplate = study.is_template;
                     this$1.is_locked = study.is_locked;
                     this$1.is_published = study.is_published;
+                    this$1.is_public = study.is_public;
                     this$1.name = study.study_name;
                     this$1.type = study.type || 'minno02';
                     this$1.base_url = study.base_url;
@@ -3955,41 +3947,41 @@
     }
 
     function get_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)));
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)));
     }
 
     function get_duplicate_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/copy");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/copy");
     }
 
 
     function get_exps_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/experiments");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/experiments");
     }
 
     function get_lock_url(study_id , lock) {
 
         if (lock)
-            return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/lock");
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/unlock");
+            return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/lock");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/unlock");
     }
 
     function get_publish_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/publish");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/publish");
     }
 
     /*CRUD*/
-    var load_studies = function () { return fetchJson(studyUrl); };
+    var load_studies = function () { return fetchJson(baseUrl$1); };
 
     var load_templates = function () { return fetchJson(templatesUrl); };
 
-    var create_study = function (body) { return fetchJson(studyUrl, { method: 'post', body: body }); };
+    var create_study = function (body) { return fetchJson(baseUrl$1, { method: 'post', body: body }); };
 
     var get_exps = function (study_id) { return fetchJson(get_exps_url(study_id)); };
 
-    var get_data = function (study_id, exp_id, file_format, file_split, start_date, end_date) { return fetchJson(get_exps_url(study_id), {
+    var get_data = function (study_id, exp_id, version_id, file_format, file_split, start_date, end_date) { return fetchJson(get_exps_url(study_id), {
         method: 'post',
-        body: {exp_id: exp_id, file_format: file_format, file_split: file_split, start_date: start_date, end_date: end_date}
+        body: {exp_id: exp_id, version_id: version_id, file_format: file_format, file_split: file_split, start_date: start_date, end_date: end_date}
     }); }
     ;
 
@@ -5921,21 +5913,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5997,8 +5974,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6195,7 +6170,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6478,16 +6452,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6591,7 +6555,7 @@
     }
 
     function study_url(study_id) {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/tags");
     }
 
 
@@ -6703,10 +6667,13 @@
             var exps = ref.exps;
             var dates = ref.dates;
             var study_id = ref.study_id;
+            var versions = ref.versions;
             var close = ref.close;
 
             var exp_id = m.prop('');
+            var version_id = m.prop('');
             var all_exps = m.prop('');
+            var all_versions = m.prop('');
             var file_format = m.prop('csv');
             var file_split = m.prop('taskName');
 
@@ -6718,21 +6685,26 @@
                 startDate: m.prop(daysAgo$1(3650)),
                 endDate: m.prop(new Date())
             };
+
             get_exps(study_id)
                 .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; }));})
+                .then(function (){ return all_versions(versions.map(function (version){ return version.id; })); })
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {study_id: study_id, exp_id: exp_id, file_format: file_format, exps: exps, file_split: file_split, all_exps: all_exps, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
+            return {study_id: study_id, exp_id: exp_id, version_id: version_id, file_format: file_format, exps: exps, versions: versions, file_split: file_split, all_exps: all_exps, all_versions: all_versions, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
         },
         view: function (ref) {
             var study_id = ref.study_id;
             var exp_id = ref.exp_id;
+            var version_id = ref.version_id;
             var file_format = ref.file_format;
             var file_split = ref.file_split;
             var exps = ref.exps;
+            var versions = ref.versions;
             var all_exps = ref.all_exps;
+            var all_versions = ref.all_versions;
             var loaded = ref.loaded;
             var downloaded = ref.downloaded;
             var link = ref.link;
@@ -6744,7 +6716,7 @@
 
             m('.card-block', [
                 m('.row', [
-                    m('.col-sm-5', [
+                    m('.col-sm-4', [
                         m('.input-group', [
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
                                 m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
@@ -6753,8 +6725,17 @@
                             ])
                         ])
                     ]),
+                    m('.col-sm-4', [
+                        m('.input-group', [
+                            m('select.c-select.form-control',{onchange: function (e) { return version_id(e.target.value); }}, [
+                                m('option', {value:'', disabled:true, selected:true}, 'Select version'),
+                                versions.length<=1 ? '' : m('option', {value:all_versions()}, 'All versions'),
+                                versions.map(function (version){ return m('option', {value:version.id}, ((version.version) + " (" + (version.state) + ")")); })
+                            ])
+                        ])
+                    ]),
                     m('p',exp_id),
-                    m('.col-sm-3', [
+                    m('.col-sm-2', [
                         m('.input-group', [
                             m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
                                 m('option', {value:'csv'}, 'csv'),
@@ -6797,13 +6778,13 @@
             downloaded() ? '' : m('.loader'),
             m('.text-xs-right.btn-toolbar',[
                 m('a.btn.btn-secondary.btn-sm', {onclick:function (){close(null);}}, 'Cancel'),
-                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
+                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
             ])
         ]);
     }
     };
 
-    function ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error){
+    function ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error){
         error('');
         if(exp_id() =='')
             return error('Please select experiment id');
@@ -6812,7 +6793,7 @@
             exp_id(exp_id().split(','));
         downloaded(false);
 
-        return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
+        return get_data(study_id, exp_id(), version_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
             .then(function (response) {
                 downloaded(true);
                 var file_data = response.data_file;
@@ -6844,6 +6825,54 @@
             dates.endDate(new Date());
         }
     }, name); };
+
+    function collaboration_url$1(study_id)
+    {
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/collaboration");
+    }
+
+    function link_url(study_id)
+    {
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/link");
+    }
+
+
+
+    function public_url(study_id)
+    {
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/public");
+    }
+
+    var get_collaborations = function (study_id) { return fetchJson(collaboration_url$1(study_id), {
+        method: 'get'
+    }); };
+
+    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url$1(study_id), {
+        method: 'delete',
+        body: {user_id: user_id}
+    }); };
+
+
+    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url$1(study_id), {
+        method: 'post',
+        body: {user_name: user_name, permission: permission}
+    }); };
+
+
+    var add_link = function (study_id) { return fetchJson(link_url(study_id), {
+        method: 'post'
+    }); };
+
+    var revoke_link = function (study_id) { return fetchJson(link_url(study_id), {
+        method: 'delete'
+    }); };
+
+
+
+    var make_pulic = function (study_id, is_public) { return fetchJson(public_url(study_id), {
+        method: 'post',
+        body: {is_public: is_public}
+    }); };
 
     var do_create = function (type, studies) {
         var study_name = m.prop('');
@@ -6906,14 +6935,34 @@
         e.preventDefault();
         // let exps = get_exps[]);
         // console.log(exps);
+
         var study_id = study.id;
+        var versions = study.versions;
         var exps = m.prop([]);
         var tags = m.prop([]);
         var dates = m.prop();
 
         var close = messages.close;
-        messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id, close: close})})
+        messages.custom({header:'Data download', content: createMessage$3({tags: tags, exps: exps, dates: dates, study_id: study_id, versions: versions, close: close})})
             .then(m.redraw);
+    }; };
+
+
+    var do_make_public = function (study) { return function (e) {
+        e.preventDefault();
+        var error = m.prop('');
+        return messages.confirm({okText: ['Yes, make ', !study.is_public ? 'public' : 'private'], cancelText: ['No, keep ', !study.is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', !study.is_public
+                ?
+                'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+                :
+                'Making the study private will hide its files from everyone but you.'),
+                m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
+            .then(function (response) {
+                if (response) make_pulic(study.id, !study.is_public)
+                    .then(study.is_public = !study.is_public)
+                    .then(m.redraw);
+            });
+
     }; };
 
 
@@ -7134,6 +7183,8 @@
         // 'studyChangeRequest':[],
         // 'studyRemoval':[],
         // 'sharing':[],
+        'public':[],
+        // 'unpublic':[],
         'copyUrl':[]
     };
 
@@ -7194,6 +7245,13 @@
             onmousedown: do_publish,
             class: 'fa-cloud-upload'
         }},
+
+        public: {text: 'Make public / private', config: {
+                permission: edit_permission,
+                onmousedown: do_make_public,
+                class: 'fa-globe'
+            }},
+
         unlock: {text: 'Unlock Study',
             config: {
                 permission: edit_permission,
@@ -7829,7 +7887,7 @@
                                     m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right',
                                             m('.btn-group.btn-group-sm',
-                                                study.is_template || study.is_public
+                                                study.is_template || study.is_public && study.permission !== 'owner'
                                                     ?
                                                     ''
                                                     :
@@ -7853,7 +7911,7 @@
     }; };
 
     var permissionFilter = function (permission) { return function (study) {
-        if(permission === 'all') return !study.is_public;
+        if(permission === 'all') return !(study.is_public && study.permission !== 'owner');
         if(permission === 'public') return study.is_public;
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
         if(permission === 'template') return study.is_template;
@@ -8081,7 +8139,7 @@
 
     function deploy_url$1(study_id)
     {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/deploy");
+        return (baseUrl$1 + "/" + (encodeURIComponent(study_id)) + "/deploy");
     }
 
     var get_study_prop = function (study_id) { return fetchJson(deploy_url$1(study_id), {
@@ -9307,54 +9365,6 @@
             if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
-
-    function collaboration_url$1(study_id)
-    {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/collaboration");
-    }
-
-    function link_url(study_id)
-    {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/link");
-    }
-
-
-
-    function public_url(study_id)
-    {
-        return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/public");
-    }
-
-    var get_collaborations = function (study_id) { return fetchJson(collaboration_url$1(study_id), {
-        method: 'get'
-    }); };
-
-    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url$1(study_id), {
-        method: 'delete',
-        body: {user_id: user_id}
-    }); };
-
-
-    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url$1(study_id), {
-        method: 'post',
-        body: {user_name: user_name, permission: permission}
-    }); };
-
-
-    var add_link = function (study_id) { return fetchJson(link_url(study_id), {
-        method: 'post'
-    }); };
-
-    var revoke_link = function (study_id) { return fetchJson(link_url(study_id), {
-        method: 'delete'
-    }); };
-
-
-
-    var make_pulic = function (study_id, is_public) { return fetchJson(public_url(study_id), {
-        method: 'post',
-        body: {is_public: is_public}
-    }); };
 
     var collaborationComponent$1 = {
         controller: function controller(){

@@ -169,7 +169,7 @@ var mainComponent = {
                                 m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right',
                                         m('.btn-group.btn-group-sm',
-                                            study.is_template || study.is_public
+                                            study.is_template || study.is_public && study.permission !== 'owner'
                                                 ?
                                                 ''
                                                 :
@@ -193,7 +193,7 @@ let typeFilter = type => study => {
 };
 
 let permissionFilter = permission => study => {
-    if(permission === 'all') return !study.is_public;
+    if(permission === 'all') return !(study.is_public && study.permission !== 'owner');
     if(permission === 'public') return study.is_public;
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
     if(permission === 'template') return study.is_template;

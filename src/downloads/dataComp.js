@@ -4,9 +4,11 @@ import {get_exps, get_data} from '../study/studyModel';
 import {baseUrl} from 'modelUrls';
 
 let createMessage = {
-    controller({exps, dates, study_id, close}){
+    controller({exps, dates, study_id, versions, close}){
         let exp_id = m.prop('');
+        let version_id = m.prop('');
         let all_exps = m.prop('');
+        let all_versions = m.prop('');
         let file_format = m.prop('csv');
         let file_split = m.prop('taskName');
 
@@ -18,19 +20,21 @@ let createMessage = {
             startDate: m.prop(daysAgo(3650)),
             endDate: m.prop(new Date())
         };
+
         get_exps(study_id)
             .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id));})
+            .then(()=>all_versions(versions.map(version=>version.id)))
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {study_id, exp_id, file_format, exps, file_split, all_exps, loaded, downloaded, link, error, dates, close};
+        return {study_id, exp_id, version_id, file_format, exps, versions, file_split, all_exps, all_versions, loaded, downloaded, link, error, dates, close};
     },
-    view: ({study_id, exp_id, file_format, file_split, exps, all_exps, loaded, downloaded, link, error, dates, close}) => m('div', [
+    view: ({study_id, exp_id, version_id, file_format, file_split, exps, versions, all_exps, all_versions, loaded, downloaded, link, error, dates, close}) => m('div', [
 
         m('.card-block', [
             m('.row', [
-                m('.col-sm-5', [
+                m('.col-sm-4', [
                     m('.input-group', [
                         m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
                             m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
@@ -39,8 +43,17 @@ let createMessage = {
                         ])
                     ])
                 ]),
+                m('.col-sm-4', [
+                    m('.input-group', [
+                        m('select.c-select.form-control',{onchange: e => version_id(e.target.value)}, [
+                            m('option', {value:'', disabled:true, selected:true}, 'Select version'),
+                            versions.length<=1 ? '' : m('option', {value:all_versions()}, 'All versions'),
+                            versions.map(version=> m('option', {value:version.id}, `${version.version} (${version.state})`))
+                        ])
+                    ])
+                ]),
                 m('p',exp_id),
-                m('.col-sm-3', [
+                m('.col-sm-2', [
                     m('.input-group', [
                         m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
                             m('option', {value:'csv'}, 'csv'),
@@ -83,12 +96,12 @@ let createMessage = {
         downloaded() ? '' : m('.loader'),
         m('.text-xs-right.btn-toolbar',[
             m('a.btn.btn-secondary.btn-sm', {onclick:()=>{close(null);}}, 'Cancel'),
-            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
+            m('a.btn.btn-primary.btn-sm', {onclick:()=>{ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
         ])
     ])
 };
 
-function ask_get_data(study_id, exp_id, file_format, file_split, dates, downloaded, link, error){
+function ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error){
     error('');
     if(exp_id() =='')
         return error('Please select experiment id');
@@ -97,10 +110,10 @@ function ask_get_data(study_id, exp_id, file_format, file_split, dates, download
         exp_id(exp_id().split(','));
     downloaded(false);
 
-    return get_data(study_id, exp_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
+    return get_data(study_id, exp_id(), version_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
         .then(response => {
             downloaded(true);
-            var file_data = response.data_file;
+            const file_data = response.data_file;
             if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
             link(`${baseUrl}/download?path=${file_data}`, file_data);
         })

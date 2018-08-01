@@ -35,9 +35,9 @@ export let create_study = body => fetchJson(baseUrl, { method: 'post', body });
 
 export let get_exps = (study_id) => fetchJson(get_exps_url(study_id));
 
-export let get_data = (study_id, exp_id, file_format, file_split, start_date, end_date) => fetchJson(get_exps_url(study_id), {
+export let get_data = (study_id, exp_id, version_id, file_format, file_split, start_date, end_date) => fetchJson(get_exps_url(study_id), {
     method: 'post',
-    body: {exp_id, file_format, file_split, start_date, end_date}
+    body: {exp_id, version_id, file_format, file_split, start_date, end_date}
 })
 ;
 

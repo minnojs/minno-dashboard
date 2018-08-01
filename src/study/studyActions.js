@@ -7,6 +7,7 @@ import createMessage from '../downloads/dataComp';
 
 
 import {update_tags_in_study} from '../tags/tagsModel';
+import {make_pulic} from "./sharing/sharingModel";
 
 export let do_create = (type, studies) => {
     let study_name = m.prop('');
@@ -69,14 +70,35 @@ export let do_data = (study) => e => {
     e.preventDefault();
     // let exps = get_exps[]);
     // console.log(exps);
+
     let study_id = study.id;
+    let versions = study.versions;
     let exps = m.prop([]);
     let tags = m.prop([]);
     let dates = m.prop();
 
     let close = messages.close;
-    messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id, close})})
+    messages.custom({header:'Data download', content: createMessage({tags, exps, dates, study_id, versions, close})})
         .then(m.redraw);
+};
+
+
+export let do_make_public = (study) => e =>
+{
+    e.preventDefault();
+    let error = m.prop('');
+    return messages.confirm({okText: ['Yes, make ', !study.is_public ? 'public' : 'private'], cancelText: ['No, keep ', !study.is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', !study.is_public
+            ?
+            'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+            :
+            'Making the study private will hide its files from everyone but you.'),
+            m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
+        .then(response => {
+            if (response) make_pulic(study.id, !study.is_public)
+                .then(study.is_public = !study.is_public)
+                .then(m.redraw);
+        });
+
 };
 
 

@@ -1,4 +1,4 @@
-import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url} from './studyActions';
+import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
 function edit_permission(study){
     return study.permission !== 'read only';
@@ -33,6 +33,8 @@ const settings = {
     // 'studyChangeRequest':[],
     // 'studyRemoval':[],
     // 'sharing':[],
+    'public':[],
+    // 'unpublic':[],
     'copyUrl':[]
 };
 
@@ -93,6 +95,13 @@ const settings_hash = {
         onmousedown: do_publish,
         class: 'fa-cloud-upload'
     }},
+
+    public: {text: 'Make public / private', config: {
+            permission: edit_permission,
+            onmousedown: do_make_public,
+            class: 'fa-globe'
+        }},
+
     unlock: {text: 'Unlock Study',
         config: {
             permission: edit_permission,
