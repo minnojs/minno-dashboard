@@ -78,7 +78,7 @@ let layout = route => {
         },
         view(ctrl){
 
-            var settings = {
+            const settings = {
                 'studies':[],
                 // 'data':['downloads', 'downloadsAccess', 'statistics'],
                 // 'pool':[],
@@ -87,7 +87,7 @@ let layout = route => {
             };
 
 
-            var settings_hash = {
+            const settings_hash = {
                 'studies':{text: 'Studies', href:'/studies', sub:[]},
                 'data':{text: 'Data', href:false,
                     subs: {

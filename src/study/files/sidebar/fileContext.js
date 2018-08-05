@@ -48,7 +48,7 @@ let fileContext = (file, study) => {
                         {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
                         {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
                         { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}/${version_id}`, text:'Play this task'},
-                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`, true)}
+                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(getAbsoluteUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`), true)}
                     ]},
 
             //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
@@ -62,6 +62,14 @@ let fileContext = (file, study) => {
     }
 
     return contextMenu.open(menu);
+
+    function getAbsoluteUrl(url) {
+        var a = document.createElement('a');
+        a.href=url;
+        return a.href;
+    }
+
+
 
     function activateWizard(route){
         return () => m.route(`/editor/${study.id}/wizard/` + route);
