@@ -1,7 +1,7 @@
 import {fetchJson} from 'utils/modelHelpers';
 import {baseUrl} from 'modelUrls';
 
-const add_userUrl = `${baseUrl}/add_user`;
+const add_userUrl = `${baseUrl}/users/add_user`;
 
 let added = false;
 

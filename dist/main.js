@@ -8627,7 +8627,7 @@
         }
     };
 
-    var add_userUrl = baseUrl + "/add_user";
+    var add_userUrl = baseUrl + "/users/add_user";
 
     var add = function (username, first_name , last_name, email, iscu) { return fetchJson(add_userUrl, {
         method: 'post',
@@ -8981,6 +8981,7 @@
             !error() ? '' : m('p.alert.alert-danger', error())])
         })
         .then(function (response) {
+            console.log(ctrl.dbx_auth_link());
             if (response)
                 window.location = ctrl.dbx_auth_link();
         });
@@ -9082,6 +9083,7 @@
                 .then(function (response) {
                     ctrl.is_dbx_synchronized(response.is_synchronized);
                     ctrl.dbx_auth_link(response.auth_link);
+                    console.log()
                 })
                 .catch(function (response) {
                     ctrl.synchronization_error(response.message);
