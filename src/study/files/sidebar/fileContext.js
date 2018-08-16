@@ -45,8 +45,8 @@ let fileContext = (file, study) => {
 
             !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
                     :  {icon:'fa-desktop', text:'Experiment options', menu: [
-                        {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
-                        {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
+                        {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
+                        {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
                         { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}/${version_id}`, text:'Play this task'},
                         {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(getAbsoluteUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`), true)}
                     ]},

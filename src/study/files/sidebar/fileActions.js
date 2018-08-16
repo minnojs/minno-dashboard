@@ -91,12 +91,13 @@ export let make_experiment = (file, study) => () => {
 };
 
 export let update_experiment = (file, study) => () => {
-    let descriptive_id = m.prop('');
+    let descriptive_id = m.prop(file.exp_data.descriptive_id);
+    console.log({file: file});
     let error = m.prop('');
     return messages.confirm({
         header:'New Name',
         content: m('div', [
-            m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
+            m('input.form-control',  {placeholder: 'Enter new descriptive id', value: descriptive_id(), onchange: m.withAttr('value', descriptive_id)}),
             !error() ? '' : m('p.alert.alert-danger', error())
         ])}).then(response => response && study.update_experiment(file, descriptive_id()))
         .then(()=>{file.exp_data.descriptive_id=descriptive_id; m.redraw();});

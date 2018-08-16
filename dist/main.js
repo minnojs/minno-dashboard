@@ -4144,12 +4144,13 @@
     }; };
 
     var update_experiment = function (file, study) { return function () {
-        var descriptive_id = m.prop('');
+        var descriptive_id = m.prop(file.exp_data.descriptive_id);
+        console.log({file: file});
         var error = m.prop('');
         return messages.confirm({
             header:'New Name',
             content: m('div', [
-                m('input.form-control',  {placeholder: 'Enter new descriptive id', onchange: m.withAttr('value', descriptive_id)}),
+                m('input.form-control',  {placeholder: 'Enter new descriptive id', value: descriptive_id(), onchange: m.withAttr('value', descriptive_id)}),
                 !error() ? '' : m('p.alert.alert-danger', error())
             ])}).then(function (response) { return response && study.update_experiment(file, descriptive_id()); })
             .then(function (){file.exp_data.descriptive_id=descriptive_id; m.redraw();});
@@ -6078,8 +6079,8 @@
 
                 !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
                         :  {icon:'fa-desktop', text:'Experiment options', menu: [
-                            {icon:'fa-exchange', text:'Rename', action: update_experiment(file,study), disabled: isReadonly },
-                            {icon:'fa-close', text:'Delete', action: delete_experiment(file, study), disabled: isReadonly },
+                            {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
+                            {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
                             { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
                             {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(getAbsoluteUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id)), true)}
                         ]},
