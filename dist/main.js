@@ -252,14 +252,6 @@
         } 
     };
 
-
-    /* eslint-disable */
-
-    // ref: http://stackoverflow.com/a/1293163/2343
-    // This will parse a delimited string into an array of
-    // arrays. The default delimiter is the comma, but this
-    // can be overriden in the second argument.
-
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -581,6 +573,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1600,6 +1601,10 @@
         return classes.substr(1);
     }
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1751,6 +1756,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4139,8 +4148,6 @@
                 m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
                 !error() ? '' : m('p.alert.alert-danger', error())
             ])}).then(function (response) { return response && study.make_experiment(file, descriptive_id()).then(function (){ return m.redraw(); }); });
-
-
     }; };
 
     var update_experiment = function (file, study) { return function () {
@@ -5914,6 +5921,21 @@
         } 
     };
 
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
+
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5975,6 +5997,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6179,6 +6203,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6461,6 +6486,16 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6696,8 +6731,8 @@
             };
 
             get_exps(study_id)
-                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; }));})
-                .then(function (){ return all_versions(versions.map(function (version){ return version.id; })); })
+                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; })); exp_id(all_exps());})
+                .then(function (){all_versions(versions.map(function (version){ return version.id; })); version_id(all_versions())})
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
@@ -6728,8 +6763,7 @@
                     m('.col-sm-4', [
                         m('.input-group', [
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                                m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
-                                exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
+                                exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
                                 exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
                             ])
                         ])
@@ -6737,8 +6771,7 @@
                     m('.col-sm-4', [
                         m('.input-group', [
                             m('select.c-select.form-control',{onchange: function (e) { return version_id(e.target.value); }}, [
-                                m('option', {value:'', disabled:true, selected:true}, 'Select version'),
-                                versions.length<=1 ? '' : m('option', {value:all_versions()}, 'All versions'),
+                                versions.length<=1 ? '' : m('option', {selected:true, value:all_versions()}, 'All versions'),
                                 versions.map(function (version){ return m('option', {value:version.id}, ((version.version) + " (" + (version.state) + ")")); })
                             ])
                         ])
@@ -6804,12 +6837,12 @@
 
         return get_data(study_id, exp_id(), version_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
             .then(function (response) {
-                downloaded(true);
                 var file_data = response.data_file;
                 if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
                 link((baseUrl + "/download?path=" + file_data), file_data);
             })
             .catch(error)
+            .then(function (){ return downloaded(true); })
             .then(m.redraw);
     }
 

@@ -22,8 +22,8 @@ let createMessage = {
         };
 
         get_exps(study_id)
-            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id));})
-            .then(()=>all_versions(versions.map(version=>version.id)))
+            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id)); exp_id(all_exps());})
+            .then(()=> {all_versions(versions.map(version=>version.id)); version_id(all_versions())})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
@@ -37,8 +37,7 @@ let createMessage = {
                 m('.col-sm-4', [
                     m('.input-group', [
                         m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
-                            m('option', {value:'', disabled:true, selected:true}, 'Select experiment'),
-                            exps().length<=1 ? '' : m('option', {value:all_exps()}, 'All experiments'),
+                            exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
                             exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                         ])
                     ])
@@ -46,8 +45,7 @@ let createMessage = {
                 m('.col-sm-4', [
                     m('.input-group', [
                         m('select.c-select.form-control',{onchange: e => version_id(e.target.value)}, [
-                            m('option', {value:'', disabled:true, selected:true}, 'Select version'),
-                            versions.length<=1 ? '' : m('option', {value:all_versions()}, 'All versions'),
+                            versions.length<=1 ? '' : m('option', {selected:true, value:all_versions()}, 'All versions'),
                             versions.map(version=> m('option', {value:version.id}, `${version.version} (${version.state})`))
                         ])
                     ])
@@ -112,12 +110,12 @@ function ask_get_data(study_id, exp_id, version_id, file_format, file_split, dat
 
     return get_data(study_id, exp_id(), version_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
         .then(response => {
-            downloaded(true);
             const file_data = response.data_file;
             if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
             link(`${baseUrl}/download?path=${file_data}`, file_data);
         })
         .catch(error)
+        .then(()=>downloaded(true))
         .then(m.redraw);
 }
 

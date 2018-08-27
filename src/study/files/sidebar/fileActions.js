@@ -86,8 +86,6 @@ export let make_experiment = (file, study) => () => {
             m('input.form-control',  {placeholder: 'Enter Descriptive Id', onchange: m.withAttr('value', descriptive_id)}),
             !error() ? '' : m('p.alert.alert-danger', error())
         ])}).then(response => response && study.make_experiment(file, descriptive_id()).then(()=>m.redraw()));
-
-
 };
 
 export let update_experiment = (file, study) => () => {
