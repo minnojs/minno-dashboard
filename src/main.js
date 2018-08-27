@@ -2,7 +2,7 @@ import 'utils/polyfills';
 import routes from './routes';
 import layoutWrapper from './layoutWrapper';
 
-let wrappedRoutes = mapObject(routes, layoutWrapper);
+const wrappedRoutes = mapObject(routes, layoutWrapper);
 m.route(document.body, '/studies', wrappedRoutes);
 
 /**

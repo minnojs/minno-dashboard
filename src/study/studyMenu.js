@@ -1,8 +1,9 @@
 import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
 function edit_permission(study){
-    return study.permission !== 'read only';
+    return study.permission !== 'read only' && !study.isReadonly;
 }
+
 function lock_permission(study){
     return study.is_locked !==true;
 }
@@ -41,6 +42,7 @@ const settings = {
 const settings_hash = {
     tags: {text: 'Tags',
         config: {
+            permission: edit_permission,
             onmousedown: do_tags,
             class: 'fa-tags'
         }},

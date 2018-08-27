@@ -186,9 +186,9 @@ export let do_lock = (study, callback) => e => {
 
     .then(response => response && lock());
 
-    let lock= () => lock_study(study.id, !study.is_locked)
-        .then(study.is_locked = !study.is_locked)
-        .then(study.isReadonly = study.is_locked)
+    const lock= () => lock_study(study.id, !study.is_locked)
+        .then(() => study.is_locked = !study.is_locked)
+        .then(() => study.isReadonly = study.is_locked)
         .then(callback)
 
         .catch(e => {

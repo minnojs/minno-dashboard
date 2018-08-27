@@ -109,7 +109,8 @@ var mainComponent = {
                             m('option', {value:'all'}, 'Show all my studies'),
                             m('option', {value:'owner'}, 'Show only studies I created'),
                             m('option', {value:'collaboration'}, 'Show only studies shared with me'),
-                            m('option', {value:'public'}, 'Show public studies')
+                            m('option', {value:'public'}, 'Show public studies'),
+                            m('option', {value:'bank'}, 'Show study bank studies')
                         ])
                     ])
                 ])
@@ -143,19 +144,23 @@ var mainComponent = {
                         .filter(study=>!study.deleted)
                         .map(study => m('a', {href: m.route() != '/studies' ? `/translate/${study.id}` : `/editor/${study.id}`,config:routeConfig, key: study.id}, [
                             m('.row.study-row', [
-                                m('.col-sm-3', [
+                                m('.col-sm-5', [
                                     m('.study-text', [
                                         m('i.fa.fa-fw.owner-icon', {
                                             class: classNames({
                                                 'fa-lock':  study.is_locked,
                                                 'fa-globe': study.is_public,
                                                 'fa-flag':  study.is_template,
+                                                'fa-university':  study.is_bank,
                                                 'fa-users': !study.is_public && study.permission !== 'owner'
                                             }),
-                                            title: classNames({
-                                                'Public' : study.is_public,
-                                                'Collaboration' : !study.is_public && study.permission !== 'owner'
-                                            })
+                                            title: study.is_public
+                                                ? study.is_bank
+                                                    ? 'Bank'
+                                                    : 'Public'
+                                                : study.permission === 'owner'
+                                                    ? ''
+                                                    : 'Collaboration'
                                         }),
                                         study.name
                                     ])
@@ -197,6 +202,7 @@ let permissionFilter = permission => study => {
     if(permission === 'public') return study.is_public;
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
     if(permission === 'template') return study.is_template;
+    if(permission === 'bank') return study.is_bank;
     return study.permission === permission;
 };
 

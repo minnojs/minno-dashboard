@@ -548,6 +548,17 @@ select.c-select {
     cursor: col-resize;
     background: #2882b5; }
 
+.dynamic-elipsis {
+  width: 350px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.dynamic-elipsis:hover {
+  white-space: normal;
+  position: absolute;
+  background: gray; }
+
 th[data-sort-by]:before {
   content: "\f0dc";
   font-family: FontAwesome;

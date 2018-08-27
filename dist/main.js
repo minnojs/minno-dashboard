@@ -252,6 +252,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -573,15 +581,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1601,10 +1600,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1756,10 +1751,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -4047,7 +4038,9 @@
 
             m('select.form-control', {value:new_study_id(), onchange: m.withAttr('value',new_study_id)}, [
                 m('option',{value:'', disabled: true}, 'Select Study'),
-                studies().filter(function (study) { return !study.is_locked && !study.is_public && study.permission!=='read only' && study.id!=study_id(); }).map(function (study) { return m('option',{value:study.id, selected: new_study_id() === study.id}, study.name); })
+                studies()
+                    .filter(function (study) { return !study.is_locked && !study.is_public && !study.isReadonly && study.permission!=='read only' && study.id!=study_id(); })
+                    .map(function (study) { return m('option',{value:study.id, selected: new_study_id() === study.id}, study.name); })
             ])
         ]);
     }
@@ -5921,21 +5914,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -5997,8 +5975,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6203,7 +6179,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6486,16 +6461,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -7093,8 +7058,8 @@
         .then(function (response) { return response && lock(); }); };
 
         var lock= function () { return lock_study(study.id, !study.is_locked)
-            .then(study.is_locked = !study.is_locked)
-            .then(study.isReadonly = study.is_locked)
+            .then(function () { return study.is_locked = !study.is_locked; })
+            .then(function () { return study.isReadonly = study.is_locked; })
             .then(callback)
 
             .catch(function (e) {
@@ -7193,8 +7158,9 @@
     }
 
     function edit_permission(study){
-        return study.permission !== 'read only';
+        return study.permission !== 'read only' && !study.isReadonly;
     }
+
     function lock_permission(study){
         return study.is_locked !==true;
     }
@@ -7233,6 +7199,7 @@
     var settings_hash = {
         tags: {text: 'Tags',
             config: {
+                permission: edit_permission,
                 onmousedown: do_tags,
                 class: 'fa-tags'
             }},
@@ -7869,7 +7836,8 @@
                                 m('option', {value:'all'}, 'Show all my studies'),
                                 m('option', {value:'owner'}, 'Show only studies I created'),
                                 m('option', {value:'collaboration'}, 'Show only studies shared with me'),
-                                m('option', {value:'public'}, 'Show public studies')
+                                m('option', {value:'public'}, 'Show public studies'),
+                                m('option', {value:'bank'}, 'Show study bank studies')
                             ])
                         ])
                     ])
@@ -7903,19 +7871,23 @@
                             .filter(function (study){ return !study.deleted; })
                             .map(function (study) { return m('a', {href: m.route() != '/studies' ? ("/translate/" + (study.id)) : ("/editor/" + (study.id)),config:routeConfig, key: study.id}, [
                                 m('.row.study-row', [
-                                    m('.col-sm-3', [
+                                    m('.col-sm-5', [
                                         m('.study-text', [
                                             m('i.fa.fa-fw.owner-icon', {
                                                 class: classNames({
                                                     'fa-lock':  study.is_locked,
                                                     'fa-globe': study.is_public,
                                                     'fa-flag':  study.is_template,
+                                                    'fa-university':  study.is_bank,
                                                     'fa-users': !study.is_public && study.permission !== 'owner'
                                                 }),
-                                                title: classNames({
-                                                    'Public' : study.is_public,
-                                                    'Collaboration' : !study.is_public && study.permission !== 'owner'
-                                                })
+                                                title: study.is_public
+                                                    ? study.is_bank
+                                                        ? 'Bank'
+                                                        : 'Public'
+                                                    : study.permission === 'owner'
+                                                        ? ''
+                                                        : 'Collaboration'
                                             }),
                                             study.name
                                         ])
@@ -7957,6 +7929,7 @@
         if(permission === 'public') return study.is_public;
         if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
         if(permission === 'template') return study.is_template;
+        if(permission === 'bank') return study.is_bank;
         return study.permission === permission;
     }; };
 

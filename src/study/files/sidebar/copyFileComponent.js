@@ -22,8 +22,9 @@ let copyFileComponent = {
 
         m('select.form-control', {value:new_study_id(), onchange: m.withAttr('value',new_study_id)}, [
             m('option',{value:'', disabled: true}, 'Select Study'),
-            studies().filter(study => !study.is_locked && !study.is_public && study.permission!=='read only' && study.id!=study_id()).map(study =>
-            m('option',{value:study.id, selected: new_study_id() === study.id}, study.name))
+            studies()
+                .filter(study => !study.is_locked && !study.is_public && !study.isReadonly && study.permission!=='read only' && study.id!=study_id())
+                .map(study => m('option',{value:study.id, selected: new_study_id() === study.id}, study.name))
         ])
     ])
 };
