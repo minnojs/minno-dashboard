@@ -7157,25 +7157,10 @@
         });
     }
 
-    function edit_permission(study){
-        return study.permission !== 'read only' && !study.isReadonly;
-    }
-
-    function lock_permission(study){
-        return study.is_locked !==true;
-    }
-
-    function unlock_permission(study){
-        return study.is_locked ===true;
-    }
-
-    function publish_permission(study){
-        return study.is_published !==true;
-    }
-
-    function unpublish_permission(study){
-        return study.is_published ===true;
-    }
+    var can_edit = function (study) { return !study.isReadOnly && study.permission !== 'read only'; };
+    var is_locked = function (study) { return study.is_locked; };
+    var is_published = function (study) { return study.is_published; };
+    var not = function (fn) { return function (study) { return !fn(study); }; };
 
     var settings = {
         'tags':[],
@@ -7199,7 +7184,7 @@
     var settings_hash = {
         tags: {text: 'Tags',
             config: {
-                permission: edit_permission,
+                display: [can_edit],
                 onmousedown: do_tags,
                 class: 'fa-tags'
             }},
@@ -7210,85 +7195,75 @@
             }},
         delete: {text: 'Delete Study',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 onmousedown: do_delete,
                 class: 'fa-remove'
             }},
         rename: {text: 'Rename Study',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 onmousedown: do_rename,
                 class: 'fa-exchange'
             }},
         duplicate: {text: 'Duplicate study',
             config: {
-                permission: edit_permission,
                 onmousedown: do_duplicate,
                 class: 'fa-clone'
             }},
         lock: {text: 'Lock Study',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 onmousedown: do_lock,
                 class: 'fa-lock'
             }},
         publish: {text: 'Publish Study',
             config: {
-                permission: edit_permission,
-                lock: publish_permission,
+                display: [can_edit, not(is_locked), not(is_published)],
                 onmousedown: do_publish,
                 class: 'fa-cloud-upload'
             }},
         unpublish: {text: 'Unpublish Study', config: {
-            permission: edit_permission,
-            lock: unpublish_permission,
+            display: [can_edit, is_published],
             onmousedown: do_publish,
             class: 'fa-cloud-upload'
         }},
-        republish: {text: 'Unpublish Study', config: {
-            permission: edit_permission,
-            lock: unpublish_permission,
+
+        republish: {text: 'Republish Study', config: {
+            display: [can_edit, not(is_published)],
             onmousedown: do_publish,
             class: 'fa-cloud-upload'
         }},
 
         public: {text: 'Make public / private', config: {
-                permission: edit_permission,
-                onmousedown: do_make_public,
-                class: 'fa-globe'
-            }},
+            display: [can_edit, not(is_locked)],
+            onmousedown: do_make_public,
+            class: 'fa-globe'
+        }},
 
         unlock: {text: 'Unlock Study',
             config: {
-                permission: edit_permission,
-                lock: unlock_permission,
+                display: [can_edit, is_locked],
                 onmousedown: do_lock,
                 class: 'fa-unlock'
             }},
         deploy: {text: 'Request Deploy',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 href: "/deploy/"
             }},
         studyChangeRequest: {text: 'Request Change',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 href: "/studyChangeRequest/"
             }},
         studyRemoval: {text: 'Request Removal',
             config: {
-                permission: edit_permission,
-                lock: lock_permission,
+                display: [can_edit, not(is_locked)],
                 href: "/studyRemoval/"
             }},
         sharing: {text: 'Sharing',
             config: {
-                permission: edit_permission,
+                display: [can_edit],
                 href: "/sharing/",
                 class: 'fa-user-plus'
             }},
@@ -7300,20 +7275,21 @@
     };
 
 
-    var draw_menu = function (study) {
-        return Object.keys(settings).map(function (comp){ return settings_hash[comp].config.permission && !settings_hash[comp].config.permission(study) ? '' :
-                settings_hash[comp].config.lock && !settings_hash[comp].config.lock(study) ? '' :
-                    settings_hash[comp].config.href
-                        ?
-                        m('a.dropdown-item',
-                            { href: settings_hash[comp].config.href+study.id, config: m.route },
-                            settings_hash[comp].text)
-                        :
-                        m('a.dropdown-item.dropdown-onclick', {onmousedown: settings_hash[comp].config.onmousedown(study)}, [
-                            m('i.fa.fa-fw.'+settings_hash[comp].config.class),
-                            settings_hash[comp].text
-                        ]); });
-    };
+    var draw_menu = function (study) { return Object.keys(settings)
+        .map(function (comp) {
+            var config = settings_hash[comp].config;
+            return !should_display(config, study) ? '' 
+                : settings_hash[comp].config.href
+                    ?  m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
+                    : m('a.dropdown-item.dropdown-onclick', {onmousedown: config.onmousedown(study)}, [
+                        m('i.fa.fa-fw.'+config.class),
+                        settings_hash[comp].text
+                    ])
+        }); };
+
+    function should_display(config, study){
+        return !config.display || config.display.every(function (fn) { return fn(study); });
+    }
 
     var sidebarButtons = function (ref) {
         var study = ref.study;

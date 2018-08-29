@@ -1,24 +1,10 @@
 import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
-function edit_permission(study){
-    return study.permission !== 'read only' && !study.isReadonly;
-}
-
-function lock_permission(study){
-    return study.is_locked !==true;
-}
-
-function unlock_permission(study){
-    return study.is_locked ===true;
-}
-
-function publish_permission(study){
-    return study.is_published !==true;
-}
-
-function unpublish_permission(study){
-    return study.is_published ===true;
-}
+const always = () => true;
+const can_edit = study => !study.isReadOnly && study.permission !== 'read only';
+const is_locked = study => study.is_locked;
+const is_published = study => study.is_published;
+const not = fn => study => !fn(study);
 
 const settings = {
     'tags':[],
@@ -42,7 +28,7 @@ const settings = {
 const settings_hash = {
     tags: {text: 'Tags',
         config: {
-            permission: edit_permission,
+            display: [can_edit],
             onmousedown: do_tags,
             class: 'fa-tags'
         }},
@@ -53,85 +39,75 @@ const settings_hash = {
         }},
     delete: {text: 'Delete Study',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             onmousedown: do_delete,
             class: 'fa-remove'
         }},
     rename: {text: 'Rename Study',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             onmousedown: do_rename,
             class: 'fa-exchange'
         }},
     duplicate: {text: 'Duplicate study',
         config: {
-            permission: edit_permission,
             onmousedown: do_duplicate,
             class: 'fa-clone'
         }},
     lock: {text: 'Lock Study',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             onmousedown: do_lock,
             class: 'fa-lock'
         }},
     publish: {text: 'Publish Study',
         config: {
-            permission: edit_permission,
-            lock: publish_permission,
+            display: [can_edit, not(is_locked), not(is_published)],
             onmousedown: do_publish,
             class: 'fa-cloud-upload'
         }},
     unpublish: {text: 'Unpublish Study', config: {
-        permission: edit_permission,
-        lock: unpublish_permission,
+        display: [can_edit, is_published],
         onmousedown: do_publish,
         class: 'fa-cloud-upload'
     }},
-    republish: {text: 'Unpublish Study', config: {
-        permission: edit_permission,
-        lock: unpublish_permission,
+
+    republish: {text: 'Republish Study', config: {
+        display: [can_edit, not(is_published)],
         onmousedown: do_publish,
         class: 'fa-cloud-upload'
     }},
 
     public: {text: 'Make public / private', config: {
-            permission: edit_permission,
-            onmousedown: do_make_public,
-            class: 'fa-globe'
-        }},
+        display: [can_edit, not(is_locked)],
+        onmousedown: do_make_public,
+        class: 'fa-globe'
+    }},
 
     unlock: {text: 'Unlock Study',
         config: {
-            permission: edit_permission,
-            lock: unlock_permission,
+            display: [can_edit, is_locked],
             onmousedown: do_lock,
             class: 'fa-unlock'
         }},
     deploy: {text: 'Request Deploy',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             href: `/deploy/`
         }},
     studyChangeRequest: {text: 'Request Change',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             href: `/studyChangeRequest/`
         }},
     studyRemoval: {text: 'Request Removal',
         config: {
-            permission: edit_permission,
-            lock: lock_permission,
+            display: [can_edit, not(is_locked)],
             href: `/studyRemoval/`
         }},
     sharing: {text: 'Sharing',
         config: {
-            permission: edit_permission,
+            display: [can_edit],
             href: `/sharing/`,
             class: 'fa-user-plus'
         }},
@@ -143,19 +119,18 @@ const settings_hash = {
 };
 
 
-export let draw_menu = (study) => {
-    return Object.keys(settings).map(comp=>
-        settings_hash[comp].config.permission && !settings_hash[comp].config.permission(study) ? '' :
-            settings_hash[comp].config.lock && !settings_hash[comp].config.lock(study) ? '' :
-                settings_hash[comp].config.href
-                    ?
-                    m('a.dropdown-item',
-                        { href: settings_hash[comp].config.href+study.id, config: m.route },
-                        settings_hash[comp].text)
-                    :
-                    m('a.dropdown-item.dropdown-onclick', {onmousedown: settings_hash[comp].config.onmousedown(study)}, [
-                        m('i.fa.fa-fw.'+settings_hash[comp].config.class),
-                        settings_hash[comp].text
-                    ]));
-};
+export const draw_menu = study => Object.keys(settings)
+    .map(comp => {
+        const config = settings_hash[comp].config;
+        return !should_display(config, study) ? '' 
+            : settings_hash[comp].config.href
+                ?  m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
+                : m('a.dropdown-item.dropdown-onclick', {onmousedown: config.onmousedown(study)}, [
+                    m('i.fa.fa-fw.'+config.class),
+                    settings_hash[comp].text
+                ])
+    });
 
+function should_display(config, study){
+    return !config.display || config.display.every(fn => fn(study));
+}
