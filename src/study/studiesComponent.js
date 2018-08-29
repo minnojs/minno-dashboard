@@ -9,10 +9,10 @@ import {draw_menu} from './studyMenu';
 import classNames from 'utils/classNames';
 import formatDate from 'utils/formatDate';
 
-var mainComponent = {
+const mainComponent = {
 
     controller: function(){
-        var ctrl = {
+        const ctrl = {
             studies:m.prop([]),
             have_templates:m.prop(false),
             tags:m.prop([]),
@@ -119,13 +119,13 @@ var mainComponent = {
             m('.card.studies-card', [
                 m('.card-block', [
                     m('.row', {key: '@@notid@@'}, [
-                        m('.col-sm-6', [
+                        m('.col-sm-5', [
                             m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
                                 m('strong', 'Study Name '),
                                 m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
                             ])
                         ]),
-                        m('.col-sm-2', [
+                        m('.col-sm-3', [
                             m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
                                 m('strong', ' Last Changed '),
                                 m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
@@ -162,14 +162,18 @@ var mainComponent = {
                                                     ? ''
                                                     : 'Collaboration'
                                         }),
-                                        study.name
+                                        m('strong', study.name)
+                                    ]),
+                                    !study.description ? '' : m('.study-description', [
+                                        study.description,
+                                        m('.study-tip', study.description)
                                     ])
                                 ]),
                                 m('.col-sm-3', [
-                                    study.tags.map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
+                                    m('.study-text', formatDate(new Date(study.last_modified)))
                                 ]),
                                 m('.col-sm-3', [
-                                    m('.study-text', formatDate(new Date(study.last_modified)))
+                                    study.tags.map(tag=> m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text))
                                 ]),
                                 m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right',
@@ -212,12 +216,9 @@ let tagFilter = tags => study => {
     return study.tags.map(tag=>tag.text).some(tag => tags.indexOf(tag) != -1);
 };
 
-let uesedFilter = () => tag => {
-    return tag.used;
-};
+let uesedFilter = () => tag => tag.used;
 
-
-let searchFilter = searchTerm => study => !study.name || study.name.match(new RegExp(searchTerm, 'i'));
+let searchFilter = searchTerm => study => !study.name || study.name.match(new RegExp(searchTerm, 'i')) || (study.description && study.description.match(new RegExp(searchTerm, 'i')));
 
 function routeConfig(el, isInit, ctx, vdom) {
 

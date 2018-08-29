@@ -139,12 +139,12 @@ a.no-decoration {
   padding: 0.75rem 0.75rem 0 0.75rem; }
 
 html, body, .dasboard-root {
-  height: 100%;
-  overflow: hidden; }
+  height: 100%; }
 
 .dashboard-root {
   display: flex;
-  flex-direction: column; }
+  flex-direction: column;
+  overflow: hidden; }
 
 .navbar {
   flex: 0 1 54px;
@@ -473,6 +473,8 @@ select.c-select {
       background: #4C93BE; }
       .studies .study-row:hover .study-text {
         color: #fff; }
+      .studies .study-row:hover .study-description {
+        color: #D2EAF9; }
 
 .study .col-md-10, .study .col-md-2 {
   padding-left: 0;
@@ -548,16 +550,49 @@ select.c-select {
     cursor: col-resize;
     background: #2882b5; }
 
-.dynamic-elipsis {
-  width: 350px;
+.study-description {
+  color: #818a91;
+  font-size: 80%;
+  font-weight: normal;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; }
+  text-overflow: ellipsis;
+  padding-left: 2em;
+  margin-top: -10px; }
+  .study-description:hover {
+    color: #D2EAF9;
+    cursor: help; }
 
-.dynamic-elipsis:hover {
+.study-tip {
+  display: none; }
+
+.study-description:hover .study-tip {
+  display: block;
   white-space: normal;
   position: absolute;
-  background: gray; }
+  top: calc(100% + 10px);
+  left: 2em;
+  width: 230px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5em;
+  padding: 0.5em 0.8em;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  pointer-events: none;
+  /* This prevents the box from apearing when hovered. */
+  z-index: 2; }
+  .study-description:hover .study-tip::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border: solid transparent 5px;
+    border-bottom-color: rgba(0, 0, 0, 0.8);
+    transition: opacity 250ms, top 250ms; }
 
 th[data-sort-by]:before {
   content: "\f0dc";

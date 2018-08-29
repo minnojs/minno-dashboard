@@ -26,7 +26,8 @@
         }
 
         &:hover {
-            .study-text {color:#fff}
+            .study-text {color:#fff;}
+            .study-description {color:#D2EAF9;}
             background: $color-primary-3;
         }
     }
@@ -122,4 +123,46 @@
        cursor: col-resize;	
        background: $navbar-background;
    }
+}
+
+.study-description {
+    color: #818a91;
+    font-size: 80%;
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left:2em;
+    margin-top:-10px;
+
+    &:hover{ color: #D2EAF9; cursor: help; }
+}
+
+.study-tip {display:none}
+.study-description:hover .study-tip {
+    display:block;
+    white-space: normal;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 2em;
+    width: 230px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5em;
+    padding: 0.5em 0.8em;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    pointer-events: none; /* This prevents the box from apearing when hovered. */
+    z-index: 2;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: -10px; left: 20px;
+        width: 0; height: 0;
+        border: solid transparent 5px;
+        border-bottom-color: rgba(0,0,0,0.8);
+        transition: opacity 250ms, top 250ms;
+    }
 }

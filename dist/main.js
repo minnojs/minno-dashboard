@@ -7822,13 +7822,13 @@
                 m('.card.studies-card', [
                     m('.card-block', [
                         m('.row', {key: '@@notid@@'}, [
-                            m('.col-sm-6', [
+                            m('.col-sm-5', [
                                 m('.form-control-static',{onclick:sort_studies_by_name, style:'cursor:pointer'},[
                                     m('strong', 'Study Name '),
                                     m('i.fa.fa-sort', {style: {color: order_by_name ? 'black' : 'grey'}})
                                 ])
                             ]),
-                            m('.col-sm-2', [
+                            m('.col-sm-3', [
                                 m('.form-control-static',{onclick:sort_studies_by_date, style:'cursor:pointer'},[
                                     m('strong', ' Last Changed '),
                                     m('i.fa.fa-sort', {style: {color: !order_by_name ? 'black' : 'grey'}})
@@ -7865,14 +7865,18 @@
                                                         ? ''
                                                         : 'Collaboration'
                                             }),
-                                            study.name
+                                            m('strong', study.name)
+                                        ]),
+                                        !study.description ? '' : m('.study-description', [
+                                            study.description,
+                                            m('.study-tip', study.description)
                                         ])
                                     ]),
                                     m('.col-sm-3', [
-                                        study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
+                                        m('.study-text', formatDate(new Date(study.last_modified)))
                                     ]),
                                     m('.col-sm-3', [
-                                        m('.study-text', formatDate(new Date(study.last_modified)))
+                                        study.tags.map(function (tag){ return m('span.study-tag',  {style: {'background-color': '#' + tag.color}}, tag.text); })
                                     ]),
                                     m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right',
@@ -7915,12 +7919,9 @@
         return study.tags.map(function (tag){ return tag.text; }).some(function (tag) { return tags.indexOf(tag) != -1; });
     }; };
 
-    var uesedFilter = function () { return function (tag) {
-        return tag.used;
-    }; };
+    var uesedFilter = function () { return function (tag) { return tag.used; }; };
 
-
-    var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')); }; };
+    var searchFilter = function (searchTerm) { return function (study) { return !study.name || study.name.match(new RegExp(searchTerm, 'i')) || (study.description && study.description.match(new RegExp(searchTerm, 'i'))); }; };
 
     function routeConfig(el, isInit, ctx, vdom) {
 
