@@ -65,6 +65,11 @@ a.no-decoration {
 .dropdown-component {
   display: inline-block; }
 
+.dropdown-menu-up {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 2px; }
+
 .btn-group > .dropdown-component {
   display: inline-block; }
   .btn-group > .dropdown-component:not(:last-child) > .btn:first-child {

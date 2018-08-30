@@ -6461,25 +6461,44 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
+
 
     var dropdownComponent = {
         controller: function controller(){
-            var isOpen = m.prop(false);
-            return {isOpen: isOpen};
+            return {
+                isOpen : m.prop(false),
+                inLowerViewport: m.prop(true)
+            }
         },
 
         view: function view(ref, ref$1){
             var isOpen = ref.isOpen;
+            var inLowerViewport = ref.inLowerViewport;
             var toggleSelector = ref$1.toggleSelector;
             var toggleContent = ref$1.toggleContent;
             var elements = ref$1.elements;
             var right = ref$1.right;
 
-            return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
-                m(toggleSelector, {onmousedown: function () {isOpen(!isOpen());}}, toggleContent), 
-                m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
+            return m('.dropdown.dropdown-component', { class: classNames({ open: isOpen()}), config: dropdownComponent.config(isOpen)}, [
+                m(toggleSelector, {onmousedown: onmousedown}, toggleContent), 
+                m('.dropdown-menu', {class: classNames({'dropdown-menu-right' :right, 'dropdown-menu-up': inLowerViewport()})}, elements)
             ]);
+
+            function onmousedown(e){
+                inLowerViewport(document.documentElement.clientHeight / 2 < e.target.getBoundingClientRect().top);
+                isOpen(!isOpen());
+            }
         },
 
         config: function (isOpen) { return function (element, isInit, ctx) {

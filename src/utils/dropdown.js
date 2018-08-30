@@ -1,3 +1,4 @@
+import classNames from './classNames';
 export default dropdown;
 
 /**
@@ -10,19 +11,27 @@ export default dropdown;
  * @param toggleContent the: content for the toggle element
  * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
  **/
-let dropdown = args => m.component(dropdownComponent, args);
+const dropdown = args => m.component(dropdownComponent, args);
 
-let dropdownComponent = {
+
+const dropdownComponent = {
     controller(){
-        let isOpen = m.prop(false);
-        return {isOpen};
+        return {
+            isOpen : m.prop(false),
+            inLowerViewport: m.prop(true)
+        }
     },
 
-    view({isOpen}, {toggleSelector, toggleContent, elements, right}){
-        return m('.dropdown.dropdown-component', {class: isOpen() ? 'open' : '', config: dropdownComponent.config(isOpen)}, [
-            m(toggleSelector, {onmousedown: () => {isOpen(!isOpen());}}, toggleContent), 
-            m('.dropdown-menu', {class: right ? 'dropdown-menu-right' : ''}, elements)
+    view({isOpen, inLowerViewport}, {toggleSelector, toggleContent, elements, right}){
+        return m('.dropdown.dropdown-component', { class: classNames({ open: isOpen()}), config: dropdownComponent.config(isOpen)}, [
+            m(toggleSelector, {onmousedown}, toggleContent), 
+            m('.dropdown-menu', {class: classNames({'dropdown-menu-right' :right, 'dropdown-menu-up': inLowerViewport()})}, elements)
         ]);
+
+        function onmousedown(e){
+            inLowerViewport(document.documentElement.clientHeight / 2 < e.target.getBoundingClientRect().top);
+            isOpen(!isOpen());
+        }
     },
 
     config: isOpen => (element, isInit, ctx) => {

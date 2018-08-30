@@ -85,6 +85,11 @@ a.no-decoration {text-decoration: none; color:inherit}
 }
 
 .dropdown-component {display: inline-block}
+.dropdown-menu-up {  
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 2px;
+}
 .btn-group > .dropdown-component {
     display: inline-block;
 
