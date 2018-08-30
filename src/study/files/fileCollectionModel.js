@@ -3,7 +3,7 @@ import fileFactory from './fileModel';
 export default studyFactory;
 import {baseUrl} from 'modelUrls';
 
-let studyPrototype = {
+const studyPrototype = {
     loaded: false,
     isUploading: false,
     apiURL(path = ''){
@@ -60,8 +60,8 @@ let studyPrototype = {
     // This is important mainly for server side clarity (don't delete or download both a folder and its content)
     // We go recurse through all the files, starting with those sitting in root (we don't have a root node, so we need to get them manually).
     getChosenFiles(){
-        let vm = this.vm;
-        let rootFiles = this.files().filter(f => f.basePath === '/');
+        const vm = this.vm;
+        const rootFiles = this.files().filter(f => f.basePath === '/');
         return getChosen(rootFiles);
 
         function getChosen(files){
@@ -127,7 +127,7 @@ let studyPrototype = {
         }
     },
 
-    uploadFiles({path, fd, files, force}){
+    uploadFiles({path, fd, force}){
         fd.append('forceUpload', +force);
         this.isUploading = true;
         m.redraw();
@@ -136,10 +136,10 @@ let studyPrototype = {
             .then(this.parseFiles.bind(this))
             .then(newfiles => {
                 let oldfiles = this.files();
-                if (force) oldfiles = oldfiles.filter(file => files.indexOf(file.path) !== -1);
+
                 return newfiles
                     .filter(newfile => !oldfiles.some(oldfile => oldfile.path == newfile.path))
-                    .map(newfile => Object.assign(Object.assign({studyId: this.id},newfile)))
+                    .map(newfile => Object.assign({studyId: this.id},newfile))
                     .map(fileFactory)
                     .forEach(this.addFile.bind(this));
             })

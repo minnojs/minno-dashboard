@@ -3714,7 +3714,6 @@
             var this$1 = this;
             var path = ref.path;
             var fd = ref.fd;
-            var files = ref.files;
             var force = ref.force;
 
             fd.append('forceUpload', +force);
@@ -3725,10 +3724,10 @@
                 .then(this.parseFiles.bind(this))
                 .then(function (newfiles) {
                     var oldfiles = this$1.files();
-                    if (force) oldfiles = oldfiles.filter(function (file) { return files.indexOf(file.path) !== -1; });
+
                     return newfiles
                         .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path == newfile.path; }); })
-                        .map(function (newfile) { return Object.assign(Object.assign({studyId: this$1.id},newfile)); })
+                        .map(function (newfile) { return Object.assign({studyId: this$1.id},newfile); })
                         .map(fileFactory)
                         .forEach(this$1.addFile.bind(this$1));
                 })
@@ -4073,7 +4072,7 @@
             if ( ref === void 0 ) ref = {force:false};
             var force = ref.force;
 
-            return study.uploadFiles({path: path, fd: fd, files: files, force: force})
+            return study.uploadFiles({path: path, fd: fd, force: force})
                 .catch(function (response) { return messages.alert({
                     header: 'Upload File',
                     content: response.message

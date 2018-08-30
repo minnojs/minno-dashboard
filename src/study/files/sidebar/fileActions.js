@@ -18,7 +18,7 @@ export const uploadFiles = (path,study) => (fd, files) => {
         .then(response => response && upload({force:true}));
 
     function upload({force} = {force:false}) {
-        return study.uploadFiles({path, fd, files, force})
+        return study.uploadFiles({path, fd, force})
             .catch(response => messages.alert({
                 header: 'Upload File',
                 content: response.message
