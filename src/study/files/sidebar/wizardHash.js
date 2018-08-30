@@ -1,6 +1,6 @@
 export default hash;
 
-let hash = {};
+const hash = {};
 
 hash.piPlayer = {
     'Empty': '/implicit/user/yba/wizards/emptypip.js',

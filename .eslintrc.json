@@ -4,10 +4,11 @@
     },
     "rules": {
     "indent": [1, 4, {"SwitchCase": 1}],
-        "quotes": [1,"single",{"allowTemplateLiterals": true,"avoidEscape": true}],
+        "quotes": [1,"single"],
         "linebreak-style": [2,"unix"],
         "semi": [1,"always"],
-        "no-console": [1]
+        "no-console": [1],
+        "no-var": [1]
     },
     "env": {
         "es6": true,
@@ -16,10 +17,10 @@
     "ecmaFeatures": {
         "modules": true
     },
-    "globals": {
-        "m" : true,
-        "require" : true,
-        "fetch" : true
-    },
+     "globals": {
+         "m" : true,
+         "require" : true,
+         "fetch" : true
+     },
     "extends": "eslint:recommended"
 }
