@@ -3721,16 +3721,16 @@
             this.isUploading = true;
             m.redraw();
 
-            return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : path))), {method:'post', body:fd})
+            return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : encodeURIComponent(path)))), {method:'post', body:fd})
                 .then(this.parseFiles.bind(this))
                 .then(function (newfiles) {
                     var oldfiles = this$1.files();
-                    if (force) oldfiles = oldfiles.filter(function (file) { return files.indexOf(file.path) != -1; });
-                    newfiles
+                    if (force) oldfiles = oldfiles.filter(function (file) { return files.indexOf(file.path) !== -1; });
+                    return newfiles
                         .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path == newfile.path; }); })
                         .map(function (newfile) { return Object.assign(Object.assign({studyId: this$1.id},newfile)); })
                         .map(fileFactory)
-                        .forEach(this$1.addFile.bind(this$1))
+                        .forEach(this$1.addFile.bind(this$1));
                 })
                 .then(this.sort.bind(this))
                 .then(function () { return this$1.isUploading = false; })
@@ -6461,16 +6461,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
 

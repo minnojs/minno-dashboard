@@ -132,16 +132,16 @@ let studyPrototype = {
         this.isUploading = true;
         m.redraw();
 
-        return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : path}`), {method:'post', body:fd})
+        return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : encodeURIComponent(path)}`), {method:'post', body:fd})
             .then(this.parseFiles.bind(this))
             .then(newfiles => {
                 let oldfiles = this.files();
-                if (force) oldfiles = oldfiles.filter(file => files.indexOf(file.path) != -1);
-                newfiles
+                if (force) oldfiles = oldfiles.filter(file => files.indexOf(file.path) !== -1);
+                return newfiles
                     .filter(newfile => !oldfiles.some(oldfile => oldfile.path == newfile.path))
                     .map(newfile => Object.assign(Object.assign({studyId: this.id},newfile)))
                     .map(fileFactory)
-                    .forEach(this.addFile.bind(this))
+                    .forEach(this.addFile.bind(this));
             })
             .then(this.sort.bind(this))
             .then(() => this.isUploading = false)

@@ -27,8 +27,8 @@ export const uploadFiles = (path,study) => (fd, files) => {
     }
 };
 
-export let moveFile = (file, study) => () => {
-    let newPath = m.prop(file.basePath);
+export const moveFile = (file, study) => () => {
+    const newPath = m.prop(file.basePath);
     messages.confirm({
         header: 'Move File',
         content: moveFileComponent({newPath, file, study})

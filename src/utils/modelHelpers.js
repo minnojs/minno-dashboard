@@ -70,7 +70,7 @@ export function fetchText(url, options){
 }
 
 export function fetchUpload(url, options){
-    let opts = Object.assign({
+    const opts = Object.assign({
         credentials: 'same-origin'
     }, options);
 
