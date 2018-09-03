@@ -41,7 +41,12 @@ export let get_data = (study_id, exp_id, version_id, file_format, file_split, st
 })
 ;
 
-export let rename_study = (study_id, study_name) => fetchJson(get_url(study_id), {
+export const update_study = (study_id, body) => fetchJson(get_url(study_id), {
+    method: 'put',
+    body
+});
+
+export const rename_study = (study_id, study_name) => fetchJson(`${get_url(study_id)}/rename`, {
     method: 'put',
     body: {study_name}
 });

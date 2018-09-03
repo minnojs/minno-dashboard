@@ -3984,7 +3984,12 @@
     }); }
     ;
 
-    var rename_study = function (study_id, study_name) { return fetchJson(get_url(study_id), {
+    var update_study = function (study_id, body) { return fetchJson(get_url(study_id), {
+        method: 'put',
+        body: body
+    }); };
+
+    var rename_study = function (study_id, study_name) { return fetchJson(((get_url(study_id)) + "/rename"), {
         method: 'put',
         body: {study_name: study_name}
     }); };
@@ -6891,6 +6896,7 @@
 
     var do_create = function (type, studies) {
         var study_name = m.prop('');
+        var description = m.prop('');
         var templates = m.prop([]);
         var template_id = m.prop('');
         var reuse_id = m.prop('');
@@ -6907,6 +6913,10 @@
                         m('label', 'Enter Study Name:'),
                         m('input.form-control',  {oninput: m.withAttr('value', study_name)})
                     ]),
+                    m('.form-group', [
+                        m('label', 'Enter Study Description:'),
+                        m('textarea.form-control',  {oninput: m.withAttr('value', description)})
+                    ]),
                     isTemplate || !isOpenServer ? '' : m('.form-group', [
                         m('label', 'Pick Study Player:'),
                         m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
@@ -6920,9 +6930,9 @@
             })
         }).then(function (response) { return response && create(); }); };
 
-        var create = function () { return create_study({study_name: study_name, study_type: study_type, type: type, template_id: template_id, reuse_id: reuse_id})
+        var create = function () { return create_study({study_name: study_name, study_type: study_type, description: description, type: type, template_id: template_id, reuse_id: reuse_id})
             .then(function (response) { return m.route(type == 'regular' ? ("/editor/" + (response.study_id)) : ("/translate/" + (response.study_id))); })
-            .catch(function (e) { 
+            .catch(function (e) {
                 error(e.message);
                 ask();
             }); };
@@ -6932,7 +6942,7 @@
     var do_tags = function (study) { return function (e) {
         e.preventDefault();
         var study_id = study.id;
-        var  filter_tags = function (){return function (tag) { return tag.changed; };};
+        var filter_tags = function (){return function (tag) { return tag.changed; };};
         var tags = m.prop([]);
         messages.confirm({header:'Tags', content: studyTagsComponent({tags: tags, study_id: study_id})})
             .then(function (response) {
@@ -6995,19 +7005,49 @@
             });
     }; };
 
+    var update_study_description = function (study) { return function (e) {
+        e.preventDefault();
+        var study_description = m.prop(study.description);
+        var error = m.prop();
+
+        var ask = function () { return messages.confirm({
+            header:'Study Description',
+            content: {
+                view: function view(){
+                    return m('div', [
+                        m('textarea.form-control',  {placeholder: 'Enter description', value: study_description(), onchange: m.withAttr('value', study_description)}),
+                        !error() ? '' : m('p.alert.alert-danger', error())
+                    ]);
+                }
+            }
+        }).then(function (response) { return response && rename(); }); };
+
+        var rename = function () { return update_study(study.id, {description:study_description()})
+            .then(function (){ return study.description=study_description(); })
+            .catch(function (e) {
+                error(e.message);
+                ask();
+            })
+            .then(m.redraw); };
+
+        ask();
+    }; };
 
     var do_rename = function (study) { return function (e) {
         e.preventDefault();
-        var study_name = m.prop('');
+        var study_name = m.prop(study.name);
         var error = m.prop('');
 
         var ask = function () { return messages.confirm({
             header:'New Name',
-            content: m('div', [
-                m('input.form-control',  {placeholder: 'Enter Study Name', onchange: m.withAttr('value', study_name)}),
-
-                !error() ? '' : m('p.alert.alert-danger', error())
-            ])
+            content: {
+                view: function view(){
+                    return m('div', [
+                        m('input.form-control',  {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
+                        !error() ? '' : m('p.alert.alert-danger', error())
+                    ]);
+                }
+            }
         }).then(function (response) { return response && rename(); }); };
 
         var rename = function () { return rename_study(study.id, study_name)
@@ -7017,6 +7057,7 @@
                 error(e.message);
                 ask();
             }).then(m.redraw); };
+
         ask();
     }; };
 
@@ -7175,6 +7216,7 @@
         'data':[],
         'delete':[],
         'rename':[],
+        'description':[],
         'duplicate':[],
         'publish':[],
         'unpublish':[],
@@ -7212,6 +7254,12 @@
                 display: [can_edit, not(is_locked)],
                 onmousedown: do_rename,
                 class: 'fa-exchange'
+            }},
+        description: {text: 'Change description',
+            config: {
+                display: [can_edit, not(is_locked)],
+                onmousedown: update_study_description,
+                class: 'fa-comment'
             }},
         duplicate: {text: 'Duplicate study',
             config: {

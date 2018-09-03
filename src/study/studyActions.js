@@ -1,16 +1,17 @@
 import messages from 'utils/messagesComponent';
 
-import {lock_study, publish_study, duplicate_study, create_study, delete_study, rename_study, load_templates} from './studyModel';
+import {lock_study, publish_study, duplicate_study, create_study, delete_study, rename_study, update_study, load_templates} from './studyModel';
 import studyTemplatesComponent from './templates/studyTemplatesComponent';
 import studyTagsComponent from '../tags/studyTagsComponent';
 import createMessage from '../downloads/dataComp';
 
 
 import {update_tags_in_study} from '../tags/tagsModel';
-import {make_pulic} from "./sharing/sharingModel";
+import {make_pulic} from './sharing/sharingModel';
 
 export let do_create = (type, studies) => {
-    let study_name = m.prop('');
+    const study_name = m.prop('');
+    const description = m.prop('');
     let templates = m.prop([]);
     let template_id = m.prop('');
     let reuse_id = m.prop('');
@@ -27,6 +28,10 @@ export let do_create = (type, studies) => {
                     m('label', 'Enter Study Name:'),
                     m('input.form-control',  {oninput: m.withAttr('value', study_name)})
                 ]),
+                m('.form-group', [
+                    m('label', 'Enter Study Description:'),
+                    m('textarea.form-control',  {oninput: m.withAttr('value', description)})
+                ]),
                 isTemplate || !isOpenServer ? '' : m('.form-group', [
                     m('label', 'Pick Study Player:'),
                     m('select.c-select.form-control', { onchange: m.withAttr('value', study_type)}, [
@@ -40,24 +45,24 @@ export let do_create = (type, studies) => {
         })
     }).then(response => response && create());
 
-    let create = () => create_study({study_name, study_type, type, template_id, reuse_id})
+    let create = () => create_study({study_name, study_type, description, type, template_id, reuse_id})
         .then(response => m.route(type == 'regular' ? `/editor/${response.study_id}` : `/translate/${response.study_id}`))
-        .catch(e => { 
+        .catch(e => {
             error(e.message);
             ask();
         });
     ask();
 };
 
-export let do_tags = (study) => e => {
+export const do_tags = (study) => e => {
     e.preventDefault();
-    let study_id = study.id;
-    let  filter_tags = ()=>{return tag => tag.changed;};
-    let tags = m.prop([]);
+    const study_id = study.id;
+    const filter_tags = ()=>{return tag => tag.changed;};
+    const tags = m.prop([]);
     messages.confirm({header:'Tags', content: studyTagsComponent({tags, study_id})})
         .then(function (response) {
             if (response){
-                var new_tags = tags().filter(tag=> tag.used);
+                const new_tags = tags().filter(tag=> tag.used);
                 study.tags = new_tags;
                 tags(tags().filter(filter_tags()).map(tag=>(({text: tag.text, id: tag.id, used: tag.used}))));
                 return update_tags_in_study(study_id, tags);
@@ -116,19 +121,49 @@ export let do_delete = (study) => e => {
         });
 };
 
-
-export let do_rename = (study) => e => {
+export const update_study_description = (study) => e => {
     e.preventDefault();
-    let study_name = m.prop('');
+    const study_description = m.prop(study.description);
+    const error = m.prop();
+
+    const ask = () => messages.confirm({
+        header:'Study Description',
+        content: {
+            view(){
+                return m('div', [
+                    m('textarea.form-control',  {placeholder: 'Enter description', value: study_description(), onchange: m.withAttr('value', study_description)}),
+                    !error() ? '' : m('p.alert.alert-danger', error())
+                ]);
+            }
+        }
+    }).then(response => response && rename());
+
+    const rename = () => update_study(study.id, {description:study_description()})
+        .then(()=>study.description=study_description())
+        .catch(e => {
+            error(e.message);
+            ask();
+        })
+        .then(m.redraw);
+
+    ask();
+};
+
+export const do_rename = (study) => e => {
+    e.preventDefault();
+    let study_name = m.prop(study.name);
     let error = m.prop('');
 
     let ask = () => messages.confirm({
         header:'New Name',
-        content: m('div', [
-            m('input.form-control',  {placeholder: 'Enter Study Name', onchange: m.withAttr('value', study_name)}),
-
-            !error() ? '' : m('p.alert.alert-danger', error())
-        ])
+        content: {
+            view(){
+                return m('div', [
+                    m('input.form-control',  {placeholder: 'Enter Study Name', value: study_name(), onchange: m.withAttr('value', study_name)}),
+                    !error() ? '' : m('p.alert.alert-danger', error())
+                ]);
+            }
+        }
     }).then(response => response && rename());
 
     let rename = () => rename_study(study.id, study_name)
@@ -138,6 +173,7 @@ export let do_rename = (study) => e => {
             error(e.message);
             ask();
         }).then(m.redraw);
+
     ask();
 };
 

@@ -1,4 +1,4 @@
-import {do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
+import {update_study_description, do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
 const always = () => true;
 const can_edit = study => !study.isReadOnly && study.permission !== 'read only';
@@ -11,6 +11,7 @@ const settings = {
     'data':[],
     'delete':[],
     'rename':[],
+    'description':[],
     'duplicate':[],
     'publish':[],
     'unpublish':[],
@@ -48,6 +49,12 @@ const settings_hash = {
             display: [can_edit, not(is_locked)],
             onmousedown: do_rename,
             class: 'fa-exchange'
+        }},
+    description: {text: 'Change description',
+        config: {
+            display: [can_edit, not(is_locked)],
+            onmousedown: update_study_description,
+            class: 'fa-comment'
         }},
     duplicate: {text: 'Duplicate study',
         config: {
