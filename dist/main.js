@@ -7153,6 +7153,7 @@
             .then(function (response) { return response && publish(); }); };
 
         var publish= function () { return publish_study(study.id, !study.is_published, update_url)
+            .then(function (res){ return study.versions.push(res); })
             .then(study.is_published = !study.is_published)
             .then(study.is_locked = study.is_published || study.is_locked)
             .then(study.isReadonly = study.is_locked)
