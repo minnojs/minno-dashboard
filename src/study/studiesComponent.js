@@ -92,9 +92,7 @@ const mainComponent = {
                                     m('input.custom-control-input', {
                                         type: 'checkbox',
                                         checked: tag.used,
-                                        onclick: function(){
-                                            tag.used = !tag.used;
-                                        }
+                                        onclick: function(){ tag.used = !tag.used; }
                                     }),
                                     m('span.custom-control-indicator'),
                                     m('span.custom-control-description.m-r-1.study-tag',{style: {'background-color': '#'+tag.color}}, tag.text)
@@ -197,13 +195,13 @@ const mainComponent = {
 };
 
 
-let typeFilter = type => study => {
+const typeFilter = type => study => {
     return study.study_type === type;
 };
 
-let permissionFilter = permission => study => {
+const permissionFilter = permission => study => {
     if(permission === 'all') return !(study.is_public && study.permission !== 'owner');
-    if(permission === 'public') return study.is_public;
+    if(permission === 'public') return study.is_public && !study.is_bank;
     if(permission === 'collaboration') return study.permission !== 'owner' && !study.is_public;
     if(permission === 'template') return study.is_template;
     if(permission === 'bank') return study.is_bank;
