@@ -8,6 +8,7 @@ import createMessage from '../downloads/dataComp';
 
 import {update_tags_in_study} from '../tags/tagsModel';
 import {make_pulic} from './sharing/sharingModel';
+import copyUrl from 'utils/copyUrl';
 
 export let do_create = (type, studies) => {
     const study_name = m.prop('');
@@ -258,10 +259,7 @@ export let do_publish = (study, callback) => e => {
                             m('option', {value:'keep'}, 'Keep the launch URL'),
                             study.versions.length<2 ? '' : m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
                         ])
-
                     ])
-
-
                 ]),
                 !error() ? '' : m('p.alert.alert-danger', error())])
     })
@@ -283,42 +281,4 @@ export let do_publish = (study, callback) => e => {
     ask();
 };
 
-
-export let do_copy_url = (study) => e => {
-    e.preventDefault();
-    let copyFail = m.prop(false);
-    let autoCopy = () => copy(study.base_url).catch(() => copyFail(true)).then(m.redraw);
-    let ask = () => messages.alert({
-        header: 'Copy URL',
-        content: m('.card-block', [
-            m('.form-group', [
-                m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
-                m('label.input-group',[
-                    m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
-                    m('input.form-control', { config: el => el.select(), value: study.base_url })
-                ]),
-                !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
-            ])
-        ]),
-        okText: 'Done'
-    });
-    ask();
-};
-
-
-function copy(text){
-    return new Promise((resolve, reject) => {
-        let input = document.createElement('input');
-        input.value = text;
-        document.body.appendChild(input);
-        input.select();
-
-        try {
-            document.execCommand('copy');
-        } catch(err){
-            reject(err);
-        }
-
-        input.parentNode.removeChild(input);
-    });
-}
+export const do_copy_url = study => copyUrl(study.base_url);

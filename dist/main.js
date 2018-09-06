@@ -7139,10 +7139,7 @@
                                 m('option', {value:'keep'}, 'Keep the launch URL'),
                                 study.versions.length<2 ? '' : m('option', {value:'reuse'}, 'Use the launch URL from the previous published version')
                             ])
-
                         ])
-
-
                     ]),
                     !error() ? '' : m('p.alert.alert-danger', error())])
         })
@@ -7164,45 +7161,7 @@
         ask();
     }; };
 
-
-    var do_copy_url = function (study) { return function (e) {
-        e.preventDefault();
-        var copyFail = m.prop(false);
-        var autoCopy = function () { return copy$1(study.base_url).catch(function () { return copyFail(true); }).then(m.redraw); };
-        var ask = function () { return messages.alert({
-            header: 'Copy URL',
-            content: m('.card-block', [
-                m('.form-group', [
-                    m('label', 'Copy Url by clicking Ctrl + C, or click the copy button.'),
-                    m('label.input-group',[
-                        m('.input-group-addon', {onclick: autoCopy}, m('i.fa.fa-fw.fa-copy')),
-                        m('input.form-control', { config: function (el) { return el.select(); }, value: study.base_url })
-                    ]),
-                    !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
-                ])
-            ]),
-            okText: 'Done'
-        }); };
-        ask();
-    }; };
-
-
-    function copy$1(text){
-        return new Promise(function (resolve, reject) {
-            var input = document.createElement('input');
-            input.value = text;
-            document.body.appendChild(input);
-            input.select();
-
-            try {
-                document.execCommand('copy');
-            } catch(err){
-                reject(err);
-            }
-
-            input.parentNode.removeChild(input);
-        });
-    }
+    var do_copy_url = function (study) { return copyUrl(study.base_url); };
 
     var can_edit = function (study) { return !study.isReadOnly && study.permission !== 'read only'; };
     var is_locked = function (study) { return study.is_locked; };
@@ -9679,7 +9638,7 @@
                                     [m('i.fa.fa-fw.fa-remove'), '  Revoke public link']
                                 ),
                                 m('label.input-group.space',[
-                                    m('.input-group-addon', {onclick: function() {copy$2(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
+                                    m('.input-group-addon', {onclick: function() {copy$1(ctrl.link());}}, m('i.fa.fa-fw.fa-copy')),
                                     m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
                                 ])
                             ])
@@ -9690,7 +9649,7 @@
         }
     };
 
-    function copy$2(text){
+    function copy$1(text){
         return new Promise(function (resolve, reject) {
             var input = document.createElement('input');
             input.value = text;
