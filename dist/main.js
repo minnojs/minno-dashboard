@@ -4956,13 +4956,13 @@
     var copyUrl = function (url, launch) { return function () {
         messages.alert({
             header: 'Copy URL',
-            content: m.component(copyComponent, url, launch),
+            content: m.component(copyComponent, getAbsoluteUrl(url), launch),
             okText: 'Done'
         });
     }; };
 
     var copyComponent = {
-        controller: function (url, launch) {
+        controller: function (url) {
             var copyFail = m.prop(false);
             var autoCopy = function () { return copy(url).catch(function () { return copyFail(true); }).then(m.redraw); };
             return {autoCopy: autoCopy, copyFail: copyFail};
@@ -4980,15 +4980,20 @@
 
                 ]),
                 !launch ? '' : [
-
-                m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
-                m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
+                    m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
+                    m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
                 ],
                 !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
             ])
         ]);
     }
     };
+
+    function getAbsoluteUrl(url) {
+        var a = document.createElement('a');
+        a.href=url;
+        return a.href;
+    }
 
     function copy(text){
         return new Promise(function (resolve, reject) {
@@ -6086,7 +6091,7 @@
                             {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
                             {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
                             { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
-                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(getAbsoluteUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id)), true)}
+                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id), true)}
                         ]},
 
                 //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
@@ -6100,14 +6105,6 @@
         }
 
         return contextMenuComponent.open(menu);
-
-        function getAbsoluteUrl(url) {
-            var a = document.createElement('a');
-            a.href=url;
-            return a.href;
-        }
-
-
 
         function activateWizard(route){
             return function () { return m.route("/editor/" + (study.id) + "/wizard/" + route); };

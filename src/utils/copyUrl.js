@@ -2,16 +2,16 @@ import messages from 'utils/messagesComponent';
 
 export default copyUrl;
 
-let copyUrl = (url, launch) => () => {
+const copyUrl = (url, launch) => () => {
     messages.alert({
         header: 'Copy URL',
-        content: m.component(copyComponent, url, launch),
+        content: m.component(copyComponent, getAbsoluteUrl(url), launch),
         okText: 'Done'
     });
 };
 
 let copyComponent = {
-    controller: (url, launch) => {
+    controller: (url) => {
         let copyFail = m.prop(false);
         let autoCopy = () => copy(url).catch(() => copyFail(true)).then(m.redraw);
         return {autoCopy, copyFail};
@@ -25,14 +25,19 @@ let copyComponent = {
 
             ]),
             !launch ? '' : [
-
-            m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
-            m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
+                m('input-group-addon', ['Right-click ', m('a', {href: url}, 'HERE'), ' to launch']),
+                m('label', 'You can use this option to play that study in a private or incognito window to bypass cached content.'),
             ],
             !copyFail() ? '' : m('small.text-muted', 'Auto copy will not work on your browser, you need to manually copy this url')
         ])
     ])
 };
+
+function getAbsoluteUrl(url) {
+    const a = document.createElement('a');
+    a.href=url;
+    return a.href;
+}
 
 function copy(text){
     return new Promise((resolve, reject) => {
