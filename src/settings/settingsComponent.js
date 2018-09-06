@@ -47,7 +47,6 @@ let changePasswordComponent = {
             .then((response) => {
                 ctrl.is_dbx_synchronized(response.is_synchronized);
                 ctrl.dbx_auth_link(response.auth_link);
-                console.log()
             })
             .catch(response => {
                 ctrl.synchronization_error(response.message);
