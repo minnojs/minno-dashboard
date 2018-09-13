@@ -10247,6 +10247,7 @@
                     'pool':{text: 'Pool', href:'/pool', sub:[]},
                     'tags':{text: 'Tags', href:'/tags', sub:[]},
                     'admin':{text: 'Admin', href:false,
+                        su:true,
                         subs:{'deployList': {text:'Deploy List', href: '/deployList'},
                               'removalList': {text:'Removal List', href:'/removalList'},
                               'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
@@ -10267,7 +10268,8 @@
                         m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
                         m('ul.nav.navbar-nav',[
 
-                            Object.keys(settings).map(function (comp){ return settings[comp].length==0 ?
+                            Object.keys(settings).map(function (comp){ return settings_hash[comp].su && ctrl.role() !=='su' ? '' :
+                                settings[comp].length==0 ?
                                     m('li.nav-item',[
                                         m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
 
@@ -10278,7 +10280,6 @@
                                             m('a.nav-link', settings_hash[comp].text),
                                             m('.dropdown-menu', [
                                                 settings[comp].map(function (sub_comp){ return m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text); }
-
                                                 )
 
                                             ])
@@ -10286,60 +10287,6 @@
                                     ]); }
                             ),
 
-                            //
-                            // ctrl.role()=='CU'
-                            //  ?
-                            // ''
-                            // :
-                            // m('li.nav-item', [
-                            //     m('.dropdown', [
-                            //         m('a.nav-link',{href:'/studies', config:m.route},'Studies'),
-                            //         !ctrl.present_templates()
-                            //             ?
-                            //             ''
-                            //             :
-                            //             m('.dropdown-menu', [
-                            //                 m('a.dropdown-item',{href:'/template_studies', config:m.route},'Template Studies')
-                            //             ])
-                            //     ])
-                            // ]),
-
-                            // m('li.nav-item', [
-                            //     m('.dropdown', [
-                            //         m('a.nav-link', 'Data'),
-                            //         m('.dropdown-menu', [
-                            //             m('a.dropdown-item',{href:'/downloads', config:m.route}, 'Downloads'),
-                            //             m('a.dropdown-item',{href:'/downloadsAccess', config:m.route}, 'Downloads access'),
-                            //             m('a.dropdown-item',{href:'/studies/statistics', config:m.route}, 'Statistics')
-                            //         ])
-                            //     ])
-                            // ]),
-                            // ctrl.role()=='CU'
-                            // ?
-                            // ''
-                            // :
-                            // m('li.nav-item',[
-                            //     m('a.nav-link',{href:'/pool', config:m.route},'Pool')
-                            // ]),
-                            // m('li.nav-item',[
-                            //     m('a.nav-link',{href:'/tags', config:m.route},'Tags')
-                            // ]),
-                            // ctrl.role()!='SU'
-                            // ?
-                            // ''
-                            // :
-                            // m('li.nav-item', [
-                            //     m('.dropdown', [
-                            //         m('a.nav-link', 'Admin'),
-                            //         m('.dropdown-menu', [
-                            //             m('a.dropdown-item',{href:'/deployList', config:m.route}, 'Deploy List'),
-                            //             m('a.dropdown-item',{href:'/removalList', config:m.route}, 'Removal List'),
-                            //             m('a.dropdown-item',{href:'/changeRequestList', config:m.route}, 'Change Request List'),
-                            //             m('a.dropdown-item',{href:'/addUser', config:m.route}, 'Add User'),
-                            //             m('a.dropdown-item',{href:'/massMail', config:m.route}, 'Send MassMail')
-                            //         ])
-                            //     ])
-                            // ]),
                             m('li.nav-item.pull-xs-right', [
                                 m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
                             ]),
