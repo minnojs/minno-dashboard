@@ -35,15 +35,15 @@ let createMessage = {
         m('.card-block', [
             m('.row', [
                 m('.col-sm-4', [
-                    m('.input-group', [
+                    m('.input-group', [m('strong', 'Experimant id'),
                         m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
                             exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
                             exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
                         ])
                     ])
                 ]),
-                m('.col-sm-4', [
-                    m('.input-group', [
+                m('.col-sm-5', [
+                    m('.input-group', [m('strong', 'Version id'),
                         m('select.c-select.form-control',{onchange: e => version_id(e.target.value)}, [
                             versions.length<=1 ? '' : m('option', {selected:true, value:all_versions()}, 'All versions'),
                             versions.map(version=> m('option', {value:version.id}, `${version.version} (${version.state})`))
@@ -51,11 +51,12 @@ let createMessage = {
                     ])
                 ]),
                 m('p',exp_id),
-                m('.col-sm-2', [
-                    m('.input-group', [
+                m('.col-sm-3', [
+                    m('.input-group', [m('strong', 'Output type'),
                         m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
                             m('option', {value:'csv'}, 'csv'),
-                            m('option', {value:'tsv'}, 'tsv')
+                            m('option', {value:'tsv'}, 'tsv'),
+                            m('option', {value:'json', disabled:true}, 'json')
                         ])
                     ])
                 ])

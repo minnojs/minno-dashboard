@@ -6736,15 +6736,15 @@
             m('.card-block', [
                 m('.row', [
                     m('.col-sm-4', [
-                        m('.input-group', [
+                        m('.input-group', [m('strong', 'Experimant id'),
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
                                 exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
                                 exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
                             ])
                         ])
                     ]),
-                    m('.col-sm-4', [
-                        m('.input-group', [
+                    m('.col-sm-5', [
+                        m('.input-group', [m('strong', 'Version id'),
                             m('select.c-select.form-control',{onchange: function (e) { return version_id(e.target.value); }}, [
                                 versions.length<=1 ? '' : m('option', {selected:true, value:all_versions()}, 'All versions'),
                                 versions.map(function (version){ return m('option', {value:version.id}, ((version.version) + " (" + (version.state) + ")")); })
@@ -6752,11 +6752,12 @@
                         ])
                     ]),
                     m('p',exp_id),
-                    m('.col-sm-2', [
-                        m('.input-group', [
+                    m('.col-sm-3', [
+                        m('.input-group', [m('strong', 'Output type'),
                             m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
                                 m('option', {value:'csv'}, 'csv'),
-                                m('option', {value:'tsv'}, 'tsv')
+                                m('option', {value:'tsv'}, 'tsv'),
+                                m('option', {value:'json', disabled:true}, 'json')
                             ])
                         ])
                     ])
