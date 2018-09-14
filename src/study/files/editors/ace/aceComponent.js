@@ -23,7 +23,8 @@ let aceComponent = {
     config: function({editorCache},{content, observer, settings = {}}){
         return function(element, isInitialized, ctx){
             let editor = editorCache();
-            let mode = settings.mode || 'javascript';
+            const mode = settings.mode || 'javascript';
+            if (editor) editor.setReadOnly(!!settings.isReadonly);
 
             // paster with padding
             let paste = text => {
