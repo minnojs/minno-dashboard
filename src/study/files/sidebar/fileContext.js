@@ -7,12 +7,12 @@ import {
     make_experiment, update_experiment, delete_experiment
 } from './fileActions';
 import {createFromTemplate} from './wizardActions';
-import wizardHash from './wizardHash';
+// import wizardHash from './wizardHash';
 import copyUrl from 'utils/copyUrl';
 export default fileContext;
 
 
-let fileContext = (file, study) => {
+const fileContext = (file, study) => {
     let path = !file ? '/' : file.isDir ? file.path : file.basePath;
     let isReadonly = study.isReadonly;
     let menu = [];
@@ -21,7 +21,9 @@ let fileContext = (file, study) => {
         menu = menu.concat([
             {icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
             {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
-            {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
+            // @TODO: we've decided to change the exports to be dynamic: to pull the wizard hash from somewhere external
+            // this requires some sort of external configuration
+            // {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
             {icon:'fa-magic', text:'New from wizard', menu: [
                 {text: 'Rating wizard', action: activateWizard(`rating`)}
             ]}

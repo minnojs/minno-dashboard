@@ -6044,44 +6044,6 @@
     };
     };
 
-    var hash = {};
-
-    hash.piPlayer = {
-        'Empty': '/implicit/user/yba/wizards/emptypip.js',
-        'Typical': '/implicit/user/yba/wizards/typical.js',
-        'Simple sorting task': '/implicit/user/yba/wizards/sorting.js',
-        'IAT (images)': '/implicit/user/yba/wizards/iatimages.js',
-        'IAT (words)': '/implicit/user/yba/wizards/iatwords.js',
-        'IAT (modify attributes)': '/implicit/user/yba/wizards/iatatt.js',
-        'IAT (all the parameters)': '/implicit/user/yba/wizards/iatall.js',
-        'Mobile IAT': '/implicit/user/yba/wizards/iatmobile.js',
-        'ST-IAT': '/implicit/user/yba/wizards/stiatsimple.js',
-        'ST-IAT (all parameters)': '/implicit/user/yba/wizards/stiatall.js',
-        'AMP (with words as primes)': '/implicit/user/yba/wizards/ampwords.js',
-        'AMP (all parameters)': '/implicit/user/yba/wizards/ampall.js',
-        'Brief-IAT': '/implicit/user/yba/wizards/batsimple.js',
-        'Brief-IAT (all parameters)': '/implicit/user/yba/wizards/batall.js',
-        'Attitude induction (behaviors)': '/implicit/user/yba/wizards/attitude.js',
-        'Evaluative Conditioning': '/implicit/user/yba/wizards/ec.js'
-    };
-
-    hash.piQuest = {
-        'Empty': '/implicit/user/yba/wizards/emptyquest.js',
-        'Rating Questionnaire': '/implicit/user/yba/wizards/rating.js',
-        'Rating Questionnaire (with images)': '/implicit/user/yba/wizards/ratingimages.js'
-    };
-
-    hash.piMessage = {
-        'Consent (Yoav lab)': '/implicit/user/yba/wizards/consent.jst',
-        'Intro': '/implicit/user/yba/wizards/intro.jst',
-        'Debriefing': '/implicit/user/yba/wizards/debriefing.jst'
-    };
-
-    hash.piManager = {
-        'Empty': '/implicit/user/yba/wizards/emptymgr.js',
-        'Typical': '/implicit/user/yba/wizards/typicalmgr.js'
-    };
-
     var fileContext = function (file, study) {
         var path = !file ? '/' : file.isDir ? file.path : file.basePath;
         var isReadonly = study.isReadonly;
@@ -6091,7 +6053,9 @@
             menu = menu.concat([
                 {icon:'fa-folder', text:'New Directory', action: createDir(study, path)},
                 {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
-                {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(hash)},
+                // @TODO: we've decided to change the exports to be dynamic: to pull the wizard hash from somewhere external
+                // this requires some sort of external configuration
+                // {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
                 {icon:'fa-magic', text:'New from wizard', menu: [
                     {text: 'Rating wizard', action: activateWizard("rating")}
                 ]}
