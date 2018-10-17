@@ -5582,7 +5582,7 @@
             ]),
 
             m('.btn-group.btn-group-sm.pull-xs-right', [
-                m('a.btn.btn-secondary', {href: "http://projectimplicit.github.io/PIquest/0.0/basics/overview.html", target: '_blank', title:'API documentation'},[
+                m('a.btn.btn-secondary', {href: "https://minnojs.github.io/minno-quest/0.2/basics/overview.html", target: '_blank', title:'API documentation'},[
                     m('strong.fa.fa-book'),
                     m('strong', ' Docs')
                 ]),
