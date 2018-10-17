@@ -175,16 +175,12 @@ const mainComponent = {
                                 ]),
                                 m('.col-sm-1', [
                                     m('.btn-toolbar.pull-right',
-                                        m('.btn-group.btn-group-sm',
-                                            study.is_template || study.is_public && study.permission !== 'owner'
-                                                ?
-                                                ''
-                                                :
-                                                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                    draw_menu(study)
-                                                ]})
-                                        )
-                                    )
+                                      m('.btn-group.btn-group-sm', 
+                                        dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                            draw_menu(study)
+                                        ]})
+                                       )
+                                     )
                                 ])
                             ])
                         ]))

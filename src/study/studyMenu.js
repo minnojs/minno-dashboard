@@ -1,6 +1,5 @@
 import {update_study_description, do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
-const always = () => true;
 const can_edit = study => !study.isReadOnly && study.permission !== 'read only';
 const is_locked = study => study.is_locked;
 const is_published = study => study.is_published;
@@ -35,6 +34,7 @@ const settings_hash = {
         }},
     data: {text: 'Data',
         config: {
+            display: [can_edit],
             onmousedown: do_data,
             class: 'fa-download'
         }},
@@ -129,14 +129,16 @@ const settings_hash = {
 export const draw_menu = study => Object.keys(settings)
     .map(comp => {
         const config = settings_hash[comp].config;
-        return !should_display(config, study) ? '' 
-            : settings_hash[comp].config.href
-                ?  m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
+        return !should_display(config, study) 
+            ? '' 
+            : config.href
+                ? m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
                 : m('a.dropdown-item.dropdown-onclick', {onmousedown: config.onmousedown(study)}, [
                     m('i.fa.fa-fw.'+config.class),
                     settings_hash[comp].text
-                ])
+                ]);
     });
+
 
 function should_display(config, study){
     return !config.display || config.display.every(fn => fn(study));

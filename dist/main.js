@@ -7225,6 +7225,7 @@
             }},
         data: {text: 'Data',
             config: {
+                display: [can_edit],
                 onmousedown: do_data,
                 class: 'fa-download'
             }},
@@ -7319,14 +7320,16 @@
     var draw_menu = function (study) { return Object.keys(settings)
         .map(function (comp) {
             var config = settings_hash[comp].config;
-            return !should_display(config, study) ? '' 
-                : settings_hash[comp].config.href
-                    ?  m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
+            return !should_display(config, study) 
+                ? '' 
+                : config.href
+                    ? m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
                     : m('a.dropdown-item.dropdown-onclick', {onmousedown: config.onmousedown(study)}, [
                         m('i.fa.fa-fw.'+config.class),
                         settings_hash[comp].text
-                    ])
+                    ]);
         }); };
+
 
     function should_display(config, study){
         return !config.display || config.display.every(function (fn) { return fn(study); });
@@ -7919,16 +7922,12 @@
                                     ]),
                                     m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right',
-                                            m('.btn-group.btn-group-sm',
-                                                study.is_template || study.is_public && study.permission !== 'owner'
-                                                    ?
-                                                    ''
-                                                    :
-                                                    dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                        draw_menu(study)
-                                                    ]})
-                                            )
-                                        )
+                                          m('.btn-group.btn-group-sm', 
+                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                draw_menu(study)
+                                            ]})
+                                           )
+                                         )
                                     ])
                                 ])
                             ]); })
