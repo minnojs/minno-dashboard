@@ -252,6 +252,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -573,15 +581,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1601,10 +1600,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1756,10 +1751,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5176,7 +5167,7 @@
                 m('h4', 'Add task'),
                 m('.card-block', [
                     inheritInput({label:'inherit', prop:common.inherit, form: form, help: 'Base this element off of an element from a set'}),
-                    selectInput({label:'type', prop: type, form: form, values: {message: 'message', pip: 'pip', quest: 'quest'}}),
+                    selectInput({label:'type', prop: type, form: form, values: {message: 'message', 'minno-time': 'time', 'minno-quest': 'minno', 'pip (old minno-time)': 'pip' }}),
                     textInput({label: 'name', prop: common.name, help: 'The name for the task',form: form}),
                     textInput({label: 'title', prop: common.title, help: 'The title to be displayed in the browsers tab',form: form}),
                     m.component(taskSwitch(type()), {task: task, form: form})
@@ -5194,6 +5185,7 @@
             case 'message' : return messageComponent;
             case 'pip' : return pipComponent;
             case 'quest' : return questComponent;
+            case 'time' : return timeComponent;
             default :
                 throw new Error(("Unknown task type: " + type));
         }
@@ -5222,14 +5214,12 @@
         }
     };
 
-    var pipComponent = {
+    var timeComponent = {
         controller: function controller$2(ref){
             var task = ref.task;
 
-            task({
-                version: m.prop('0.3'),
-                scriptUrl: m.prop('')
-            });
+            var scriptUrl = m.prop('');
+            task({ scriptUrl: scriptUrl });
         },
         view: function view$2(ctrl, ref){
             var task = ref.task;
@@ -5238,20 +5228,49 @@
             var props = task();
             return m('div', [
                 textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form: form}),
-                selectInput({label:'version', prop: props.version, form: form, values: {'0.3':0.3, '0.2':0.2}, help: 'The version of PIP that you want to use'})
             ]); 
         }
     };
 
-    var questComponent = {
+    var pipComponent = {
         controller: function controller$3(ref){
+            var task = ref.task;
+
+            var version = m.prop('0.3');
+            var scriptUrl = m.prop('');
+            var baseUrl = "//cdn.jsdelivr.net/gh/minnojs/minno-quest@" + (version()) + "/dist/js";
+            task({ version: version, scriptUrl: scriptUrl, baseUrl: baseUrl });
+        },
+        view: function view$3(ctrl, ref){
+            var task = ref.task;
+            var form = ref.form;
+
+            var props = task();
+            return m('div', [
+                textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form: form}),
+                selectInput({label:'version', prop: versionProp, form: form, values: {'0.3':0.3, '0.2':0.2}, help: 'The version of PIP that you want to use'})
+            ]); 
+
+            function versionProp(){
+                if (arguments.length) {
+                    props.version(arguments[0]);
+                    props.baseUrl = "//cdn.jsdelivr.net/gh/minnojs/minno-quest@" + (props.version()) + "/dist/js";
+                }
+
+                return props.version();
+            }
+        }
+    };
+
+    var questComponent = {
+        controller: function controller$4(ref){
             var task = ref.task;
 
             task({
                 scriptUrl: m.prop('')
             });
         },
-        view: function view$3(ctrl, ref){
+        view: function view$4(ctrl, ref){
             var task = ref.task;
             var form = ref.form;
 
@@ -5274,8 +5293,7 @@
                 decline: m.prop(false),
                 progressBar: m.prop('<%= pagesMeta.number %> out of <%= pagesMeta.outOf%>'),
                 autoFocus: true,
-                questions: [],
-                v1style:2
+                questions: []
             };
             output(page);
 
@@ -5856,8 +5874,7 @@
                 basicPage: {
                     header: m.prop(''),
                     decline: m.prop(true),
-                    autoFocus:true,
-                    v1style: 2
+                    autoFocus:true
                 },
                 basicSelect: {
                     type: 'selectOne',
@@ -5933,21 +5950,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -6009,8 +6011,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6207,7 +6207,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6490,16 +6489,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
 
