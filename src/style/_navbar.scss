@@ -2,7 +2,7 @@ $navbar-height: 54px;
 $navbar-background: #2882b5;
 
 html, body, .dasboard-root {height:100%;}
-.dashboard-root {display:flex; flex-direction:column;overflow:hidden;}
+.dashboard-root {display:flex; flex-direction:column;overflow:visible;}
 
 .navbar {
     flex: 0 1 $navbar-height;
