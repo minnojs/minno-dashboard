@@ -18,6 +18,7 @@ let collaborationComponent = {
             study_name:m.prop(),
             user_name:m.prop(''),
             permission:m.prop(''),
+            data_permission:m.prop(''),
             loaded:false,
             col_error:m.prop(''),
             pub_error:m.prop(''),
@@ -70,12 +71,17 @@ let collaborationComponent = {
                         m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
                         m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
                     ]),
+                    m('select.form-control', {value:ctrl.data_permission(), onchange: m.withAttr('value',ctrl.data_permission)}, [
+                        m('option',{value:'', disabled: true}, 'Data access'),
+                        m('option',{value:'visibale', selected: ctrl.permission() === 'visibale'}, 'Visibale'),
+                        m('option',{value:'invisibale', selected: ctrl.permission() === 'invisibale'}, 'Invisibale')
+                    ]),
                     m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
                 ])
                 })})
                 .then(response => {
                     if (response)
-                        add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
+                        add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission, ctrl.data_permission)
                             .then(()=>{
                                 ctrl.col_error('');
                                 load();
@@ -155,9 +161,9 @@ let collaborationComponent = {
                     ]),
                     m('tbody', [
                         ctrl.users().map(user => m('tr', [
-                            m('td', user.USERNAME),
-                            m('td', user.PERMISSION),
-                            m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.USER_ID);}}, 'Remove'))
+                            m('td', user.user_name),
+                            m('td', [user.permission, user.status ? ` (${user.status})` : '']),
+                            m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.user_id);}}, 'Remove'))
                         ]))
 
                     ]),

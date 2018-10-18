@@ -25,6 +25,7 @@ import studyChangeRequestComponent from './deploy/studyChangeRequestComponent';
 import addUserComponent from './addUser/addUserComponent';
 import usersComponent from './users/usersComponent';
 import settingsComponent from './settings/settingsComponent';
+import messagesComponent from './messages/messagesComponent';
 import massMailComponent from './massMail/massMailComponent';
 
 
@@ -50,6 +51,7 @@ let routes = {
     '/activation/:code':  activationComponent,
     '/collaboration/:code':  collaborationComponent,
     '/settings':  settingsComponent,
+    '/messages':  messagesComponent,
     '/reset_password/:code':  resetPasswordComponent,
 
     '/deployList': deployListComponent,

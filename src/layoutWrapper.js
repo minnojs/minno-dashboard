@@ -139,8 +139,12 @@ let layout = route => {
                                     ])
                                 ])
                         ),
-
                         m('li.nav-item.pull-xs-right', [
+                            m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg'))
+                        ]),
+
+
+                    m('li.nav-item.pull-xs-right', [
                             m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
                         ]),
                         !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[

@@ -252,6 +252,14 @@
         } 
     };
 
+
+    /* eslint-disable */
+
+    // ref: http://stackoverflow.com/a/1293163/2343
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
 
@@ -573,15 +581,6 @@
         })
     };
 
-    /**
-     * TransformedProp transformProp(Prop prop, Map input, Map output)
-     * 
-     * where:
-     *  Prop :: m.prop
-     *  Map  :: any Function(any)
-     *
-     *  Creates a Transformed prop that pipes the prop through transformation functions.
-     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -1601,10 +1600,6 @@
         return classes.substr(1);
     }
 
-    /**
-     * Create edit component
-     * Promise editMessage({input:Object, output:Prop})
-     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1756,10 +1751,6 @@
         if (!isInitialized) element.focus();
     };
 
-    /**
-     * Create edit component
-     * Promise editMessage({output:Prop})
-     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -5933,21 +5924,6 @@
         } 
     };
 
-    /**
-     * Set this component into your layout then use any mouse event to open the context menu:
-     * oncontextmenu: contextMenuComponent.open([...menu])
-     *
-     * Example menu:
-     * [
-     *  {icon:'fa-play', text:'begone'},
-     *  {icon:'fa-play', text:'asdf'},
-     *  {separator:true},
-     *  {icon:'fa-play', text:'wertwert', menu: [
-     *      {icon:'fa-play', text:'asdf'}
-     *  ]}
-     * ]
-     */
-
     var contextMenuComponent = {
         vm: {
             show: m.prop(false),
@@ -6009,8 +5985,6 @@
         }
     };
 
-    // add trailing slash if needed, and then remove proceeding slash
-    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6207,7 +6181,6 @@
         }
     }; };
 
-    // call onchange with files
     var onchange = function (args) { return function (e) {
         var dt = e.dataTransfer;
         var cb = args.onchange;
@@ -6490,16 +6463,6 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
-    /**
-     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
-     *
-     * where:
-     *  Element String text | VirtualElement virtualElement | Component
-     * 
-     * @param toggleSelector the selector for the toggle element
-     * @param toggleContent the: content for the toggle element
-     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
-     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
 
@@ -6909,9 +6872,9 @@
     }); };
 
 
-    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url$1(study_id), {
+    var add_collaboration = function (study_id, user_name, permission, data_permission) { return fetchJson(collaboration_url$1(study_id), {
         method: 'post',
-        body: {user_name: user_name, permission: permission}
+        body: {user_name: user_name, permission: permission, data_permission: data_permission}
     }); };
 
 
@@ -7202,7 +7165,7 @@
 
     var do_copy_url = function (study) { return copyUrl(study.base_url); };
 
-    var can_edit = function (study) { return !study.isReadOnly && study.permission !== 'read only'; };
+    var can_edit = function (study) { return !study.isReadonly && study.permission !== 'read only'; };
     var is_locked = function (study) { return study.is_locked; };
     var is_published = function (study) { return study.is_published; };
     var not = function (fn) { return function (study) { return !fn(study); }; };
@@ -7221,7 +7184,7 @@
         // 'deploy':[],
         // 'studyChangeRequest':[],
         // 'studyRemoval':[],
-        // 'sharing':[],
+        'sharing':[],
         'public':[],
         // 'unpublic':[],
         'copyUrl':[]
@@ -9200,6 +9163,313 @@
         }
     };
 
+    var change_password_url$1 = baseUrl + "/change_password";
+    var pending_url = baseUrl + "/pending";
+    var present_templates_url$1 = baseUrl + "/present_templates";
+    var dropbox_url$1 = baseUrl + "/dropbox";
+    var gdrive_url$1 = baseUrl + "/gdrive";
+
+    function apiURL$1(code)
+    {   
+        return (pending_url + "/" + (encodeURIComponent(code)));
+    }
+
+    var get_pending_studies = function () { return fetchJson(pending_url, {
+        method: 'get'
+    }); };
+
+    var set_password$1 = function (code, password, confirm) { return fetchJson(apiURL$1(code), {
+        method: 'post',
+        body: {password: password, confirm: confirm}
+    }); };
+
+    var set_email$1 = function (email) { return fetchJson(pending_url, {
+        method: 'post',
+        body: {email: email}
+    }); };
+
+
+
+
+    var check_if_present_templates$1 = function () { return fetchJson(present_templates_url$1, {
+        method: 'get'
+    }); };
+
+    var set_present_templates$1 = function (value) {
+        if (value)
+            return do_present_templates$1();
+        return do_hide_templates$1();
+    };
+
+
+
+    var do_present_templates$1 = function () { return fetchJson(present_templates_url$1, {
+        method: 'post'
+    }); };
+
+    var do_hide_templates$1 = function () { return fetchJson(present_templates_url$1, {
+        method: 'delete'
+    }); };
+
+    var check_if_dbx_synchronized$1 = function () { return fetchJson(dropbox_url$1, {
+        method: 'get'
+    }); };
+
+    var stop_dbx_synchronized$1 = function () { return fetchJson(dropbox_url$1, {
+        method: 'delete'
+    }); };
+
+    var emil_body$1 = function (ctrl) { return m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            m('h4', 'Enter New Email Address'),
+            m('form', [
+                m('input.form-control', {
+                    type:'email',
+                    placeholder: 'New Email Address',
+                    value: ctrl.email(),
+                    oninput: m.withAttr('value', ctrl.email),
+                    onchange: m.withAttr('value', ctrl.email),
+                    config: getStartValue$4(ctrl.email)
+                })
+            ])
+            ,
+            !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
+            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
+
+        ])
+
+    ]); };
+
+    function getStartValue$4(prop){
+        return function (element, isInit) {// !isInit && prop(element.value);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
+        };
+    }
+
+    var password_body$1 = function (ctrl) { return m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            m('h4', 'Enter New Password'),
+            m('form', [
+                m('input.form-control', {
+                    type:'password',
+                    placeholder: 'Password',
+                    value: ctrl.password(),
+                    oninput: m.withAttr('value', ctrl.password),
+                    onchange: m.withAttr('value', ctrl.password),
+                    config: getStartValue$5(ctrl.password)
+                }),
+
+                m('input.form-control', {
+                    type:'password',
+                    placeholder: 'Confirm password',
+                    value: ctrl.confirm(),
+                    oninput: m.withAttr('value', ctrl.confirm),
+                    onchange: m.withAttr('value', ctrl.confirm),
+                    config: getStartValue$5(ctrl.confirm)
+                })
+            ]),
+            !ctrl.password_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()),
+            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
+        ])
+    ]); };
+
+    function getStartValue$5(prop){
+        return function (element, isInit) {// !isInit && prop(element.value);
+            if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
+        };
+    }
+
+    function start_dbx_sync$1(ctrl){
+        var error = m.prop('');
+        // ctrl.dbx_auth_link()
+        messages.confirm({okText: 'Continue', cancelText: 'Cancel', header:'Synchronization with Dropbox', content:m('p', [
+            m('p','This feature creates a backup for all your studies by copying all your study files to your Dropbox account. Every time you change a file here, on the Dashboard, it will send that update to your Dropbox account. Using the Dropbox website, you will be able to see previous versions of all the files you changed.'),
+            m('ul',
+                [
+                    m('li', 'Dropbox will create a folder under Apps/minno.js/username and will copy all your studies under that folder.'),
+                    m('li', 'We will not have access to any of your files on other folders.'),
+                    m('li', [m('span' ,'This feature is only for backup. If you edit or delete your study files on your computer\'s file-system, these edits will not be synchronized with the study files on this website. '), m('strong', 'Updates work only in one direction: from this website to your Dropbox, not from your Dropbox to this website.')]),
+                    m('li', 'If you want to see an older version of any of your study files, you can go to Dropbox and request to see previous versions of the file. If you want to restore an older version of a file, you will need to copy and paste its text to the Dashboard\'s editor on this website, or to download the old file to your computer and upload it to this website.')
+                ]
+            ),
+            !error() ? '' : m('p.alert.alert-danger', error())])
+        })
+        .then(function (response) {
+            console.log(ctrl.dbx_auth_link());
+            if (response)
+                window.location = ctrl.dbx_auth_link();
+        });
+
+    }
+
+    function stop_dbx_sync$1(ctrl){
+        stop_dbx_synchronized$1()
+            .then(m.route('/settings'))
+            .catch(function (response) {
+                ctrl.synchronization_error(response.message);
+            });
+    }
+
+    var dropbox_body$1 = function (ctrl) { return typeof ctrl.is_dbx_synchronized()==='undefined' || ctrl.role()=='CU' ? '' : m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            !ctrl.is_dbx_synchronized()?
+                m('button.btn.btn-primary.btn-block', {onclick: function(){start_dbx_sync$1(ctrl);}},[
+                    m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
+                ])
+            :
+            m('button.btn.btn-primary.btn-block', {onclick: function(){stop_dbx_sync$1(ctrl);}},[
+                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+            ])
+        ])
+    ]); };
+
+    var templates_body$1 = function (ctrl) { return ctrl.role()=='CU' ? '' : m('.card.card-inverse.col-md-4', [
+        m('.card-block',[
+            !ctrl.present_templates()
+            ?
+            m('a', {onclick: function(){ctrl.do_set_templete(true);}},
+                m('button.btn.btn-primary.btn-block', [
+                    m('i.fa.fa-fw.fa-flag'), ' Show template studies'
+                ])
+            )
+            :
+            m('button.btn.btn-primary.btn-block', {onclick: function(){ctrl.do_set_templete(false);}},[
+                m('i.fa.fa-fw.fa-flag'), ' Hide template studies'
+            ])
+        ])
+    ]); };
+
+    var settings$2 = {'password':[],
+        'emil':[],
+        'dropbox':[],
+        'templates':[]
+    };
+
+    var settings_hash$2 = {
+        password: password_body$1,
+        emil: emil_body$1,
+        dropbox: dropbox_body$1,
+        templates: templates_body$1
+    };
+
+    var draw_menu$2 = function (ctrl) {
+        return Object.keys(settings$2).map(function (feature){ return settings_hash$2[feature](ctrl); });
+    };
+
+    var messagesComponent = {
+        controller: function controller(){
+
+            var ctrl = {
+                role:m.prop(''),
+                password:m.prop(''),
+                confirm:m.prop(''),
+                is_dbx_synchronized: m.prop(),
+                is_gdrive_synchronized: m.prop(),
+                present_templates: m.prop(),
+                dbx_auth_link: m.prop(''),
+                gdrive_auth_link: m.prop(''),
+                synchronization_error: m.prop(''),
+                present_templates_error: m.prop(''),
+                email: m.prop(''),
+                password_error: m.prop(''),
+                password_changed:false,
+                email_error: m.prop(''),
+                email_changed:false,
+                do_set_password: do_set_password,
+                do_set_email: do_set_email,
+                do_set_templete: do_set_templete
+
+            };
+            getAuth().then(function (response) {
+                ctrl.role(response.role);
+            });
+
+            get_pending_studies()
+            .then(function (response) {
+                ctrl.email(response.email);
+            })
+            .catch(function (response) {
+                ctrl.email_error(response.message);
+            })
+            .then(m.redraw);
+            check_if_dbx_synchronized$1()
+                .then(function (response) {
+                    ctrl.is_dbx_synchronized(response.is_synchronized);
+                    ctrl.dbx_auth_link(response.auth_link);
+                })
+                .catch(function (response) {
+                    ctrl.synchronization_error(response.message);
+                })
+                .then(m.redraw);
+
+            check_if_present_templates$1()
+                .then(function (response) {
+                    ctrl.present_templates(response.present_templates);
+                })
+                .catch(function (response) {
+                    ctrl.present_templates_error(response.message);
+                })
+                .then(m.redraw);
+            return ctrl;
+
+
+            function do_set_password(){
+                set_password$1('', ctrl.password, ctrl.confirm)
+                    .then(function () {
+                        ctrl.password_changed = true;
+                    })
+                    .catch(function (response) {
+                        ctrl.password_error(response.message);
+                    })
+                    .then(m.redraw);
+            }
+
+            function do_set_email(){
+                set_email$1(ctrl.email)
+                    .then(function () {
+                        ctrl.email_changed = true;
+                    })
+                    .catch(function (response) {
+                        ctrl.email_error(response.message);
+                    })
+                    .then(m.redraw);
+            }
+            function do_set_templete(value){
+                set_present_templates$1(value)
+                    .then(function () {
+                        ctrl.present_templates(value);
+                    })
+                    .catch(function (response) {
+                        ctrl.present_templates_error(response.message);
+                    })
+                    .then(m.redraw);
+            }
+        },
+        view: function view(ctrl){
+            return m('.activation.centrify',[
+                ctrl.password_changed
+                ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Password successfully updated!'),
+                        m('p.text-center',
+                            m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
+                        )
+
+                    ]
+                :
+                ctrl.email_changed
+                ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Email successfully updated!')
+                    ]
+                :
+                    draw_menu$2(ctrl)
+            ]);
+        }
+    };
+
     var massMailUrl = baseUrl + "/mass_mail";
 
     var send = function (subject, body , ru, su, cu) { return fetchJson(massMailUrl, {
@@ -9258,7 +9528,7 @@
                                         value: ctrl.subject(),
                                         oninput: m.withAttr('value', ctrl.subject),
                                         onchange: m.withAttr('value', ctrl.subject),
-                                        config: getStartValue$4(ctrl.subject)
+                                        config: getStartValue$6(ctrl.subject)
                                     }
                                 )),
                                 m('fieldset.form-group',
@@ -9268,7 +9538,7 @@
                                         value: ctrl.body(),
                                         oninput: m.withAttr('value', ctrl.body),
                                         onchange: m.withAttr('value', ctrl.body),
-                                        config: getStartValue$4(ctrl.body)
+                                        config: getStartValue$6(ctrl.body)
                                     }
                                 )),
                                 m('fieldset.form-group',
@@ -9309,22 +9579,22 @@
         }
     };
 
-    function getStartValue$4(prop){
+    function getStartValue$6(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
     }
 
-    function apiURL$1(code)
+    function apiURL$2(code)
     {   
         return (activation1_url + "/" + (encodeURIComponent(code)));
     }
 
-    var is_activation_code = function (code) { return fetchJson(apiURL$1(code), {
+    var is_activation_code = function (code) { return fetchJson(apiURL$2(code), {
         method: 'get'
     }); };
 
-    var set_password$1 = function (code, password, confirm) { return fetchJson(apiURL$1(code), {
+    var set_password$2 = function (code, password, confirm) { return fetchJson(apiURL$2(code), {
         method: 'post',
         body: {password: password, confirm: confirm}
     }); };
@@ -9347,7 +9617,7 @@
             return ctrl;
 
             function do_set_password(){
-                set_password$1(m.route.param('code'), ctrl.password, ctrl.confirm)
+                set_password$2(m.route.param('code'), ctrl.password, ctrl.confirm)
                     .then(function () {
                         ctrl.activated = true;
                     })
@@ -9370,12 +9640,12 @@
         }
     };
 
-    function apiURL$2(code)
+    function apiURL$3(code)
     {   
         return (collaboration_url + "/" + (encodeURIComponent(code)));
     }
 
-    var is_collaboration_code = function (code) { return fetchJson(apiURL$2(code), {
+    var is_collaboration_code = function (code) { return fetchJson(apiURL$3(code), {
         method: 'get'
     }); };
 
@@ -9492,7 +9762,7 @@
                                 value: ctrl.username(),
                                 oninput: m.withAttr('value', ctrl.username),
                                 onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue$5(ctrl.username)
+                                config: getStartValue$7(ctrl.username)
                             })
                         ]),
 
@@ -9504,7 +9774,7 @@
         }
     };
 
-    function getStartValue$5(prop){
+    function getStartValue$7(prop){
         return function (element, isInit) {// !isInit && prop(element.value);
             if (!isInit) setTimeout(function (){ return prop(element.value); }, 30);
         };
@@ -9525,6 +9795,7 @@
                 study_name:m.prop(),
                 user_name:m.prop(''),
                 permission:m.prop(''),
+                data_permission:m.prop(''),
                 loaded:false,
                 col_error:m.prop(''),
                 pub_error:m.prop(''),
@@ -9577,12 +9848,17 @@
                             m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
                             m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
                         ]),
+                        m('select.form-control', {value:ctrl.data_permission(), onchange: m.withAttr('value',ctrl.data_permission)}, [
+                            m('option',{value:'', disabled: true}, 'Data access'),
+                            m('option',{value:'visibale', selected: ctrl.permission() === 'visibale'}, 'Visibale'),
+                            m('option',{value:'invisibale', selected: ctrl.permission() === 'invisibale'}, 'Invisibale')
+                        ]),
                         m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
                     ]); }
                     })})
                     .then(function (response) {
                         if (response)
-                            add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission)
+                            add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission, ctrl.data_permission)
                                 .then(function (){
                                     ctrl.col_error('');
                                     load();
@@ -9662,9 +9938,9 @@
                         ]),
                         m('tbody', [
                             ctrl.users().map(function (user) { return m('tr', [
-                                m('td', user.USERNAME),
-                                m('td', user.PERMISSION),
-                                m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.USER_ID);}}, 'Remove'))
+                                m('td', user.user_name),
+                                m('td', [user.permission, user.status ? (" (" + (user.status) + ")") : '']),
+                                m('td', m('button.btn.btn-secondary', {onclick:function() {ctrl.remove(user.user_id);}}, 'Remove'))
                             ]); })
 
                         ]),
@@ -10163,6 +10439,7 @@
         '/activation/:code':  activationComponent,
         '/collaboration/:code':  collaborationComponent,
         '/settings':  changePasswordComponent,
+        '/messages':  messagesComponent,
         '/reset_password/:code':  resetPasswordComponent,
 
         '/deployList': deployComponent,
@@ -10325,8 +10602,12 @@
                                         ])
                                     ]); }
                             ),
-
                             m('li.nav-item.pull-xs-right', [
+                                m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg'))
+                            ]),
+
+
+                        m('li.nav-item.pull-xs-right', [
                                 m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
                             ]),
                             !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
