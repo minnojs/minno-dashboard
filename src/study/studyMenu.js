@@ -134,7 +134,10 @@ export const draw_menu = study => Object.keys(settings)
         return !should_display(config, study) 
             ? '' 
             : config.href
-                ? m('a.dropdown-item', { href: config.href+study.id, config: m.route }, settings_hash[comp].text)
+                ? m('a.dropdown-item', { href: config.href+study.id, config: m.route }, [
+                    m('i.fa.fa-fw.'+config.class),
+                    settings_hash[comp].text
+                ])
                 : m('a.dropdown-item.dropdown-onclick', {onmousedown: config.onmousedown(study)}, [
                     m('i.fa.fa-fw.'+config.class),
                     settings_hash[comp].text
