@@ -27,7 +27,7 @@ let taskComponent = {
             m('h4', 'Add task'),
             m('.card-block', [
                 inheritInput({label:'inherit', prop:common.inherit, form, help: 'Base this element off of an element from a set'}),
-                selectInput({label:'type', prop: type, form, values: {message: 'message', pip: 'pip', quest: 'quest'}}),
+                selectInput({label:'type', prop: type, form, values: {message: 'message', 'minno-time': 'time', 'minno-quest': 'minno', 'pip (old minno-time)': 'pip' }}),
                 textInput({label: 'name', prop: common.name, help: 'The name for the task',form}),
                 textInput({label: 'title', prop: common.title, help: 'The title to be displayed in the browsers tab',form}),
                 m.component(taskSwitch(type()), {task, form})
@@ -45,6 +45,7 @@ function taskSwitch(type){
         case 'message' : return messageComponent;
         case 'pip' : return pipComponent;
         case 'quest' : return questComponent;
+        case 'time' : return timeComponent;
         default :
             throw new Error(`Unknown task type: ${type}`);
     }
@@ -68,23 +69,45 @@ let messageComponent = {
     }
 };
 
-let pipComponent = {
+const timeComponent = {
     controller({task}){
-        task({
-            version: m.prop('0.3'),
-            scriptUrl: m.prop('')
-        });
+        const scriptUrl = m.prop('');
+        task({ scriptUrl });
     },
     view(ctrl, {task, form}){
-        let props = task();
+        const props = task();
         return m('div', [
             textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form}),
-            selectInput({label:'version', prop: props.version, form, values: {'0.3':0.3, '0.2':0.2}, help: 'The version of PIP that you want to use'})
         ]); 
     }
 };
 
-let questComponent = {
+const pipComponent = {
+    controller({task}){
+        const version = m.prop('0.3');
+        const scriptUrl = m.prop('');
+        const baseUrl = `//cdn.jsdelivr.net/gh/minnojs/minno-quest@${version()}/dist/js`;
+        task({ version, scriptUrl, baseUrl });
+    },
+    view(ctrl, {task, form}){
+        const props = task();
+        return m('div', [
+            textInput({label: 'scriptUrl', prop: props.scriptUrl, help: 'The URL for the task script file',form}),
+            selectInput({label:'version', prop: versionProp, form, values: {'0.3':0.3, '0.2':0.2}, help: 'The version of PIP that you want to use'})
+        ]); 
+
+        function versionProp(){
+            if (arguments.length) {
+                props.version(arguments[0]);
+                props.baseUrl = `//cdn.jsdelivr.net/gh/minnojs/minno-quest@${props.version()}/dist/js`;
+            }
+
+            return props.version();
+        }
+    }
+};
+
+const questComponent = {
     controller({task}){
         task({
             scriptUrl: m.prop('')

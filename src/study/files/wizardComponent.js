@@ -37,8 +37,7 @@ let wizardComponent = {
             basicPage: {
                 header: m.prop(''),
                 decline: m.prop(true),
-                autoFocus:true,
-                v1style: 2
+                autoFocus:true
             },
             basicSelect: {
                 type: 'selectOne',
