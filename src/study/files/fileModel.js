@@ -44,16 +44,27 @@ let filePrototype = {
     },
 
     move(path, study){
-        let basePath = (path.substring(0, path.lastIndexOf('/')));
-        let folderExists = basePath === '' || study.files().some(f => f.isDir && f.path === basePath);
+        const files = study.files();
+        const basePath = (path.substring(0, path.lastIndexOf('/')));
+        const folderExists = basePath === '' || files.some(f => f.isDir && f.path === basePath);
+        const fileExists = files.some(f=>f.path === path);
+        const oldPath = this.path;
 
         if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});
-        if (study.files().some(f=>f.path === path)) return Promise.reject({message: `File ${path} already exists.`});
+        if (fileExists) return Promise.reject({message: `File ${path} already exists.`});
 
-
-        let oldPath = this.path;
         this.setPath(path);
         this.content(this.content()); // in case where changing into a file type that needs syntax checking
+
+        // update the parent folder
+        const parent = study
+            .getParents(this)
+            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+
+        if (parent) {
+            parent.files || (parent.files = []);
+            parent.files.push(this);
+        }
 
         return fetchJson(this.apiUrl() + `/move/` , {
             method:'put',
@@ -83,15 +94,14 @@ let filePrototype = {
         return fetchVoid(this.apiUrl(), {method:'delete'});
     },
 
-
     hasChanged() {
         return this.sourceContent() !== this.content();
     },
 
     define(context = window){
-        var requirejs = context.requirejs;
-        var name = this.url;
-        var content = this.content();
+        const requirejs = context.requirejs;
+        const name = this.url;
+        const content = this.content();
 
         return new Promise((resolve) => {
             requirejs.undef(name);
@@ -101,14 +111,14 @@ let filePrototype = {
     },
 
     require(context = window){
-        var requirejs = context.requirejs;
+        const requirejs = context.requirejs;
         return new Promise((resolve, reject) => {
             requirejs([this.url], resolve,reject);
         });
     },
 
     checkSyntax(){
-        var jshint = window.JSHINT;
+        const jshint = window.JSHINT;
         this.syntaxValid = jshint(this.content(), jshintOptions);
         this.syntaxData = jshint.data();
         return this.syntaxValid;
