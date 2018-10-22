@@ -149,7 +149,7 @@ html, body, .dasboard-root {
 .dashboard-root {
   display: flex;
   flex-direction: column;
-  overflow: hidden; }
+  overflow: visible; }
 
 .navbar {
   flex: 0 1 54px;
