@@ -143,6 +143,10 @@ a.no-decoration {
   border-radius: .25rem;
   padding: 0.75rem 0.75rem 0 0.75rem; }
 
+.wizard {
+  height: 100%;
+  overflow: scroll; }
+
 html, body, .dasboard-root {
   height: 100%; }
 

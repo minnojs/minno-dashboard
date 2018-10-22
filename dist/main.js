@@ -3399,7 +3399,6 @@
 
     var filePrototype = {
         apiUrl: function apiUrl(){
-
             return (baseUrl + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
@@ -3598,8 +3597,10 @@
         get: function get(){
             var this$1 = this;
 
+
             return fetchJson(this.apiURL())
                 .then(function (study) {
+
                     var files = this$1.parseFiles(study.files).map(fileFactory);
 
                     this$1.loaded = true;
@@ -3814,6 +3815,7 @@
 
     var studyFactory =  function (id) {
         var study = Object.create(studyPrototype);
+
         Object.assign(study, {
             id      : id,
             files   : m.prop([]),
@@ -6703,6 +6705,7 @@
     function create_tag(study_id, tagName, tags, error){
         return function () { return add_tag(tagName(), 'E7E7E7')
             .then(function (response) { return tags().push(response); })
+            .then(console.log(tags()))
             .then(tagName.bind(null, ''))
             .catch(error)
             .then(m.redraw); };
@@ -6719,7 +6722,7 @@
 
             var exp_id = m.prop('');
             var version_id = m.prop('');
-            var all_exps = m.prop('');
+            var all_exp_ids = m.prop('');
             var all_versions = m.prop('');
             var file_format = m.prop('csv');
             var file_split = m.prop('taskName');
@@ -6734,13 +6737,28 @@
             };
 
             get_exps(study_id)
-                .then(function (response) {exps(response.experiments); all_exps(exps().map(function (exp){ return exp.id; })); exp_id(all_exps());})
+                .then(function (response) {
+                    var all_exps = m.prop('');
+
+                    exps(response.experiments);
+                    all_exp_ids(exps().map(function (exp){ return exp.id; }));
+                    exp_id(all_exp_ids());
+                    var tmp_exps = [];
+                    exps().forEach(function (exp){
+                        !tmp_exps.find(function (exp2find){ return exp2find.descriptive_id === exp.descriptive_id; })
+                        ?
+                            tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
+                        :
+                            tmp_exps.map(function (exp2update){ return exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update; });
+                        exps(tmp_exps);
+                    });
+                })
                 .then(function (){all_versions(versions.map(function (version){ return version.id; })); version_id(all_versions())})
                 .catch(error)
                 .then(loaded.bind(null, true))
                 .then(m.redraw);
 
-            return {study_id: study_id, exp_id: exp_id, version_id: version_id, file_format: file_format, exps: exps, versions: versions, file_split: file_split, all_exps: all_exps, all_versions: all_versions, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
+            return {study_id: study_id, exp_id: exp_id, version_id: version_id, file_format: file_format, exps: exps, versions: versions, file_split: file_split, all_exp_ids: all_exp_ids, all_versions: all_versions, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
         },
         view: function (ref) {
             var study_id = ref.study_id;
@@ -6750,7 +6768,7 @@
             var file_split = ref.file_split;
             var exps = ref.exps;
             var versions = ref.versions;
-            var all_exps = ref.all_exps;
+            var all_exp_ids = ref.all_exp_ids;
             var all_versions = ref.all_versions;
             var loaded = ref.loaded;
             var downloaded = ref.downloaded;
@@ -6766,8 +6784,8 @@
                     m('.col-sm-4', [
                         m('.input-group', [m('strong', 'Experimant id'),
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                                exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
-                                exps().map(function (exp){ return m('option', {value:exp.id}, exp.descriptive_id); })
+                                exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
+                                exps().map(function (exp){ return m('option', {value:exp.ids}, exp.descriptive_id); })
                             ])
                         ])
                     ]),
@@ -7456,15 +7474,15 @@
     }; };
 
     var study;
-
     var editorLayoutComponent = {
         controller: function (){
             var id = m.route.param('studyId');
-
             if (!study || (study.id !== id)){
                 study = studyFactory(id);
+
                 study
                     .get()
+                    .catch(function (err){ return study.err = err.message; })
                     .then(m.redraw);
             }
 
@@ -7498,7 +7516,12 @@
             var study = ref.study;
 
             return m('.study', {config: fullHeight},  [
-                !study.loaded ? '' : splitPane({
+                study.err ?
+                    m('.alert.alert-danger',
+                        m('strong', 'Error: '), study.err)
+                    :
+                !study.loaded ? '' :
+                    splitPane({
                     leftWidth: leftWidth,
                     left: m.component(sidebarComponent, {study: study}),
                     right: m.route.param('resource') === 'wizard'
@@ -8826,7 +8849,6 @@
 
 
             function update(user_id, role){
-
                 update_role(user_id, role)
                     .then(function (){
                         load();
@@ -8861,12 +8883,22 @@
                                 m('td', user.first_name),
                                 m('td', user.last_name),
                                 m('td', user.email),
-                                m('td', user.role === 'su'
-                                    ?
-                                    [m('strong', 'su '), m('button.btn.btn-secondary', {onclick:function() {ctrl.update(user.id, 'u');}}, 'u')]
-                                    :
-                                    [m('button.btn.btn-secondary', {onclick:function() {ctrl.update(user.id, 'su');}}, 'su'), m('strong', ' u')]),
-                                m('td', m('button.btn.btn-danger', {onclick:function() {ctrl.remove(user.id);}}, 'Remove'))
+                                m('td',
+                                    m('select.form-control', {value:user.role, onchange : function(){ ctrl.update(user.id, this.value) }}, [
+                                        m('option',{value:'u', selected: user.role !== 'su'},  'Simple user'),
+                                        m('option',{value:'su', selected: user.role === 'su'}, 'Super user')
+                                    ])
+
+
+                                ),
+                                // m('td', user.role === 'su'
+                                //     ?
+                                //
+                                //
+                                //     [m('strong', 'su '), m('button.btn.btn-secondary', {onclick:()=>ctrl.update(user.id, 'u')}, 'u')]
+                                //     :
+                                //     [m('button.btn.btn-secondary', {onclick:()=>ctrl.update(user.id, 'su')}, 'su'), m('strong', ' u')]),
+                                m('td', m('button.btn.btn-danger', {onclick:function (){ return ctrl.remove(user.id); }}, 'Remove'))
                             ]); })
                         ]),
                     ])
@@ -9036,22 +9068,6 @@
         ])
     ]); };
 
-    var templates_body = function (ctrl) { return ctrl.role()=='CU' ? '' : m('.card.card-inverse.col-md-4', [
-        m('.card-block',[
-            !ctrl.present_templates()
-            ?
-            m('a', {onclick: function(){ctrl.do_set_templete(true);}},
-                m('button.btn.btn-primary.btn-block', [
-                    m('i.fa.fa-fw.fa-flag'), ' Show template studies'
-                ])
-            )
-            :
-            m('button.btn.btn-primary.btn-block', {onclick: function(){ctrl.do_set_templete(false);}},[
-                m('i.fa.fa-fw.fa-flag'), ' Hide template studies'
-            ])
-        ])
-    ]); };
-
     var settings$1 = {'password':[],
         'emil':[],
         'dropbox':[],
@@ -9061,8 +9077,8 @@
     var settings_hash$1 = {
         password: password_body,
         emil: emil_body,
-        dropbox: dropbox_body,
-        templates: templates_body
+        dropbox: dropbox_body
+        // templates: templates_body
     };
 
     var draw_menu$1 = function (ctrl) {
@@ -9636,13 +9652,12 @@
                 confirm: m.prop(''),
                 password_error: m.prop(''),
                 activated:false,
+                error:m.prop(''),
                 do_set_password: do_set_password
             };
            
             is_activation_code(m.route.param('code'))
-            .catch(function () {
-                m.route('/');
-            });
+            .catch(function (err) {console.log(err.message); ctrl.error(err.message);}).then(m.redraw);
 
             return ctrl;
 
@@ -9658,12 +9673,16 @@
             }
         },
         view: function view(ctrl){
+            console.log({x: ctrl.error()});
             return m('.activation.centrify', {config:fullHeight},[
+                ctrl.error ? m('p.text-center',
+                        m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
                 ctrl.activated
                 ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!')
+                        m('h5', 'Password successfully updated!'),
+                        m('p.text-center', m('small.text-muted',  m('a', {href:'./'}, 'Take me to the login page!')))
                     ]
                 :
                 password_body(ctrl)]);
