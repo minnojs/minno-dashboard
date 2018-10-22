@@ -1,4 +1,4 @@
-import {fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
+import {fetchFullJson, fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 import {baseUrl} from 'modelUrls';
@@ -11,8 +11,10 @@ const studyPrototype = {
     },
 
     get(){
+
         return fetchJson(this.apiURL())
             .then(study => {
+
                 const files = this.parseFiles(study.files).map(fileFactory);
 
                 this.loaded = true;
@@ -213,6 +215,7 @@ const studyPrototype = {
 
 const studyFactory =  id =>{
     const study = Object.create(studyPrototype);
+
     Object.assign(study, {
         id      : id,
         files   : m.prop([]),

@@ -7,7 +7,7 @@ let createMessage = {
     controller({exps, dates, study_id, versions, close}){
         let exp_id = m.prop('');
         let version_id = m.prop('');
-        let all_exps = m.prop('');
+        let all_exp_ids = m.prop('');
         let all_versions = m.prop('');
         let file_format = m.prop('csv');
         let file_split = m.prop('taskName');
@@ -22,23 +22,38 @@ let createMessage = {
         };
 
         get_exps(study_id)
-            .then(response => {exps(response.experiments); all_exps(exps().map(exp=>exp.id)); exp_id(all_exps());})
+            .then(response => {
+                let all_exps = m.prop('');
+
+                exps(response.experiments);
+                all_exp_ids(exps().map(exp=>exp.id));
+                exp_id(all_exp_ids());
+                let tmp_exps = [];
+                exps().forEach(exp=>{
+                    !tmp_exps.find(exp2find=>exp2find.descriptive_id === exp.descriptive_id)
+                    ?
+                        tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
+                    :
+                        tmp_exps.map(exp2update=>exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update);
+                    exps(tmp_exps);
+                });
+            })
             .then(()=> {all_versions(versions.map(version=>version.id)); version_id(all_versions())})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);
 
-        return {study_id, exp_id, version_id, file_format, exps, versions, file_split, all_exps, all_versions, loaded, downloaded, link, error, dates, close};
+        return {study_id, exp_id, version_id, file_format, exps, versions, file_split, all_exp_ids, all_versions, loaded, downloaded, link, error, dates, close};
     },
-    view: ({study_id, exp_id, version_id, file_format, file_split, exps, versions, all_exps, all_versions, loaded, downloaded, link, error, dates, close}) => m('div', [
+    view: ({study_id, exp_id, version_id, file_format, file_split, exps, versions, all_exp_ids, all_versions, loaded, downloaded, link, error, dates, close}) => m('div', [
 
         m('.card-block', [
             m('.row', [
                 m('.col-sm-4', [
                     m('.input-group', [m('strong', 'Experimant id'),
                         m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
-                            exps().length<=1 ? '' : m('option', {selected:true, value:all_exps()}, 'All experiments'),
-                            exps().map(exp=> m('option', {value:exp.id}, exp.descriptive_id))
+                            exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
+                            exps().map(exp=> m('option', {value:exp.ids}, exp.descriptive_id))
                         ])
                     ])
                 ]),

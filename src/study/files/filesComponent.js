@@ -7,15 +7,16 @@ import splitPane from 'utils/splitPane';
 import fullheight from 'utils/fullHeight';
 
 let study;
-
+let errer;
 let editorLayoutComponent = {
     controller: ()=>{
         let id = m.route.param('studyId');
-
         if (!study || (study.id !== id)){
             study = studyFactory(id);
+
             study
                 .get()
+                .catch(err=>study.err = err.message)
                 .then(m.redraw);
         }
 
@@ -47,7 +48,12 @@ let editorLayoutComponent = {
     },
     view: ({study}) => {
         return m('.study', {config: fullheight},  [
-            !study.loaded ? '' : splitPane({
+            study.err ?
+                m('.alert.alert-danger',
+                    m('strong', 'Error: '), study.err)
+                :
+            !study.loaded ? '' :
+                splitPane({
                 leftWidth,
                 left: m.component(sidebarComponent, {study}),
                 right: m.route.param('resource') === 'wizard'

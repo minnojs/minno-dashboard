@@ -12,8 +12,8 @@ const settings = {'password':[],
 const settings_hash = {
     password: password_body,
     emil: emil_body,
-    dropbox: dropbox_body,
-    templates: templates_body
+    dropbox: dropbox_body
+    // templates: templates_body
 };
 
 export let draw_menu = (ctrl) => {

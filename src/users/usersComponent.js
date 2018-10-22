@@ -1,5 +1,7 @@
 import {get_users, remove_user, update_role} from './usersModel';
 import messages from 'utils/messagesComponent';
+import dropdown from 'utils/dropdown';
+import {draw_menu} from "../study/studyMenu";
 
 export default usersComponent;
 
@@ -37,7 +39,6 @@ let usersComponent = {
 
 
         function update(user_id, role){
-
             update_role(user_id, role)
                 .then(()=> {
                     load();
@@ -72,12 +73,22 @@ let usersComponent = {
                             m('td', user.first_name),
                             m('td', user.last_name),
                             m('td', user.email),
-                            m('td', user.role === 'su'
-                                ?
-                                [m('strong', 'su '), m('button.btn.btn-secondary', {onclick:function() {ctrl.update(user.id, 'u');}}, 'u')]
-                                :
-                                [m('button.btn.btn-secondary', {onclick:function() {ctrl.update(user.id, 'su');}}, 'su'), m('strong', ' u')]),
-                            m('td', m('button.btn.btn-danger', {onclick:function() {ctrl.remove(user.id);}}, 'Remove'))
+                            m('td',
+                                m('select.form-control', {value:user.role, onchange : function(){ ctrl.update(user.id, this.value) }}, [
+                                    m('option',{value:'u', selected: user.role !== 'su'},  'Simple user'),
+                                    m('option',{value:'su', selected: user.role === 'su'}, 'Super user')
+                                ])
+
+
+                            ),
+                            // m('td', user.role === 'su'
+                            //     ?
+                            //
+                            //
+                            //     [m('strong', 'su '), m('button.btn.btn-secondary', {onclick:()=>ctrl.update(user.id, 'u')}, 'u')]
+                            //     :
+                            //     [m('button.btn.btn-secondary', {onclick:()=>ctrl.update(user.id, 'su')}, 'su'), m('strong', ' u')]),
+                            m('td', m('button.btn.btn-danger', {onclick:()=>ctrl.remove(user.id)}, 'Remove'))
                         ]))
                     ]),
                 ])
