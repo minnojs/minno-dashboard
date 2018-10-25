@@ -151,6 +151,8 @@ a.no-decoration {text-decoration: none; color:inherit}
     padding: 0.75rem 0.75rem 0 0.75rem;
 }
 
+.wizard { height:100%; overflow: scroll; }
+
 @import "./navbar";
 @import "./loader";
 @import "./forms";

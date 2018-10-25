@@ -102,6 +102,10 @@
     vertical-align: baseline;
     border-radius: .25rem;
     margin-left: .25rem;
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 } 
 
 .split-pane {

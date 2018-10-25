@@ -3435,16 +3435,27 @@
         move: function move(path, study){
             var this$1 = this;
 
+            var files = study.files();
             var basePath = (path.substring(0, path.lastIndexOf('/')));
-            var folderExists = basePath === '' || study.files().some(function (f) { return f.isDir && f.path === basePath; });
+            var folderExists = basePath === '' || files.some(function (f) { return f.isDir && f.path === basePath; });
+            var fileExists = files.some(function (f){ return f.path === path; });
+            var oldPath = this.path;
 
             if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
-            if (study.files().some(function (f){ return f.path === path; })) return Promise.reject({message: ("File " + path + " already exists.")});
+            if (fileExists) return Promise.reject({message: ("File " + path + " already exists.")});
 
-
-            var oldPath = this.path;
             this.setPath(path);
             this.content(this.content()); // in case where changing into a file type that needs syntax checking
+
+            // update the parent folder
+            var parent = study
+                .getParents(this)
+                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+
+            if (parent) {
+                parent.files || (parent.files = []);
+                parent.files.push(this);
+            }
 
             return fetchJson(this.apiUrl() + "/move/" , {
                 method:'put',
@@ -3473,7 +3484,6 @@
         del: function del(){
             return fetchVoid(this.apiUrl(), {method:'delete'});
         },
-
 
         hasChanged: function hasChanged() {
             return this.sourceContent() !== this.content();
@@ -6748,7 +6758,11 @@
                         m('.input-group', [m('strong', 'Experimant id'),
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
                                 exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
+<<<<<<< HEAD
                                 exps().map(function (exp){ return m('option', {value:exp.ids} , exp.descriptive_id); })
+=======
+                                exps().map(function (exp){ return m('option', {value:exp.ids}, exp.descriptive_id); })
+>>>>>>> 908699e3d06a78b43410945ff3323871d6677b53
                             ])
                         ])
                     ]),

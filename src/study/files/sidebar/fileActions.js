@@ -113,7 +113,7 @@ export let delete_experiment = (file, study) => () => {
 };
 
 function moveAction(newPath, file, study){
-    let isFocused = file.id === m.route.param('fileId');
+    const isFocused = file.id === m.route.param('fileId');
 
     let def = file
     .move(newPath,study) // the actual movement

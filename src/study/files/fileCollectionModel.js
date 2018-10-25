@@ -171,9 +171,9 @@ const studyPrototype = {
         // get all files not to be deleted
         let filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
         files.forEach(file => {
-            let parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+            const parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
             if (parent) {
-                let index = parent.files.indexOf(file);
+                const index = parent.files.indexOf(file);
                 parent.files.splice(index, 1);
             }
         });
