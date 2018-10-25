@@ -53,7 +53,7 @@ let createMessage = {
                     m('.input-group', [m('strong', 'Experimant id'),
                         m('select.c-select.form-control',{onchange: e => exp_id(e.target.value)}, [
                             exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
-                            exps().map(exp=> m('option', {value:exp.ids}, exp.descriptive_id))
+                            exps().map(exp=> m('option', {value:exp.ids} , exp.descriptive_id))
                         ])
                     ])
                 ]),
@@ -71,7 +71,7 @@ let createMessage = {
                         m('select.c-select.form-control',{onchange: e => file_format(e.target.value)}, [
                             m('option', {value:'csv'}, 'csv'),
                             m('option', {value:'tsv'}, 'tsv'),
-                            m('option', {value:'json', disabled:true}, 'json')
+                            m('option', {value:'json'}, 'json')
                         ])
                     ])
                 ])
@@ -130,8 +130,9 @@ function ask_get_data(study_id, exp_id, version_id, file_format, file_split, dat
             if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
             link(`${baseUrl}/download?path=${file_data}`, file_data);
         })
-        .catch(error)
+        .catch(err=>error(err.message))
         .then(()=>downloaded(true))
+
         .then(m.redraw);
 }
 
