@@ -6706,7 +6706,7 @@
             var error = m.prop(null);
             dates ={
                 startDate: m.prop(daysAgo$1(3650)),
-                endDate: m.prop(new Date())
+                endDate: m.prop(daysAgo$1(-1))
             };
 
             get_exps(study_id)
