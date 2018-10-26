@@ -18,7 +18,7 @@ let createMessage = {
         let error = m.prop(null);
         dates ={
             startDate: m.prop(daysAgo(3650)),
-            endDate: m.prop(new Date())
+            endDate: m.prop(daysAgo(-1))
         };
 
         get_exps(study_id)
