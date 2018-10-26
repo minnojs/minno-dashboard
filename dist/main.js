@@ -6758,11 +6758,7 @@
                         m('.input-group', [m('strong', 'Experimant id'),
                             m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
                                 exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
-<<<<<<< HEAD
                                 exps().map(function (exp){ return m('option', {value:exp.ids} , exp.descriptive_id); })
-=======
-                                exps().map(function (exp){ return m('option', {value:exp.ids}, exp.descriptive_id); })
->>>>>>> 908699e3d06a78b43410945ff3323871d6677b53
                             ])
                         ])
                     ]),
