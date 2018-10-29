@@ -51,7 +51,7 @@ let textContent = (ctrl, {file, study, observer}) => {
                 onSave: save(file), 
                 mode: textMode,
                 jshintOptions,
-                isReadonly: study.isReadonly,
+                isReadonly: study.isReadonly||study.is_locked,
                 undoManager: file.undoManager,
                 position: file.position
             }

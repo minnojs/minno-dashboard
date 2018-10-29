@@ -18,7 +18,7 @@ const studyPrototype = {
                 const files = this.parseFiles(study.files).map(fileFactory);
 
                 this.loaded = true;
-                this.isReadonly = study.is_readonly || study.is_locked;
+                this.isReadonly = study.is_readonly;
                 this.istemplate = study.is_template;
                 this.is_locked = study.is_locked;
                 this.is_published = study.is_published;

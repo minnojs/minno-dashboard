@@ -75,28 +75,17 @@ let addComponent = {
                                         onchange: m.withAttr('value', ctrl.last_name),
                                         config: getStartValue(ctrl.last_name)
                                     }
-                            )),
-                            m('fieldset.form-group',
-                                m('input.form-control', {
-                                    type:'email',
-                                    placeholder: 'email',
-                                    value: ctrl.email(),
-                                    oninput: m.withAttr('value', ctrl.email),
-                                    onchange: m.withAttr('value', ctrl.email),
-                                    config: getStartValue(ctrl.email)
-                                }
-                            )),
-                            m('fieldset.form-group',
-
-                                m('label.c-input.c-checkbox', [
-                                    m('input.form-control', {
-                                        type: 'checkbox',
-                                        onclick: m.withAttr('checked', ctrl.iscu)}),
-                                    m('span.c-indicator'),
-                                    m.trust('&nbsp;'),
-                                    m('span', 'contract user')
-                                ])
-                            )
+                            ))
+                            // ,m('fieldset.form-group',
+                            //     m('input.form-control', {
+                            //         type:'email',
+                            //         placeholder: 'email',
+                            //         value: ctrl.email(),
+                            //         oninput: m.withAttr('value', ctrl.email),
+                            //         onchange: m.withAttr('value', ctrl.email),
+                            //         config: getStartValue(ctrl.email)
+                            //     }
+                            // ))
                         ]),
 
                         !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),

@@ -6,6 +6,7 @@ import {baseUrl} from 'modelUrls';
 
 export const uploadFiles = (path,study) => (fd, files) => {
     // validation (make sure files do not already exist)
+    console.log(files);
     const filePaths = files.map(file => path === '/' ? file : path + '/' + file);
     const exist = study.files().filter(file => filePaths.includes(file.path)).map(f => f.path);
 

@@ -5,8 +5,8 @@ import {templates_body} from './templateStudiesView';
 
 const settings = {'password':[],
     'emil':[],
-    'dropbox':[],
-    'templates':[]
+    'dropbox':[]
+    // ,'templates':[]
 };
 
 const settings_hash = {

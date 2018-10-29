@@ -124,7 +124,7 @@ export let do_delete = (study) => e => {
 
 export const update_study_description = (study) => e => {
     e.preventDefault();
-    const study_description = m.prop(study.description);
+    const study_description = m.prop(!study.description ? '' : study.description);
     const error = m.prop();
 
     const ask = () => messages.confirm({

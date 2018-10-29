@@ -3605,7 +3605,7 @@
                     var files = this$1.parseFiles(study.files).map(fileFactory);
 
                     this$1.loaded = true;
-                    this$1.isReadonly = study.is_readonly || study.is_locked;
+                    this$1.isReadonly = study.is_readonly;
                     this$1.istemplate = study.is_template;
                     this$1.is_locked = study.is_locked;
                     this$1.is_published = study.is_published;
@@ -4074,6 +4074,7 @@
 
     var uploadFiles = function (path,study) { return function (fd, files) {
         // validation (make sure files do not already exist)
+        console.log(files);
         var filePaths = files.map(function (file) { return path === '/' ? file : path + '/' + file; });
         var exist = study.files().filter(function (file) { return filePaths.includes(file.path); }).map(function (f) { return f.path; });
 
@@ -5741,7 +5742,7 @@
                     onSave: save(file), 
                     mode: textMode,
                     jshintOptions: jshintOptions,
-                    isReadonly: study.isReadonly,
+                    isReadonly: study.isReadonly||study.is_locked,
                     undoManager: file.undoManager,
                     position: file.position
                 }
@@ -7025,7 +7026,7 @@
 
     var update_study_description = function (study) { return function (e) {
         e.preventDefault();
-        var study_description = m.prop(study.description);
+        var study_description = m.prop(!study.description ? '' : study.description);
         var error = m.prop();
 
         var ask = function () { return messages.confirm({
@@ -8731,28 +8732,17 @@
                                             onchange: m.withAttr('value', ctrl.last_name),
                                             config: getStartValue$1(ctrl.last_name)
                                         }
-                                )),
-                                m('fieldset.form-group',
-                                    m('input.form-control', {
-                                        type:'email',
-                                        placeholder: 'email',
-                                        value: ctrl.email(),
-                                        oninput: m.withAttr('value', ctrl.email),
-                                        onchange: m.withAttr('value', ctrl.email),
-                                        config: getStartValue$1(ctrl.email)
-                                    }
-                                )),
-                                m('fieldset.form-group',
-
-                                    m('label.c-input.c-checkbox', [
-                                        m('input.form-control', {
-                                            type: 'checkbox',
-                                            onclick: m.withAttr('checked', ctrl.iscu)}),
-                                        m('span.c-indicator'),
-                                        m.trust('&nbsp;'),
-                                        m('span', 'contract user')
-                                    ])
-                                )
+                                ))
+                                // ,m('fieldset.form-group',
+                                //     m('input.form-control', {
+                                //         type:'email',
+                                //         placeholder: 'email',
+                                //         value: ctrl.email(),
+                                //         oninput: m.withAttr('value', ctrl.email),
+                                //         onchange: m.withAttr('value', ctrl.email),
+                                //         config: getStartValue(ctrl.email)
+                                //     }
+                                // ))
                             ]),
 
                             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
@@ -9044,8 +9034,8 @@
 
     var settings$1 = {'password':[],
         'emil':[],
-        'dropbox':[],
-        'templates':[]
+        'dropbox':[]
+        // ,'templates':[]
     };
 
     var settings_hash$1 = {
@@ -9083,7 +9073,7 @@
                 do_set_templete: do_set_templete
 
             };
-            getAuth().then(function (response) {
+            getAuth().then(function (response) {""
                 ctrl.role(response.role);
             });
 

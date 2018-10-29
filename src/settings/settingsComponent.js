@@ -31,7 +31,7 @@ let changePasswordComponent = {
             do_set_templete
 
         };
-        getAuth().then((response) => {
+        getAuth().then((response) => {``
             ctrl.role(response.role);
         });
 
