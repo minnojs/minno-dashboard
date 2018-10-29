@@ -80,21 +80,12 @@ const studyPrototype = {
     addFile(file){
         const files = this.files();
         files.push(file);
-
-        // update the parent folder
-        const parent = this
-            .getParents(file)
-            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
-
-        if (parent) {
-            parent.files || (parent.files = []);
-            parent.files.push(file);
-        }
+        this.refreshParentFiles(file);
     },
 
     createFile({name, content='',isDir}){
         // validation (make sure there are no invalid characters)
-        if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: `The file name "${name}" is not valid`});
+        if(/[^/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: `The file name "${name}" is not valid`});
 
         // validation (make sure file does not already exist)
         const exists = this.files().some(file => file.path === name);
@@ -163,6 +154,19 @@ const studyPrototype = {
         let paths = files.map(f=>f.path);
         return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
             .then(() => this.removeFiles(files));
+    },
+
+
+    refreshParentFiles(file){
+        // update the parent folder
+        const parent = this
+            .getParents(file)
+            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
+
+        if (parent) {
+            parent.files || (parent.files = []);
+            parent.files.push(file);
+        }
     },
 
     removeFiles(files){

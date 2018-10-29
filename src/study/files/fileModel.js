@@ -54,17 +54,8 @@ let filePrototype = {
         if (fileExists) return Promise.reject({message: `File ${path} already exists.`});
 
         this.setPath(path);
-        this.content(this.content()); // in case where changing into a file type that needs syntax checking
-
-        // update the parent folder
-        const parent = study
-            .getParents(this)
-            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
-
-        if (parent) {
-            parent.files || (parent.files = []);
-            parent.files.push(this);
-        }
+        this.content(this.content()); // in case we're changing into a file type that needs syntax checking
+        study.refreshParentFiles(this);
 
         return fetchJson(this.apiUrl() + `/move/` , {
             method:'put',

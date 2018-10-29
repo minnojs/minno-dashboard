@@ -3445,17 +3445,8 @@
             if (fileExists) return Promise.reject({message: ("File " + path + " already exists.")});
 
             this.setPath(path);
-            this.content(this.content()); // in case where changing into a file type that needs syntax checking
-
-            // update the parent folder
-            var parent = study
-                .getParents(this)
-                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-
-            if (parent) {
-                parent.files || (parent.files = []);
-                parent.files.push(this);
-            }
+            this.content(this.content()); // in case we're changing into a file type that needs syntax checking
+            study.refreshParentFiles(this);
 
             return fetchJson(this.apiUrl() + "/move/" , {
                 method:'put',
@@ -3667,16 +3658,7 @@
         addFile: function addFile(file){
             var files = this.files();
             files.push(file);
-
-            // update the parent folder
-            var parent = this
-                .getParents(file)
-                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-
-            if (parent) {
-                parent.files || (parent.files = []);
-                parent.files.push(file);
-            }
+            this.refreshParentFiles(file);
         },
 
         createFile: function createFile(ref){
@@ -3686,7 +3668,7 @@
             var isDir = ref.isDir;
 
             // validation (make sure there are no invalid characters)
-            if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: ("The file name \"" + name + "\" is not valid")});
+            if(/[^/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: ("The file name \"" + name + "\" is not valid")});
 
             // validation (make sure file does not already exist)
             var exists = this.files().some(function (file) { return file.path === name; });
@@ -3762,6 +3744,19 @@
             var paths = files.map(function (f){ return f.path; });
             return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
                 .then(function () { return this$1.removeFiles(files); });
+        },
+
+
+        refreshParentFiles: function refreshParentFiles(file){
+            // update the parent folder
+            var parent = this
+                .getParents(file)
+                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
+
+            if (parent) {
+                parent.files || (parent.files = []);
+                parent.files.push(file);
+            }
         },
 
         removeFiles: function removeFiles(files){
