@@ -1,6 +1,7 @@
 import {deleteFiles, downloadChosenFiles} from './fileActions';
 import fileContext from './fileContext';
 import {uploadFiles} from './fileActions';
+import {uploadonchange} from 'utils/uploader';
 import dropdown from 'utils/dropdown';
 import {draw_menu} from '../../studyMenu';
 
@@ -27,17 +28,8 @@ const sidebarButtons = ({study}) => {
             ]),
             m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
                 m('i.fa.fa-upload'),
-                readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadButton(study)})
+                readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadonchange({onchange:uploadFiles('/', study)})})
             ])
         ])
     ]);
 };
-
-
-function uploadButton(study){
-    return e => {
-        let dataTransfer = e.dataTransfer || e.target;
-        /* (path, study)(fd, files) */
-        uploadFiles('/', study)(dataTransfer.files);
-    };
-}

@@ -19,7 +19,7 @@ function dragdrop(element, options) {
     function update(e) {
         e.preventDefault();
         e.stopPropagation();
-        onchange(options)(e);
+        uploadonchange(options)(e);
         m.redraw();
     }
 }
@@ -32,7 +32,7 @@ export const uploadConfig = ctrl => (element, isInitialized) => {
 
 export const uploadBox = args => m('form.upload', {method:'post', enctype:'multipart/form-data', config:uploadConfig(args)},[
     m('i.fa.fa-download .fa-3x.m-b-1'),
-    m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange:onchange(args)}),
+    m('input.box__file', {id:'upload', type:'file', name:'files[]', 'data-multiple-caption':'{count} files selected', multiple:true, onchange: uploadonchange(args)}),
     m('label', {for:'upload'},
         m('strong', 'Choose a file'),
         m('span', ' or drag it here')
@@ -40,9 +40,10 @@ export const uploadBox = args => m('form.upload', {method:'post', enctype:'multi
 ]);
 
 // call onchange with files
-const onchange = args => e => {
-    const dt = e.dataTransfer;
+export const uploadonchange = args => e => {
+    const dt = e.dataTransfer || e.target;
     const cb = args.onchange;
+
     if (typeof cb !== 'function') return;
 
     if (dt.items && dt.items.length && 'webkitGetAsEntry' in dt.items[0]) {
@@ -96,12 +97,12 @@ function arrayApi(input, cb) {
 
 // old drag and drop API implemented in Chrome 11+
 function entriesApi(items, cb) {
-    var fd = new FormData(), files = [], rootPromises = [];
+    const fd = new FormData(), files = [], rootPromises = [];
 
     function readEntries(entry, reader, oldEntries, cb) {
-        var dirReader = reader || entry.createReader();
+        const dirReader = reader || entry.createReader();
         dirReader.readEntries(function(entries) {
-            var newEntries = oldEntries ? oldEntries.concat(entries) : entries;
+            const newEntries = oldEntries ? oldEntries.concat(entries) : entries;
             if (entries.length) {
                 setTimeout(readEntries.bind(null, entry, dirReader, newEntries, cb), 0);
             } else {

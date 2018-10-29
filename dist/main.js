@@ -6172,7 +6172,7 @@
         function update(e) {
             e.preventDefault();
             e.stopPropagation();
-            onchange(options)(e);
+            uploadonchange(options)(e);
             m.redraw();
         }
     }
@@ -6183,9 +6183,10 @@
         }
     }; };
 
-    var onchange = function (args) { return function (e) {
-        var dt = e.dataTransfer;
+    var uploadonchange = function (args) { return function (e) {
+        var dt = e.dataTransfer || e.target;
         var cb = args.onchange;
+
         if (typeof cb !== 'function') return;
 
         if (dt.items && dt.items.length && 'webkitGetAsEntry' in dt.items[0]) {
@@ -7355,20 +7356,11 @@
                 ]),
                 m('label.btn.btn-secondary.btn-sm', {class: readonly ? 'disabled' : '', title: 'Drag files over the file list in order to upload easily'}, [
                     m('i.fa.fa-upload'),
-                    readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadButton(study)})
+                    readonly ? '' : m('input[type="file"]', {style: 'display:none', multiple:'true', onchange: uploadonchange({onchange:uploadFiles('/', study)})})
                 ])
             ])
         ]);
     };
-
-
-    function uploadButton(study){
-        return function (e) {
-            var dataTransfer = e.dataTransfer || e.target;
-            /* (path, study)(fd, files) */
-            uploadFiles('/', study)(dataTransfer.files);
-        };
-    }
 
     var sidebarComponent = {
         view: function (ctrl , ref) {
