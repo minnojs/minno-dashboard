@@ -4074,7 +4074,6 @@
 
     var uploadFiles = function (path,study) { return function (fd, files) {
         // validation (make sure files do not already exist)
-        console.log(files);
         var filePaths = files.map(function (file) { return path === '/' ? file : path + '/' + file; });
         var exist = study.files().filter(function (file) { return filePaths.includes(file.path); }).map(function (f) { return f.path; });
 
@@ -5209,7 +5208,7 @@
             var task = ref.task;
 
             task({
-                piTemplate: m.prop(true),
+                //piTemplate: m.prop(true),
                 template: m.prop(''),
                 templateUrl: m.prop('')
             });
@@ -5220,7 +5219,7 @@
 
             var props = task();
             return m('div', [
-                selectInput({label:'piTemplate', prop: props.piTemplate, form: form, values: {'Active': true, 'Debriefing template': 'debrief', 'Don\'t use': false}, help: 'Use the PI style templates'}),
+                //selectInput({label:'piTemplate', prop: props.piTemplate, form, values: {'Active': true, 'Debriefing template': 'debrief', 'Don\'t use': false}, help: 'Use the PI style templates'}),
                 textInput({label: 'templateUrl', prop: props.templateUrl, help: 'The URL for the task template file',form: form}),
                 textInput({label: 'template', prop: props.template, rows:6,  form: form, isArea:true, help: m.trust('You can manually create your template here <strong>instead</strong> of using a url')})
             ]); 
@@ -7366,6 +7365,7 @@
     function uploadButton(study){
         return function (e) {
             var dataTransfer = e.dataTransfer || e.target;
+            /* (path, study)(fd, files) */
             uploadFiles('/', study)(dataTransfer.files);
         };
     }

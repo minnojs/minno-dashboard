@@ -37,6 +37,7 @@ const sidebarButtons = ({study}) => {
 function uploadButton(study){
     return e => {
         let dataTransfer = e.dataTransfer || e.target;
+        /* (path, study)(fd, files) */
         uploadFiles('/', study)(dataTransfer.files);
     };
 }

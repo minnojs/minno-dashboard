@@ -2,17 +2,17 @@ import {formFactory, textInput, selectInput} from 'utils/formHelpers';
 import inheritInput from './inheritInput';
 export default taskComponent;
 
-let taskComponent = {
+const taskComponent = {
     controller({output,close}){
-        let form = formFactory();
+        const form = formFactory();
         
-        let type = m.prop('message');
-        let common = {
+        const type = m.prop('message');
+        const common = {
             inherit: m.prop(''),
             name: m.prop(''),
             title: m.prop('')
         };
-        let task = m.prop({});
+        const task = m.prop({});
             
         return {type, common, task, form, close, proceed};
 
@@ -51,10 +51,10 @@ function taskSwitch(type){
     }
 }
 
-let messageComponent = {
+const messageComponent = {
     controller({task}){
         task({
-            piTemplate: m.prop(true),
+            //piTemplate: m.prop(true),
             template: m.prop(''),
             templateUrl: m.prop('')
         });
@@ -62,7 +62,7 @@ let messageComponent = {
     view(ctrl, {task, form}){
         let props = task();
         return m('div', [
-            selectInput({label:'piTemplate', prop: props.piTemplate, form, values: {'Active': true, 'Debriefing template': 'debrief', 'Don\'t use': false}, help: 'Use the PI style templates'}),
+            //selectInput({label:'piTemplate', prop: props.piTemplate, form, values: {'Active': true, 'Debriefing template': 'debrief', 'Don\'t use': false}, help: 'Use the PI style templates'}),
             textInput({label: 'templateUrl', prop: props.templateUrl, help: 'The URL for the task template file',form}),
             textInput({label: 'template', prop: props.template, rows:6,  form, isArea:true, help: m.trust('You can manually create your template here <strong>instead</strong> of using a url')})
         ]); 
