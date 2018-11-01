@@ -89,12 +89,31 @@ const choose = ({file, study}) => e => {
     e.stopPropagation();
     e.preventDefault();
 
-    let lastState = isChosen(file)();
+    const currentState = isChosen(file)();
+    const newState = currentState === 1 ? 0 : 1;
 
     // mark decendents (and the file itself
     study
         .getChildren(file)
-        .forEach(f => isChosen(f)(lastState === 1 ? 0 : 1)); // update vm for each child
+        .forEach(f => isChosen(f)(newState)); // update vm for each child
+
+    study
+        .getParents(file)
+        .forEach(file => {
+            const checked = study
+                .getChildren(file)
+                .filter(f => f !== file)
+                .map(f => isChosen(f)())
+                .reverse();
+
+            const state = checked.every(v => v === 0)
+                ? 0
+                : checked.every(v => v === 1)
+                    ? 1
+                    : -1;
+
+            isChosen(file)(state);
+        });
 
     function isChosen(file){
         return study.vm(file.id).isChosen;

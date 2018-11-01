@@ -6379,12 +6379,31 @@
         e.stopPropagation();
         e.preventDefault();
 
-        var lastState = isChosen(file)();
+        var currentState = isChosen(file)();
+        var newState = currentState === 1 ? 0 : 1;
 
         // mark decendents (and the file itself
         study
             .getChildren(file)
-            .forEach(function (f) { return isChosen(f)(lastState === 1 ? 0 : 1); }); // update vm for each child
+            .forEach(function (f) { return isChosen(f)(newState); }); // update vm for each child
+
+        study
+            .getParents(file)
+            .forEach(function (file) {
+                var checked = study
+                    .getChildren(file)
+                    .filter(function (f) { return f !== file; })
+                    .map(function (f) { return isChosen(f)(); })
+                    .reverse();
+
+                var state = checked.every(function (v) { return v === 0; })
+                    ? 0
+                    : checked.every(function (v) { return v === 1; })
+                        ? 1
+                        : -1;
+
+                isChosen(file)(state);
+            });
 
         function isChosen(file){
             return study.vm(file.id).isChosen;
