@@ -131,14 +131,15 @@ const studyPrototype = {
                 let oldfiles = this.files();
 
                 return newfiles
-                    .filter(newfile => !oldfiles.some(oldfile => oldfile.path == newfile.path))
-                    .map(newfile => Object.assign({studyId: this.id},newfile))
+                    .filter(newfile => !oldfiles.some(oldfile => oldfile.path === newfile.path))
+                    .map(newfile => Object.assign({studyId: this.id}, newfile))
                     .map(fileFactory)
                     .forEach(this.addFile.bind(this));
             })
             .then(this.sort.bind(this))
             .then(() => this.isUploading = false)
-            .catch(() => this.isUploading = false);
+            .catch((err) => {this.isUploading = false;
+                return Promise.reject(err);});
     },
 
     /*

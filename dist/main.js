@@ -3719,14 +3719,15 @@
                     var oldfiles = this$1.files();
 
                     return newfiles
-                        .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path == newfile.path; }); })
-                        .map(function (newfile) { return Object.assign({studyId: this$1.id},newfile); })
+                        .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path === newfile.path; }); })
+                        .map(function (newfile) { return Object.assign({studyId: this$1.id}, newfile); })
                         .map(fileFactory)
                         .forEach(this$1.addFile.bind(this$1));
                 })
                 .then(this.sort.bind(this))
                 .then(function () { return this$1.isUploading = false; })
-                .catch(function () { return this$1.isUploading = false; });
+                .catch(function (err) {this$1.isUploading = false;
+                    return Promise.reject(err);});
         },
 
         /*
@@ -4087,7 +4088,7 @@
             return study.uploadFiles({path: path, fd: fd, force: force})
                 .catch(function (response) { return messages.alert({
                     header: 'Upload File',
-                    content: response.message
+                    content: m('p.alert.alert-danger', response.message)
                 }); })
                 .then(m.redraw);
         }
@@ -4101,7 +4102,7 @@
         })
             .then(function (response) {
                 var targetPath = newPath().replace(/\/$/, '') + '/' + file.name;
-                if (response && newPath() !== file.basePath) return moveAction(targetPath, file,study);
+                if (response && newPath() !== file.basePath) return moveAction(targetPath, file, study);
             });
     }; };
 
@@ -4186,7 +4187,7 @@
         .then(redirect)
         .catch(function (response) { return messages.alert({
             header: 'Move/Rename File',
-            content: response.message
+            content: m('p.alert.alert-danger', response.message)
         }); })
         .then(m.redraw); // redraw after server response
 
@@ -4195,7 +4196,7 @@
 
         function redirect(response){
             // redirect only if the file is chosen, otherwise we can stay right here...
-            if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (file.id)));
+            if (isFocused) m.route(("/editor/" + (study.id) + "/file/" + (encodeURI(file.id))));
             return response;
         }
     }
@@ -4206,7 +4207,7 @@
         .catch(function (response) { return messages.alert({
 
             header: 'Copy File',
-            content: response.message
+            content: m('p.alert.alert-danger', response.message)
         }); })
         .then(m.redraw); // redraw after server response
 

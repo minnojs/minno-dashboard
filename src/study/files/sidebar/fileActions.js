@@ -21,7 +21,7 @@ export const uploadFiles = (path,study) => (fd, files) => {
         return study.uploadFiles({path, fd, force})
             .catch(response => messages.alert({
                 header: 'Upload File',
-                content: response.message
+                content: m('p.alert.alert-danger', response.message)
             }))
             .then(m.redraw);
     }
@@ -35,7 +35,7 @@ export const moveFile = (file, study) => () => {
     })
         .then(response => {
             const targetPath = newPath().replace(/\/$/, '') + '/' + file.name;
-            if (response && newPath() !== file.basePath) return moveAction(targetPath, file,study);
+            if (response && newPath() !== file.basePath) return moveAction(targetPath, file, study);
         });
 };
 
@@ -120,7 +120,7 @@ function moveAction(newPath, file, study){
     .then(redirect)
     .catch(response => messages.alert({
         header: 'Move/Rename File',
-        content: response.message
+        content: m('p.alert.alert-danger', response.message)
     }))
     .then(m.redraw); // redraw after server response
 
@@ -129,7 +129,7 @@ function moveAction(newPath, file, study){
 
     function redirect(response){
         // redirect only if the file is chosen, otherwise we can stay right here...
-        if (isFocused) m.route(`/editor/${study.id}/file/${file.id}`);
+        if (isFocused) m.route(`/editor/${study.id}/file/${encodeURI(file.id)}`);
         return response;
     }
 }
@@ -140,7 +140,7 @@ function copyAction(path, file, study_id, new_study_id){
     .catch(response => messages.alert({
 
         header: 'Copy File',
-        content: response.message
+        content: m('p.alert.alert-danger', response.message)
     }))
     .then(m.redraw); // redraw after server response
 
