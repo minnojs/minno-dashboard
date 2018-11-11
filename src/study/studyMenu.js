@@ -5,6 +5,8 @@ const can_edit = study => !study.isReadonly && study.permission !== 'read only';
 
 const is_locked = study => study.is_locked;
 const is_published = study => study.is_published;
+const is_public = study => study.is_public;
+
 const not = fn => study => !fn(study);
 
 const settings = {
@@ -23,6 +25,7 @@ const settings = {
     // 'studyRemoval':[],
     'sharing':[],
     'public':[],
+    'private':[],
     // 'unpublic':[],
     'copyUrl':[]
 };
@@ -87,11 +90,18 @@ const settings_hash = {
         class: 'fa-cloud-upload'
     }},
 
-    public: {text: 'Make public / private', config: {
-        display: [can_edit, not(is_locked)],
+    public: {text: 'Make public', config: {
+        display: [can_edit, not(is_locked), not(is_public)],
         onmousedown: do_make_public,
         class: 'fa-globe'
     }},
+
+    private: {text: 'Make private', config: {
+            display: [can_edit, not(is_locked), is_public],
+            onmousedown: do_make_public,
+            class: 'fa-globe'
+        }},
+
 
     unlock: {text: 'Unlock Study',
         config: {

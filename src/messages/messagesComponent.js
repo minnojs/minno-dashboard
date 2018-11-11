@@ -1,125 +1,97 @@
-import {set_password,
-        set_email,
-        get_pending_studies,
-        check_if_dbx_synchronized,
-        check_if_present_templates ,
-        set_present_templates} from './messagesModel';
+import {get_pending_studies,
+        use_code} from './messagesModel';
 import {getAuth} from 'login/authModel';
-
-import {draw_menu} from './settingsMenu';
+import {do_create} from "../study/studyActions";
+import {draw_menu} from "../study/studyMenu";
 
 export default messagesComponent;
 
 let messagesComponent = {
     controller(){
-
         const ctrl = {
             role:m.prop(''),
-            password:m.prop(''),
-            confirm:m.prop(''),
-            is_dbx_synchronized: m.prop(),
-            is_gdrive_synchronized: m.prop(),
-            present_templates: m.prop(),
-            dbx_auth_link: m.prop(''),
-            gdrive_auth_link: m.prop(''),
-            synchronization_error: m.prop(''),
-            present_templates_error: m.prop(''),
-            email: m.prop(''),
-            password_error: m.prop(''),
-            password_changed:false,
-            email_error: m.prop(''),
-            email_changed:false,
-            do_set_password,
-            do_set_email,
-            do_set_templete
-
+            pendings: m.prop(''),
+            loaded: false,
+            error: m.prop(''),
+            do_use_code
         };
         getAuth().then((response) => {
             ctrl.role(response.role);
         });
 
+        function do_use_code(code){
+            use_code(code)
+                .then(()=>ctrl.pendings(ctrl.pendings().filter(study=>study.accept!==code && study.reject!==code)))
+                .then(m.redraw);
+        }
+
         get_pending_studies()
         .then((response) => {
-            ctrl.email(response.email);
+            ctrl.pendings(response.studies);
+            console.log(response.studies);
+            ctrl.loaded = true;
         })
         .catch(response => {
-            ctrl.email_error(response.message);
+            ctrl.error(response.message);
         })
         .then(m.redraw);
-        check_if_dbx_synchronized()
-            .then((response) => {
-                ctrl.is_dbx_synchronized(response.is_synchronized);
-                ctrl.dbx_auth_link(response.auth_link);
-            })
-            .catch(response => {
-                ctrl.synchronization_error(response.message);
-            })
-            .then(m.redraw);
-
-        check_if_present_templates()
-            .then((response) => {
-                ctrl.present_templates(response.present_templates);
-            })
-            .catch(response => {
-                ctrl.present_templates_error(response.message);
-            })
-            .then(m.redraw);
         return ctrl;
-
-
-        function do_set_password(){
-            set_password('', ctrl.password, ctrl.confirm)
-                .then(() => {
-                    ctrl.password_changed = true;
-                })
-                .catch(response => {
-                    ctrl.password_error(response.message);
-                })
-                .then(m.redraw);
-        }
-
-        function do_set_email(){
-            set_email(ctrl.email)
-                .then(() => {
-                    ctrl.email_changed = true;
-                })
-                .catch(response => {
-                    ctrl.email_error(response.message);
-                })
-                .then(m.redraw);
-        }
-        function do_set_templete(value){
-            set_present_templates(value)
-                .then(() => {
-                    ctrl.present_templates(value);
-                })
-                .catch(response => {
-                    ctrl.present_templates_error(response.message);
-                })
-                .then(m.redraw);
-        }
     },
     view(ctrl){
-        return m('.activation.centrify',[
-            ctrl.password_changed
-            ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Password successfully updated!'),
-                    m('p.text-center',
-                        m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
-                    )
 
-                ]
-            :
-            ctrl.email_changed
+        return  !ctrl.loaded
             ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Email successfully updated!')
-                ]
+            m('.loader')
             :
-                draw_menu(ctrl)
-        ]);
+            m('.container.studies', [
+            m('.row.p-t-1', [
+                m('.col-sm-4', [
+                    m('h3', 'Sharing Invitations')
+                ])]),
+            m('.card.studies-card', [
+                m('.card-block', [
+                    m('.row', {key: '@@notid@@'}, [
+                        m('.col-sm-3', [
+                            m('.form-control-static',[
+                                m('strong', 'Owner ')
+                            ])
+                        ]),
+                        m('.col-sm-4', [
+                            m('.form-control-static',[
+                                m('strong', 'Study name ')
+                            ])]),
+                        m('.col-sm-2', [
+                            m('.form-control-static',[
+                                m('strong', 'Permission ')
+                            ])
+                        ]),
+                        m('.col-sm-3', [
+                            m('.form-control-static',[
+                                m('strong', 'Action ')
+                            ])
+                        ])
+
+                    ]),
+                    ctrl.pendings().map(study =>
+                        m('.row.study-row', [
+                        m('.col-sm-3', [
+                            m('.study-text', study.owner_name)
+                        ]),
+                        m('.col-sm-4', [
+                            m('.study-text', study.study_name)
+                        ]),
+                        m('.col-sm-2', [
+                            m('.study-text', study.permission)
+                        ]),
+                        m('.col-sm-3', [
+                            m('.study-text', m('button.btn.btn-primary', {onclick:function() {ctrl.do_use_code(study.accept);}}, 'Accept'), ' | ',
+                                m('button.btn.btn-danger', {onclick:function() {ctrl.do_use_code(study.reject);}}, 'Reject'))
+                        ]),
+
+
+                    ]))
+                ])])]);
+
+
     }
 };

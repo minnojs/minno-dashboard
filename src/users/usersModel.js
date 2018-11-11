@@ -17,7 +17,12 @@ export let remove_user = (user_id) => fetchJson(users_url(), {
     method: 'delete'
 });
 
-export let update_role= (user_id, role) => fetchJson(users_url(), {
+export let update_role = (user_id, role) => fetchJson(users_url(), {
     body: {user_id, role},
+    method: 'put'
+});
+
+export let change_user_password = (user_id, password) => fetchJson(users_url(), {
+    body: {user_id, password},
     method: 'put'
 });

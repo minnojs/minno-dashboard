@@ -32,6 +32,7 @@ let collaborationComponent = {
         function load() {
             get_collaborations(m.route.param('studyId'))
                 .then(response =>{ctrl.users(response.users);
+                console.log(response);
                     ctrl.is_public(response.is_public);
                     ctrl.study_name(response.study_name);
                     ctrl.link(response.link_data.link);
@@ -167,7 +168,7 @@ let collaborationComponent = {
                         ]))
 
                     ]),
-                    m('.row.space',
+                  /*  m('.row.space',
                         m('.col-sm-12', [
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
                                 [m('i.fa.fa-plus'), '  Create / Re-create public link']
@@ -180,7 +181,7 @@ let collaborationComponent = {
                                 m('input.form-control', { value: ctrl.link(), onchange: m.withAttr('value', ctrl.link)})
                             ])
                         ])
-                    )
+                    )*/
 
                 ])
             ]);
