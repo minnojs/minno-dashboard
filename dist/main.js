@@ -3893,11 +3893,13 @@
 
     var component = {
         controller: function controller(ref){
+            var file = ref.file;
             var study = ref.study;
 
             var dirs = study
                 .files()
-                .filter(function (file) { return file.isDir; })
+                .filter(function (f) { return f.isDir; })
+                .filter(function (f) { return f !== file; })
                 .map(function (ref) {
                     var name = ref.name;
                     var basePath = ref.basePath;

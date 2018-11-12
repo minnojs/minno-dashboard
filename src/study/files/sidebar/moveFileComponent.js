@@ -5,13 +5,14 @@ const moveFileComponent = args => m.component(component, args);
 
 
 const component = {
-    controller({study}){
+    controller({file, study}){
         const dirs = study
             .files()
-            .filter(file => file.isDir)
+            .filter(f => f.isDir)
+            .filter(f => f !== file)
             .map(({name, basePath, path, id}) => ({name, basePath, path, id, isOpen: m.prop(study.vm(id).isOpen())}))
             .reduce((hash, dir)=>{
-                let path = dir.basePath;
+                const path = dir.basePath;
                 if (!hash[path]) hash[path] = [];
                 hash[path].push(dir);
                 return hash;

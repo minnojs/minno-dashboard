@@ -302,7 +302,7 @@ export const downloadChosenFiles = (study) => () => {
         }));
 };
 
-export let downloadFile = (study, file) => () => {
+export const downloadFile = (study, file) => () => {
     if (!file.isDir) return downloadUrl(file.url, file.name);
 
     study.downloadFiles([file.path])
