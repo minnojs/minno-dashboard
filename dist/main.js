@@ -3577,7 +3577,7 @@
             return fetchJson(this.apiURL())
                 .then(function (study) {
 
-                    var files = this$1.parseFiles(study.files.map(fileFactory));
+                    var files = this$1.parseFiles(study.files);
 
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
@@ -3602,18 +3602,22 @@
 
         parseFiles: function parseFiles(files){
             var study = this;
-            if (!files) return [];
+
             return ensureArray(files)
+                .map(fileFactory)
                 .map(spreadFile)
-                .reduce(flatten, [])
+                .reduce(flattenDeep, [])
                 .map(assignStudyId);
 
             function ensureArray(arr){ return arr || []; }
-            function flatten(acc, val){ return acc.concat(val); }
             function assignStudyId(file){ return Object.assign(file, {studyId: study.id}); }
+            function flattenDeep(acc, val) { return Array.isArray(val) ? acc.concat(val.reduce(flattenDeep,[])) : acc.concat(val); }
 
             // create an array including file and all its children
-            function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
+            function spreadFile(file){ 
+                var children = ensureArray(file.files).map(spreadFile);
+                return [file].concat(children);
+            }
         },
 
         mergeFiles: function mergeFiles(files){
@@ -3629,7 +3633,6 @@
             newfiles
                 .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.id == newfile.id; }); })
                 .map(function (newfile) { return Object.assign({studyId: this$1.id},newfile); })
-                .map(fileFactory)
                 .forEach(this.addFile.bind(this));
 
             this.sort();
@@ -3725,7 +3728,6 @@
                     return newfiles
                         .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path === newfile.path; }); })
                         .map(function (newfile) { return Object.assign({studyId: this$1.id}, newfile); })
-                        .map(fileFactory)
                         .forEach(this$1.addFile.bind(this$1));
                 })
                 .then(this.sort.bind(this))

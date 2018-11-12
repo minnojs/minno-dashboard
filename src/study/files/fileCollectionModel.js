@@ -15,7 +15,7 @@ const studyPrototype = {
         return fetchJson(this.apiURL())
             .then(study => {
 
-                const files = this.parseFiles(study.files.map(fileFactory));
+                const files = this.parseFiles(study.files);
 
                 this.loaded = true;
                 this.isReadonly = study.is_readonly;
@@ -40,18 +40,22 @@ const studyPrototype = {
 
     parseFiles(files){
         const study = this;
-        if (!files) return [];
+
         return ensureArray(files)
+            .map(fileFactory)
             .map(spreadFile)
-            .reduce(flatten, [])
+            .reduce(flattenDeep, [])
             .map(assignStudyId);
 
         function ensureArray(arr){ return arr || []; }
-        function flatten(acc, val){ return acc.concat(val); }
         function assignStudyId(file){ return Object.assign(file, {studyId: study.id}); }
+        function flattenDeep(acc, val) { return Array.isArray(val) ? acc.concat(val.reduce(flattenDeep,[])) : acc.concat(val); }
 
         // create an array including file and all its children
-        function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
+        function spreadFile(file){ 
+            const children = ensureArray(file.files).map(spreadFile);
+            return [file].concat(children);
+        }
     },
 
     mergeFiles(files){
@@ -65,7 +69,6 @@ const studyPrototype = {
         newfiles
             .filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id))
             .map(newfile => Object.assign({studyId: this.id},newfile))
-            .map(fileFactory)
             .forEach(this.addFile.bind(this));
 
         this.sort();
@@ -151,7 +154,6 @@ const studyPrototype = {
                 return newfiles
                     .filter(newfile => !oldfiles.some(oldfile => oldfile.path === newfile.path))
                     .map(newfile => Object.assign({studyId: this.id}, newfile))
-                    .map(fileFactory)
                     .forEach(this.addFile.bind(this));
             })
             .then(this.sort.bind(this))
