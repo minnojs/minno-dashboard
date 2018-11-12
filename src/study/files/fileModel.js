@@ -3,7 +3,7 @@ import {fetchVoid, fetchJson} from 'utils/modelHelpers';
 import {baseUrl} from 'modelUrls';
 export default fileFactory;
 
-let filePrototype = {
+const filePrototype = {
     apiUrl(){
         return `${baseUrl}/files/${encodeURIComponent(this.studyId)}/file/${encodeURIComponent(this.id)}`;
     },
@@ -30,8 +30,6 @@ let filePrototype = {
     },
 
     save(){
-
-
         return fetchJson(this.apiUrl(), {
             method:'put',
             body: {content: this.content, last_modify:this.last_modify}
@@ -48,10 +46,15 @@ let filePrototype = {
         const basePath = (path.substring(0, path.lastIndexOf('/')));
         const folderExists = basePath === '' || files.some(f => f.isDir && f.path === basePath);
         const fileExists = files.some(f=>f.path === path);
+        const hasChangedChildren = study
+            .getChildren(this)
+            .some(file => file.hasChanged());
+
         const oldPath = this.path;
 
         if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});
         if (fileExists) return Promise.reject({message: `File ${path} already exists.`});
+        if (hasChangedChildren) return Promise.reject({message: `You have unsaved changes in one of the files please save, then try again.`});
 
         this.setPath(path);
         this.content(this.content()); // in case we're changing into a file type that needs syntax checking

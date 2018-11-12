@@ -15,7 +15,7 @@ const studyPrototype = {
         return fetchJson(this.apiURL())
             .then(study => {
 
-                const files = this.parseFiles(study.files).map(fileFactory);
+                const files = this.parseFiles(study.files.map(fileFactory));
 
                 this.loaded = true;
                 this.isReadonly = study.is_readonly;
@@ -52,6 +52,24 @@ const studyPrototype = {
 
         // create an array including file and all its children
         function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
+    },
+
+    mergeFiles(files){
+        const newfiles = this.parseFiles(files);
+        const oldfiles = this
+            .files()
+            .filter(oldfile => !newfiles.some(newfile => oldfile.id == newfile.id));
+
+        // reset files;
+        this.files(oldfiles);
+        newfiles
+            .filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id))
+            .map(newfile => Object.assign({studyId: this.id},newfile))
+            .map(fileFactory)
+            .forEach(this.addFile.bind(this));
+
+        this.sort();
+        return this;
     },
 
     getFile(id){
@@ -152,7 +170,7 @@ const studyPrototype = {
     },
 
     delFiles(files){
-        let paths = files.map(f=>f.path);
+        const paths = files.map(f=>f.path);
         return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
             .then(() => this.removeFiles(files));
     },
@@ -172,9 +190,9 @@ const studyPrototype = {
 
     removeFiles(files){
         // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-        let children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
+        const children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
         // get all files not to be deleted
-        let filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
+        const filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
         files.forEach(file => {
             const parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
             if (parent) {

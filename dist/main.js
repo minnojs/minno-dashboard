@@ -3400,8 +3400,6 @@
         save: function save(){
             var this$1 = this;
 
-
-
             return fetchJson(this.apiUrl(), {
                 method:'put',
                 body: {content: this.content, last_modify:this.last_modify}
@@ -3420,10 +3418,15 @@
             var basePath = (path.substring(0, path.lastIndexOf('/')));
             var folderExists = basePath === '' || files.some(function (f) { return f.isDir && f.path === basePath; });
             var fileExists = files.some(function (f){ return f.path === path; });
+            var hasChangedChildren = study
+                .getChildren(this)
+                .some(function (file) { return file.hasChanged(); });
+
             var oldPath = this.path;
 
             if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
             if (fileExists) return Promise.reject({message: ("File " + path + " already exists.")});
+            if (hasChangedChildren) return Promise.reject({message: "You have unsaved changes in one of the files please save, then try again."});
 
             this.setPath(path);
             this.content(this.content()); // in case we're changing into a file type that needs syntax checking
@@ -3574,7 +3577,7 @@
             return fetchJson(this.apiURL())
                 .then(function (study) {
 
-                    var files = this$1.parseFiles(study.files).map(fileFactory);
+                    var files = this$1.parseFiles(study.files.map(fileFactory));
 
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
@@ -3611,6 +3614,26 @@
 
             // create an array including file and all its children
             function spreadFile(file){ return [file].concat(study.parseFiles(file.files)); }
+        },
+
+        mergeFiles: function mergeFiles(files){
+            var this$1 = this;
+
+            var newfiles = this.parseFiles(files);
+            var oldfiles = this
+                .files()
+                .filter(function (oldfile) { return !newfiles.some(function (newfile) { return oldfile.id == newfile.id; }); });
+
+            // reset files;
+            this.files(oldfiles);
+            newfiles
+                .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.id == newfile.id; }); })
+                .map(function (newfile) { return Object.assign({studyId: this$1.id},newfile); })
+                .map(fileFactory)
+                .forEach(this.addFile.bind(this));
+
+            this.sort();
+            return this;
         },
 
         getFile: function getFile(id){

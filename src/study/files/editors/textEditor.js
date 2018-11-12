@@ -10,16 +10,16 @@ import textMenu from './textMenu';
 
 export default textEditor;
 
-let textEditor = args => m.component(textEditorComponent, args);
+const textEditor = args => m.component(textEditorComponent, args);
 
-let textEditorComponent = {
+const textEditorComponent = {
     controller: function({file}){
         const err = m.prop();
         file.loaded || file.get()
             .catch(err)
             .then(m.redraw);
 
-        let ctrl = {mode:m.prop('edit'), observer: observerFactory(), err};
+        const ctrl = {mode:m.prop('edit'), observer: observerFactory(), err};
 
         return ctrl;
     },
@@ -41,7 +41,7 @@ let textEditorComponent = {
     }
 };
 
-let textContent = (ctrl, {file, study, observer}) => {
+const textContent = (ctrl, {file, study, observer}) => {
     let textMode = modeMap[file.type] || 'javascript';
     switch (ctrl.mode()){
         case 'edit' : return ace({

@@ -8,14 +8,14 @@ export default textMenuView;
 const amdReg = /(?:define\(\[['"])(.*?)(?=['"])/;
 
 const textMenuView = ({mode, file, study, observer}) => {
-    let setMode = value => () => mode(value);
-    let modeClass = value => mode() === value ? 'active' : '';
-    let isJs = file.type === 'js';
-    let hasChanged = file.hasChanged();
-    let isExpt = /\.expt\.xml$/.test(file.path);
-    let isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
-    let amdMatch = amdReg.exec(file.content());
-    let APItype = amdMatch && amdMatch[1];
+    const setMode = value => () => mode(value);
+    const modeClass = value => mode() === value ? 'active' : '';
+    const isJs = file.type === 'js';
+    const hasChanged = file.hasChanged();
+    const isExpt = /\.expt\.xml$/.test(file.path);
+    const isHtml = ['html', 'htm', 'jst', 'ejs'].includes(file.type);
+    const amdMatch = amdReg.exec(file.content());
+    const APItype = amdMatch && amdMatch[1];
     const launchUrl = `https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}&refresh=true`;
 
     return m('.btn-toolbar.editor-menu', [
