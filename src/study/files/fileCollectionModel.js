@@ -60,19 +60,15 @@ const studyPrototype = {
 
     mergeFiles(files){
         const newfiles = this.parseFiles(files);
-        const oldfiles = this
-            .files()
-            .filter(oldfile => !newfiles.some(newfile => oldfile.id == newfile.id));
+        const oldfiles = this.files();
 
-        // reset files;
-        this.files(oldfiles);
-        newfiles
-            .filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id))
-            .map(newfile => Object.assign({studyId: this.id},newfile))
-            .forEach(this.addFile.bind(this));
+        const toRemove = oldfiles.filter(oldfile => !newfiles.some(newfile => oldfile.id == newfile.id));
+        const toAdd = newfiles.filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id))
+
+        toAdd.forEach(this.addFile.bind(this));
+        toRemove.forEach(this.removeFile.bind(this));
 
         this.sort();
-        return this;
     },
 
     getFile(id){
@@ -99,9 +95,25 @@ const studyPrototype = {
     },
 
     addFile(file){
-        const files = this.files();
-        files.push(file);
-        this.refreshParentFiles(file);
+        this.files().push(file);
+
+        const parent = this.getParent(file);
+        if (parent) {
+            parent.files || (parent.files = []);
+            parent.files.push(file);
+        }
+    },
+
+    removeFile(file){
+        const parent = this.getParent(file);
+
+        remove(this.files(), file);
+        if (parent && parent.files) remove(parent.files, file);
+
+        function remove(arr, file){
+            const index = arr.indexOf(file);
+            arr.splice(index, 1);
+        }
     },
 
     createFile({name, content='',isDir}){
@@ -141,25 +153,41 @@ const studyPrototype = {
         }
     },
 
+    move(newpath, file){
+        const study = this;
+        const files = study.files();
+
+        const basePath = (newpath.substring(0, newpath.lastIndexOf('/')));
+        const folderExists = basePath === '' || files.some(f => f.isDir && f.path === basePath);
+        const fileExists = files.some(f=>f.path === newpath);
+        const hasChangedChildren = study
+            .getChildren(file)
+            .some(file => file.hasChanged());
+
+
+        if (!folderExists) return Promise.reject({message: `Target folder ${basePath} does not exist.`});
+        if (fileExists) return Promise.reject({message: `Target file ${newpath} already exists.`});
+        if (hasChangedChildren) return Promise.reject({message: `You have unsaved changes in one of the files please save, then try again.`});
+
+        return fetchJson(file.apiUrl() + `/move/` , {
+            method:'put',
+            body: {path:newpath, url:file.url}
+        })
+            .then(study.mergeFiles.bind(study));
+    },
+
     uploadFiles({path, fd, force}){
         fd.append('forceUpload', +force);
         this.isUploading = true;
         m.redraw();
 
         return fetchUpload(this.apiURL(`/upload/${path === '/' ? '' : encodeURIComponent(path)}`), {method:'post', body:fd})
-            .then(this.parseFiles.bind(this))
-            .then(newfiles => {
-                let oldfiles = this.files();
-
-                return newfiles
-                    .filter(newfile => !oldfiles.some(oldfile => oldfile.path === newfile.path))
-                    .map(newfile => Object.assign({studyId: this.id}, newfile))
-                    .forEach(this.addFile.bind(this));
-            })
-            .then(this.sort.bind(this))
+            .then(this.mergeFiles.bind(this))
             .then(() => this.isUploading = false)
-            .catch((err) => {this.isUploading = false;
-                return Promise.reject(err);});
+            .catch((err) => {
+                this.isUploading = false;
+                return Promise.reject(err);
+            });
     },
 
     /*
@@ -173,37 +201,8 @@ const studyPrototype = {
 
     delFiles(files){
         const paths = files.map(f=>f.path);
-        return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-            .then(() => this.removeFiles(files));
-    },
-
-
-    refreshParentFiles(file){
-        // update the parent folder
-        const parent = this
-            .getParents(file)
-            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
-
-        if (parent) {
-            parent.files || (parent.files = []);
-            parent.files.push(file);
-        }
-    },
-
-    removeFiles(files){
-        // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-        const children = files.reduce((arr, f) => arr.concat(this.getChildren(f).map(f=>f.path)),[]);
-        // get all files not to be deleted
-        const filesList = this.files() .filter(f => children.indexOf(f.path) === -1); 
-        files.forEach(file => {
-            const parent = this.getParents(file).reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
-            if (parent) {
-                const index = parent.files.indexOf(file);
-                parent.files.splice(index, 1);
-            }
-        });
-
-        this.files(filesList);
+        return fetchJson(this.apiURL(), {method: 'delete', body: {files:paths}})
+            .then(this.mergeFiles.bind(this));
     },
 
     make_experiment(file, descriptive_id){
@@ -223,6 +222,12 @@ const studyPrototype = {
 
     getParents(file){
         return this.files().filter(f => f.isDir && file.basePath.indexOf(f.path) === 0);
+    },
+
+    getParent(file){
+        return this
+            .getParents(file)
+            .reduce((result, f) => result && (result.path.length > f.path.length) ? result : f , null); 
     },
 
     // returns array of children for this file, including itself

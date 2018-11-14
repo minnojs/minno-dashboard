@@ -41,39 +41,6 @@ const filePrototype = {
             });
     },
 
-    move(path, study){
-        const files = study.files();
-        const basePath = (path.substring(0, path.lastIndexOf('/')));
-        const folderExists = basePath === '' || files.some(f => f.isDir && f.path === basePath);
-        const fileExists = files.some(f=>f.path === path);
-        const hasChangedChildren = study
-            .getChildren(this)
-            .some(file => file.hasChanged());
-
-        const oldPath = this.path;
-
-        if (!folderExists) return Promise.reject({message: `Folder ${basePath} does not exist.`});
-        if (fileExists) return Promise.reject({message: `File ${path} already exists.`});
-        if (hasChangedChildren) return Promise.reject({message: `You have unsaved changes in one of the files please save, then try again.`});
-
-        this.setPath(path);
-        this.content(this.content()); // in case we're changing into a file type that needs syntax checking
-        study.refreshParentFiles(this);
-
-        return fetchJson(this.apiUrl() + `/move/` , {
-            method:'put',
-            body: {path, url:this.url}
-        })
-            .then(response => {
-                this.id = response.id;
-                this.url = response.url;
-            })
-            .catch(response => {
-                this.setPath(oldPath);
-                return Promise.reject(response);
-            });
-    },
-
     copy(path, study_id, new_study_id){
         return fetchJson(this.apiUrl() + `/copy/`, {
             method:'put',

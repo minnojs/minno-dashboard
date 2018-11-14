@@ -3411,41 +3411,6 @@
                 });
         },
 
-        move: function move(path, study){
-            var this$1 = this;
-
-            var files = study.files();
-            var basePath = (path.substring(0, path.lastIndexOf('/')));
-            var folderExists = basePath === '' || files.some(function (f) { return f.isDir && f.path === basePath; });
-            var fileExists = files.some(function (f){ return f.path === path; });
-            var hasChangedChildren = study
-                .getChildren(this)
-                .some(function (file) { return file.hasChanged(); });
-
-            var oldPath = this.path;
-
-            if (!folderExists) return Promise.reject({message: ("Folder " + basePath + " does not exist.")});
-            if (fileExists) return Promise.reject({message: ("File " + path + " already exists.")});
-            if (hasChangedChildren) return Promise.reject({message: "You have unsaved changes in one of the files please save, then try again."});
-
-            this.setPath(path);
-            this.content(this.content()); // in case we're changing into a file type that needs syntax checking
-            study.refreshParentFiles(this);
-
-            return fetchJson(this.apiUrl() + "/move/" , {
-                method:'put',
-                body: {path: path, url:this.url}
-            })
-                .then(function (response) {
-                    this$1.id = response.id;
-                    this$1.url = response.url;
-                })
-                .catch(function (response) {
-                    this$1.setPath(oldPath);
-                    return Promise.reject(response);
-                });
-        },
-
         copy: function copy(path, study_id, new_study_id){
             return fetchJson(this.apiUrl() + "/copy/", {
                 method:'put',
@@ -3621,22 +3586,16 @@
         },
 
         mergeFiles: function mergeFiles(files){
-            var this$1 = this;
-
             var newfiles = this.parseFiles(files);
-            var oldfiles = this
-                .files()
-                .filter(function (oldfile) { return !newfiles.some(function (newfile) { return oldfile.id == newfile.id; }); });
+            var oldfiles = this.files();
 
-            // reset files;
-            this.files(oldfiles);
-            newfiles
-                .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.id == newfile.id; }); })
-                .map(function (newfile) { return Object.assign({studyId: this$1.id},newfile); })
-                .forEach(this.addFile.bind(this));
+            var toRemove = oldfiles.filter(function (oldfile) { return !newfiles.some(function (newfile) { return oldfile.id == newfile.id; }); });
+            var toAdd = newfiles.filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.id == newfile.id; }); });
+
+            toAdd.forEach(this.addFile.bind(this));
+            toRemove.forEach(this.removeFile.bind(this));
 
             this.sort();
-            return this;
         },
 
         getFile: function getFile(id){
@@ -3663,9 +3622,25 @@
         },
 
         addFile: function addFile(file){
-            var files = this.files();
-            files.push(file);
-            this.refreshParentFiles(file);
+            this.files().push(file);
+
+            var parent = this.getParent(file);
+            if (parent) {
+                parent.files || (parent.files = []);
+                parent.files.push(file);
+            }
+        },
+
+        removeFile: function removeFile(file){
+            var parent = this.getParent(file);
+
+            remove(this.files(), file);
+            if (parent && parent.files) remove(parent.files, file);
+
+            function remove(arr, file){
+                var index = arr.indexOf(file);
+                arr.splice(index, 1);
+            }
         },
 
         createFile: function createFile(ref){
@@ -3710,6 +3685,29 @@
             }
         },
 
+        move: function move(newpath, file){
+            var study = this;
+            var files = study.files();
+
+            var basePath = (newpath.substring(0, newpath.lastIndexOf('/')));
+            var folderExists = basePath === '' || files.some(function (f) { return f.isDir && f.path === basePath; });
+            var fileExists = files.some(function (f){ return f.path === newpath; });
+            var hasChangedChildren = study
+                .getChildren(file)
+                .some(function (file) { return file.hasChanged(); });
+
+
+            if (!folderExists) return Promise.reject({message: ("Target folder " + basePath + " does not exist.")});
+            if (fileExists) return Promise.reject({message: ("Target file " + newpath + " already exists.")});
+            if (hasChangedChildren) return Promise.reject({message: "You have unsaved changes in one of the files please save, then try again."});
+
+            return fetchJson(file.apiUrl() + "/move/" , {
+                method:'put',
+                body: {path:newpath, url:file.url}
+            })
+                .then(study.mergeFiles.bind(study));
+        },
+
         uploadFiles: function uploadFiles(ref){
             var this$1 = this;
             var path = ref.path;
@@ -3721,19 +3719,12 @@
             m.redraw();
 
             return fetchUpload(this.apiURL(("/upload/" + (path === '/' ? '' : encodeURIComponent(path)))), {method:'post', body:fd})
-                .then(this.parseFiles.bind(this))
-                .then(function (newfiles) {
-                    var oldfiles = this$1.files();
-
-                    return newfiles
-                        .filter(function (newfile) { return !oldfiles.some(function (oldfile) { return oldfile.path === newfile.path; }); })
-                        .map(function (newfile) { return Object.assign({studyId: this$1.id}, newfile); })
-                        .forEach(this$1.addFile.bind(this$1));
-                })
-                .then(this.sort.bind(this))
+                .then(this.mergeFiles.bind(this))
                 .then(function () { return this$1.isUploading = false; })
-                .catch(function (err) {this$1.isUploading = false;
-                    return Promise.reject(err);});
+                .catch(function (err) {
+                    this$1.isUploading = false;
+                    return Promise.reject(err);
+                });
         },
 
         /*
@@ -3746,42 +3737,9 @@
         },
 
         delFiles: function delFiles(files){
-            var this$1 = this;
-
             var paths = files.map(function (f){ return f.path; });
-            return fetchVoid(this.apiURL(), {method: 'delete', body: {files:paths}})
-                .then(function () { return this$1.removeFiles(files); });
-        },
-
-
-        refreshParentFiles: function refreshParentFiles(file){
-            // update the parent folder
-            var parent = this
-                .getParents(file)
-                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-
-            if (parent) {
-                parent.files || (parent.files = []);
-                parent.files.push(file);
-            }
-        },
-
-        removeFiles: function removeFiles(files){
-            var this$1 = this;
-
-            // for cases that we remove a directory without explicitly removing the children (this will cause redundancy, but it shouldn't affect us too much
-            var children = files.reduce(function (arr, f) { return arr.concat(this$1.getChildren(f).map(function (f){ return f.path; })); },[]);
-            // get all files not to be deleted
-            var filesList = this.files() .filter(function (f) { return children.indexOf(f.path) === -1; }); 
-            files.forEach(function (file) {
-                var parent = this$1.getParents(file).reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
-                if (parent) {
-                    var index = parent.files.indexOf(file);
-                    parent.files.splice(index, 1);
-                }
-            });
-
-            this.files(filesList);
+            return fetchJson(this.apiURL(), {method: 'delete', body: {files:paths}})
+                .then(this.mergeFiles.bind(this));
         },
 
         make_experiment: function make_experiment(file, descriptive_id){
@@ -3801,6 +3759,12 @@
 
         getParents: function getParents(file){
             return this.files().filter(function (f) { return f.isDir && file.basePath.indexOf(f.path) === 0; });
+        },
+
+        getParent: function getParent(file){
+            return this
+                .getParents(file)
+                .reduce(function (result, f) { return result && (result.path.length > f.path.length) ? result : f; } , null); 
         },
 
         // returns array of children for this file, including itself
@@ -4189,8 +4153,8 @@
     function moveAction(newPath, file, study){
         var isFocused = file.id === m.route.param('fileId');
 
-        var def = file
-        .move(newPath,study) // the actual movement
+        var def = study
+        .move(newPath,file) // the actual movement
         .then(redirect)
         .catch(function (response) { return messages.alert({
             header: 'Move/Rename File',

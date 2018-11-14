@@ -115,8 +115,8 @@ export let delete_experiment = (file, study) => () => {
 function moveAction(newPath, file, study){
     const isFocused = file.id === m.route.param('fileId');
 
-    const def = file
-    .move(newPath,study) // the actual movement
+    const def = study
+    .move(newPath,file) // the actual movement
     .then(redirect)
     .catch(response => messages.alert({
         header: 'Move/Rename File',
