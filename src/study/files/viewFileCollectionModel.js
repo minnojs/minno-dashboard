@@ -92,6 +92,7 @@ let studyPrototype = {
 
     createFile({name, content='',isDir}){
         // validation (make sure there are no invalid characters)
+        // eslint-disable-next-line no-useless-escape
         if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: `The file name "${name}" is not valid`});
 
         // validation (make sure file does not already exist)

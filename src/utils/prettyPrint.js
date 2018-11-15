@@ -23,6 +23,7 @@ export let print = obj => {
         return str === '' ? str : str
             // escape string
             .replace(/[\\"']/g, '\\$&')
+            // eslint-disable-next-line no-control-regex
             .replace(/\u0000/g, '\\0')
             // manage rows separately
             .split(END_LINE)

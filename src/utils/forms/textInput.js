@@ -1,7 +1,7 @@
 import inputWrapper from './inputWrapper';
 export default textInputComponent;
 
-let textInputComponent  = {
+const textInputComponent  = {
     controller({prop, form, required = false}) {
         let validity = () => !required || prop().length;
         form.register(validity);
@@ -9,7 +9,7 @@ let textInputComponent  = {
         return {validity};
     },
 
-    view: inputWrapper((ctrl, {prop, isArea = false, isFirst = false, placeholder = '', help, rows = 3}, {inputClass}) => {
+    view: inputWrapper((ctrl, {prop, isArea = false, isFirst = false, placeholder = '', rows = 3}, {inputClass}) => {
         return !isArea
             ? m('input.form-control', {
                 class: inputClass,
