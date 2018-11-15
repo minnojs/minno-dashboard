@@ -1,8 +1,6 @@
 import {get_pending_studies,
     use_code} from './messagesModel';
 import {getAuth} from 'login/authModel';
-import {do_create} from '../study/studyActions';
-import {draw_menu} from '../study/studyMenu';
 
 export default messagesComponent;
 
@@ -28,7 +26,6 @@ let messagesComponent = {
         get_pending_studies()
             .then((response) => {
                 ctrl.pendings(response.studies);
-                console.log(response.studies);
                 ctrl.loaded = true;
             })
             .catch(response => {

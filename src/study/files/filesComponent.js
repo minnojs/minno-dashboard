@@ -7,7 +7,6 @@ import splitPane from 'utils/splitPane';
 import fullheight from 'utils/fullHeight';
 
 let study;
-let errer;
 let editorLayoutComponent = {
     controller: ()=>{
         let id = m.route.param('studyId');

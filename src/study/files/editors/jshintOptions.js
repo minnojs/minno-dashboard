@@ -1,5 +1,5 @@
 export default jshintOptions;
-var jshintOptions = {
+let jshintOptions = {
     // JSHint Default Configuration File (as on JSHint website)
     // See http://jshint.com/docs/ for more details
 

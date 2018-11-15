@@ -371,22 +371,22 @@
 
         return m('.form-group.row', {class: groupClass}, [
             args.isStack
-            ? [ 
-                m('.col-sm-12', [
-                    args.label != null ? m('label', {class: 'strong'}, args.label) : '',
-                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
-                    args.help && m('small.text-muted.m-y-0', args.help )
-                ])
-            ]
-            : [
-                m((".col-sm-" + colWidth), [
-                    m('label.form-control-label', args.label)
-                ]),
-                m((".col-sm-" + (12 - colWidth)), [
-                    view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
-                ]),
-                args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-            ]
+                ? [ 
+                    m('.col-sm-12', [
+                        args.label != null ? m('label', {class: 'strong'}, args.label) : '',
+                        view(ctrl, args, {groupClass: groupClass, inputClass: inputClass}),
+                        args.help && m('small.text-muted.m-y-0', args.help )
+                    ])
+                ]
+                : [
+                    m((".col-sm-" + colWidth), [
+                        m('label.form-control-label', args.label)
+                    ]),
+                    m((".col-sm-" + (12 - colWidth)), [
+                        view(ctrl, args, {groupClass: groupClass, inputClass: inputClass})
+                    ]),
+                    args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
+                ]
         ]);
     }; };
 
@@ -638,7 +638,7 @@
     var colWidth = 3;
     var SOURCES = {
         'Research pool - Current studies'   : 'Pool:Current',
-    //    'Research pool - Past studies'      : 'Research:History',
+        //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
         'All studies'                       : 'Both:Any'
@@ -793,18 +793,18 @@
                     ]),
                     m('tbody', [
                         list().map(function (row) { return query.showEmpty() && row.starts===0
-                        ?
-                        ''
-                        :
-                        m('tr.table-default', [
-                            m('td', row.studyName),
-                            !query.sorttask_sent() ? '' : m('td', row.taskName),
-                            query.sorttime_sent()==='All' ? '' : m('td', formatDate(new Date(row.date))),
-                            m('td', row.starts),
-                            m('td', row.completes),
-                            m('td', row.completion_rate = row.starts===0 ? 0 : (row.completes/row.starts).toFixed(2)),
-                            !query.sortgroup() ? '' : m('td', row.schema)
-                        ]); }
+                                ?
+                                ''
+                                :
+                                m('tr.table-default', [
+                                    m('td', row.studyName),
+                                    !query.sorttask_sent() ? '' : m('td', row.taskName),
+                                    query.sorttime_sent()==='All' ? '' : m('td', formatDate(new Date(row.date))),
+                                    m('td', row.starts),
+                                    m('td', row.completes),
+                                    m('td', row.completion_rate = row.starts===0 ? 0 : (row.completes/row.starts).toFixed(2)),
+                                    !query.sortgroup() ? '' : m('td', row.schema)
+                                ]); }
                         )
                     ])
                 ])
@@ -1087,7 +1087,7 @@
     var colWidth$1 = 3;
     var SOURCES$1 = {
         'Research pool - Current studies'   : 'Research:Current',
-    //    'Research pool - Past studies'      : 'Research:History',
+        //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
         'All studies'                       : 'Both:Any'
@@ -1814,15 +1814,15 @@
             header: 'Continue Study:',
             content: ("Are you sure you want to continue \"" + (study.studyId) + "\"?")
         })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_RUNNING)
-                    .then(function (){ return study.studyStatus = STATUS_RUNNING; })
-                    .catch(reportError('Continue Study'))
-                    .then(studyPending(study, false));
-            }
-        });
+            .then(function (response) {
+                if(response) {
+                    studyPending(study, true)();
+                    return updateStatus(study, STATUS_RUNNING)
+                        .then(function (){ return study.studyStatus = STATUS_RUNNING; })
+                        .catch(reportError('Continue Study'))
+                        .then(studyPending(study, false));
+                }
+            });
     }
 
     function pause(study){
@@ -1830,15 +1830,15 @@
             header: 'Pause Study:',
             content: ("Are you sure you want to pause \"" + (study.studyId) + "\"?")
         })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_PAUSED)
-                    .then(function (){ return study.studyStatus = STATUS_PAUSED; })
-                    .catch(reportError('Pause Study'))
-                    .then(studyPending(study, false));
-            }
-        });
+            .then(function (response) {
+                if(response) {
+                    studyPending(study, true)();
+                    return updateStatus(study, STATUS_PAUSED)
+                        .then(function (){ return study.studyStatus = STATUS_PAUSED; })
+                        .catch(reportError('Pause Study'))
+                        .then(studyPending(study, false));
+                }
+            });
     }
 
     var remove  = function (study, list) {
@@ -1846,15 +1846,15 @@
             header: 'Remove Study:',
             content: ("Are you sure you want to remove \"" + (study.studyId) + "\" from the pool?")
         })
-        .then(function (response) {
-            if(response) {
-                studyPending(study, true)();
-                return updateStatus(study, STATUS_STOP)
-                    .then(function () { return list(list().filter(function (el) { return el !== study; })); })
-                    .catch(reportError('Remove Study'))
-                    .then(studyPending(study, false));
-            }
-        });
+            .then(function (response) {
+                if(response) {
+                    studyPending(study, true)();
+                    return updateStatus(study, STATUS_STOP)
+                        .then(function () { return list(list().filter(function (el) { return el !== study; })); })
+                        .catch(reportError('Remove Study'))
+                        .then(studyPending(study, false));
+                }
+            });
     };
 
     var edit  = function (input) {
@@ -2494,9 +2494,9 @@
                 )
             ]
         })
-        .then(function(response){
-            if (response) return doRemove(download, list);
-        });
+            .then(function(response){
+                if (response) return doRemove(download, list);
+            });
     }
 
     function doRemove(download, list){
@@ -3028,15 +3028,15 @@
             header: 'Approve Access Request:',
             content: ("Are you sure you want to grant access of '" + (downloadAccess.studyId) + "' to '" + (downloadAccess.username) + "'?")
         })
-        .then(function (response) {
-            if(response) {
-                return updateApproved(downloadAccess, STATUS_APPROVED)
-                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
-                    .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
-                    .catch(reportError$2('Grant Access'))
-                    .then(m.redraw());
-            }
-        });
+            .then(function (response) {
+                if(response) {
+                    return updateApproved(downloadAccess, STATUS_APPROVED)
+                        .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
+                        .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
+                        .catch(reportError$2('Grant Access'))
+                        .then(m.redraw());
+                }
+            });
     }
 
 
@@ -3045,48 +3045,48 @@
             header: 'Delete request:',
             content: ("Are you sure you want to delete the access request for'" + (downloadAccess.studyId) + "'? If access has already been granted you will lose it")
         })
-        .then(function (response) {
-            if(response) {
+            .then(function (response) {
+                if(response) {
                 
-                return deleteDataAccessRequest(downloadAccess)
-                    .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
-                    .then(messages.alert({header:'Deletion complete', content: 'Access has been deleted'}))
-                    .catch(reportError$2('Remove Download Request'))
-                    .then(m.redraw());
+                    return deleteDataAccessRequest(downloadAccess)
+                        .then(function () { return list(list().filter(function (el) { return el !== downloadAccess; })); })
+                        .then(messages.alert({header:'Deletion complete', content: 'Access has been deleted'}))
+                        .catch(reportError$2('Remove Download Request'))
+                        .then(m.redraw());
 
-            }
-        });
+                }
+            });
     };
     var grant = function () {
         var output = m.prop();
         return grantMessage({output: output})
-        .then(function (response) {
-            if (response) {
-                var now = new Date();
-                var downloadAccess = Object.assign({
-                    approved: STATUS_APPROVED,
-                    creationDate: now
-                }, null, unPropify$2(output()));
-                return createDataAccessRequest(downloadAccess)
-                .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
-                .catch(reportError$2('Grant Access'));
-            }
-        });
+            .then(function (response) {
+                if (response) {
+                    var now = new Date();
+                    var downloadAccess = Object.assign({
+                        approved: STATUS_APPROVED,
+                        creationDate: now
+                    }, null, unPropify$2(output()));
+                    return createDataAccessRequest(downloadAccess)
+                        .then(messages.alert({header:'Grant access completed', content: 'Access granted'}))
+                        .catch(reportError$2('Grant Access'));
+                }
+            });
     };
     var revoke = function () {
         var output = m.prop();
         return revokeMessage({output: output})
-        .then(function (response) {
-            if (response) {
-                var now = new Date();
-                var downloadAccess = Object.assign({
-                    creationDate: now
-                }, null, unPropify$2(output()));
-                return deleteDataAccessRequest(downloadAccess)
-                .then(messages.alert({header:'Revoke access completed', content: 'Access revoked'}))
-                .catch(reportError$2('Revoke Access'));
-            }
-        });
+            .then(function (response) {
+                if (response) {
+                    var now = new Date();
+                    var downloadAccess = Object.assign({
+                        creationDate: now
+                    }, null, unPropify$2(output()));
+                    return deleteDataAccessRequest(downloadAccess)
+                        .then(messages.alert({header:'Revoke access completed', content: 'Access revoked'}))
+                        .catch(reportError$2('Revoke Access'));
+                }
+            });
     };
     var create$2 = function (list) {
         var output = m.prop();
@@ -3744,7 +3744,7 @@
 
         make_experiment: function make_experiment(file, descriptive_id){
             return fetchJson(this.apiURL(("/file/" + (file.id) + "/experiment")),
-                            {method: 'post', body: {descriptive_id:descriptive_id}}).then(function (exp_data){ return file.exp_data=exp_data; });
+                {method: 'post', body: {descriptive_id:descriptive_id}}).then(function (exp_data){ return file.exp_data=exp_data; });
         },
 
         delete_experiment: function delete_experiment(file){
@@ -4084,9 +4084,9 @@
             postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
             prop: newPath
         })
-        .then(function (response) {
-            if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-        });
+            .then(function (response) {
+                if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+            });
     }; };
 
     var copyFile = function (file, study) { return function () {
@@ -4154,13 +4154,13 @@
         var isFocused = file.id === m.route.param('fileId');
 
         var def = study
-        .move(newPath,file) // the actual movement
-        .then(redirect)
-        .catch(function (response) { return messages.alert({
-            header: 'Move/Rename File',
-            content: m('p.alert.alert-danger', response.message)
-        }); })
-        .then(m.redraw); // redraw after server response
+            .move(newPath,file) // the actual movement
+            .then(redirect)
+            .catch(function (response) { return messages.alert({
+                header: 'Move/Rename File',
+                content: m('p.alert.alert-danger', response.message)
+            }); })
+            .then(m.redraw); // redraw after server response
 
         m.redraw();
         return def;
@@ -4174,13 +4174,13 @@
 
     function copyAction(path, file, study_id, new_study_id){
         var def = file
-        .copy(path, study_id, new_study_id) // the actual movement
-        .catch(function (response) { return messages.alert({
+            .copy(path, study_id, new_study_id) // the actual movement
+            .catch(function (response) { return messages.alert({
 
-            header: 'Copy File',
-            content: m('p.alert.alert-danger', response.message)
-        }); })
-        .then(m.redraw); // redraw after server response
+                header: 'Copy File',
+                content: m('p.alert.alert-danger', response.message)
+            }); })
+            .then(m.redraw); // redraw after server response
 
         return def;
     }
@@ -6020,12 +6020,12 @@
                 {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
 
                 !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
-                        :  {icon:'fa-desktop', text:'Experiment options', menu: [
-                            {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
-                            {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
-                            { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
-                            {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id), true)}
-                        ]},
+                    :  {icon:'fa-desktop', text:'Experiment options', menu: [
+                        {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
+                        {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
+                        { icon:'fa-play', href:(launchUrl + "/" + (file.exp_data.id) + "/" + version_id), text:'Play this task'},
+                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl((launchUrl + "/" + (file.exp_data.id) + "/" + version_id), true)}
+                    ]},
 
                 //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
                 // isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
@@ -6050,9 +6050,9 @@
                 header:['Delete ',m('small', file.name)],
                 content: 'Are you sure you want to delete this file? This action is permanent!'
             })
-            .then(function (ok) {
-                if (ok) return doDelete();
-            });
+                .then(function (ok) {
+                    if (ok) return doDelete();
+                });
 
             function doDelete(){
                 study.delFiles([file])
@@ -6425,7 +6425,7 @@
             return {
                 isOpen : m.prop(false),
                 inLowerViewport: m.prop(true)
-            }
+            };
         },
 
         view: function view(ref, ref$1){
@@ -6506,11 +6506,11 @@
                 templates().filter(ownerFilter()).sort(sort_studies).map(function (study) { return m('option',{value:study.id}, study.name); })
             ]),
             !template_id() ? '' :
-            m('div.space', [
-                m('select.form-control', {value:reuse_id(), onchange: m.withAttr('value',reuse_id)}, [
-                    m('option',{value:'', disabled: true}, 'Select template for reuse (optional)'),
-                    studies.map(function (study) { return m('option',{value:study.id}, study.name); })
-                ])])
+                m('div.space', [
+                    m('select.form-control', {value:reuse_id(), onchange: m.withAttr('value',reuse_id)}, [
+                        m('option',{value:'', disabled: true}, 'Select template for reuse (optional)'),
+                        studies.map(function (study) { return m('option',{value:study.id}, study.name); })
+                    ])])
 
         ]);
     }
@@ -6667,9 +6667,9 @@
                     var tmp_exps = [];
                     exps().forEach(function (exp){
                         !tmp_exps.find(function (exp2find){ return exp2find.descriptive_id === exp.descriptive_id; })
-                        ?
+                            ?
                             tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
-                        :
+                            :
                             tmp_exps.map(function (exp2update){ return exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update; });
                         exps(tmp_exps);
                     });
@@ -6943,11 +6943,11 @@
         e.preventDefault();
         var error = m.prop('');
         return messages.confirm({okText: ['Yes, make ', !study.is_public ? 'public' : 'private'], cancelText: ['No, keep ', !study.is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', !study.is_public
-                ?
-                'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
-                :
-                'Making the study private will hide its files from everyone but you.'),
-                m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
+            ?
+            'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+            :
+            'Making the study private will hide its files from everyone but you.'),
+        m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
             .then(function (response) {
                 if (response) make_pulic(study.id, !study.is_public)
                     .then(study.is_public = !study.is_public)
@@ -6966,7 +6966,7 @@
                     .catch(function (error) { return messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}); })
                     .then(m.redraw)
                     .then(m.route('./'))
-                    ;
+                ;
 
             });
     }; };
@@ -7067,10 +7067,10 @@
                 ]
             :
             'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
-            !error() ? '' : m('p.alert.alert-danger', error())])
+        !error() ? '' : m('p.alert.alert-danger', error())])
         })
 
-        .then(function (response) { return response && lock(); }); };
+            .then(function (response) { return response && lock(); }); };
 
         var lock= function () { return lock_study(study.id, !study.is_locked)
             .then(function () { return study.is_locked = !study.is_locked; })
@@ -7110,7 +7110,7 @@
                             ])
                         ])
                     ]),
-                    !error() ? '' : m('p.alert.alert-danger', error())])
+                !error() ? '' : m('p.alert.alert-danger', error())])
         })
 
             .then(function (response) { return response && publish(); }); };
@@ -7228,10 +7228,10 @@
         }},
 
         private: {text: 'Make private', config: {
-                display: [can_edit, not(is_locked), is_public],
-                onmousedown: do_make_public,
-                class: 'fa-globe'
-            }},
+            display: [can_edit, not(is_locked), is_public],
+            onmousedown: do_make_public,
+            class: 'fa-globe'
+        }},
 
 
         unlock: {text: 'Unlock Study',
@@ -7444,14 +7444,14 @@
                     m('.alert.alert-danger',
                         m('strong', 'Error: '), study.err)
                     :
-                !study.loaded ? '' :
-                    splitPane({
-                    leftWidth: leftWidth,
-                    left: m.component(sidebarComponent, {study: study}),
-                    right: m.route.param('resource') === 'wizard'
-                        ? m.component(wizardComponent, {study: study})
-                        : m.component(fileEditorComponent, {study: study})
-                })
+                    !study.loaded ? '' :
+                        splitPane({
+                            leftWidth: leftWidth,
+                            left: m.component(sidebarComponent, {study: study}),
+                            right: m.route.param('resource') === 'wizard'
+                                ? m.component(wizardComponent, {study: study})
+                                : m.component(fileEditorComponent, {study: study})
+                        })
             ]);
         }
     };
@@ -7503,8 +7503,8 @@
             function flattenFiles(files){
                 if (!files) return [];
                 return files
-                        .map(spreadFile)
-                        .reduce(function (result, fileArr) { return result.concat(fileArr); },[]);
+                    .map(spreadFile)
+                    .reduce(function (result, fileArr) { return result.concat(fileArr); },[]);
             }
 
             function assignStudyId(id){
@@ -7874,12 +7874,12 @@
                                     ]),
                                     m('.col-sm-1', [
                                         m('.btn-toolbar.pull-right',
-                                          m('.btn-group.btn-group-sm', 
-                                            dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
-                                                draw_menu(study)
-                                            ]})
-                                           )
-                                         )
+                                            m('.btn-group.btn-group-sm', 
+                                                dropdown({toggleSelector:'a.btn.btn-secondary.btn-sm.dropdown-toggle', toggleContent: 'Actions', elements: [
+                                                    draw_menu(study)
+                                                ]})
+                                            )
+                                        )
                                     ])
                                 ])
                             ]); })
@@ -7960,39 +7960,39 @@
 
             var list = ctrl.list;
             return ctrl.list().length === 0
-            ?
-            m('.loader')
-            :
-            m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                m('thead', [
-                    m('tr', [
-                        m('th', thConfig$4('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$4('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
-                        m('th', thConfig$4('RULE_FILE',ctrl.sortBy), 'Rule file'),
-                        m('th', thConfig$4('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$4('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$4('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
-                        m('th', thConfig$4('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
-                        m('th', thConfig$4('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
-                        m('th', thConfig$4('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
-                        m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments')
+                ?
+                m('.loader')
+                :
+                m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                    m('thead', [
+                        m('tr', [
+                            m('th', thConfig$4('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                            m('th', thConfig$4('FOLDER_LOCATION',ctrl.sortBy), 'Folder location'),
+                            m('th', thConfig$4('RULE_FILE',ctrl.sortBy), 'Rule file'),
+                            m('th', thConfig$4('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                            m('th', thConfig$4('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                            m('th', thConfig$4('TARGET_NUMBER',ctrl.sortBy), 'Target number'),
+                            m('th', thConfig$4('APPROVED_BY_A_REVIEWER',ctrl.sortBy), 'Approved by a reviewer'),
+                            m('th', thConfig$4('EXPERIMENT_FILE',ctrl.sortBy), 'Experiment file'),
+                            m('th', thConfig$4('LAUNCH_CONFIRMATION',ctrl.sortBy), 'Launch confirmation'),
+                            m('th', thConfig$4('COMMENTS',ctrl.sortBy), 'Comments')
+                        ])
+                    ]),
+                    m('tbody', [
+                        ctrl.list().map(function (study) { return m('tr', [
+                            m('td', study.CREATION_DATE),
+                            m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),
+                            m('td', study.RULE_FILE),
+                            m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                            m('td', study.RESEARCHER_NAME),
+                            m('td', study.TARGET_NUMBER),
+                            m('td', study.APPROVED_BY_A_REVIEWER),
+                            m('td', study.EXPERIMENT_FILE),
+                            m('td', study.LAUNCH_CONFIRMATION),
+                            m('td', study.COMMENTS)
+                        ]); })
                     ])
-                ]),
-                m('tbody', [
-                    ctrl.list().map(function (study) { return m('tr', [
-                        m('td', study.CREATION_DATE),
-                        m('td', m('a', {href:study.FOLDER_LOCATION}, study.FOLDER_LOCATION)),
-                        m('td', study.RULE_FILE),
-                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
-                        m('td', study.RESEARCHER_NAME),
-                        m('td', study.TARGET_NUMBER),
-                        m('td', study.APPROVED_BY_A_REVIEWER),
-                        m('td', study.EXPERIMENT_FILE),
-                        m('td', study.LAUNCH_CONFIRMATION),
-                        m('td', study.COMMENTS)
-                    ]); })
-                ])
-            ]);
+                ]);
         }
     };
 
@@ -8012,8 +8012,8 @@
                 sortBy: m.prop('CREATION_DATE')
             };
             get_change_request_list()
-              .then(function (response) {ctrl.list(response.requests);
-              })
+                .then(function (response) {ctrl.list(response.requests);
+                })
                 .catch(function (error) {
                     throw error;
                 })
@@ -8075,8 +8075,8 @@
                 sortBy: m.prop('CREATION_DATE')
             };
             get_removal_list()
-              .then(function (response) {ctrl.list(response.requests);
-              })
+                .then(function (response) {ctrl.list(response.requests);
+                })
                 .catch(function (error) {
                     throw error;
                 })
@@ -8092,28 +8092,28 @@
                 ?
                 m('.loader')
                 :
-            m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-                m('thead', [
-                    m('tr', [
-                        m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                        m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                        m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                        m('th', thConfig$6('STUDY_NAME',ctrl.sortBy), 'Study name'),
-                        m('th', thConfig$6('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                        m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
+                m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                    m('thead', [
+                        m('tr', [
+                            m('th', thConfig$6('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                            m('th', thConfig$6('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                            m('th', thConfig$6('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                            m('th', thConfig$6('STUDY_NAME',ctrl.sortBy), 'Study name'),
+                            m('th', thConfig$6('COMPLETED_N',ctrl.sortBy), 'Completed n'),
+                            m('th', thConfig$6('COMMENTS',ctrl.sortBy), 'Comments')
+                        ])
+                    ]),
+                    m('tbody', [
+                        ctrl.list().map(function (study) { return m('tr', [
+                            m('td', study.CREATION_DATE),
+                            m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                            m('td', study.RESEARCHER_NAME),
+                            m('td', study.STUDY_NAME),
+                            m('td', study.COMPLETED_N),
+                            m('td', study.COMMENTS)
+                        ]); })
                     ])
-                ]),
-                m('tbody', [
-                    ctrl.list().map(function (study) { return m('tr', [
-                        m('td', study.CREATION_DATE),
-                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
-                        m('td', study.RESEARCHER_NAME),
-                        m('td', study.STUDY_NAME),
-                        m('td', study.COMPLETED_N),
-                        m('td', study.COMMENTS)
-                    ]); })
-                ])
-            ]);
+                ]);
         }
     };
 
@@ -8263,14 +8263,14 @@
                 }
 
                 deploy(studyId, ctrl)
-                .then(function (response) {
-                    ctrl.rule_file(response.rule_file);
-                    ctrl.sent = true;
-                })
-                .catch(function (response) {
-                    ctrl.error(response.message);
-                })
-                .then(m.redraw);
+                    .then(function (response) {
+                        ctrl.rule_file(response.rule_file);
+                        ctrl.sent = true;
+                    })
+                    .catch(function (response) {
+                        ctrl.error(response.message);
+                    })
+                    .then(m.redraw);
             }
         },
         view: function view(ref){
@@ -8463,39 +8463,39 @@
             var submit = ref.submit;
 
             return ctrl.sent
-            ?
-            m('.deploy.centrify',[
-                m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
-            ])
-            :
-            m('.StudyRemoval.container', [
-                m('h3', [
-                    'Study Removal Request ',
-                    m('small', ctrl.global_study_name())
-                ]),
+                ?
+                m('.deploy.centrify',[
+                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                    m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
+                ])
+                :
+                m('.StudyRemoval.container', [
+                    m('h3', [
+                        'Study Removal Request ',
+                        m('small', ctrl.global_study_name())
+                    ]),
 
-                m('.row', [
-                    m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                    m('.col-sm-9', ctrl.researcher_name())
-                ]),
-                m('.row.m-b-1', [
-                    m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                    m('.col-sm-9', ctrl.researcher_email())
-                ]),
+                    m('.row', [
+                        m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                        m('.col-sm-9', ctrl.researcher_name())
+                    ]),
+                    m('.row.m-b-1', [
+                        m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                        m('.col-sm-9', ctrl.researcher_email())
+                    ]),
 
-                radioInput({
-                    label:m('span', ['Study name', ASTERIX$1]), 
-                    prop: ctrl.study_name,
-                    values:ctrl.study_names(),
-                    help: 'This is the name you submitted to the RDE (e.g., colinsmith.elmcogload) ',
-                    form: form, required:true, isStack:true
-                }),
-                textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
-                textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
-                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
-            ]);
+                    radioInput({
+                        label:m('span', ['Study name', ASTERIX$1]), 
+                        prop: ctrl.study_name,
+                        values:ctrl.study_names(),
+                        help: 'This is the name you submitted to the RDE (e.g., colinsmith.elmcogload) ',
+                        form: form, required:true, isStack:true
+                    }),
+                    textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form: form, required:true, isStack:true}),
+                    textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form: form, isStack:true}),
+                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                    m('button.btn.btn-primary', {onclick: submit}, 'Submit')
+                ]);
         }
     };
 
@@ -8658,7 +8658,7 @@
                                         onchange: m.withAttr('value', ctrl.username),
                                         config: getStartValue$1(ctrl.username)
                                     }
-                                )),
+                                    )),
                                 m('fieldset.form-group',
                                     m('input.form-control', {
                                         type:'first_name',
@@ -8668,17 +8668,17 @@
                                         onchange: m.withAttr('value', ctrl.first_name),
                                         config: getStartValue$1(ctrl.first_name)
                                     }
-                                )),
+                                    )),
                                 m('fieldset.form-group',
-                                        m('input.form-control', {
-                                            type:'last_name',
-                                            placeholder: 'last name',
-                                            value: ctrl.last_name(),
-                                            oninput: m.withAttr('value', ctrl.last_name),
-                                            onchange: m.withAttr('value', ctrl.last_name),
-                                            config: getStartValue$1(ctrl.last_name)
-                                        }
-                                ))
+                                    m('input.form-control', {
+                                        type:'last_name',
+                                        placeholder: 'last name',
+                                        value: ctrl.last_name(),
+                                        oninput: m.withAttr('value', ctrl.last_name),
+                                        onchange: m.withAttr('value', ctrl.last_name),
+                                        config: getStartValue$1(ctrl.last_name)
+                                    }
+                                    ))
                                 // ,m('fieldset.form-group',
                                 //     m('input.form-control', {
                                 //         type:'email',
@@ -8976,11 +8976,11 @@
             ),
             !error() ? '' : m('p.alert.alert-danger', error())])
         })
-        .then(function (response) {
-            console.log(ctrl.dbx_auth_link());
-            if (response)
-                window.location = ctrl.dbx_auth_link();
-        });
+            .then(function (response) {
+                console.log(ctrl.dbx_auth_link());
+                if (response)
+                    window.location = ctrl.dbx_auth_link();
+            });
 
     }
 
@@ -8998,10 +8998,10 @@
                 m('button.btn.btn-primary.btn-block', {onclick: function(){start_dbx_sync(ctrl);}},[
                     m('i.fa.fa-fw.fa-dropbox'), ' Synchronize with your Dropbox account'
                 ])
-            :
-            m('button.btn.btn-primary.btn-block', {onclick: function(){stop_dbx_sync(ctrl);}},[
-                m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
-            ])
+                :
+                m('button.btn.btn-primary.btn-block', {onclick: function(){stop_dbx_sync(ctrl);}},[
+                    m('i.fa.fa-fw.fa-dropbox'), ' Stop Synchronize with your Dropbox account'
+                ])
         ])
     ]); };
 
@@ -9050,13 +9050,13 @@
             });
 
             get_email()
-            .then(function (response) {
-                ctrl.email(response.email);
-            })
-            .catch(function (response) {
-                ctrl.email_error(response.message);
-            })
-            .then(m.redraw);
+                .then(function (response) {
+                    ctrl.email(response.email);
+                })
+                .catch(function (response) {
+                    ctrl.email_error(response.message);
+                })
+                .then(m.redraw);
             check_if_dbx_synchronized()
                 .then(function (response) {
                     ctrl.is_dbx_synchronized(response.is_synchronized);
@@ -9123,7 +9123,7 @@
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.password_changed
-                ?
+                    ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                         m('h5', 'Password successfully updated!'),
@@ -9132,15 +9132,15 @@
                         )
 
                     ]
-                :
-                ctrl.email_changed
-                ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Email successfully updated!')
-                    ]
-                :
-                    draw_menu$1(ctrl)
+                    :
+                    ctrl.email_changed
+                        ?
+                        [
+                            m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                            m('h5', 'Email successfully updated!')
+                        ]
+                        :
+                        draw_menu$1(ctrl)
             ]);
         }
     };
@@ -9181,15 +9181,15 @@
             }
 
             get_pending_studies()
-            .then(function (response) {
-                ctrl.pendings(response.studies);
-                console.log(response.studies);
-                ctrl.loaded = true;
-            })
-            .catch(function (response) {
-                ctrl.error(response.message);
-            })
-            .then(m.redraw);
+                .then(function (response) {
+                    ctrl.pendings(response.studies);
+                    console.log(response.studies);
+                    ctrl.loaded = true;
+                })
+                .catch(function (response) {
+                    ctrl.error(response.message);
+                })
+                .then(m.redraw);
             return ctrl;
         },
         view: function view(ctrl){
@@ -9199,52 +9199,52 @@
                 m('.loader')
                 :
                 m('.container.studies', [
-                m('.row.p-t-1', [
-                    m('.col-sm-4', [
-                        m('h3', 'Sharing Invitations')
-                    ])]),
-                m('.card.studies-card', [
-                    m('.card-block', [
-                        m('.row', {key: '@@notid@@'}, [
-                            m('.col-sm-3', [
-                                m('.form-control-static',[
-                                    m('strong', 'Owner ')
+                    m('.row.p-t-1', [
+                        m('.col-sm-4', [
+                            m('h3', 'Sharing Invitations')
+                        ])]),
+                    m('.card.studies-card', [
+                        m('.card-block', [
+                            m('.row', {key: '@@notid@@'}, [
+                                m('.col-sm-3', [
+                                    m('.form-control-static',[
+                                        m('strong', 'Owner ')
+                                    ])
+                                ]),
+                                m('.col-sm-4', [
+                                    m('.form-control-static',[
+                                        m('strong', 'Study name ')
+                                    ])]),
+                                m('.col-sm-2', [
+                                    m('.form-control-static',[
+                                        m('strong', 'Permission ')
+                                    ])
+                                ]),
+                                m('.col-sm-3', [
+                                    m('.form-control-static',[
+                                        m('strong', 'Action ')
+                                    ])
                                 ])
-                            ]),
-                            m('.col-sm-4', [
-                                m('.form-control-static',[
-                                    m('strong', 'Study name ')
-                                ])]),
-                            m('.col-sm-2', [
-                                m('.form-control-static',[
-                                    m('strong', 'Permission ')
-                                ])
-                            ]),
-                            m('.col-sm-3', [
-                                m('.form-control-static',[
-                                    m('strong', 'Action ')
-                                ])
-                            ])
 
-                        ]),
-                        ctrl.pendings().map(function (study) { return m('.row.study-row', [
-                            m('.col-sm-3', [
-                                m('.study-text', study.owner_name)
                             ]),
-                            m('.col-sm-4', [
-                                m('.study-text', study.study_name)
-                            ]),
-                            m('.col-sm-2', [
-                                m('.study-text', study.permission)
-                            ]),
-                            m('.col-sm-3', [
-                                m('.study-text', m('button.btn.btn-primary', {onclick:function() {ctrl.do_use_code(study.accept);}}, 'Accept'), ' | ',
-                                    m('button.btn.btn-danger', {onclick:function() {ctrl.do_use_code(study.reject);}}, 'Reject'))
-                            ]),
+                            ctrl.pendings().map(function (study) { return m('.row.study-row', [
+                                    m('.col-sm-3', [
+                                        m('.study-text', study.owner_name)
+                                    ]),
+                                    m('.col-sm-4', [
+                                        m('.study-text', study.study_name)
+                                    ]),
+                                    m('.col-sm-2', [
+                                        m('.study-text', study.permission)
+                                    ]),
+                                    m('.col-sm-3', [
+                                        m('.study-text', m('button.btn.btn-primary', {onclick:function() {ctrl.do_use_code(study.accept);}}, 'Accept'), ' | ',
+                                            m('button.btn.btn-danger', {onclick:function() {ctrl.do_use_code(study.reject);}}, 'Reject'))
+                                    ]),
 
 
-                        ]); })
-                    ])])]);
+                                ]); })
+                        ])])]);
 
 
         }
@@ -9310,7 +9310,7 @@
                                         onchange: m.withAttr('value', ctrl.subject),
                                         config: getStartValue$4(ctrl.subject)
                                     }
-                                )),
+                                    )),
                                 m('fieldset.form-group',
                                     m('textarea.form-control', {
                                         type:'Body',
@@ -9320,7 +9320,7 @@
                                         onchange: m.withAttr('value', ctrl.body),
                                         config: getStartValue$4(ctrl.body)
                                     }
-                                )),
+                                    )),
                                 m('fieldset.form-group',
 
                                     m('label.c-input.c-checkbox', [
@@ -9391,7 +9391,7 @@
             };
            
             is_activation_code(m.route.param('code'))
-            .catch(function (err) {console.log(err.message); ctrl.error(err.message);}).then(m.redraw);
+                .catch(function (err) {console.log(err.message); ctrl.error(err.message);}).then(m.redraw);
 
             return ctrl;
 
@@ -9410,16 +9410,16 @@
             console.log({x: ctrl.error()});
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.error ? m('p.text-center',
-                        m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
-                ctrl.activated
-                ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!'),
-                        m('p.text-center', m('small.text-muted',  m('a', {href:'./'}, 'Take me to the login page!')))
-                    ]
-                :
-                password_body(ctrl)]);
+                    m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
+                    ctrl.activated
+                        ?
+                        [
+                            m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                            m('h5', 'Password successfully updated!'),
+                            m('p.text-center', m('small.text-muted',  m('a', {href:'./'}, 'Take me to the login page!')))
+                        ]
+                        :
+                        password_body(ctrl)]);
         }
     };
 
@@ -9435,9 +9435,9 @@
     var collaborationComponent = {
         controller: function controller(){
             is_collaboration_code(m.route.param('code'))
-            .then(function () {
-                m.route('/');
-            }).catch().then(m.redraw);
+                .then(function () {
+                    m.route('/');
+                }).catch().then(m.redraw);
 
 
 
@@ -9484,7 +9484,7 @@
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.password_changed
-                ?
+                    ?
                     [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                         m('h5', 'Password successfully updated!'),
@@ -9492,8 +9492,8 @@
                             m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
                         )
                     ]
-                :
-                password_body(ctrl)
+                    :
+                    password_body(ctrl)
             ]);
         }
     };
@@ -9533,26 +9533,26 @@
                         m('h5', 'Recovery request successfully sent!')
                     ]
                     :
-                m('.card.card-inverse.col-md-4', [
-                    m('.card-block',[
-                        m('h4', 'Password Reset Request'),
-                        m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
+                    m('.card.card-inverse.col-md-4', [
+                        m('.card-block',[
+                            m('h4', 'Password Reset Request'),
+                            m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                        m('form', {onsubmit:ctrl.recoveryAction}, [
-                            m('input.form-control', {
-                                type:'username',
-                                placeholder: 'Username / Email',
-                                value: ctrl.username(),
-                                oninput: m.withAttr('value', ctrl.username),
-                                onchange: m.withAttr('value', ctrl.username),
-                                config: getStartValue$5(ctrl.username)
-                            })
-                        ]),
+                            m('form', {onsubmit:ctrl.recoveryAction}, [
+                                m('input.form-control', {
+                                    type:'username',
+                                    placeholder: 'Username / Email',
+                                    value: ctrl.username(),
+                                    oninput: m.withAttr('value', ctrl.username),
+                                    onchange: m.withAttr('value', ctrl.username),
+                                    config: getStartValue$5(ctrl.username)
+                                })
+                            ]),
 
-                        !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
+                            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                            m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
+                        ])
                     ])
-                ])
             ]);
         }
     };
@@ -9592,7 +9592,7 @@
             function load() {
                 get_collaborations(m.route.param('studyId'))
                     .then(function (response) {ctrl.users(response.users);
-                    console.log(response);
+                        console.log(response);
                         ctrl.is_public(response.is_public);
                         ctrl.study_name(response.study_name);
                         ctrl.link(response.link_data.link);
@@ -9673,11 +9673,11 @@
 
             function do_make_public(is_public){
                 messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
-                                                                                    ?
-                                                                                    'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
-                                                                                    :
-                                                                                    'Making the study private will hide its files from everyone but you.'),
-                    m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
+                    ?
+                    'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+                    :
+                    'Making the study private will hide its files from everyone but you.'),
+                m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
                     .then(function (response) {
                         if (response) make_pulic(m.route.param('studyId'), is_public)
                             .then(function (){
@@ -9728,7 +9728,7 @@
                             ]); })
 
                         ]),
-                      /*  m('.row.space',
+                        /*  m('.row.space',
                             m('.col-sm-12', [
                                 m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
                                     [m('i.fa.fa-plus'), '  Create / Re-create public link']
@@ -9877,17 +9877,17 @@
                         .then(function (response) {
                             if (response)
                                 edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color)
-                            .then(function (){
-                                ctrl.error('');
-                                ctrl.tag_text('');
-                                ctrl.tag_color('');
-                                load();
-                            })
-                            .catch(function (error) {
-                                ctrl.error(error.message);
-                                edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
-                            })
-                            .then(m.redraw);
+                                    .then(function (){
+                                        ctrl.error('');
+                                        ctrl.tag_text('');
+                                        ctrl.tag_color('');
+                                        load();
+                                    })
+                                    .catch(function (error) {
+                                        ctrl.error(error.message);
+                                        edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
+                                    })
+                                    .then(m.redraw);
                         });
                 };
             }
@@ -10114,34 +10114,34 @@
                         :
                         [
                             m('.study',
-                            m('.editor',
-                            m('.btn-toolbar.editor-menu', [
-                                m('.file-name', {class: has_changed() ? 'text-danger' : ''},
-                                    m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
-                                    pageId
-                                ),
-                                m('.btn-group.btn-group-sm.pull-xs-right', [
-                                    m('a.btn.btn-secondary', { title:'Save', onclick:save
-                                        , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
-                                    },[
-                                        m('strong.fa.fa-save')
-                                    ])]
-                            )]))),
+                                m('.editor',
+                                    m('.btn-toolbar.editor-menu', [
+                                        m('.file-name', {class: has_changed() ? 'text-danger' : ''},
+                                            m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
+                                            pageId
+                                        ),
+                                        m('.btn-group.btn-group-sm.pull-xs-right', [
+                                            m('a.btn.btn-secondary', { title:'Save', onclick:save
+                                                , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
+                                            },[
+                                                m('strong.fa.fa-save')
+                                            ])]
+                                        )]))),
                             m('div.translate-page', {config: fullHeight},
-                            [strings().map(function (string) { return m('.list-group-item', [
-                                m('.row', [
-                                    m('.col-sm-5', [
-                                        m('span',  string.text),
-                                        m('p.small.text-muted.m-y-0', string.comment)
-                                    ]),
-                                    m('.col-sm-7', [
-                                        m('textarea.form-control', {
-                                            placeholder: 'translation',
-                                            oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
-                                            onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
-                                            config: textareaConfig
-                                        }, string.translation())
-                                    ])
+                                [strings().map(function (string) { return m('.list-group-item', [
+                                    m('.row', [
+                                        m('.col-sm-5', [
+                                            m('span',  string.text),
+                                            m('p.small.text-muted.m-y-0', string.comment)
+                                        ]),
+                                        m('.col-sm-7', [
+                                            m('textarea.form-control', {
+                                                placeholder: 'translation',
+                                                oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                                onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                                config: textareaConfig
+                                            }, string.translation())
+                                        ])
 
                                     // ,m('.col-sm-6', [
                                     //     m('input.form-control', {
@@ -10153,9 +10153,9 @@
                                     //         config: getStartValue(string.translation)
                                     //     })
                                     // ])
+                                    ])
+                                ]); })
                                 ])
-                            ]); })
-                    ])
 
                         ]
                 })
@@ -10333,11 +10333,11 @@
                     'admin':{text: 'Admin', href:false,
                         su:true,
                         subs:{'deployList': {text:'Deploy List', href: '/deployList'},
-                              'removalList': {text:'Removal List', href:'/removalList'},
-                              'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
-                              'addUser': {text:'Add User', href: '/addUser'},
-                              'massMail': {text:'Send MassMail', href: '/massMail'},
-                              'users': {text:'Users Management', href: '/users'}
+                            'removalList': {text:'Removal List', href:'/removalList'},
+                            'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
+                            'addUser': {text:'Add User', href: '/addUser'},
+                            'massMail': {text:'Send MassMail', href: '/massMail'},
+                            'users': {text:'Users Management', href: '/users'}
                         }}
 
                 };
@@ -10345,45 +10345,45 @@
 
                 return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                     !ctrl.isloggedin || ctrl.role()=='ro'
-                    ?
-                    ''
-                    :
-                    m('nav.navbar.navbar-dark', [
-                        m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
-                        m('ul.nav.navbar-nav',[
+                        ?
+                        ''
+                        :
+                        m('nav.navbar.navbar-dark', [
+                            m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
+                            m('ul.nav.navbar-nav',[
 
-                            Object.keys(settings).map(function (comp){ return settings_hash[comp].su && ctrl.role() !=='su' ? '' :
-                                settings[comp].length==0 ?
-                                    m('li.nav-item',[
-                                        m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
-
-                                    ])
-                                    :
-                                    m('li.nav-item', [
-                                        m('.dropdown', [
-                                            m('a.nav-link', settings_hash[comp].text),
-                                            m('.dropdown-menu', [
-                                                settings[comp].map(function (sub_comp){ return m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text); }
-                                                )
+                                Object.keys(settings).map(function (comp){ return settings_hash[comp].su && ctrl.role() !=='su' ? '' :
+                                        settings[comp].length==0 ?
+                                            m('li.nav-item',[
+                                                m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
 
                                             ])
-                                        ])
-                                    ]); }
-                            ),
-                            m('li.nav-item.pull-xs-right', [
-                                m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
-                            ]),
+                                            :
+                                            m('li.nav-item', [
+                                                m('.dropdown', [
+                                                    m('a.nav-link', settings_hash[comp].text),
+                                                    m('.dropdown-menu', [
+                                                        settings[comp].map(function (sub_comp){ return m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text); }
+                                                        )
 
-                        m('li.nav-item.pull-xs-right', [
-                                m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
-                            ]),
-                            !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
-                                m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
-                                    m('i.fa.fa-sign-out'), '  Logout'
+                                                    ])
+                                                ])
+                                            ]); }
+                                ),
+                                m('li.nav-item.pull-xs-right', [
+                                    m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
+                                ]),
+
+                                m('li.nav-item.pull-xs-right', [
+                                    m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
+                                ]),
+                                !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
+                                    m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+                                        m('i.fa.fa-sign-out'), '  Logout'
+                                    ])
                                 ])
                             ])
-                        ])
-                    ]),
+                        ]),
 
                     m('.main-content.container-fluid', [
                         route,

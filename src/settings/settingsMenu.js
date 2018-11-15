@@ -1,7 +1,6 @@
 import {emil_body} from './changeEmailView';
 import {password_body} from './changePasswordView';
 import {dropbox_body} from './connect2dropboxView';
-import {templates_body} from './templateStudiesView';
 
 const settings = {'password':[],
     'emil':[],

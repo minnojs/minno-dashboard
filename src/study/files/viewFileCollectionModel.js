@@ -175,7 +175,7 @@ let studyFactory =  code =>{
 };
 
 // http://lhorie.github.io/mithril-blog/mapping-view-models.html
-var viewModelMap = function(signature) {
+let viewModelMap = function(signature) {
     let map = {};
     return function(key) {
         if (!map[key]) {

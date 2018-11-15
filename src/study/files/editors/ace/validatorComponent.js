@@ -3,7 +3,7 @@ export default validate;
 
 let validate = args => m.component(validateComponent, args);
 
-var validateComponent = {
+let validateComponent = {
     controller: args => {
         let file = args.file;
         let ctrl = {

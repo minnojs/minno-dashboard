@@ -16,7 +16,7 @@ let activationComponent = {
         };
        
         is_activation_code(m.route.param('code'))
-            .catch(err => {console.log(err.message); ctrl.error(err.message);}).then(m.redraw);
+            .catch(err => ctrl.error(err.message)).then(m.redraw);
 
         return ctrl;
 
@@ -32,7 +32,6 @@ let activationComponent = {
         }
     },
     view(ctrl){
-        console.log({x: ctrl.error()});
         return m('.activation.centrify', {config:fullHeight},[
             ctrl.error ? m('p.text-center',
                 m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :

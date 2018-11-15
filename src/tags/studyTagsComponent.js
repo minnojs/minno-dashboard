@@ -56,7 +56,6 @@ function sort_tags(tag_1, tag_2){return tag_1.text.toLowerCase() === tag_2.text.
 function create_tag(study_id, tagName, tags, error){
     return () => add_tag(tagName(), 'E7E7E7')
         .then(response => tags().push(response))
-        .then(console.log(tags()))
         .then(tagName.bind(null, ''))
         .catch(error)
         .then(m.redraw);

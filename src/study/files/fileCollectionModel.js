@@ -1,4 +1,4 @@
-import {fetchFullJson, fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
+import {fetchJson, fetchVoid, fetchUpload} from 'utils/modelHelpers';
 import fileFactory from './fileModel';
 export default studyFactory;
 import {baseUrl} from 'modelUrls';

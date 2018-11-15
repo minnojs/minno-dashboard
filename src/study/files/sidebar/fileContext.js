@@ -6,8 +6,7 @@ import {
     createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile,
     make_experiment, update_experiment, delete_experiment
 } from './fileActions';
-import {createFromTemplate} from './wizardActions';
-// import wizardHash from './wizardHash';
+
 import copyUrl from 'utils/copyUrl';
 export default fileContext;
 
@@ -69,14 +68,14 @@ const fileContext = (file, study) => {
         return () => m.route(`/editor/${study.id}/wizard/` + route);
     }
     
-    function mapWizardHash(wizardHash){
-        return Object.keys(wizardHash).map((text) => {
-            let value = wizardHash[text];
-            return typeof value === 'string'
-                ? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
-                : {text, menu: mapWizardHash(value)};
-        });
-    }
+    // function mapWizardHash(wizardHash){
+    //     return Object.keys(wizardHash).map((text) => {
+    //         let value = wizardHash[text];
+    //         return typeof value === 'string'
+    //             ? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
+    //             : {text, menu: mapWizardHash(value)};
+    //     });
+    // }
 
     function deleteFile(){
         let isFocused = file.id === m.route.param('fileId');

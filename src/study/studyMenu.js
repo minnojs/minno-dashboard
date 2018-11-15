@@ -1,6 +1,5 @@
 import {update_study_description, do_delete, do_duplicate, do_rename, do_tags, do_data, do_lock, do_publish, do_copy_url, do_make_public} from './studyActions';
 
-const always = () => true;
 const can_edit = study => !study.isReadonly && study.permission !== 'read only';
 
 const is_locked = study => study.is_locked;

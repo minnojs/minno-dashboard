@@ -32,7 +32,6 @@ let collaborationComponent = {
         function load() {
             get_collaborations(m.route.param('studyId'))
                 .then(response =>{ctrl.users(response.users);
-                    console.log(response);
                     ctrl.is_public(response.is_public);
                     ctrl.study_name(response.study_name);
                     ctrl.link(response.link_data.link);
@@ -188,18 +187,3 @@ let collaborationComponent = {
     }
 };
 
-function copy(text){
-    return new Promise((resolve, reject) => {
-        let input = document.createElement('input');
-        input.value = text;
-        document.body.appendChild(input);
-        input.select();
-        try {
-            document.execCommand('copy');
-        } catch(err){
-            reject(err);
-        }
-
-        input.parentNode.removeChild(input);
-    });
-}

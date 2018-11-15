@@ -23,8 +23,6 @@ let createMessage = {
 
         get_exps(study_id)
             .then(response => {
-                let all_exps = m.prop('');
-
                 exps(response.experiments);
                 all_exp_ids(exps().map(exp=>exp.id));
                 exp_id(all_exp_ids());

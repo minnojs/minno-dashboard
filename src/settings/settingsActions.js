@@ -17,7 +17,6 @@ export function start_dbx_sync(ctrl){
         !error() ? '' : m('p.alert.alert-danger', error())])
     })
         .then(function (response) {
-            console.log(ctrl.dbx_auth_link());
             if (response)
                 window.location = ctrl.dbx_auth_link();
         });

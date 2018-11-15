@@ -8,7 +8,7 @@ let syntax = args => m.component(syntaxComponent, args);
  *
  * {valid: Boolean, data: jshint(script).data()}
  */
-var syntaxComponent = {
+let syntaxComponent = {
 
     /**
      * Analyze script

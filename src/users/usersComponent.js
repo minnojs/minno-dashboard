@@ -1,9 +1,6 @@
 import {get_users, remove_user, update_role, change_user_password} from './usersModel';
 
 import messages from 'utils/messagesComponent';
-import dropdown from 'utils/dropdown';
-import {draw_menu} from '../study/studyMenu';
-import {rename_study} from '../study/studyModel';
 
 export default usersComponent;
 

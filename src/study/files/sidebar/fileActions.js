@@ -90,7 +90,6 @@ export let make_experiment = (file, study) => () => {
 
 export let update_experiment = (file, study) => () => {
     let descriptive_id = m.prop(file.exp_data.descriptive_id);
-    console.log({file: file});
     let error = m.prop('');
     return messages.confirm({
         header:'New Name',
