@@ -1,5 +1,5 @@
 export default function managerValidator(){
-    var errors = [];
+    let errors = [];
 
     errors.push({type:'Settings', errors:[]});
     errors.push({type:'Tasks', errors:[]});

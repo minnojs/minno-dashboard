@@ -53,17 +53,17 @@ let tagsComponent = {
                     .then(response => {
                         if (response)
                             edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color)
-                        .then(()=>{
-                            ctrl.error('');
-                            ctrl.tag_text('');
-                            ctrl.tag_color('');
-                            load();
-                        })
-                        .catch(error => {
-                            ctrl.error(error.message);
-                            edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
-                        })
-                        .then(m.redraw);
+                                .then(()=>{
+                                    ctrl.error('');
+                                    ctrl.tag_text('');
+                                    ctrl.tag_color('');
+                                    load();
+                                })
+                                .catch(error => {
+                                    ctrl.error(error.message);
+                                    edit_tag(tag_id, ctrl.tag_text, ctrl.tag_color);
+                                })
+                                .then(m.redraw);
                     });
             };
         }

@@ -39,8 +39,8 @@ let studyPrototype = {
         function flattenFiles(files){
             if (!files) return [];
             return files
-                    .map(spreadFile)
-                    .reduce((result, fileArr) => result.concat(fileArr),[]);
+                .map(spreadFile)
+                .reduce((result, fileArr) => result.concat(fileArr),[]);
         }
 
         function assignStudyId(id){
@@ -176,11 +176,11 @@ let studyFactory =  code =>{
 
 // http://lhorie.github.io/mithril-blog/mapping-view-models.html
 var viewModelMap = function(signature) {
-    var map = {};
+    let map = {};
     return function(key) {
         if (!map[key]) {
             map[key] = {};
-            for (var prop in signature) map[key][prop] = m.prop(signature[prop]());
+            for (let prop in signature) map[key][prop] = m.prop(signature[prop]());
         }
         return map[key];
     };

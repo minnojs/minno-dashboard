@@ -7,7 +7,7 @@ export function error(message, test){
 }
 
 export function row(element, testArr){
-    var messages = flatten(testArr)
+    let messages = flatten(testArr)
         .filter(msg => msg) // clean empty
         .filter(msg => typeof msg.test == 'function' ? msg.test(element) : !!msg.test); // run test...
 

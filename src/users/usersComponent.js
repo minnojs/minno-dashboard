@@ -2,8 +2,8 @@ import {get_users, remove_user, update_role, change_user_password} from './users
 
 import messages from 'utils/messagesComponent';
 import dropdown from 'utils/dropdown';
-import {draw_menu} from "../study/studyMenu";
-import {rename_study} from "../study/studyModel";
+import {draw_menu} from '../study/studyMenu';
+import {rename_study} from '../study/studyModel';
 
 export default usersComponent;
 
@@ -104,7 +104,7 @@ let usersComponent = {
                             m('td', user.last_name),
                             m('td', user.email),
                             m('td',
-                                m('select.form-control', {value:user.role, onchange : function(){ ctrl.update(user.id, this.value) }}, [
+                                m('select.form-control', {value:user.role, onchange : function(){ ctrl.update(user.id, this.value); }}, [
                                     m('option',{value:'u', selected: user.role !== 'su'},  'Simple user'),
                                     m('option',{value:'su', selected: user.role === 'su'}, 'Super user')
                                 ])

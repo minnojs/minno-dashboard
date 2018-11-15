@@ -52,14 +52,14 @@ let editorLayoutComponent = {
                 m('.alert.alert-danger',
                     m('strong', 'Error: '), study.err)
                 :
-            !study.loaded ? '' :
-                splitPane({
-                leftWidth,
-                left: m.component(sidebarComponent, {study}),
-                right: m.route.param('resource') === 'wizard'
-                    ? m.component(wizardComponent, {study})
-                    : m.component(editorComponent, {study})
-            })
+                !study.loaded ? '' :
+                    splitPane({
+                        leftWidth,
+                        left: m.component(sidebarComponent, {study}),
+                        right: m.route.param('resource') === 'wizard'
+                            ? m.component(wizardComponent, {study})
+                            : m.component(editorComponent, {study})
+                    })
         ]);
     }
 };

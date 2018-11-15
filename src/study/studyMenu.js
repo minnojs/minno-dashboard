@@ -97,10 +97,10 @@ const settings_hash = {
     }},
 
     private: {text: 'Make private', config: {
-            display: [can_edit, not(is_locked), is_public],
-            onmousedown: do_make_public,
-            class: 'fa-globe'
-        }},
+        display: [can_edit, not(is_locked), is_public],
+        onmousedown: do_make_public,
+        class: 'fa-globe'
+    }},
 
 
     unlock: {text: 'Unlock Study',

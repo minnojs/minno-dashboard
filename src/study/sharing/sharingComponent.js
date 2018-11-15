@@ -32,7 +32,7 @@ let collaborationComponent = {
         function load() {
             get_collaborations(m.route.param('studyId'))
                 .then(response =>{ctrl.users(response.users);
-                console.log(response);
+                    console.log(response);
                     ctrl.is_public(response.is_public);
                     ctrl.study_name(response.study_name);
                     ctrl.link(response.link_data.link);
@@ -113,11 +113,11 @@ let collaborationComponent = {
 
         function do_make_public(is_public){
             messages.confirm({okText: ['Yes, make ', is_public ? 'public' : 'private'], cancelText: ['No, keep ', is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', is_public
-                                                                                ?
-                                                                                'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
-                                                                                :
-                                                                                'Making the study private will hide its files from everyone but you.'),
-                m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
+                ?
+                'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+                :
+                'Making the study private will hide its files from everyone but you.'),
+            m('span', {class: ctrl.pub_error()? 'alert alert-danger' : ''}, ctrl.pub_error())])})
                 .then(response => {
                     if (response) make_pulic(m.route.param('studyId'), is_public)
                         .then(()=>{
@@ -168,7 +168,7 @@ let collaborationComponent = {
                         ]))
 
                     ]),
-                  /*  m('.row.space',
+                    /*  m('.row.space',
                         m('.col-sm-12', [
                             m('button.btn.btn-secondary.btn-sm.m-r-1', {onclick:ctrl.do_add_link},
                                 [m('i.fa.fa-plus'), '  Create / Re-create public link']

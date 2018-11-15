@@ -10,9 +10,9 @@ let changeRequestListComponent = {
             sortBy: m.prop('CREATION_DATE')
         };
         get_change_request_list()
-          .then(response =>{ctrl.list(response.requests);
-              sortTable(ctrl.list, ctrl.sortBy);
-          })
+            .then(response =>{ctrl.list(response.requests);
+                sortTable(ctrl.list, ctrl.sortBy);
+            })
             .catch(error => {
                 throw error;
             })

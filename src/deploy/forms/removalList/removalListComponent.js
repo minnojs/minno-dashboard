@@ -11,9 +11,9 @@ let removalListComponent = {
             sortBy: m.prop('CREATION_DATE')
         };
         get_removal_list()
-          .then(response =>{ctrl.list(response.requests);
-              sortTable(ctrl.list, ctrl.sortBy);
-          })
+            .then(response =>{ctrl.list(response.requests);
+                sortTable(ctrl.list, ctrl.sortBy);
+            })
             .catch(error => {
                 throw error;
             })
@@ -27,27 +27,27 @@ let removalListComponent = {
             ?
             m('.loader')
             :
-        m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
-            m('thead', [
-                m('tr', [
-                    m('th', thConfig('CREATION_DATE',ctrl.sortBy), 'Creation date'),
-                    m('th', thConfig('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
-                    m('th', thConfig('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
-                    m('th', thConfig('STUDY_NAME',ctrl.sortBy), 'Study name'),
-                    m('th', thConfig('COMPLETED_N',ctrl.sortBy), 'Completed n'),
-                    m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments')
+            m('table', {class:'table table-nowrap table-striped table-hover',onclick:sortTable(list, ctrl.sortBy)}, [
+                m('thead', [
+                    m('tr', [
+                        m('th', thConfig('CREATION_DATE',ctrl.sortBy), 'Creation date'),
+                        m('th', thConfig('RESEARCHER_EMAIL',ctrl.sortBy), 'Researcher email'),
+                        m('th', thConfig('RESEARCHER_NAME',ctrl.sortBy), 'Researcher name'),
+                        m('th', thConfig('STUDY_NAME',ctrl.sortBy), 'Study name'),
+                        m('th', thConfig('COMPLETED_N',ctrl.sortBy), 'Completed n'),
+                        m('th', thConfig('COMMENTS',ctrl.sortBy), 'Comments')
+                    ])
+                ]),
+                m('tbody', [
+                    ctrl.list().map(study => m('tr', [
+                        m('td', study.CREATION_DATE),
+                        m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
+                        m('td', study.RESEARCHER_NAME),
+                        m('td', study.STUDY_NAME),
+                        m('td', study.COMPLETED_N),
+                        m('td', study.COMMENTS)
+                    ]))
                 ])
-            ]),
-            m('tbody', [
-                ctrl.list().map(study => m('tr', [
-                    m('td', study.CREATION_DATE),
-                    m('td', m('a', {href:'mailto:' + study.RESEARCHER_EMAIL}, study.RESEARCHER_EMAIL)),
-                    m('td', study.RESEARCHER_NAME),
-                    m('td', study.STUDY_NAME),
-                    m('td', study.COMPLETED_N),
-                    m('td', study.COMMENTS)
-                ]))
-            ])
-        ]);
+            ]);
     }
 };

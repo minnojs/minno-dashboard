@@ -1,5 +1,5 @@
 export default function questValidator(){
-    var errors = [];
+    let errors = [];
 
     errors.push({type:'Settings', errors:[]});
     errors.push({type:'Pages', errors:[]});

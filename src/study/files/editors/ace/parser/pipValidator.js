@@ -4,8 +4,8 @@ import {pipElements} from './parser';
 export default pipValidator;
 
 function pipValidator(script, url){
-    var errors = [];
-    var elements = pipElements(script);
+    let errors = [];
+    let elements = pipElements(script);
 
     errors.push({type:'Settings',errors: checkSettings(script, url)});
     errors.push({type:'Trials',errors: filterMap(elements.trials, trialTest)});
@@ -26,24 +26,24 @@ function filterMap(arr, fn){
  * @return {Array}        Array of error rows
  */
 function checkSettings(script, url){
-    var settings = script.settings || {};
+    let settings = script.settings || {};
 
-    var w = byProp(warn);
+    let w = byProp(warn);
     // var e = byProp(error);
 
-    var errors = [
+    let errors = [
         r('base_url', [
             w('Your base_url is not in the same directory as your script.', e => {
                 // use this!!!
                 // http://stackoverflow.com/questions/4497531/javascript-get-url-path
-                var getPath = url => {
-                    var a = document.createElement('a');
+                let getPath = url => {
+                    let a = document.createElement('a');
                     a.href = url;
                     return a.pathname;
                 };
 
-                var path = getPath(url).substring(0, url.lastIndexOf('/') + 1); // get path but remove file name
-                var t = s => (!s || getPath(s).indexOf(path) !== 0);
+                let path = getPath(url).substring(0, url.lastIndexOf('/') + 1); // get path but remove file name
+                let t = s => (!s || getPath(s).indexOf(path) !== 0);
 
                 return (typeof e == 'object') ? t(e.image) && t(e.template) : t(e);
             })
@@ -53,7 +53,7 @@ function checkSettings(script, url){
     return errors.filter(function(err){return !!err;});
 
     function r(prop, arr){
-        var el = {};
+        let el = {};
         el[prop] = settings[prop];
         return prop in settings && row(el, arr);
     }
@@ -62,7 +62,7 @@ function checkSettings(script, url){
     function byProp(fn){
         return function(msg, test){
             return fn(msg, e => {
-                for (var prop in e) {
+                for (let prop in e) {
                     return test(e[prop]);
                 }
             });
@@ -71,7 +71,7 @@ function checkSettings(script, url){
 }
 
 function trialTest(trial) {
-    var tests = [
+    let tests = [
         testInteractions(trial.interactions),
         testInput(trial.input)
     ];

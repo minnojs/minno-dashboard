@@ -15,21 +15,21 @@ let inputWrapper = (view) => (ctrl, args) => {
 
     return m('.form-group.row', {class: groupClass}, [
         args.isStack
-        ? [ 
-            m('.col-sm-12', [
-                args.label != null ? m('label', {class: 'strong'}, args.label) : '',
-                view(ctrl, args, {groupClass, inputClass}),
-                args.help && m('small.text-muted.m-y-0', args.help )
-            ])
-        ]
-        : [
-            m(`.col-sm-${colWidth}`, [
-                m('label.form-control-label', args.label)
-            ]),
-            m(`.col-sm-${12 - colWidth}`, [
-                view(ctrl, args, {groupClass, inputClass})
-            ]),
-            args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
-        ]
+            ? [ 
+                m('.col-sm-12', [
+                    args.label != null ? m('label', {class: 'strong'}, args.label) : '',
+                    view(ctrl, args, {groupClass, inputClass}),
+                    args.help && m('small.text-muted.m-y-0', args.help )
+                ])
+            ]
+            : [
+                m(`.col-sm-${colWidth}`, [
+                    m('label.form-control-label', args.label)
+                ]),
+                m(`.col-sm-${12 - colWidth}`, [
+                    view(ctrl, args, {groupClass, inputClass})
+                ]),
+                args.help && m('small.text-muted.col-sm-offset-2.col-sm-10.m-y-0', args.help )
+            ]
     ]);
 };

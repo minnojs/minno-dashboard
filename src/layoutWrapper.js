@@ -100,11 +100,11 @@ let layout = route => {
                 'admin':{text: 'Admin', href:false,
                     su:true,
                     subs:{'deployList': {text:'Deploy List', href: '/deployList'},
-                          'removalList': {text:'Removal List', href:'/removalList'},
-                          'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
-                          'addUser': {text:'Add User', href: '/addUser'},
-                          'massMail': {text:'Send MassMail', href: '/massMail'},
-                          'users': {text:'Users Management', href: '/users'}
+                        'removalList': {text:'Removal List', href:'/removalList'},
+                        'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
+                        'addUser': {text:'Add User', href: '/addUser'},
+                        'massMail': {text:'Send MassMail', href: '/massMail'},
+                        'users': {text:'Users Management', href: '/users'}
                     }}
 
             };
@@ -112,47 +112,47 @@ let layout = route => {
 
             return  m('.dashboard-root', {class: window.top!=window.self ? 'is-iframe' : ''}, [
                 !ctrl.isloggedin || ctrl.role()=='ro'
-                ?
-                ''
-                :
-                m('nav.navbar.navbar-dark', [
-                    m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
-                    m('ul.nav.navbar-nav',[
+                    ?
+                    ''
+                    :
+                    m('nav.navbar.navbar-dark', [
+                        m('a.navbar-brand', {href:'', config:m.route}, 'Dashboard'),
+                        m('ul.nav.navbar-nav',[
 
-                        Object.keys(settings).map(comp=>
-                            settings_hash[comp].su && ctrl.role() !=='su' ? '' :
-                            settings[comp].length==0 ?
-                                m('li.nav-item',[
-                                    m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
-
-                                ])
-                                :
-                                m('li.nav-item', [
-                                    m('.dropdown', [
-                                        m('a.nav-link', settings_hash[comp].text),
-                                        m('.dropdown-menu', [
-                                            settings[comp].map(sub_comp=>
-                                                m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text)
-                                            )
+                            Object.keys(settings).map(comp=>
+                                settings_hash[comp].su && ctrl.role() !=='su' ? '' :
+                                    settings[comp].length==0 ?
+                                        m('li.nav-item',[
+                                            m('a.nav-link',{href:settings_hash[comp].href, config:m.route}, settings_hash[comp].text)
 
                                         ])
-                                    ])
-                                ])
-                        ),
-                        m('li.nav-item.pull-xs-right', [
-                            m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
-                        ]),
+                                        :
+                                        m('li.nav-item', [
+                                            m('.dropdown', [
+                                                m('a.nav-link', settings_hash[comp].text),
+                                                m('.dropdown-menu', [
+                                                    settings[comp].map(sub_comp=>
+                                                        m('a.dropdown-item',{href:settings_hash[comp].subs[sub_comp].href, config:m.route}, settings_hash[comp].subs[sub_comp].text)
+                                                    )
 
-                    m('li.nav-item.pull-xs-right', [
-                            m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
-                        ]),
-                        !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
-                            m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
-                                m('i.fa.fa-sign-out'), '  Logout'
+                                                ])
+                                            ])
+                                        ])
+                            ),
+                            m('li.nav-item.pull-xs-right', [
+                                m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
+                            ]),
+
+                            m('li.nav-item.pull-xs-right', [
+                                m('a.nav-link',{href:'/settings', config:m.route},m('i.fa.fa-cog.fa-lg'))
+                            ]),
+                            !ctrl.isloggedin ? '' : m('li.nav-item.pull-xs-right',[
+                                m('button.btn.btn-info', {onclick:ctrl.doLogout}, [
+                                    m('i.fa.fa-sign-out'), '  Logout'
+                                ])
                             ])
                         ])
-                    ])
-                ]),
+                    ]),
 
                 m('.main-content.container-fluid', [
                     route,

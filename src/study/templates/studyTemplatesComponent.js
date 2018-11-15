@@ -19,15 +19,15 @@ let studyTemplatesComponent = {
         m('select.form-control', {value:template_id(), onchange: m.withAttr('value',template_id)}, [
             m('option',{value:'', disabled: true}, 'Select template'),
             templates().filter(ownerFilter()).sort(sort_studies).map(study =>
-            m('option',{value:study.id}, study.name))
+                m('option',{value:study.id}, study.name))
         ]),
         !template_id() ? '' :
-        m('div.space', [
-            m('select.form-control', {value:reuse_id(), onchange: m.withAttr('value',reuse_id)}, [
-                m('option',{value:'', disabled: true}, 'Select template for reuse (optional)'),
-                studies.map(study =>
-                    m('option',{value:study.id}, study.name))
-            ])])
+            m('div.space', [
+                m('select.form-control', {value:reuse_id(), onchange: m.withAttr('value',reuse_id)}, [
+                    m('option',{value:'', disabled: true}, 'Select template for reuse (optional)'),
+                    studies.map(study =>
+                        m('option',{value:study.id}, study.name))
+                ])])
 
     ])
 };

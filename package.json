@@ -29,7 +29,7 @@
   "devDependencies": {
     "body-parser": "^1.14.2",
     "buble": "^0.12.3",
-    "eslint": "^1.10.3",
+    "eslint": "^5.9.0",
     "express": "^4.14.0",
     "multer": "^1.1.0",
     "node-sass": "^3.13.1",

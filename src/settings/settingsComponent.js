@@ -31,18 +31,18 @@ let changePasswordComponent = {
             do_set_templete
 
         };
-        getAuth().then((response) => {``
+        getAuth().then((response) => {``;
             ctrl.role(response.role);
         });
 
         get_email()
-        .then((response) => {
-            ctrl.email(response.email);
-        })
-        .catch(response => {
-            ctrl.email_error(response.message);
-        })
-        .then(m.redraw);
+            .then((response) => {
+                ctrl.email(response.email);
+            })
+            .catch(response => {
+                ctrl.email_error(response.message);
+            })
+            .then(m.redraw);
         check_if_dbx_synchronized()
             .then((response) => {
                 ctrl.is_dbx_synchronized(response.is_synchronized);
@@ -109,7 +109,7 @@ let changePasswordComponent = {
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
             ctrl.password_changed
-            ?
+                ?
                 [
                     m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                     m('h5', 'Password successfully updated!'),
@@ -118,15 +118,15 @@ let changePasswordComponent = {
                     )
 
                 ]
-            :
-            ctrl.email_changed
-            ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Email successfully updated!')
-                ]
-            :
-                draw_menu(ctrl)
+                :
+                ctrl.email_changed
+                    ?
+                    [
+                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                        m('h5', 'Email successfully updated!')
+                    ]
+                    :
+                    draw_menu(ctrl)
         ]);
     }
 };

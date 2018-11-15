@@ -55,38 +55,38 @@ let StudyRemovalComponent = {
     },
     view({form, ctrl, submit}){
         return ctrl.sent
-        ?
-        m('.deploy.centrify',[
-            m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-            m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
-        ])
-        :
-        m('.StudyRemoval.container', [
-            m('h3', [
-                'Study Removal Request ',
-                m('small', ctrl.global_study_name())
-            ]),
+            ?
+            m('.deploy.centrify',[
+                m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
+                m('h5', ['The removal form was sent successfully ', m('a', {href:'/removalList', config: m.route}, 'View removal requests')])
+            ])
+            :
+            m('.StudyRemoval.container', [
+                m('h3', [
+                    'Study Removal Request ',
+                    m('small', ctrl.global_study_name())
+                ]),
 
-            m('.row', [
-                m('.col-sm-3', m('strong', 'Researcher Name: ')),
-                m('.col-sm-9', ctrl.researcher_name())
-            ]),
-            m('.row.m-b-1', [
-                m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
-                m('.col-sm-9', ctrl.researcher_email())
-            ]),
+                m('.row', [
+                    m('.col-sm-3', m('strong', 'Researcher Name: ')),
+                    m('.col-sm-9', ctrl.researcher_name())
+                ]),
+                m('.row.m-b-1', [
+                    m('.col-sm-3', m('strong', 'Researcher Email Address: ')),
+                    m('.col-sm-9', ctrl.researcher_email())
+                ]),
 
-            radioInput({
-                label:m('span', ['Study name', ASTERIX]), 
-                prop: ctrl.study_name,
-                values:ctrl.study_names(),
-                help: 'This is the name you submitted to the RDE (e.g., colinsmith.elmcogload) ',
-                form, required:true, isStack:true
-            }),
-            textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form, required:true, isStack:true}),
-            textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
-            !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-            m('button.btn.btn-primary', {onclick: submit}, 'Submit')
-        ]);
+                radioInput({
+                    label:m('span', ['Study name', ASTERIX]), 
+                    prop: ctrl.study_name,
+                    values:ctrl.study_names(),
+                    help: 'This is the name you submitted to the RDE (e.g., colinsmith.elmcogload) ',
+                    form, required:true, isStack:true
+                }),
+                textInput({label: m('span', ['Please enter your completed n below ', m('span.text-danger', ' *')]), help: m('span', ['you can use the following link: ', m('a', {href:'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3'}, 'https://app-prod-03.implicit.harvard.edu/implicit/research/pitracker/PITracking.html#3')]),  placeholder: 'completed n', prop: ctrl.completed_n, form, required:true, isStack:true}),
+                textInput({isArea: true, label: m('span', 'Additional comments'), help: '(e.g., anything unusual about the data collection, consistent participant comments, etc.)',  placeholder: 'Additional comments', prop: ctrl.comments, form, isStack:true}),
+                !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                m('button.btn.btn-primary', {onclick: submit}, 'Submit')
+            ]);
     }
 };

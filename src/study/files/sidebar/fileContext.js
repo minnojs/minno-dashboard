@@ -46,12 +46,12 @@ const fileContext = (file, study) => {
             {icon:'fa-link', text: 'Copy URL', action: copyUrl(file.url)},
 
             !isExpt ?  {icon:'fa-desktop', text:'Make Experiment', action: make_experiment(file,study), disabled: isReadonly }
-                    :  {icon:'fa-desktop', text:'Experiment options', menu: [
-                        {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
-                        {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
-                        { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}/${version_id}`, text:'Play this task'},
-                        {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`, true)}
-                    ]},
+                :  {icon:'fa-desktop', text:'Experiment options', menu: [
+                    {icon:'fa-exchange', text:'Rename', action: update_experiment(file, study), disabled: isReadonly },
+                    {icon:'fa-close', text:'Cancel Experiment File', action: delete_experiment(file, study), disabled: isReadonly },
+                    { icon:'fa-play', href:`${launchUrl}/${file.exp_data.id}/${version_id}`, text:'Play this task'},
+                    {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`${launchUrl}/${file.exp_data.id}/${version_id}`, true)}
+                ]},
 
             //     isExpt ?  { icon:'fa-play', href:`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`, text:'Play this task'} : '',
             // isExpt ? {icon:'fa-link', text: 'Copy Launch URL', action: copyUrl(`https://app-prod-03.implicit.harvard.edu/implicit/Launch?study=${file.url.replace(/^.*?\/implicit/, '')}`)} : '',
@@ -85,9 +85,9 @@ const fileContext = (file, study) => {
             header:['Delete ',m('small', file.name)],
             content: 'Are you sure you want to delete this file? This action is permanent!'
         })
-        .then(ok => {
-            if (ok) return doDelete();
-        });
+            .then(ok => {
+                if (ok) return doDelete();
+            });
 
         function doDelete(){
             study.delFiles([file])

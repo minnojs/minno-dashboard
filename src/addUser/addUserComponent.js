@@ -55,7 +55,7 @@ let addComponent = {
                                     onchange: m.withAttr('value', ctrl.username),
                                     config: getStartValue(ctrl.username)
                                 }
-                            )),
+                                )),
                             m('fieldset.form-group',
                                 m('input.form-control', {
                                     type:'first_name',
@@ -65,17 +65,17 @@ let addComponent = {
                                     onchange: m.withAttr('value', ctrl.first_name),
                                     config: getStartValue(ctrl.first_name)
                                 }
-                            )),
+                                )),
                             m('fieldset.form-group',
-                                    m('input.form-control', {
-                                        type:'last_name',
-                                        placeholder: 'last name',
-                                        value: ctrl.last_name(),
-                                        oninput: m.withAttr('value', ctrl.last_name),
-                                        onchange: m.withAttr('value', ctrl.last_name),
-                                        config: getStartValue(ctrl.last_name)
-                                    }
-                            ))
+                                m('input.form-control', {
+                                    type:'last_name',
+                                    placeholder: 'last name',
+                                    value: ctrl.last_name(),
+                                    oninput: m.withAttr('value', ctrl.last_name),
+                                    onchange: m.withAttr('value', ctrl.last_name),
+                                    config: getStartValue(ctrl.last_name)
+                                }
+                                ))
                             // ,m('fieldset.form-group',
                             //     m('input.form-control', {
                             //         type:'email',

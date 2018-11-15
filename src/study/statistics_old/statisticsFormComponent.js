@@ -6,7 +6,7 @@ let statisticsForm = args => m.component(statisticsFormComponent, args);
 const colWidth = 3;
 const SOURCES = {
     'Research pool - Current studies'   : 'Research:Current',
-//    'Research pool - Past studies'      : 'Research:History',
+    //    'Research pool - Past studies'      : 'Research:History',
     'All research - Pool and lab'       : 'Research:Any',
     'Demo studies'                      : 'Demo:Any',
     'All studies'                       : 'Both:Any'

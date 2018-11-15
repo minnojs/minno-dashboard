@@ -31,14 +31,14 @@ let createMessage = {
                 let tmp_exps = [];
                 exps().forEach(exp=>{
                     !tmp_exps.find(exp2find=>exp2find.descriptive_id === exp.descriptive_id)
-                    ?
+                        ?
                         tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
-                    :
+                        :
                         tmp_exps.map(exp2update=>exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update);
                     exps(tmp_exps);
                 });
             })
-            .then(()=> {all_versions(versions.map(version=>version.id)); version_id(all_versions())})
+            .then(()=> {all_versions(versions.map(version=>version.id)); version_id(all_versions());})
             .catch(error)
             .then(loaded.bind(null, true))
             .then(m.redraw);

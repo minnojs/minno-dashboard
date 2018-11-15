@@ -74,13 +74,13 @@ let statisticsComponent = {
 };
 
 let downloadFile = (filename, text, query) => element => {
-    var json = text.data;
+    let json = text.data;
     json = !query.showEmpty() ? json : json.filter(row => row.starts !== 0);
 
-    var fields = ['studyName', !query.sorttask_sent() ? '' : 'taskName', query.sorttime_sent()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
+    let fields = ['studyName', !query.sorttask_sent() ? '' : 'taskName', query.sorttime_sent()==='All' ? '' : 'date', 'starts', 'completes', !query.sortgroup() ? '' : 'schema'].filter(n => n);
 
-    var replacer = function(key, value) { return value === null ? '' : value;};
-    var csv = json.map(function(row){
+    let replacer = function(key, value) { return value === null ? '' : value;};
+    let csv = json.map(function(row){
         return fields.map(function(fieldName){
             return JSON.stringify(row[fieldName], replacer);
         }).join(',');

@@ -132,7 +132,7 @@ const fileFactory = fileObj => {
     return file;
 
     function contentProvider (store) {
-        var prop = (...args) => {
+        let prop = (...args) => {
             if (args.length) {
                 store = args[0];
                 this.type === 'js' && this.checkSyntax();

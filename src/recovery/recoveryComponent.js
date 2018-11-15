@@ -29,26 +29,26 @@ let recoveryComponent = {
                     m('h5', 'Recovery request successfully sent!')
                 ]
                 :
-            m('.card.card-inverse.col-md-4', [
-                m('.card-block',[
-                    m('h4', 'Password Reset Request'),
-                    m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
+                m('.card.card-inverse.col-md-4', [
+                    m('.card-block',[
+                        m('h4', 'Password Reset Request'),
+                        m('p', 'Enter your username or your email address in the space below and we will mail you the password reset instructions'),
 
-                    m('form', {onsubmit:ctrl.recoveryAction}, [
-                        m('input.form-control', {
-                            type:'username',
-                            placeholder: 'Username / Email',
-                            value: ctrl.username(),
-                            oninput: m.withAttr('value', ctrl.username),
-                            onchange: m.withAttr('value', ctrl.username),
-                            config: getStartValue(ctrl.username)
-                        })
-                    ]),
+                        m('form', {onsubmit:ctrl.recoveryAction}, [
+                            m('input.form-control', {
+                                type:'username',
+                                placeholder: 'Username / Email',
+                                value: ctrl.username(),
+                                oninput: m.withAttr('value', ctrl.username),
+                                onchange: m.withAttr('value', ctrl.username),
+                                config: getStartValue(ctrl.username)
+                            })
+                        ]),
 
-                    !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
-                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
+                        !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
+                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.recoveryAction},'Request')
+                    ])
                 ])
-            ])
         ]);
     }
 };

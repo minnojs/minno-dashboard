@@ -19,7 +19,7 @@ const dropdownComponent = {
         return {
             isOpen : m.prop(false),
             inLowerViewport: m.prop(true)
-        }
+        };
     },
 
     view({isOpen, inLowerViewport}, {toggleSelector, toggleContent, elements, right}){

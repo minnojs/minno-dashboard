@@ -6,9 +6,9 @@ export default collaborationComponent;
 let collaborationComponent = {
     controller(){
         is_collaboration_code(m.route.param('code'))
-        .then(() => {
-            m.route('/');
-        }).catch().then(m.redraw);
+            .then(() => {
+                m.route('/');
+            }).catch().then(m.redraw);
 
 
 

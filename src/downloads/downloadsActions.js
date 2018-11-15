@@ -27,8 +27,8 @@ function debounce(func, wait) {
     let first = true;
     let timeout;
     return function() {
-        var context = this, args = arguments;
-        var later = function() {
+        let context = this, args = arguments;
+        let later = function() {
             timeout = null;
             func.apply(context, args);
         };
@@ -56,9 +56,9 @@ export function remove(download, list) {
             )
         ]
     })
-    .then(function(response){
-        if (response) return doRemove(download, list);
-    });
+        .then(function(response){
+            if (response) return doRemove(download, list);
+        });
 }
 
 function doRemove(download, list){

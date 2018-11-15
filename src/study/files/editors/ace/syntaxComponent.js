@@ -23,12 +23,12 @@ var syntaxComponent = {
      * }
      */
     analize: (isValid, data) => {
-        var errorCount = 0;
-        var warningCount = 0;
-        var errors = isValid ? [] : data.errors
+        let errorCount = 0;
+        let warningCount = 0;
+        let errors = isValid ? [] : data.errors
             .filter(e => e) // clean null values
             .map(err => {
-                var isError = err.code && (err.code[0] === 'E');
+                let isError = err.code && (err.code[0] === 'E');
 
                 isError ? errorCount++ : warningCount++;
 
@@ -50,7 +50,7 @@ var syntaxComponent = {
     },
 
     controller:  args => {
-        var file = args.file;
+        let file = args.file;
         return syntaxComponent.analize(file.syntaxValid, file.syntaxData);
     },
 

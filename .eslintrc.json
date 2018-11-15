@@ -14,9 +14,6 @@
         "es6": true,
         "browser": true
     },
-    "ecmaFeatures": {
-        "modules": true
-    },
      "globals": {
          "m" : true,
          "require" : true,

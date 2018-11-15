@@ -63,7 +63,7 @@ const studyPrototype = {
         const oldfiles = this.files();
 
         const toRemove = oldfiles.filter(oldfile => !newfiles.some(newfile => oldfile.id == newfile.id));
-        const toAdd = newfiles.filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id))
+        const toAdd = newfiles.filter(newfile => !oldfiles.some(oldfile => oldfile.id == newfile.id));
 
         toAdd.forEach(this.addFile.bind(this));
         toRemove.forEach(this.removeFile.bind(this));
@@ -207,7 +207,7 @@ const studyPrototype = {
 
     make_experiment(file, descriptive_id){
         return fetchJson(this.apiURL(`/file/${file.id}/experiment`),
-                        {method: 'post', body: {descriptive_id:descriptive_id}}).then((exp_data)=>file.exp_data=exp_data);
+            {method: 'post', body: {descriptive_id:descriptive_id}}).then((exp_data)=>file.exp_data=exp_data);
     },
 
     delete_experiment(file){

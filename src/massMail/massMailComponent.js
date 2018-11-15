@@ -55,7 +55,7 @@ let massMailComponent = {
                                     onchange: m.withAttr('value', ctrl.subject),
                                     config: getStartValue(ctrl.subject)
                                 }
-                            )),
+                                )),
                             m('fieldset.form-group',
                                 m('textarea.form-control', {
                                     type:'Body',
@@ -65,7 +65,7 @@ let massMailComponent = {
                                     onchange: m.withAttr('value', ctrl.body),
                                     config: getStartValue(ctrl.body)
                                 }
-                            )),
+                                )),
                             m('fieldset.form-group',
 
                                 m('label.c-input.c-checkbox', [

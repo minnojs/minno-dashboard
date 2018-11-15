@@ -4,7 +4,7 @@ export default function sortTable(listProp, sortByProp) {
         let list = listProp();
         if (prop) {
             if (typeof sortByProp == 'function') sortByProp(prop); // record property so that we can change style accordingly
-            var first = list[0];
+            let first = list[0];
             list.sort(function(a, b) {
                 return a[prop] > b[prop] ? 1 : a[prop] < b[prop] ? -1 : 0;
             });

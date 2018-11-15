@@ -94,11 +94,11 @@ export let do_make_public = (study) => e =>
     e.preventDefault();
     let error = m.prop('');
     return messages.confirm({okText: ['Yes, make ', !study.is_public ? 'public' : 'private'], cancelText: ['No, keep ', !study.is_public ? 'private' : 'public' ], header:'Are you sure?', content:m('p', [m('p', !study.is_public
-            ?
-            'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
-            :
-            'Making the study private will hide its files from everyone but you.'),
-            m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
+        ?
+        'Making the study public will allow everyone to view the files. It will NOT allow others to modify the study or its files.'
+        :
+        'Making the study private will hide its files from everyone but you.'),
+    m('span', {class: error() ? 'alert alert-danger' : ''}, error())])})
         .then(response => {
             if (response) make_pulic(study.id, !study.is_public)
                 .then(study.is_public = !study.is_public)
@@ -117,7 +117,7 @@ export let do_delete = (study) => e => {
                 .catch(error => messages.alert({header: 'Delete study', content: m('p.alert.alert-danger', error.message)}))
                 .then(m.redraw)
                 .then(m.route('./'))
-                ;
+            ;
 
         });
 };
@@ -218,10 +218,10 @@ export let do_lock = (study, callback) => e => {
             ]
         :
         'Are you sure you want to lock the study? This will prevent you from modifying the study until you unlock the study again. When a study is locked, you cannot add files, delete files, rename files, edit files, rename the study, or delete the study.'),
-        !error() ? '' : m('p.alert.alert-danger', error())])
+    !error() ? '' : m('p.alert.alert-danger', error())])
     })
 
-    .then(response => response && lock());
+        .then(response => response && lock());
 
     const lock= () => lock_study(study.id, !study.is_locked)
         .then(() => study.is_locked = !study.is_locked)
@@ -261,7 +261,7 @@ export let do_publish = (study, callback) => e => {
                         ])
                     ])
                 ]),
-                !error() ? '' : m('p.alert.alert-danger', error())])
+            !error() ? '' : m('p.alert.alert-danger', error())])
     })
 
         .then(response => response && publish());

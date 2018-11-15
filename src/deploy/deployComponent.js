@@ -66,14 +66,14 @@ let deployComponent = {
             }
 
             deploy(studyId, ctrl)
-            .then((response) => {
-                ctrl.rule_file(response.rule_file);
-                ctrl.sent = true;
-            })
-            .catch(response => {
-                ctrl.error(response.message);
-            })
-            .then(m.redraw);
+                .then((response) => {
+                    ctrl.rule_file(response.rule_file);
+                    ctrl.sent = true;
+                })
+                .catch(response => {
+                    ctrl.error(response.message);
+                })
+                .then(m.redraw);
         }
     },
     view({form, ctrl, submit}){

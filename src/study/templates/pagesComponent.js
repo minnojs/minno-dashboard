@@ -103,34 +103,34 @@ let pagesComponent = {
                     :
                     [
                         m('.study',
-                        m('.editor',
-                        m('.btn-toolbar.editor-menu', [
-                            m('.file-name', {class: has_changed() ? 'text-danger' : ''},
-                                m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
-                                pageId
-                            ),
-                            m('.btn-group.btn-group-sm.pull-xs-right', [
-                                m('a.btn.btn-secondary', { title:'Save', onclick:save
-                                    , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
-                                },[
-                                    m('strong.fa.fa-save')
-                                ])]
-                        )]))),
+                            m('.editor',
+                                m('.btn-toolbar.editor-menu', [
+                                    m('.file-name', {class: has_changed() ? 'text-danger' : ''},
+                                        m('span',{class: has_changed() ? '' : 'invisible'}, '*'),
+                                        pageId
+                                    ),
+                                    m('.btn-group.btn-group-sm.pull-xs-right', [
+                                        m('a.btn.btn-secondary', { title:'Save', onclick:save
+                                            , class: classNames({'btn-danger-outline' : has_changed(), 'disabled': !has_changed()})
+                                        },[
+                                            m('strong.fa.fa-save')
+                                        ])]
+                                    )]))),
                         m('div.translate-page', {config: fullheight},
-                        [strings().map(string => m('.list-group-item', [
-                            m('.row', [
-                                m('.col-sm-5', [
-                                    m('span',  string.text),
-                                    m('p.small.text-muted.m-y-0', string.comment)
-                                ]),
-                                m('.col-sm-7', [
-                                    m('textarea.form-control', {
-                                        placeholder: 'translation',
-                                        oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
-                                        onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
-                                        config: textareaAutoresize
-                                    }, string.translation())
-                                ])
+                            [strings().map(string => m('.list-group-item', [
+                                m('.row', [
+                                    m('.col-sm-5', [
+                                        m('span',  string.text),
+                                        m('p.small.text-muted.m-y-0', string.comment)
+                                    ]),
+                                    m('.col-sm-7', [
+                                        m('textarea.form-control', {
+                                            placeholder: 'translation',
+                                            oninput: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                            onchange: m.withAttr('value', function(value){string.translation(value); has_changed(true); string.changed=true; }),
+                                            config: textareaAutoresize
+                                        }, string.translation())
+                                    ])
 
                                 // ,m('.col-sm-6', [
                                 //     m('input.form-control', {
@@ -142,9 +142,9 @@ let pagesComponent = {
                                 //         config: getStartValue(string.translation)
                                 //     })
                                 // ])
+                                ])
+                            ]))
                             ])
-                        ]))
-                ])
 
                     ]
             })

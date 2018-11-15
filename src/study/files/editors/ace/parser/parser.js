@@ -16,12 +16,12 @@ function flattenSequence(sequence){
 }
 
 function concatClean(){
-    var args = [].splice.call(arguments,0);
+    let args = [].splice.call(arguments,0);
     return [].concat.apply([], args).filter(e=>e);
 }
 
 export function pipElements(script){
-    var trials, stimuli, media;
+    let trials, stimuli, media;
 
     trials = concatClean(flattenSequence(script.sequence), script.trialSets);
     stimuli = concatClean(
@@ -37,7 +37,7 @@ export function pipElements(script){
 }
 
 export function questElements(script){
-    var pages, questions;
+    let pages, questions;
 
     pages = [].concat(
         flattenSequence(script.sequence),
@@ -53,7 +53,7 @@ export function questElements(script){
 }
 
 export function managerElements(script){
-    var tasks;
+    let tasks;
 
     tasks = [].concat(
         flattenSequence(script.sequence),

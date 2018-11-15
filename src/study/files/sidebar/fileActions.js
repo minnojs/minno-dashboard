@@ -46,9 +46,9 @@ export let duplicateFile = (file,study) => () => {
         postContent: m('p.text-muted', 'You can move a file to a specific folder be specifying the full path. For example "images/img.jpg"'),
         prop: newPath
     })
-    .then(response => {
-        if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
-    });
+        .then(response => {
+            if (response && newPath() !== file.name) return createFile(study, newPath, file.content);
+        });
 };
 
 export let copyFile = (file, study) => () => {
@@ -116,13 +116,13 @@ function moveAction(newPath, file, study){
     const isFocused = file.id === m.route.param('fileId');
 
     const def = study
-    .move(newPath,file) // the actual movement
-    .then(redirect)
-    .catch(response => messages.alert({
-        header: 'Move/Rename File',
-        content: m('p.alert.alert-danger', response.message)
-    }))
-    .then(m.redraw); // redraw after server response
+        .move(newPath,file) // the actual movement
+        .then(redirect)
+        .catch(response => messages.alert({
+            header: 'Move/Rename File',
+            content: m('p.alert.alert-danger', response.message)
+        }))
+        .then(m.redraw); // redraw after server response
 
     m.redraw();
     return def;
@@ -136,13 +136,13 @@ function moveAction(newPath, file, study){
 
 function copyAction(path, file, study_id, new_study_id){
     let def = file
-    .copy(path, study_id, new_study_id) // the actual movement
-    .catch(response => messages.alert({
+        .copy(path, study_id, new_study_id) // the actual movement
+        .catch(response => messages.alert({
 
-        header: 'Copy File',
-        content: m('p.alert.alert-danger', response.message)
-    }))
-    .then(m.redraw); // redraw after server response
+            header: 'Copy File',
+            content: m('p.alert.alert-danger', response.message)
+        }))
+        .then(m.redraw); // redraw after server response
 
     return def;
 }

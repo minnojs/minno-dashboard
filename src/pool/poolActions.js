@@ -10,15 +10,15 @@ export function play(study){
         header: 'Continue Study:',
         content: `Are you sure you want to continue "${study.studyId}"?`
     })
-    .then(response => {
-        if(response) {
-            studyPending(study, true)();
-            return updateStatus(study, STATUS_RUNNING)
-                .then(()=>study.studyStatus = STATUS_RUNNING)
-                .catch(reportError('Continue Study'))
-                .then(studyPending(study, false));
-        }
-    });
+        .then(response => {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_RUNNING)
+                    .then(()=>study.studyStatus = STATUS_RUNNING)
+                    .catch(reportError('Continue Study'))
+                    .then(studyPending(study, false));
+            }
+        });
 }
 
 export function pause(study){
@@ -26,15 +26,15 @@ export function pause(study){
         header: 'Pause Study:',
         content: `Are you sure you want to pause "${study.studyId}"?`
     })
-    .then(response => {
-        if(response) {
-            studyPending(study, true)();
-            return updateStatus(study, STATUS_PAUSED)
-                .then(()=>study.studyStatus = STATUS_PAUSED)
-                .catch(reportError('Pause Study'))
-                .then(studyPending(study, false));
-        }
-    });
+        .then(response => {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_PAUSED)
+                    .then(()=>study.studyStatus = STATUS_PAUSED)
+                    .catch(reportError('Pause Study'))
+                    .then(studyPending(study, false));
+            }
+        });
 }
 
 export let remove  = (study, list) => {
@@ -42,15 +42,15 @@ export let remove  = (study, list) => {
         header: 'Remove Study:',
         content: `Are you sure you want to remove "${study.studyId}" from the pool?`
     })
-    .then(response => {
-        if(response) {
-            studyPending(study, true)();
-            return updateStatus(study, STATUS_STOP)
-                .then(() => list(list().filter(el => el !== study)))
-                .catch(reportError('Remove Study'))
-                .then(studyPending(study, false));
-        }
-    });
+        .then(response => {
+            if(response) {
+                studyPending(study, true)();
+                return updateStatus(study, STATUS_STOP)
+                    .then(() => list(list().filter(el => el !== study)))
+                    .catch(reportError('Remove Study'))
+                    .then(studyPending(study, false));
+            }
+        });
 };
 
 export let edit  = (input) => {

@@ -3,7 +3,7 @@ import questValidate from './questValidator';
 import managerValidate from './managerValidator';
 
 export default function validate(script){
-    var type = script.type && script.type.toLowerCase();
+    let type = script.type && script.type.toLowerCase();
     switch (type){
         case 'pip' : return pipValidate.apply(null, arguments);
         case 'quest' : return questValidate.apply(null, arguments);
