@@ -1,5 +1,5 @@
 import classNames from 'utils/classNames';
-import copyUrl from 'utils/copyUrl';
+import {copyUrl} from 'utils/copyUrl';
 import {play, save, resetFile} from '../sidebar/fileActions';
 import {pageSnippet, questSnippet, taskSnippet} from './snippetActions';
 

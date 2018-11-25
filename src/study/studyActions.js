@@ -8,7 +8,7 @@ import createMessage from '../downloads/dataComp';
 
 import {update_tags_in_study} from '../tags/tagsModel';
 import {make_pulic} from './sharing/sharingModel';
-import copyUrl from 'utils/copyUrl';
+import {copyUrl} from 'utils/copyUrl';
 
 export let do_create = (type, studies) => {
     const study_name = m.prop('');

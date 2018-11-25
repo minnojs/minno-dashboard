@@ -1,6 +1,10 @@
 import {get_users, remove_user, update_role, change_user_password} from './usersModel';
 
 import messages from 'utils/messagesComponent';
+import {copyUrlContent} from 'utils/copyUrl';
+
+import addComponent from '../../addUser/addUserComponent';
+
 
 export default usersComponent;
 
@@ -13,7 +17,8 @@ let usersComponent = {
             password:m.prop(''),
             remove,
             update,
-            change_password};
+            change_password,
+            add_user};
         function load() {
             get_users()
                 .then(response =>ctrl.users(response.users))
@@ -23,14 +28,21 @@ let usersComponent = {
                 }).then(m.redraw);
 
         }
+
+        function add_user(){
+            messages.alert({okText: 'Close', header:'Add a new user', content:addComponent
+
+                    })
+                .then(()=>load()).then(m.redraw);
+        }
+
+
         function remove(user_id){
             messages.confirm({header:'Delete user', content:'Are you sure?'})
                 .then(response => {
                     if (response)
                         remove_user(user_id)
-                            .then(()=> {
-                                load();
-                            })
+                            .then(()=> load())
                             .catch(error => {
                                 ctrl.col_error(error.message);
                             })
@@ -38,32 +50,12 @@ let usersComponent = {
                 });
         }
 
-
-
-        function change_password(user_id, user_name){
-            let error = m.prop('');
-            let ask = () => messages.confirm({
-                header:'Change password for user',
-                content: {
-                    view(){
-                        return m('div', [
-                            m('p', `Enter new password for ${user_name}`),
-                            m('input.form-control',  {placeholder: 'Enter new password', value: ctrl.password(), onchange: m.withAttr('value', ctrl.password)}),
-                            !error() ? '' : m('p.alert.alert-danger', error())
-                        ]);
-                    }
-                }
-            }).then(response => response && change_pass());
-
-            let change_pass = () => change_user_password(user_id, ctrl.password())
-                .catch(e => {
-                    error(e.message);
-                    ask();
-                }).then(m.redraw);
-
-            ask();
+        function change_password(reset_code, user_name){
+            messages.confirm({
+                header:`Url for reset ${user_name}'s password`,
+                content: copyUrlContent(reset_code)()
+            })
         }
-
 
         function update(user_id, role){
             update_role(user_id, role)
@@ -81,8 +73,18 @@ let usersComponent = {
             ?
             m('.loader')
             :
-            m('.container.sharing-page', [
-                m('table', {class:'table table-striped table-hover'}, [
+                m('.container.sharing-page', [
+                    m('.row',[
+                        m('.col-sm-10', [
+                            m('h3', 'User Management')
+                        ]),
+                        m('.col-sm-2', [
+                            m('button.btn.btn-success.btn-sm.m-r-1', {onclick:ctrl.add_user}, [
+                                m('i.fa.fa-user-plus'), '  Add a new user'
+                            ])
+                        ])
+                    ]),
+                    m('table', {class:'table table-striped table-hover'}, [
                     m('thead', [
                         m('tr', [
                             m('th', 'User name'),
@@ -90,7 +92,7 @@ let usersComponent = {
                             m('th',  'Last name'),
                             m('th',  'Email'),
                             m('th',  'Role'),
-                            ctrl.users().filter(user=> !!user.reset_code).length>0 ? m('th',  'boom') : '',
+                            ctrl.users().filter(user=> !!user.reset_code).length>0 ? m('th',  'Reset password') : '',
                             m('th',  'Remove')
                         ])
                     ]),
@@ -107,7 +109,7 @@ let usersComponent = {
                                 ])
                             ),
                             ctrl.users().filter(user=> !!user.reset_code).length==0 ? '' :
-                                !user.reset_code ? m('td', '') : m('td', m('button.btn.btn-secondery', {onclick:()=>ctrl.change_password(user.id, user.user_name)}, 'Reset password'))
+                                !user.reset_code ? m('td', '') : m('td', m('button.btn.btn-secondery', {onclick:()=>ctrl.change_password(user.reset_code, user.user_name)}, 'Reset password'))
                             ,
 
                             m('td', m('button.btn.btn-danger', {onclick:()=>ctrl.remove(user.id)}, 'Remove'))

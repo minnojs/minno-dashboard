@@ -9,6 +9,7 @@ let timer = 0;
 let countdown = 0;
 let role = '';
 let isloggedin = true;
+let new_msgs = false;
 
 let layout = route => {
     return {
@@ -16,6 +17,7 @@ let layout = route => {
             const ctrl = {
                 isloggedin: isloggedin,
                 role: m.prop(role),
+                new_msgs: m.prop(new_msgs),
                 present_templates: m.prop(false),
                 doLogout,
                 timer:m.prop(0)
@@ -24,6 +26,8 @@ let layout = route => {
             function is_loggedin(){
                 getAuth().then((response) => {
                     role = ctrl.role(response.role);
+                    new_msgs = ctrl.new_msgs(response.new_msgs);
+
                     isloggedin = ctrl.isloggedin = response.isloggedin;
                     ctrl.present_templates(response.present_templates);
                     let is_view = (m.route() == `/view/${m.route.param('code')}` || m.route() == `/view/${m.route.param('code')}/${m.route.param('resource')}/${encodeURIComponent(m.route.param('fileId'))}`);
@@ -83,7 +87,7 @@ let layout = route => {
                 // 'data':['downloads', 'downloadsAccess', 'statistics'],
                 // 'pool':[],
                 'tags':[]
-                ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser', 'users'/*, 'massMail'*/]
+                ,'admin':[/*'deployList', 'removalList', 'changeRequestList', 'addUser', */'users', 'config'/*, 'massMail'*/]
             };
 
 
@@ -103,6 +107,7 @@ let layout = route => {
                         'removalList': {text:'Removal List', href:'/removalList'},
                         'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
                         'addUser': {text:'Add User', href: '/addUser'},
+                        'config': {text:'Edit Configuration', href: '/config'},
                         'massMail': {text:'Send MassMail', href: '/massMail'},
                         'users': {text:'Users Management', href: '/users'}
                     }}
@@ -139,7 +144,7 @@ let layout = route => {
                                             ])
                                         ])
                             ),
-                            m('li.nav-item.pull-xs-right', [
+                            !ctrl.new_msgs() ? '' : m('li.nav-item.pull-xs-right', [
                                 m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
                             ]),
 

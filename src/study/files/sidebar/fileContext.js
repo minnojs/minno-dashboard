@@ -7,7 +7,7 @@ import {
     make_experiment, update_experiment, delete_experiment
 } from './fileActions';
 
-import copyUrl from 'utils/copyUrl';
+import {copyUrl} from 'utils/copyUrl';
 export default fileContext;
 
 

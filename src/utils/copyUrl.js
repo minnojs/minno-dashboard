@@ -1,9 +1,14 @@
 import messages from 'utils/messagesComponent';
 
-export default copyUrl;
 
-const copyUrl = (url, launch) => () => {
-    messages.alert({
+
+export const copyUrlContent = (url) => () =>
+    m.component(copyComponent, getAbsoluteUrl(url));
+
+
+export const copyUrl = (url, launch) => () =>
+{
+        messages.alert({
         header: 'Copy URL',
         content: m.component(copyComponent, getAbsoluteUrl(url), launch),
         okText: 'Done'

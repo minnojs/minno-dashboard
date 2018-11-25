@@ -23,7 +23,8 @@ import studyRemovalComponent from './deploy/studyRemovalComponent';
 import studyChangeRequestComponent from './deploy/studyChangeRequestComponent';
 
 import addUserComponent from './addUser/addUserComponent';
-import usersComponent from './users/usersComponent';
+import usersComponent from './admin/users/usersComponent';
+import configComponent from './admin/config/configComponent';
 import settingsComponent from './settings/settingsComponent';
 import messagesComponent from './messages/messagesComponent';
 import massMailComponent from './massMail/massMailComponent';
@@ -59,6 +60,7 @@ let routes = {
     '/changeRequestList': changeRequestListComponent,
     '/addUser':  addUserComponent,
     '/users':  usersComponent,
+    '/config':  configComponent,
     '/massMail':  massMailComponent,
 
     '/studyChangeRequest/:studyId':  studyChangeRequestComponent,

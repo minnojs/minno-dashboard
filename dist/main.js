@@ -407,7 +407,6 @@
             var isArea = ref.isArea; if ( isArea === void 0 ) isArea = false;
             var isFirst = ref.isFirst; if ( isFirst === void 0 ) isFirst = false;
             var placeholder = ref.placeholder; if ( placeholder === void 0 ) placeholder = '';
-            var help = ref.help;
             var rows = ref.rows; if ( rows === void 0 ) rows = 3;
             var inputClass = ref$1.inputClass;
 
@@ -4128,7 +4127,6 @@
 
     var update_experiment = function (file, study) { return function () {
         var descriptive_id = m.prop(file.exp_data.descriptive_id);
-        console.log({file: file});
         var error = m.prop('');
         return messages.confirm({
             header:'New Name',
@@ -4897,6 +4895,7 @@
     function syntaxHighlight(json) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+        // eslint-disable-next-line no-useless-escape
         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
             var cls = 'number';
             if (/^"/.test(match)) {
@@ -4914,8 +4913,11 @@
         });
     }
 
+    var copyUrlContent = function (url) { return function () { return m.component(copyComponent, getAbsoluteUrl(url)); }; };
+
+
     var copyUrl = function (url, launch) { return function () {
-        messages.alert({
+            messages.alert({
             header: 'Copy URL',
             content: m.component(copyComponent, getAbsoluteUrl(url), launch),
             okText: 'Done'
@@ -5002,6 +5004,7 @@
             return str === '' ? str : str
                 // escape string
                 .replace(/[\\"']/g, '\\$&')
+                // eslint-disable-next-line no-control-regex
                 .replace(/\u0000/g, '\\0')
                 // manage rows separately
                 .split(END_LINE)
@@ -6042,6 +6045,15 @@
         function activateWizard(route){
             return function () { return m.route("/editor/" + (study.id) + "/wizard/" + route); };
         }
+        
+        // function mapWizardHash(wizardHash){
+        //     return Object.keys(wizardHash).map((text) => {
+        //         let value = wizardHash[text];
+        //         return typeof value === 'string'
+        //             ? {text, action: createFromTemplate({study, path, url:value, templateName:text})}
+        //             : {text, menu: mapWizardHash(value)};
+        //     });
+        // }
 
         function deleteFile(){
             var isFocused = file.id === m.route.param('fileId');
@@ -6626,7 +6638,6 @@
     function create_tag(study_id, tagName, tags, error){
         return function () { return add_tag(tagName(), 'E7E7E7')
             .then(function (response) { return tags().push(response); })
-            .then(console.log(tags()))
             .then(tagName.bind(null, ''))
             .catch(error)
             .then(m.redraw); };
@@ -6659,8 +6670,6 @@
 
             get_exps(study_id)
                 .then(function (response) {
-                    var all_exps = m.prop('');
-
                     exps(response.experiments);
                     all_exp_ids(exps().map(function (exp){ return exp.id; }));
                     exp_id(all_exp_ids());
@@ -7561,6 +7570,7 @@
             var isDir = ref.isDir;
 
             // validation (make sure there are no invalid characters)
+            // eslint-disable-next-line no-useless-escape
             if(/[^\/-_.A-Za-z0-9]/.test(name)) return Promise.reject({message: ("The file name \"" + name + "\" is not valid")});
 
             // validation (make sure file does not already exist)
@@ -8620,14 +8630,16 @@
                 iscu: iscu,
                 error: m.prop(''),
                 added:false,
-                add: addAction
+                activation_code: m.prop(''),
+                add: addAction,
             };
             return ctrl;
 
             function addAction(){
                 add(username, first_name , last_name, email, iscu)
-                    .then(function () {
+                    .then(function (response) {
                         ctrl.added = true;
+                        ctrl.activation_code(response.activation_code);
                         m.redraw();
                     })
                     .catch(function (response) {
@@ -8637,15 +8649,23 @@
             }
         },
         view: function view(ctrl){
-            return m('.add.centrify', {config:fullHeight},[
+            return m('.add.centrify',[
                 ctrl.added
                     ?
-                    [
+
+                    ctrl.activation_code()
+                        ?
+                        [
+                            m('h5', [ctrl.username(), ' successfully added ']),
+                            m('.card.card-inverse.col-md-10',
+                                copyUrlContent(ctrl.activation_code())())
+                        ]:
+                        [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
                         m('h5', [ctrl.username(), ' successfully added (email sent)!'])
                     ]
                     :
-                    m('.card.card-inverse.col-md-4', [
+                    m('.card.card-inverse.col-md-10', [
                         m('.card-block',[
                             m('h4', 'Please fill the following details'),
                             m('form', {onsubmit:ctrl.add}, [
@@ -8679,16 +8699,16 @@
                                         config: getStartValue$1(ctrl.last_name)
                                     }
                                     ))
-                                // ,m('fieldset.form-group',
-                                //     m('input.form-control', {
-                                //         type:'email',
-                                //         placeholder: 'email',
-                                //         value: ctrl.email(),
-                                //         oninput: m.withAttr('value', ctrl.email),
-                                //         onchange: m.withAttr('value', ctrl.email),
-                                //         config: getStartValue(ctrl.email)
-                                //     }
-                                // ))
+                                ,m('fieldset.form-group',
+                                    m('input.form-control', {
+                                        type:'email',
+                                        placeholder: 'email',
+                                        value: ctrl.email(),
+                                        oninput: m.withAttr('value', ctrl.email),
+                                        onchange: m.withAttr('value', ctrl.email),
+                                        config: getStartValue$1(ctrl.email)
+                                    }
+                                ))
                             ]),
 
                             !ctrl.error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.error()),
@@ -8725,11 +8745,6 @@
         method: 'put'
     }); };
 
-    var change_user_password = function (user_id, password) { return fetchJson(users_url(), {
-        body: {user_id: user_id, password: password},
-        method: 'put'
-    }); };
-
     var usersComponent = {
         controller: function controller(){
             var ctrl = {
@@ -8739,7 +8754,8 @@
                 password:m.prop(''),
                 remove: remove,
                 update: update,
-                change_password: change_password};
+                change_password: change_password,
+                add_user: add_user};
             function load() {
                 get_users()
                     .then(function (response) { return ctrl.users(response.users); })
@@ -8749,14 +8765,21 @@
                     }).then(m.redraw);
 
             }
+
+            function add_user(){
+                messages.alert({okText: 'Close', header:'Add a new user', content:addComponent
+
+                        })
+                    .then(function (){ return load(); }).then(m.redraw);
+            }
+
+
             function remove(user_id){
                 messages.confirm({header:'Delete user', content:'Are you sure?'})
                     .then(function (response) {
                         if (response)
                             remove_user(user_id)
-                                .then(function (){
-                                    load();
-                                })
+                                .then(function (){ return load(); })
                                 .catch(function (error) {
                                     ctrl.col_error(error.message);
                                 })
@@ -8764,32 +8787,12 @@
                     });
             }
 
-
-
-            function change_password(user_id, user_name){
-                var error = m.prop('');
-                var ask = function () { return messages.confirm({
-                    header:'Change password for user',
-                    content: {
-                        view: function view(){
-                            return m('div', [
-                                m('p', ("Enter new password for " + user_name)),
-                                m('input.form-control',  {placeholder: 'Enter new password', value: ctrl.password(), onchange: m.withAttr('value', ctrl.password)}),
-                                !error() ? '' : m('p.alert.alert-danger', error())
-                            ]);
-                        }
-                    }
-                }).then(function (response) { return response && change_pass(); }); };
-
-                var change_pass = function () { return change_user_password(user_id, ctrl.password())
-                    .catch(function (e) {
-                        error(e.message);
-                        ask();
-                    }).then(m.redraw); };
-
-                ask();
+            function change_password(reset_code, user_name){
+                messages.confirm({
+                    header:("Url for reset " + user_name + "'s password"),
+                    content: copyUrlContent(reset_code)()
+                });
             }
-
 
             function update(user_id, role){
                 update_role(user_id, role)
@@ -8807,8 +8810,18 @@
                 ?
                 m('.loader')
                 :
-                m('.container.sharing-page', [
-                    m('table', {class:'table table-striped table-hover'}, [
+                    m('.container.sharing-page', [
+                        m('.row',[
+                            m('.col-sm-10', [
+                                m('h3', 'User Management')
+                            ]),
+                            m('.col-sm-2', [
+                                m('button.btn.btn-success.btn-sm.m-r-1', {onclick:ctrl.add_user}, [
+                                    m('i.fa.fa-user-plus'), '  Add a new user'
+                                ])
+                            ])
+                        ]),
+                        m('table', {class:'table table-striped table-hover'}, [
                         m('thead', [
                             m('tr', [
                                 m('th', 'User name'),
@@ -8816,7 +8829,7 @@
                                 m('th',  'Last name'),
                                 m('th',  'Email'),
                                 m('th',  'Role'),
-                                ctrl.users().filter(function (user){ return !!user.reset_code; }).length>0 ? m('th',  'boom') : '',
+                                ctrl.users().filter(function (user){ return !!user.reset_code; }).length>0 ? m('th',  'Reset password') : '',
                                 m('th',  'Remove')
                             ])
                         ]),
@@ -8833,7 +8846,7 @@
                                     ])
                                 ),
                                 ctrl.users().filter(function (user){ return !!user.reset_code; }).length==0 ? '' :
-                                    !user.reset_code ? m('td', '') : m('td', m('button.btn.btn-secondery', {onclick:function (){ return ctrl.change_password(user.id, user.user_name); }}, 'Reset password'))
+                                    !user.reset_code ? m('td', '') : m('td', m('button.btn.btn-secondery', {onclick:function (){ return ctrl.change_password(user.reset_code, user.user_name); }}, 'Reset password'))
                                 ,
 
                                 m('td', m('button.btn.btn-danger', {onclick:function (){ return ctrl.remove(user.id); }}, 'Remove'))
@@ -8843,6 +8856,45 @@
                 ]);
         }
     };
+
+    function config_url()
+    {
+        return (baseUrl + "/config");
+    }
+
+    function gmail_url()
+    {
+        return (baseUrl + "/config/gmail");
+    }
+
+    function dbx_url()
+    {
+        return (baseUrl + "/config/dbx");
+    }
+
+
+    var get_config = function () { return fetchJson(config_url(), {
+        method: 'get'
+    }); };
+
+    var set_gmail_params = function (email, password) { return fetchJson(gmail_url(), {
+        body: {email: email, password: password},
+        method: 'put'
+    }); };
+
+    var unset_gmail_params = function () { return fetchJson(gmail_url(), {
+        method: 'delete'
+    }); };
+
+
+    var set_dbx_params = function (client_id, client_secret) { return fetchJson(dbx_url(), {
+        body: {client_id: client_id, client_secret: client_secret},
+        method: 'put'
+    }); };
+
+    var unset_dbx_params = function () { return fetchJson(dbx_url(), {
+        method: 'delete'
+    }); };
 
     var change_password_url = baseUrl + "/change_password";
     var change_email_url = baseUrl + "/change_email";
@@ -8900,6 +8952,193 @@
     var stop_dbx_synchronized = function () { return fetchJson(dropbox_url, {
         method: 'delete'
     }); };
+
+    var configComponent = {
+        controller: function controller(){
+            var ctrl = {
+                loaded:m.prop(false),
+                dbx: {
+                    setted: m.prop(false),
+                    enable: m.prop(false),
+                    client_id:m.prop(''),
+                    client_secret:m.prop(''),
+                    error:m.prop('')
+                },
+                gmail: {
+                    setted: m.prop(false),
+                    enable: m.prop(false),
+                    email:m.prop(''),
+                    password:m.prop(''),
+                    error:m.prop('')
+                },
+
+                toggle_visibility: toggle_visibility,
+                set_gmail: set_gmail,
+                unset_gmail: unset_gmail,
+                set_dbx: set_dbx,
+                unset_dbx: unset_dbx
+            };
+
+
+            function set_values(response){
+                if(response.config.gmail)
+                    ctrl.gmail.setted(true) && ctrl.gmail.enable(true) && ctrl.gmail.email(response.config.gmail.email) && ctrl.gmail.password(response.config.gmail.password);
+                if(response.config.dbx)
+                    ctrl.dbx.setted(true) && ctrl.dbx.enable(true) && ctrl.dbx.client_id(response.config.dbx.client_id) && ctrl.dbx.client_secret(response.config.dbx.client_secret);
+            }
+
+            function toggle_visibility(varable, state){
+                ctrl[varable].error('');
+                ctrl[varable].enable(state);
+            }
+
+            function load() {
+                get_config()
+                    .then(function (response) { return set_values(response); })
+                    .then(function (){ return ctrl.loaded(true); })
+                    .catch(function (error) {
+                        ctrl.col_error(error.message);
+                    }).then(m.redraw);
+            }
+
+
+            function set_gmail() {
+                ctrl.gmail.error('');
+                set_gmail_params(ctrl.gmail.email, ctrl.gmail.password)
+                    .catch(function (error) {
+                        ctrl.gmail.error(error.message);
+                    })
+                    .then(ctrl.gmail.setted(true))
+                    .then(ctrl.gmail.enable(true))
+                    .then(m.redraw);
+            }
+
+            function unset_gmail() {
+                ctrl.gmail.error('');
+                unset_gmail_params()
+                    .catch(function (error) {
+                        ctrl.gmail.error(error.message);
+                    })
+                    .then(ctrl.gmail.setted(false))
+                    .then(ctrl.gmail.enable(false))
+                    .then(ctrl.gmail.email(''))
+                    .then(ctrl.gmail.password(''))
+                    .then(m.redraw);
+            }
+
+            function set_dbx() {
+                ctrl.dbx.error('');
+                set_dbx_params(ctrl.dbx.client_id, ctrl.dbx.client_secret)
+                    .catch(function (error) {
+                        ctrl.dbx.error(error.message);
+                    })
+                    .then(ctrl.dbx.setted(true))
+                    .then(ctrl.dbx.enable(true))
+                    .then(m.redraw);
+            }
+
+            function unset_dbx() {
+                unset_dbx_params()
+                    .catch(function (error) {
+                        ctrl.dbx.error(error.message);
+                    })
+                    .then(ctrl.dbx.setted(false))
+                    .then(ctrl.dbx.enable(false))
+                    .then(ctrl.dbx.client_id(''))
+                    .then(ctrl.dbx.client_secret(''))
+                    .then(m.redraw);
+            }
+
+            load();
+            return ctrl;
+        },
+        view: function view(ctrl){
+            return  !ctrl.loaded()
+                ?
+                m('.loader')
+                :
+                    m('.container.sharing-page', [
+                        m('.row',[
+                            m('.col-sm-10', [
+                                m('h3', 'Edit configuration')
+                            ])
+                        ]),
+
+                        m('.row.centrify',
+                            [m('.card.card-inverse.col-md-5.centrify', [
+
+                                !ctrl.gmail.enable() ?
+                                    m('a', {onclick: function (){ return ctrl.toggle_visibility('gmail', true); }},
+                                        m('button.btn.btn-primary.btn-block', [
+                                            m('i.fa.fa-fw.fa-envelope'), ' Enable support with email'
+                                        ])
+                                    )
+                                    :
+                                    m('.card-block',[
+                                    m('h4', 'Enter details for Gmail accont'),
+                                    m('form', [
+                                        m('input.form-control', {
+                                            type:'input',
+                                            placeholder: 'Gmail accont',
+                                            value: ctrl.gmail.email(),
+                                            oninput: m.withAttr('value', ctrl.gmail.email),
+                                            onchange: m.withAttr('value', ctrl.gmail.email),
+                                        }),
+
+                                        m('input.form-control', {
+                                            type:'input',
+                                            placeholder: 'password',
+                                            value: ctrl.gmail.password(),
+                                            oninput: m.withAttr('value', ctrl.gmail.password),
+                                            onchange: m.withAttr('value', ctrl.gmail.password),
+                                        })
+                                    ]),
+                                    ctrl.gmail.setted() ? ''  : m('button.btn.btn-secondery.btn-block', {onclick: function (){ return ctrl.toggle_visibility('gmail', false); }},'Cancel'),
+                                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.set_gmail},'Update'),
+                                    !ctrl.gmail.setted() ? '' : m('button.btn.btn-danger.btn-block', {onclick: ctrl.unset_gmail},'remove'),
+                                    !ctrl.gmail.error() ? '' : m('p.alert.alert-danger', ctrl.gmail.error()),
+                                    ])
+                            ])
+
+                            ]),
+                        m('.row.centrify',
+                            m('.card.card-inverse.col-md-5.centrify', [
+                                !ctrl.dbx.enable() ?
+                                    m('a', {onclick: function (){ return ctrl.toggle_visibility('dbx', true); }},
+                                        m('button.btn.btn-primary.btn-block', [
+                                            m('i.fa.fa-fw.fa-envelope'), ' Enable support with dropbox'
+                                        ])
+                                    )
+                                    :
+                                    m('.card-block',[
+                                    m('h4', 'Enter details for Dropbox application'),
+                                    m('form', [
+                                        m('input.form-control', {
+                                            type:'input',
+                                            placeholder: 'client id',
+                                            value: ctrl.dbx.client_id(),
+                                            oninput: m.withAttr('value', ctrl.dbx.client_id),
+                                            onchange: m.withAttr('value', ctrl.dbx.client_id),
+                                        }),
+
+                                        m('input.form-control', {
+                                            type:'input',
+                                            placeholder: 'client secret',
+                                            value: ctrl.dbx.client_secret(),
+                                            oninput: m.withAttr('value', ctrl.dbx.client_secret),
+                                            onchange: m.withAttr('value', ctrl.dbx.client_secret),
+                                        })
+                                    ]),
+                                        ctrl.dbx.setted() ? ''  : m('button.btn.btn-secondery.btn-block', {onclick: function (){ return ctrl.toggle_visibility('dbx', false); }},'Cancel'),
+                                        m('button.btn.btn-primary.btn-block', {onclick: ctrl.set_dbx},'Update'),
+                                        !ctrl.dbx.setted() ? '' : m('button.btn.btn-danger.btn-block', {onclick: ctrl.unset_dbx},'remove'),
+                                        !ctrl.dbx.error() ? '' : m('p.alert.alert-danger', ctrl.dbx.error()),
+                                ])
+                            ])
+                        ),
+                ]);
+        }
+    };
 
     var emil_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
@@ -8977,7 +9216,6 @@
             !error() ? '' : m('p.alert.alert-danger', error())])
         })
             .then(function (response) {
-                console.log(ctrl.dbx_auth_link());
                 if (response)
                     window.location = ctrl.dbx_auth_link();
             });
@@ -9183,7 +9421,6 @@
             get_pending_studies()
                 .then(function (response) {
                     ctrl.pendings(response.studies);
-                    console.log(response.studies);
                     ctrl.loaded = true;
                 })
                 .catch(function (response) {
@@ -9391,7 +9628,7 @@
             };
            
             is_activation_code(m.route.param('code'))
-                .catch(function (err) {console.log(err.message); ctrl.error(err.message);}).then(m.redraw);
+                .catch(function (err) { return ctrl.error(err.message); }).then(m.redraw);
 
             return ctrl;
 
@@ -9407,7 +9644,6 @@
             }
         },
         view: function view(ctrl){
-            console.log({x: ctrl.error()});
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.error ? m('p.text-center',
                     m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
@@ -9592,7 +9828,6 @@
             function load() {
                 get_collaborations(m.route.param('studyId'))
                     .then(function (response) {ctrl.users(response.users);
-                        console.log(response);
                         ctrl.is_public(response.is_public);
                         ctrl.study_name(response.study_name);
                         ctrl.link(response.link_data.link);
@@ -10215,6 +10450,7 @@
         '/changeRequestList': changeRequestListComponent,
         '/addUser':  addComponent,
         '/users':  usersComponent,
+        '/config':  configComponent,
         '/massMail':  massMailComponent,
 
         '/studyChangeRequest/:studyId':  studyChangeRequestComponent,
@@ -10242,6 +10478,7 @@
     var countdown = 0;
     var role = '';
     var isloggedin = true;
+    var new_msgs = false;
 
     var layout = function (route) {
         return {
@@ -10249,6 +10486,7 @@
                 var ctrl = {
                     isloggedin: isloggedin,
                     role: m.prop(role),
+                    new_msgs: m.prop(new_msgs),
                     present_templates: m.prop(false),
                     doLogout: doLogout,
                     timer:m.prop(0)
@@ -10257,6 +10495,8 @@
                 function is_loggedin(){
                     getAuth().then(function (response) {
                         role = ctrl.role(response.role);
+                        new_msgs = ctrl.new_msgs(response.new_msgs);
+
                         isloggedin = ctrl.isloggedin = response.isloggedin;
                         ctrl.present_templates(response.present_templates);
                         var is_view = (m.route() == ("/view/" + (m.route.param('code'))) || m.route() == ("/view/" + (m.route.param('code')) + "/" + (m.route.param('resource')) + "/" + (encodeURIComponent(m.route.param('fileId')))));
@@ -10316,7 +10556,7 @@
                     // 'data':['downloads', 'downloadsAccess', 'statistics'],
                     // 'pool':[],
                     'tags':[]
-                    ,'admin':[/*'deployList', 'removalList', 'changeRequestList', */'addUser', 'users'/*, 'massMail'*/]
+                    ,'admin':[/*'deployList', 'removalList', 'changeRequestList', 'addUser', */'users', 'config'/*, 'massMail'*/]
                 };
 
 
@@ -10336,6 +10576,7 @@
                             'removalList': {text:'Removal List', href:'/removalList'},
                             'changeRequestList': {text:'Change Request List', href: '/changeRequestList'},
                             'addUser': {text:'Add User', href: '/addUser'},
+                            'config': {text:'Edit Configuration', href: '/config'},
                             'massMail': {text:'Send MassMail', href: '/massMail'},
                             'users': {text:'Users Management', href: '/users'}
                         }}
@@ -10370,7 +10611,7 @@
                                                 ])
                                             ]); }
                                 ),
-                                m('li.nav-item.pull-xs-right', [
+                                !ctrl.new_msgs() ? '' : m('li.nav-item.pull-xs-right', [
                                     m('a.nav-link',{href:'/messages', config:m.route},m('i.fa.fa-envelope.fa-lg', {style:{color:'white'}}))
                                 ]),
 
