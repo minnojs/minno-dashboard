@@ -34,6 +34,11 @@ let layout = route => {
 
                     if(ctrl.role()=='ro' && !is_view)
                         return doLogout();
+                    let is4su   = (m.route() == `/users` || m.route() == `/config`);
+
+                    if(ctrl.role()!='su' && is4su)
+                        m.route('./');
+
                     if (!is_view &&  !ctrl.isloggedin  && m.route() !== '/login' && m.route() !== '/recovery' && m.route() !== '/activation/'+ m.route.param('code') && m.route() !== '/change_password/'+ m.route.param('code')  && m.route() !== '/reset_password/'+ m.route.param('code')){
                         // doLogout();
                         let url = m.route();
