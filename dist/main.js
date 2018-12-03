@@ -8755,6 +8755,7 @@
                 remove: remove,
                 update: update,
                 change_password: change_password,
+                activate_user: activate_user,
                 add_user: add_user};
             function load() {
                 get_users()
@@ -8794,6 +8795,13 @@
                 });
             }
 
+            function activate_user(activation_code, user_name){
+                messages.confirm({
+                    header:("Url for " + user_name + "'s account activation"),
+                    content: copyUrlContent(activation_code)()
+                });
+            }
+
             function update(user_id, role){
                 update_role(user_id, role)
                     .then(function (){
@@ -8829,7 +8837,7 @@
                                 m('th',  'Last name'),
                                 m('th',  'Email'),
                                 m('th',  'Role'),
-                                ctrl.users().filter(function (user){ return !!user.reset_code; }).length>0 ? m('th',  'Reset password') : '',
+                                ctrl.users().filter(function (user){ return !!user.reset_code || !!user.activation_code; }).length>0 ? m('th',  'Actions') : '',
                                 m('th',  'Remove')
                             ])
                         ]),
@@ -8845,9 +8853,11 @@
                                         m('option',{value:'su', selected: user.role === 'su'}, 'Super user')
                                     ])
                                 ),
-                                ctrl.users().filter(function (user){ return !!user.reset_code; }).length==0 ? '' :
-                                    !user.reset_code ? m('td', '') : m('td', m('button.btn.btn-secondery', {onclick:function (){ return ctrl.change_password(user.reset_code, user.user_name); }}, 'Reset password'))
-                                ,
+
+                                ctrl.users().filter(function (user){ return !!user.reset_code || !!user.activation_code; }).length==0 ? '' :
+                                    !user.reset_code && !user.activation_code ?  m('td', '') :
+                                        user.reset_code ? m('td', m('button.btn.btn-secondery', {onclick:function (){ return ctrl.change_password(user.reset_code, user.user_name); }}, 'Reset password'))
+                                            : m('td', m('button.btn.btn-secondery', {onclick:function (){ return ctrl.activate_user(user.activation_code, user.user_name); }}, 'Activate user')),
 
                                 m('td', m('button.btn.btn-danger', {onclick:function (){ return ctrl.remove(user.id); }}, 'Remove'))
                             ]); })
@@ -9628,7 +9638,8 @@
             };
            
             is_activation_code(m.route.param('code'))
-                .catch(function (err) { return ctrl.error(err.message); }).then(m.redraw);
+            .catch(function (err) { return ctrl.error(err.message); })
+            .then(m.redraw);
 
             return ctrl;
 
@@ -9644,9 +9655,11 @@
             }
         },
         view: function view(ctrl){
+            console.log(ctrl.error());
             return m('.activation.centrify', {config:fullHeight},[
-                ctrl.error ? m('p.text-center',
-                    m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
+                ctrl.error() ?
+                    m('p.text-center',
+                        m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
                     ctrl.activated
                         ?
                         [
