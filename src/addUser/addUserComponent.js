@@ -47,7 +47,7 @@ let addComponent = {
                     [
                         m('h5', [ctrl.username(), ' successfully added ']),
                         m('.card.card-inverse.col-md-10',
-                            copyUrlContent(ctrl.activation_code())())
+                            copyUrlContent('/static/?/activation/'+ctrl.activation_code())())
                     ]:
                     [
                     m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),

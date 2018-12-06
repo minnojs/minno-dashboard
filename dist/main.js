@@ -8658,7 +8658,7 @@
                         [
                             m('h5', [ctrl.username(), ' successfully added ']),
                             m('.card.card-inverse.col-md-10',
-                                copyUrlContent(ctrl.activation_code())())
+                                copyUrlContent('/static/?/activation/'+ctrl.activation_code())())
                         ]:
                         [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -9826,8 +9826,8 @@
                 link_remove_list:m.prop([]),
                 study_name:m.prop(),
                 user_name:m.prop(''),
-                permission:m.prop(''),
-                data_permission:m.prop(''),
+                permission:m.prop('can edit'),
+                data_permission:m.prop('visible'),
                 loaded:false,
                 col_error:m.prop(''),
                 pub_error:m.prop(''),
@@ -9868,28 +9868,50 @@
                     });
             }
 
+
+
+            function check_permission(ctrl){
+                return ctrl.data_permission(ctrl.permission() === 'invisible' ? 'visible' : ctrl.data_permission());
+
+
+
+            }
+
             function do_add_collaboration()
             {
-                messages.confirm({
+
+
+                    messages.confirm({
                     header:'Add a Collaborator',
                     content: m.component({view: function () { return m('p', [
                         m('p', 'Enter collaborator\'s user name:'),
                         m('input.form-control', {placeholder: 'User name', value: ctrl.user_name(), onchange: m.withAttr('value', ctrl.user_name)}),
+
+                        m('p.space', 'Select users\'s permissions:'),
                         m('select.form-control', {value:ctrl.permission(), onchange: m.withAttr('value',ctrl.permission)}, [
-                            m('option',{value:'', disabled: true}, 'Permission'),
                             m('option',{value:'can edit', selected: ctrl.permission() === 'can edit'}, 'Can edit'),
-                            m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only')
+                            m('option',{value:'read only', selected: ctrl.permission() === 'read only'}, 'Read only'),
+                            m('option',{value:'invisible', selected: ctrl.permission() === 'invisible'}, 'Invisible'),
+
                         ]),
-                        m('select.form-control', {value:ctrl.data_permission(), onchange: m.withAttr('value',ctrl.data_permission)}, [
-                            m('option',{value:'', disabled: true}, 'Data access'),
-                            m('option',{value:'visibale', selected: ctrl.permission() === 'visibale'}, 'Visibale'),
-                            m('option',{value:'invisibale', selected: ctrl.permission() === 'invisibale'}, 'Invisibale')
-                        ]),
+                        m('p.space', 'Select data visibility:'),
+                            m('select.form-control', {value:check_permission(ctrl), onchange: m.withAttr('value',ctrl.data_permission)}, [
+                                m('option',{value:'visible', selected: ctrl.data_permission() === 'visible' }, 'Visible'),
+                                m('option',{value:'invisible', disabled: ctrl.permission() === 'invisible', selected: ctrl.data_permission() === 'invisible'}, 'Invisible')
+                            ]),
+
                         m('p', {class: ctrl.col_error()? 'alert alert-danger' : ''}, ctrl.col_error())
                     ]); }
                     })})
                     .then(function (response) {
-                        if (response)
+                        if (response){
+
+                            if(!ctrl.user_name())
+                            {
+                                ctrl.col_error('ERROR: user name is missing');
+                                return do_add_collaboration();
+
+                            }
                             add_collaboration(m.route.param('studyId'), ctrl.user_name, ctrl.permission, ctrl.data_permission)
                                 .then(function (){
                                     ctrl.col_error('');
@@ -9900,6 +9922,7 @@
                                     do_add_collaboration();
                                 })
                                 .then(m.redraw);
+                        }
                     });
             }
 
