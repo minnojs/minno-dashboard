@@ -23,11 +23,11 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "bower": "^1.6.8",
     "mithril": "^0.2.8"
   },
   "devDependencies": {
     "body-parser": "^1.14.2",
+    "bower": "^1.8.4",
     "buble": "^0.12.3",
     "eslint": "^5.9.0",
     "express": "^4.14.0",
