@@ -35,7 +35,7 @@ const fileContext = (file, study) => {
     if (file) {
         // console.log(file);
         // let isExpt = /\.expt\.xml$/.test(file.name) && file.exp_data;
-        let isExpt = file.exp_data;
+        let isExpt = file.exp_data && !file.exp_data.inactive;
 
         if (!isReadonly) menu.push({separator:true});
 

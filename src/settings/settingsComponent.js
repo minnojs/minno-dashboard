@@ -1,4 +1,4 @@
-import {set_password, set_email, get_email, check_if_dbx_synchronized, check_if_present_templates , set_present_templates} from './settingsModel';
+import {set_password, set_email, update_details, get_email, check_if_dbx_synchronized, check_if_present_templates , set_present_templates} from './settingsModel';
 import {getAuth} from 'login/authModel';
 
 import fullHeight from 'utils/fullHeight';
@@ -12,6 +12,7 @@ let changePasswordComponent = {
 
         const ctrl = {
             role:m.prop(''),
+            external:m.prop(true),
             password:m.prop(''),
             confirm:m.prop(''),
             is_dbx_synchronized: m.prop(),
@@ -22,10 +23,12 @@ let changePasswordComponent = {
             synchronization_error: m.prop(''),
             present_templates_error: m.prop(''),
             email: m.prop(''),
+            prev_email: m.prop(''),
             password_error: m.prop(''),
             password_changed:false,
             email_error: m.prop(''),
             email_changed:false,
+            update_all_details,
             do_set_password,
             do_set_email,
             do_set_templete
@@ -38,6 +41,7 @@ let changePasswordComponent = {
         get_email()
             .then((response) => {
                 ctrl.email(response.email);
+                ctrl.prev_email(response.email);
             })
             .catch(response => {
                 ctrl.email_error(response.message);
@@ -73,6 +77,35 @@ let changePasswordComponent = {
             .then(m.redraw);
         return ctrl;
 
+        function update_all_details(){
+
+            ctrl.password_changed = false;
+            ctrl.email_changed    = false;
+            ctrl.password_error('');
+            ctrl.email_error('');
+
+            let params = {};
+            if(ctrl.password() || ctrl.confirm()){
+                params.password = ctrl.password();
+                params.confirm = ctrl.confirm();
+            }
+            if(ctrl.email() !== ctrl.prev_email())
+            {
+                ctrl.prev_email(ctrl.email());
+                params.email = ctrl.email();
+            }
+            if(Object.keys(params).length > 0)
+                update_details(params)
+                    .then(response => {
+                        ctrl.password_error(response.password ? response.password.error : '');
+                        ctrl.email_error(response.email ? response.email.error : '');
+                        ctrl.password_changed = response.password && !response.password.error;
+                        ctrl.email_changed    = response.email && !response.email.error;
+
+
+                    })
+                    .then(m.redraw);
+        }
 
         function do_set_password(){
             set_password('', ctrl.password, ctrl.confirm)
@@ -108,25 +141,13 @@ let changePasswordComponent = {
     },
     view(ctrl){
         return m('.activation.centrify', {config:fullHeight},[
-            ctrl.password_changed
-                ?
-                [
-                    m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                    m('h5', 'Password successfully updated!'),
-                    m('p.text-center',
-                        m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
-                    )
+            draw_menu(ctrl),
+            m('.card-block',
 
-                ]
-                :
-                ctrl.email_changed
-                    ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Email successfully updated!')
-                    ]
-                    :
-                    draw_menu(ctrl)
+                m('button.btn.btn-primary.btn-block', {onclick: ctrl.update_all_details},'Update')
+            ),
+            !ctrl.password_changed ? '' : m('.alert.alert-success', m('strong', 'Password successfully updated')),
+            !ctrl.email_changed ? '' : m('.alert.alert-success', m('strong', 'Email successfully updated'))
         ]);
     }
 };

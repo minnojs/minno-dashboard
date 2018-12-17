@@ -1,7 +1,7 @@
 export let password_body = ctrl => m('.card.card-inverse.col-md-4', [
     m('.card-block',[
-        m('h4', 'Enter New Password'),
         m('form', [
+            m('label', 'Password:'),
             m('input.form-control', {
                 type:'password',
                 placeholder: 'Password',
@@ -10,7 +10,7 @@ export let password_body = ctrl => m('.card.card-inverse.col-md-4', [
                 onchange: m.withAttr('value', ctrl.password),
                 config: getStartValue(ctrl.password)
             }),
-
+            m('label.space', 'Confirm password:'),
             m('input.form-control', {
                 type:'password',
                 placeholder: 'Confirm password',
@@ -21,7 +21,7 @@ export let password_body = ctrl => m('.card.card-inverse.col-md-4', [
             })
         ]),
         !ctrl.password_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()),
-        m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
+        ctrl.external() ? '' : m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
     ])
 ]);
 

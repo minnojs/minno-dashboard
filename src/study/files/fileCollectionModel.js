@@ -16,7 +16,6 @@ const studyPrototype = {
             .then(study => {
 
                 const files = this.parseFiles(study.files);
-
                 this.loaded = true;
                 this.isReadonly = study.is_readonly;
                 this.istemplate = study.is_template;

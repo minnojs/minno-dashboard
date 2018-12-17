@@ -3,6 +3,7 @@ import {baseUrl} from 'modelUrls';
 
 const change_password_url = `${baseUrl}/change_password`;
 const change_email_url = `${baseUrl}/change_email`;
+const update_details_url = `${baseUrl}/settings`;
 const present_templates_url = `${baseUrl}/present_templates`;
 const dropbox_url = `${baseUrl}/dropbox`;
 const gdrive_url = `${baseUrl}/gdrive`;
@@ -25,6 +26,13 @@ export let set_email = (email) => fetchJson(change_email_url, {
     method: 'post',
     body: {email}
 });
+
+
+export let update_details = (params) => fetchJson(update_details_url, {
+    method: 'post',
+    body: {params}
+});
+
 
 export let get_email = () => fetchJson(change_email_url, {
     method: 'get'

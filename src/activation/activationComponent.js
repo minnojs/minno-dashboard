@@ -33,7 +33,6 @@ let activationComponent = {
         }
     },
     view(ctrl){
-        console.log(ctrl.error());
         return m('.activation.centrify', {config:fullHeight},[
             ctrl.error() ?
                 m('p.text-center',

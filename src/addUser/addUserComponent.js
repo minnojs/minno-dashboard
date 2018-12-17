@@ -45,9 +45,11 @@ let addComponent = {
                 ctrl.activation_code()
                     ?
                     [
-                        m('h5', [ctrl.username(), ' successfully added ']),
+                        m('h5', [, `Added ${ctrl.username()} successfully`]),
                         m('.card.card-inverse.col-md-10',
-                            copyUrlContent('/static/?/activation/'+ctrl.activation_code())())
+                            [m('label', 'Send the following link to user to allow them to activate their account and to change their password.'),
+                             copyUrlContent('/static/?/activation/'+ctrl.activation_code())()
+                        ])
                     ]:
                     [
                     m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -59,29 +61,32 @@ let addComponent = {
                         m('h4', 'Please fill the following details'),
                         m('form', {onsubmit:ctrl.add}, [
                             m('fieldset.form-group',
+                                m('label', 'User name:'),
                                 m('input.form-control', {
-                                    type:'username',
+                                    type:'text',
                                     placeholder: 'User name',
                                     value: ctrl.username(),
                                     oninput: m.withAttr('value', ctrl.username),
                                     onchange: m.withAttr('value', ctrl.username),
                                     config: getStartValue(ctrl.username)
                                 }
-                                )),
+                            )),
                             m('fieldset.form-group',
+                                m('label', 'First name:'),
                                 m('input.form-control', {
-                                    type:'first_name',
-                                    placeholder: 'first name',
+                                    type:'text',
+                                    placeholder: 'First name',
                                     value: ctrl.first_name(),
                                     oninput: m.withAttr('value', ctrl.first_name),
                                     onchange: m.withAttr('value', ctrl.first_name),
                                     config: getStartValue(ctrl.first_name)
                                 }
-                                )),
+                            )),
                             m('fieldset.form-group',
+                                m('label', 'Last name:'),
                                 m('input.form-control', {
-                                    type:'last_name',
-                                    placeholder: 'last name',
+                                    type:'text',
+                                    placeholder: 'Last name',
                                     value: ctrl.last_name(),
                                     oninput: m.withAttr('value', ctrl.last_name),
                                     onchange: m.withAttr('value', ctrl.last_name),
@@ -89,9 +94,10 @@ let addComponent = {
                                 }
                                 ))
                             ,m('fieldset.form-group',
+                                m('label', 'Email:'),
                                 m('input.form-control', {
-                                    type:'email',
-                                    placeholder: 'email',
+                                    type:'text',
+                                    placeholder: 'Email',
                                     value: ctrl.email(),
                                     oninput: m.withAttr('value', ctrl.email),
                                     onchange: m.withAttr('value', ctrl.email),

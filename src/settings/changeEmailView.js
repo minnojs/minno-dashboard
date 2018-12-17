@@ -1,10 +1,10 @@
 export let emil_body = ctrl => m('.card.card-inverse.col-md-4', [
     m('.card-block',[
-        m('h4', 'Enter New Email Address'),
         m('form', [
+            m('label', 'Email Address:'),
             m('input.form-control', {
                 type:'email',
-                placeholder: 'New Email Address',
+                placeholder: 'Email Address',
                 value: ctrl.email(),
                 oninput: m.withAttr('value', ctrl.email),
                 onchange: m.withAttr('value', ctrl.email),
@@ -13,7 +13,7 @@ export let emil_body = ctrl => m('.card.card-inverse.col-md-4', [
         ])
         ,
         !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
-        m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
+        ctrl.external() ? '' : m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
 
     ])
 

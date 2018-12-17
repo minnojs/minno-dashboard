@@ -3542,7 +3542,6 @@
                 .then(function (study) {
 
                     var files = this$1.parseFiles(study.files);
-
                     this$1.loaded = true;
                     this$1.isReadonly = study.is_readonly;
                     this$1.istemplate = study.is_template;
@@ -6013,7 +6012,7 @@
         if (file) {
             // console.log(file);
             // let isExpt = /\.expt\.xml$/.test(file.name) && file.exp_data;
-            var isExpt = file.exp_data;
+            var isExpt = file.exp_data && !file.exp_data.inactive;
 
             if (!isReadonly) menu.push({separator:true});
 
@@ -8656,9 +8655,11 @@
                     ctrl.activation_code()
                         ?
                         [
-                            m('h5', [ctrl.username(), ' successfully added ']),
+                            m('h5', [, ("Added " + (ctrl.username()) + " successfully")]),
                             m('.card.card-inverse.col-md-10',
-                                copyUrlContent('/static/?/activation/'+ctrl.activation_code())())
+                                [m('label', 'Send the following link to user to allow them to activate their account and to change their password.'),
+                                 copyUrlContent('/static/?/activation/'+ctrl.activation_code())()
+                            ])
                         ]:
                         [
                         m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
@@ -8670,29 +8671,32 @@
                             m('h4', 'Please fill the following details'),
                             m('form', {onsubmit:ctrl.add}, [
                                 m('fieldset.form-group',
+                                    m('label', 'User name:'),
                                     m('input.form-control', {
-                                        type:'username',
+                                        type:'text',
                                         placeholder: 'User name',
                                         value: ctrl.username(),
                                         oninput: m.withAttr('value', ctrl.username),
                                         onchange: m.withAttr('value', ctrl.username),
                                         config: getStartValue$1(ctrl.username)
                                     }
-                                    )),
+                                )),
                                 m('fieldset.form-group',
+                                    m('label', 'First name:'),
                                     m('input.form-control', {
-                                        type:'first_name',
-                                        placeholder: 'first name',
+                                        type:'text',
+                                        placeholder: 'First name',
                                         value: ctrl.first_name(),
                                         oninput: m.withAttr('value', ctrl.first_name),
                                         onchange: m.withAttr('value', ctrl.first_name),
                                         config: getStartValue$1(ctrl.first_name)
                                     }
-                                    )),
+                                )),
                                 m('fieldset.form-group',
+                                    m('label', 'Last name:'),
                                     m('input.form-control', {
-                                        type:'last_name',
-                                        placeholder: 'last name',
+                                        type:'text',
+                                        placeholder: 'Last name',
                                         value: ctrl.last_name(),
                                         oninput: m.withAttr('value', ctrl.last_name),
                                         onchange: m.withAttr('value', ctrl.last_name),
@@ -8700,9 +8704,10 @@
                                     }
                                     ))
                                 ,m('fieldset.form-group',
+                                    m('label', 'Email:'),
                                     m('input.form-control', {
-                                        type:'email',
-                                        placeholder: 'email',
+                                        type:'text',
+                                        placeholder: 'Email',
                                         value: ctrl.email(),
                                         oninput: m.withAttr('value', ctrl.email),
                                         onchange: m.withAttr('value', ctrl.email),
@@ -8908,6 +8913,7 @@
 
     var change_password_url = baseUrl + "/change_password";
     var change_email_url = baseUrl + "/change_email";
+    var update_details_url = baseUrl + "/settings";
     var present_templates_url = baseUrl + "/present_templates";
     var dropbox_url = baseUrl + "/dropbox";
 
@@ -8929,6 +8935,13 @@
         method: 'post',
         body: {email: email}
     }); };
+
+
+    var update_details = function (params) { return fetchJson(update_details_url, {
+        method: 'post',
+        body: {params: params}
+    }); };
+
 
     var get_email = function () { return fetchJson(change_email_url, {
         method: 'get'
@@ -9152,11 +9165,11 @@
 
     var emil_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
-            m('h4', 'Enter New Email Address'),
             m('form', [
+                m('label', 'Email Address:'),
                 m('input.form-control', {
                     type:'email',
-                    placeholder: 'New Email Address',
+                    placeholder: 'Email Address',
                     value: ctrl.email(),
                     oninput: m.withAttr('value', ctrl.email),
                     onchange: m.withAttr('value', ctrl.email),
@@ -9165,7 +9178,7 @@
             ])
             ,
             !ctrl.email_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.email_error()),
-            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
+            ctrl.external() ? '' : m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_email},'Update')
 
         ])
 
@@ -9179,8 +9192,8 @@
 
     var password_body = function (ctrl) { return m('.card.card-inverse.col-md-4', [
         m('.card-block',[
-            m('h4', 'Enter New Password'),
             m('form', [
+                m('label', 'Password:'),
                 m('input.form-control', {
                     type:'password',
                     placeholder: 'Password',
@@ -9189,7 +9202,7 @@
                     onchange: m.withAttr('value', ctrl.password),
                     config: getStartValue$3(ctrl.password)
                 }),
-
+                m('label.space', 'Confirm password:'),
                 m('input.form-control', {
                     type:'password',
                     placeholder: 'Confirm password',
@@ -9200,7 +9213,7 @@
                 })
             ]),
             !ctrl.password_error() ? '' : m('.alert.alert-warning', m('strong', 'Error: '), ctrl.password_error()),
-            m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
+            ctrl.external() ? '' : m('button.btn.btn-primary.btn-block', {onclick: ctrl.do_set_password},'Update')
         ])
     ]); };
 
@@ -9266,8 +9279,8 @@
         // templates: templates_body
     };
 
-    var draw_menu$1 = function (ctrl) {
-        return Object.keys(settings$1).map(function (feature){ return settings_hash$1[feature](ctrl); });
+    var draw_menu$1 = function (ctrl, external) {
+        return Object.keys(settings$1).map(function (feature){ return settings_hash$1[feature](ctrl, external); });
     };
 
     var changePasswordComponent = {
@@ -9275,6 +9288,7 @@
 
             var ctrl = {
                 role:m.prop(''),
+                external:m.prop(true),
                 password:m.prop(''),
                 confirm:m.prop(''),
                 is_dbx_synchronized: m.prop(),
@@ -9285,10 +9299,12 @@
                 synchronization_error: m.prop(''),
                 present_templates_error: m.prop(''),
                 email: m.prop(''),
+                prev_email: m.prop(''),
                 password_error: m.prop(''),
                 password_changed:false,
                 email_error: m.prop(''),
                 email_changed:false,
+                update_all_details: update_all_details,
                 do_set_password: do_set_password,
                 do_set_email: do_set_email,
                 do_set_templete: do_set_templete
@@ -9300,6 +9316,7 @@
             get_email()
                 .then(function (response) {
                     ctrl.email(response.email);
+                    ctrl.prev_email(response.email);
                 })
                 .catch(function (response) {
                     ctrl.email_error(response.message);
@@ -9335,6 +9352,35 @@
                 .then(m.redraw);
             return ctrl;
 
+            function update_all_details(){
+
+                ctrl.password_changed = false;
+                ctrl.email_changed    = false;
+                ctrl.password_error('');
+                ctrl.email_error('');
+
+                var params = {};
+                if(ctrl.password() || ctrl.confirm()){
+                    params.password = ctrl.password();
+                    params.confirm = ctrl.confirm();
+                }
+                if(ctrl.email() !== ctrl.prev_email())
+                {
+                    ctrl.prev_email(ctrl.email());
+                    params.email = ctrl.email();
+                }
+                if(Object.keys(params).length > 0)
+                    update_details(params)
+                        .then(function (response) {
+                            ctrl.password_error(response.password ? response.password.error : '');
+                            ctrl.email_error(response.email ? response.email.error : '');
+                            ctrl.password_changed = response.password && !response.password.error;
+                            ctrl.email_changed    = response.email && !response.email.error;
+
+
+                        })
+                        .then(m.redraw);
+            }
 
             function do_set_password(){
                 set_password('', ctrl.password, ctrl.confirm)
@@ -9370,25 +9416,13 @@
         },
         view: function view(ctrl){
             return m('.activation.centrify', {config:fullHeight},[
-                ctrl.password_changed
-                    ?
-                    [
-                        m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                        m('h5', 'Password successfully updated!'),
-                        m('p.text-center',
-                            m('small.text-muted',  m('a', {href:'./'}, 'Take me to my studies!'))
-                        )
+                draw_menu$1(ctrl),
+                m('.card-block',
 
-                    ]
-                    :
-                    ctrl.email_changed
-                        ?
-                        [
-                            m('i.fa.fa-thumbs-up.fa-5x.m-b-1'),
-                            m('h5', 'Email successfully updated!')
-                        ]
-                        :
-                        draw_menu$1(ctrl)
+                    m('button.btn.btn-primary.btn-block', {onclick: ctrl.update_all_details},'Update')
+                ),
+                !ctrl.password_changed ? '' : m('.alert.alert-success', m('strong', 'Password successfully updated')),
+                !ctrl.email_changed ? '' : m('.alert.alert-success', m('strong', 'Email successfully updated'))
             ]);
         }
     };
@@ -9655,7 +9689,6 @@
             }
         },
         view: function view(ctrl){
-            console.log(ctrl.error());
             return m('.activation.centrify', {config:fullHeight},[
                 ctrl.error() ?
                     m('p.text-center',

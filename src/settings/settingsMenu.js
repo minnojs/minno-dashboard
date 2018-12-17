@@ -15,8 +15,8 @@ const settings_hash = {
     // templates: templates_body
 };
 
-export let draw_menu = (ctrl) => {
+export let draw_menu = (ctrl, external) => {
     return Object.keys(settings).map(feature=>
-        settings_hash[feature](ctrl));
+        settings_hash[feature](ctrl, external));
 };
 
