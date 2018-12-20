@@ -6,7 +6,6 @@
      **/
     if (typeof Object.assign != 'function') {
         Object.assign = function (target, varArgs) { // eslint-disable-line no-unused-vars
-            'use strict';
             var arguments$1 = arguments;
 
             if (target == null) { // TypeError if undefined or null
@@ -34,7 +33,6 @@
     if (!Array.prototype.find) {
         Object.defineProperty(Array.prototype, 'find', {
             value: function(predicate) {
-                'use strict';
                 if (this == null) {
                     throw new TypeError('Array.prototype.find called on null or undefined');
                 }
@@ -59,7 +57,6 @@
 
     if (!Array.prototype.includes) {
         Array.prototype.includes = function(searchElement /*, fromIndex*/) {
-            'use strict';
             if (this == null) {
                 throw new TypeError('Array.prototype.includes called on null or undefined');
             }
@@ -90,7 +87,6 @@
     }
     if (!String.prototype.includes) {
         String.prototype.includes = function(search, start) {
-            'use strict';
             if (typeof start !== 'number') {
                 start = 0;
             }
@@ -168,7 +164,6 @@
             .catch();
     }
 
-
     function fetchJson(url, options){
         return fetchVoid(url, options)
             .then(toJSON);
@@ -197,16 +192,16 @@
     var templatesUrl       = urlPrefix + "dashboard/templates";
     var tagsUrl            = urlPrefix + "dashboard/tags";
     var translateUrl       = urlPrefix + "dashboard/translate";
-    var url            = urlPrefix + "StudyData";
-    var baseUrl$1            = urlPrefix + "dashboard";
-    var STATISTICS_URL      = urlPrefix + "PITracking";
-    var url$1       = urlPrefix + "DashboardData";
-    var activation1_url      = urlPrefix + "dashboard/activation";
-    var collaboration_url   = urlPrefix + "dashboard/collaboration";
-    var url$2 = urlPrefix + "DownloadsAccess";
+    var poolUrl            = urlPrefix + "StudyData";
+    var fileUrl            = urlPrefix + "dashboard";
+    var statisticsUrl      = urlPrefix + "PITracking";
+    var downloadsUrl       = urlPrefix + "DashboardData";
+    var activationUrl      = urlPrefix + "dashboard/activation";
+    var collaborationUrl   = urlPrefix + "dashboard/collaboration";
+    var downloadsAccessUrl = urlPrefix + "DownloadsAccess";
 
     var getStatistics = function (query) {
-        return fetchJson(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+        return fetchJson(statisticsUrl, {method:'post', body: parseQuery(query)})
             .then(function (response) {
                 return response;
             });
@@ -245,42 +240,11 @@
             }
         } 
     };
-
-
-    /* eslint-disable */
-
-    // ref: http://stackoverflow.com/a/1293163/2343
-    // This will parse a delimited string into an array of
-    // arrays. The default delimiter is the comma, but this
-    // can be overriden in the second argument.
+    /* eslint-enable */
 
     // import $ from 'jquery';
     var Pikaday = window.Pikaday;
-
     var dateRangePicker = function (args) { return m.component(pikadayRange, args); };
-
-    var pikaday = {
-        view: function view(ctrl, ref){
-            var prop = ref.prop;
-            var options = ref.options;
-
-            return m('div', {config: pikaday.config(prop, options)});
-        },
-        config: function config(prop, options){
-            return function (element, isInitialized, ctx) {
-                if (!isInitialized){
-                    ctx.picker = new Pikaday(Object.assign({
-                        onSelect: prop,
-                        container: element
-                    },options));
-
-                    element.appendChild(ctx.picker.el);
-                }
-
-                ctx.picker.setDate(prop());
-            };
-        }
-    };
 
     /**
      * args = {
@@ -575,6 +539,15 @@
         })
     };
 
+    /**
+     * TransformedProp transformProp(Prop prop, Map input, Map output)
+     * 
+     * where:
+     *  Prop :: m.prop
+     *  Map  :: any Function(any)
+     *
+     *  Creates a Transformed prop that pipes the prop through transformation functions.
+     **/
     var transformProp = function (ref) {
         var prop = ref.prop;
         var input = ref.input;
@@ -593,7 +566,7 @@
         return p;
     };
 
-    var arrayInput$1 = function (args) {
+    var arrayInput = function (args) {
         var identity = function (arg) { return arg; };
         var fixedArgs = Object.assign(args);
         fixedArgs.prop = transformProp({
@@ -652,12 +625,13 @@
     var checkboxInput = function (args) { return m.component(checkboxInputComponent, args); };
     var selectInput = function (args) { return m.component(selectInputComponent, args); };
     var radioInput = function (args) { return m.component(selectInputComponent$1, args); };
-    var arrayInput = arrayInput$1;
+    var arrayInput$1 = arrayInput;
 
     var statisticsForm = function (args) { return m.component(statisticsFormComponent, args); };
     var colWidth = 3;
     var SOURCES = {
         'Research pool - Current studies'   : 'Pool:Current',
+        'Research pool - All studies'       : 'allPool:Any',
     //    'Research pool - Past studies'      : 'Research:History',
         'All research - Pool and lab'       : 'Research:Any',
         'Demo studies'                      : 'Demo:Any',
@@ -678,8 +652,8 @@
                 selectInput({label: 'Source', prop: query.source, values: SOURCES, form: form, colWidth: colWidth}),
                 textInput({label:'Study', prop: query.study , form: form, colWidth: colWidth}),
                 m('div', {style: 'padding: .375rem'},
-                [
-                    dateRangePicker({startDate:query.startDate, endDate: query.endDate})
+                    [
+                        dateRangePicker({startDate:query.startDate, endDate: query.endDate})
                         ,m('small.text-muted',  'The data for the study statistics by day is saved in 24 hour increments by date in USA eastern time (EST).')
                     ]
                 ),
@@ -942,7 +916,7 @@
     }; };
 
     var getStatistics$1 = function (query) {
-        return fetchText(STATISTICS_URL, {method:'post', body: parseQuery(query)})
+        return fetchText(statisticsUrl, {method:'post', body: parseQuery(query)})
             .then(function (response) {
                 var csv = response ? CSVToArray$1(response) : [[]];
                 return {
@@ -971,7 +945,7 @@
             var firstTask = ref.firstTask;
             var lastTask = ref.lastTask;
 
-            var baseUrl = (location.origin) + "/implicit";
+            var baseUrl$$1 = (location.origin) + "/implicit";
             var post = {
                 db: source().match(/^(.*?):/)[1], // before colon
                 current: source().match(/:(.*?)$/)[1], // after colon
@@ -999,9 +973,9 @@
                 threads:'yes',
                 threadsNum:'1',
                 zero: showEmpty(),
-                curl:(baseUrl + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
-                hurl:(baseUrl + "/research/library/randomStudiesConfig/HistoryRand.xml"),
-                baseURL:baseUrl
+                curl:(baseUrl$$1 + "/research/library/randomStudiesConfig/RandomStudiesConfig.xml"),
+                hurl:(baseUrl$$1 + "/research/library/randomStudiesConfig/HistoryRand.xml"),
+                baseURL:baseUrl$$1
             };
             return post;
 
@@ -1322,7 +1296,7 @@
             studyStatus: STATUS_RUNNING
         }, study);
 
-        return fetchJson(url, {method: 'post', body: body})
+        return fetchJson(poolUrl, {method: 'post', body: body})
             .then(interceptErrors);
     }
 
@@ -1331,7 +1305,7 @@
             action:'updateRulesTable'
         }, study);
 
-        return  fetchJson(url, {method: 'post',body:body})
+        return  fetchJson(poolUrl, {method: 'post',body:body})
             .then(interceptErrors);
     }
 
@@ -1340,17 +1314,17 @@
             action:'updateStudyStatus'
         }, study,{studyStatus: status});
 
-        return  fetchJson(url, {method: 'post',body:body})
+        return  fetchJson(poolUrl, {method: 'post',body:body})
             .then(interceptErrors);
     }
 
     function getAllPoolStudies(){
-        return fetchJson(url, {method:'post', body: {action:'getAllPoolStudies'}})
+        return fetchJson(poolUrl, {method:'post', body: {action:'getAllPoolStudies'}})
             .then(interceptErrors);
     }
 
     function getLast100PoolUpdates(){
-        return fetchJson(url, {method:'post', body: {action:'getLast100PoolUpdates'}})
+        return fetchJson(poolUrl, {method:'post', body: {action:'getLast100PoolUpdates'}})
             .then(interceptErrors);
     }
 
@@ -1359,11 +1333,11 @@
             action:'getStudyId'
         }, study);
 
-        return  fetchJson(url, {method: 'post',body:body});
+        return  fetchJson(poolUrl, {method: 'post',body:body});
     }
 
     function resetStudy(study){
-        return fetchJson(url, {method:'post', body: Object.assign({action:'resetCompletions'}, study)})
+        return fetchJson(poolUrl, {method:'post', body: Object.assign({action:'resetCompletions'}, study)})
             .then(interceptErrors);
     }
 
@@ -1594,6 +1568,10 @@
         return classes.substr(1);
     }
 
+    /**
+     * Create edit component
+     * Promise editMessage({input:Object, output:Prop})
+     */
     var editMessage = function (args) { return messages.custom({
         content: m.component(editComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -1745,6 +1723,10 @@
         if (!isInitialized) element.focus();
     };
 
+    /**
+     * Create edit component
+     * Promise editMessage({output:Prop})
+     */
     var createMessage = function (args) { return messages.custom({
         content: m.component(createComponent, Object.assign({close:messages.close}, args)),
         wide: true
@@ -2285,17 +2267,17 @@
     var STATUS_COMPLETE = 'C';
     var STATUS_ERROR = 'X';
 
-    var getAllDownloads = function () { return fetchJson(url$1, {
+    var getAllDownloads = function () { return fetchJson(downloadsUrl, {
         method:'post',
         body: {action:'getAllDownloads'}
     }).then(interceptErrors$1); };
 
-    var removeDownload = function (download) { return fetchVoid(url$1, {
+    var removeDownload = function (download) { return fetchVoid(downloadsUrl, {
         method:'post',
         body: Object.assign({action:'removeDownload'}, download)
     }).then(interceptErrors$1); };
 
-    var createDownload = function (download) { return fetchVoid(url$1, {
+    var createDownload = function (download) { return fetchVoid(downloadsUrl, {
         method: 'post',
         body: Object.assign({action:'download'}, download)
     }).then(interceptErrors$1); };
@@ -2311,8 +2293,7 @@
     function createMessage$1 (args) { return messages.custom({
         content: m.component(createComponent$1, Object.assign({close:messages.close}, args)),
         wide: true
-    }); };
-
+    }); }
 
     var createComponent$1 = {
         controller: function controller(ref){
@@ -2720,7 +2701,7 @@
             action:'createDataAccessRequest'
         }, dataAccessRequest);
 
-        return fetchJson(url$2, {method: 'post', body: body})
+        return fetchJson(downloadsAccessUrl, {method: 'post', body: body})
             .then(interceptErrors$2);
     }
 
@@ -2729,7 +2710,7 @@
             action:'deleteDataAccessRequest'
         }, dataAccessRequest);
 
-        return  fetchJson(url$2, {method: 'post',body:body})
+        return  fetchJson(downloadsAccessUrl, {method: 'post',body:body})
             .then(interceptErrors$2);
     }
 
@@ -2738,12 +2719,12 @@
             action:'updateApproved'
         }, dataAccessRequest,{approved: approved});
 
-        return  fetchJson(url$2, {method: 'post',body:body})
+        return  fetchJson(downloadsAccessUrl, {method: 'post',body:body})
             .then(interceptErrors$2);
     }
 
     function getAllOpenRequests(){
-        return fetchJson(url$2, {method:'post', body: {action:'getAllOpenRequests'}})
+        return fetchJson(downloadsAccessUrl, {method:'post', body: {action:'getAllOpenRequests'}})
             .then(interceptErrors$2);
     }
 
@@ -3291,14 +3272,12 @@
                 password:m.prop(''),
                 isloggedin: false,
                 loginAction: loginAction,
-                submit_by_enter: submit_by_enter,
                 error: m.prop('')
             };
             is_loggedin();
             return ctrl;
 
             function loginAction(){
-                console.log('xx');
                 if(ctrl.username() && ctrl.password())
                     login(ctrl.username, ctrl.password)
                         .then(function () {
@@ -3310,17 +3289,6 @@
                         })
                     ;
             }
-            function submit_by_enter(e) {
-
-                    if (e.keyCode == 13)
-                    {
-                        ctrl.loginAction();
-                        return false;
-                    }
-                    // var key = e.keyCode + "";
-                    // console.log(key);
-            };
-
 
             function is_loggedin(){
                 getAuth().then(function (response) {
@@ -3398,7 +3366,7 @@
     var filePrototype = {
         apiUrl: function apiUrl(){
 
-            return (baseUrl$1 + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
+            return (fileUrl + "/files/" + (encodeURIComponent(this.studyId)) + "/file/" + (encodeURIComponent(this.id)));
         },
 
         get: function get(){
@@ -3967,8 +3935,7 @@
 
     var delete_study = function (study_id) { return fetchJson(get_url(study_id), {method: 'delete'}); };
 
-    function copyFileComponent (args) { return m.component(copyFileComponent$1, args); };
-
+    function copyFileComponent (args) { return m.component(copyFileComponent$1, args); }
     var copyFileComponent$1 = {
         controller: function controller(ref){
             var new_study_id = ref.new_study_id;
@@ -4092,7 +4059,7 @@
     }; };
 
 
-    function moveAction(newPath, file, study, remove){
+    function moveAction(newPath, file, study){
         var isFocused = file.id === m.route.param('fileId');
 
         var def = file
@@ -4733,7 +4700,7 @@
         return errors;
     }
 
-    function validate$1(script){
+    function validate(script){
         var type = script.type && script.type.toLowerCase();
         switch (type){
             case 'pip' : return pipValidator.apply(null, arguments);
@@ -4744,7 +4711,7 @@
         }
     }
 
-    var validate = function (args) { return m.component(validateComponent, args); };
+    var validate$1 = function (args) { return m.component(validateComponent, args); };
 
     var validateComponent = {
         controller: function (args) {
@@ -4761,7 +4728,7 @@
                     return file.require();
                 })
                 .then(function (script) {
-                    ctrl.validations(validate$1(script, file.url));
+                    ctrl.validations(validate(script, file.url));
                     m.endComputation();
                 })
                 .catch(function () {
@@ -5342,7 +5309,7 @@
             var props = quest();
             return m('div', [
                 checkboxInput({label: 'autoSubmit', prop: props.autoSubmit, description: 'Submit on double click', form: form}),
-                arrayInput({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+                arrayInput$1({label: 'answers', prop: props.answers, rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
                 maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form, dflt: '<%= pagesMeta.number < 3 %>'}),
                 props.help()
                     ? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
@@ -5381,7 +5348,7 @@
                 props.steps()
                     ? '' 
                     : checkboxInput({label: 'hidePips', prop: props.hidePips, description: 'Hide the markers for the individual steps',form: form}),
-                arrayInput({label:'labels', prop: props.labels, help: 'A list of labels for the slider range', isArea: true, rows:5, form: form}),
+                arrayInput$1({label:'labels', prop: props.labels, help: 'A list of labels for the slider range', isArea: true, rows:5, form: form}),
                 maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: props.help,form: form, dflt: '<%= pagesMeta.number < 3 %>'}),
                 props.help()
                     ? textInput({label:'helpText',  help: 'The instruction text for using this type of question', prop: props.helpText,form: form, isArea: true})
@@ -5543,7 +5510,7 @@
             var file = ref.file;
             var study = ref.study;
 
-            var observer = ctrl.observer;
+            var observer$$1 = ctrl.observer;
             var err = ctrl.err;
             var mode = ctrl.mode;
 
@@ -5555,8 +5522,8 @@
             ]);
 
             return m('.editor', [
-                textMenuView({mode: mode, file: file, study: study, observer: observer}),
-                textContent(ctrl, {key: file.id, file: file,observer: observer, study: study})
+                textMenuView({mode: mode, file: file, study: study, observer: observer$$1}),
+                textContent(ctrl, {key: file.id, file: file,observer: observer$$1, study: study})
             ]);
         }
     };
@@ -5564,13 +5531,13 @@
     var textContent = function (ctrl, ref) {
         var file = ref.file;
         var study = ref.study;
-        var observer = ref.observer;
+        var observer$$1 = ref.observer;
 
         var textMode = modeMap[file.type] || 'javascript';
         switch (ctrl.mode()){
             case 'edit' : return ace({
                 content:file.content,
-                observer: observer,
+                observer: observer$$1,
                 settings: {
                     onSave: save(file), 
                     mode: textMode,
@@ -5580,7 +5547,7 @@
                     position: file.position
                 }
             });
-            case 'validator': return validate({file: file});
+            case 'validator': return validate$1({file: file});
             case 'syntax': return syntax({file: file});
         }
     };
@@ -5773,7 +5740,7 @@
 
                 m('h4', 'Basic Select'),
                 checkboxInput({label: 'autoSubmit', description: 'Submit upon second click', prop: basicSelect.autoSubmit, form: form}),
-                arrayInput({label: 'answers', prop: (basicSelect.answers), rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
+                arrayInput$1({label: 'answers', prop: (basicSelect.answers), rows:7,  form: form, isArea:true, help: 'Each row here represents an answer option', required:true}),
                 checkboxInput({label: 'numericValues', description: 'Responses are recorded as numbers', prop: basicSelect.numericValues, form: form}),
                 maybeInput({label:'help', help: 'If and when to display the help text (use templates to control the when part)', prop: basicSelect.help,form: form}),
                 basicSelect.help()
@@ -5783,7 +5750,7 @@
                 m('h4', 'Sequence'),
                 checkboxInput({label: 'Randomize', description: 'Randomize questions', prop: script.randomize, form: form}),
                 maybeInput({label: 'Choose', help:'Set a number of questions to choose from the pool. If this option is not selected all questions will be used.', form: form, prop: script.times}),
-                arrayInput({label: 'questions', prop: script.questionList, toArr: function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }, fromArr: function (q) { return q.stem; }, rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
+                arrayInput$1({label: 'questions', prop: script.questionList, toArr: function (stem, index) { return ({stem: stem, name: ("q" + index), inherit:'basicSelect'}); }, fromArr: function (q) { return q.stem; }, rows:20,  form: form, isArea:true, help: 'Each row here represents a questions', required:true}),
                 m('.row', [
                     m('.col-cs-12.text-xs-right', [
                         !form.showValidation() || form.isValid()
@@ -5794,6 +5761,21 @@
             ]); 
         } 
     };
+
+    /**
+     * Set this component into your layout then use any mouse event to open the context menu:
+     * oncontextmenu: contextMenuComponent.open([...menu])
+     *
+     * Example menu:
+     * [
+     *  {icon:'fa-play', text:'begone'},
+     *  {icon:'fa-play', text:'asdf'},
+     *  {separator:true},
+     *  {icon:'fa-play', text:'wertwert', menu: [
+     *      {icon:'fa-play', text:'asdf'}
+     *  ]}
+     * ]
+     */
 
     var contextMenuComponent = {
         vm: {
@@ -5854,6 +5836,8 @@
         }
     };
 
+    // add trailing slash if needed, and then remove proceeding slash
+    // return prop
     var pathProp$1 = function (path) { return m.prop(path.replace(/\/?$/, '/').replace(/^\//, '')); };
 
     var createFromTemplate = function (ref) {
@@ -6036,6 +6020,7 @@
         }
     }; };
 
+    // call onchange with files
     var onchange = function (args) { return function (e) {
         if (typeof args.onchange == 'function') {
             args.onchange((e.dataTransfer || e.target).files);
@@ -6079,7 +6064,7 @@
                     m('a', {class:classNames({'text-primary': /\.expt\.xml$/.test(file.name)})}, [
                         // checkbox
                         m('i.fa.fa-fw', {
-                            onclick: choose$1({file: file,study: study}),
+                            onclick: choose({file: file,study: study}),
                             class: classNames({
                                 'fa-check-square-o': vm.isChosen() === 1,
                                 'fa-square-o': vm.isChosen() === 0,
@@ -6125,7 +6110,7 @@
     }; };
 
     // checkmark a file/folder
-    var choose$1 = function (ref) {
+    var choose = function (ref) {
         var file = ref.file;
         var study = ref.study;
 
@@ -6176,7 +6161,7 @@
             m('h5', [
                 m('small', [
                     m('i.fa.fa-fw', {
-                        onclick: choose(chooseState, study),
+                        onclick: choose$1(chooseState, study),
                         class: classNames({
                             'fa-check-square-o': chooseState === 1,
                             'fa-square-o': chooseState === 0,
@@ -6197,7 +6182,7 @@
         return hash;
     }, {}); };
 
-    function choose(currentState, study){
+    function choose$1(currentState, study){
         return function () { return study.files().forEach(function (file) { return study.vm(file.id).isChosen(currentState === 1 ? 0 : 1); }); };
     }
 
@@ -6208,6 +6193,16 @@
         return !chosenCount ? 0 : filesCount === chosenCount ? 1 : -1;
     }
 
+    /**
+     * VirtualElement dropdown(Object {String toggleSelector, Element toggleContent, Element elements})
+     *
+     * where:
+     *  Element String text | VirtualElement virtualElement | Component
+     * 
+     * @param toggleSelector the selector for the toggle element
+     * @param toggleContent the: content for the toggle element
+     * @param elements: a list of dropdown items (http://v4-alpha.getbootstrap.com/components/dropdowns/)
+     **/
     var dropdown = function (args) { return m.component(dropdownComponent, args); };
 
     var dropdownComponent = {
@@ -6253,8 +6248,7 @@
         }; }
     };
 
-    function studyTemplatesComponent (args) { return m.component(studyTemplatesComponent$1, args); };
-
+    function studyTemplatesComponent (args) { return m.component(studyTemplatesComponent$1, args); }
     var studyTemplatesComponent$1 = {
         controller: function controller(ref){
             var load_templates = ref.load_templates;
@@ -6314,12 +6308,10 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/tags");
     }
 
-
     var update_tags_in_study = function (study_id, tags) { return fetchJson(study_url(study_id), {
         method: 'put',
         body: {tags: tags}
     }); };
-
 
     var get_tags = function () { return fetchJson(tagsUrl, {
         method: 'get'
@@ -6344,8 +6336,7 @@
         body: {tag_text: tag_text, tag_color: tag_color}
     }); };
 
-    function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); };
-
+    function studyTagsComponent (args) { return m.component(studyTagsComponent$1, args); }
     var studyTagsComponent$1 = {
         controller: function controller(ref){
             var loadTags = ref.loadTags;
@@ -7322,7 +7313,6 @@
             };
             get_change_request_list()
               .then(function (response) {ctrl.list(response.requests);
-                  sortTable(ctrl.list, ctrl.sortBy);
               })
                 .catch(function (error) {
                     throw error;
@@ -7386,7 +7376,6 @@
             };
             get_removal_list()
               .then(function (response) {ctrl.list(response.requests);
-                  sortTable(ctrl.list, ctrl.sortBy);
               })
                 .catch(function (error) {
                     throw error;
@@ -7452,8 +7441,7 @@
         body: {file_names: ctrl.file_names, target_sessions: ctrl.target_sessions, status: ctrl.status, comments: ctrl.comments}
     }); };
 
-    function rulesEditor (args) { return m.component(rulesComponent, args); };
-
+    function rulesEditor (args) { return m.component(rulesComponent, args); }
     var rulesComponent = {
         controller: function controller(ref){
             var visual = ref.visual;
@@ -8032,7 +8020,6 @@
     var change_email_url = baseUrl + "/change_email";
     var present_templates_url = baseUrl + "/present_templates";
     var dropbox_url = baseUrl + "/dropbox";
-    var gdrive_url = baseUrl + "/gdrive";
 
     function apiURL(code)
     {   
@@ -8452,7 +8439,7 @@
 
     function apiURL$1(code)
     {   
-        return (activation1_url + "/" + (encodeURIComponent(code)));
+        return (activationUrl + "/" + (encodeURIComponent(code)));
     }
 
     var is_activation_code = function (code) { return fetchJson(apiURL$1(code), {
@@ -8507,7 +8494,7 @@
 
     function apiURL$2(code)
     {   
-        return (collaboration_url + "/" + (encodeURIComponent(code)));
+        return (collaborationUrl + "/" + (encodeURIComponent(code)));
     }
 
     var is_collaboration_code = function (code) { return fetchJson(apiURL$2(code), {
@@ -8643,7 +8630,7 @@
         };
     }
 
-    function collaboration_url$1(study_id)
+    function collaboration_url(study_id)
     {
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/collaboration");
     }
@@ -8660,17 +8647,17 @@
         return (studyUrl + "/" + (encodeURIComponent(study_id)) + "/public");
     }
 
-    var get_collaborations = function (study_id) { return fetchJson(collaboration_url$1(study_id), {
+    var get_collaborations = function (study_id) { return fetchJson(collaboration_url(study_id), {
         method: 'get'
     }); };
 
-    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url$1(study_id), {
+    var remove_collaboration = function (study_id, user_id) { return fetchJson(collaboration_url(study_id), {
         method: 'delete',
         body: {user_id: user_id}
     }); };
 
 
-    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url$1(study_id), {
+    var add_collaboration = function (study_id, user_name, permission) { return fetchJson(collaboration_url(study_id), {
         method: 'post',
         body: {user_name: user_name, permission: permission}
     }); };
