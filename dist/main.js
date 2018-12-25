@@ -7843,6 +7843,7 @@
                         ]),
 
                         studies()
+                            .filter(function (study){ return study.permission!=='deleted'; })
                             .filter(typeFilter(type()))
                             .filter(tagFilter(tags().filter(uesedFilter()).map(function (tag){ return tag.text; })))
                             .filter(permissionFilter(permissionChoice()))

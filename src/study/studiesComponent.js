@@ -135,6 +135,7 @@ const mainComponent = {
                     ]),
 
                     studies()
+                        .filter(study=>study.permission!=='deleted')
                         .filter(typeFilter(type()))
                         .filter(tagFilter(tags().filter(uesedFilter()).map(tag=>tag.text)))
                         .filter(permissionFilter(permissionChoice()))
