@@ -6,8 +6,8 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
-	<link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.4/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
 
 	<link rel="stylesheet" href="dist/style.css?v=1543139930">
 	<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
@@ -17,37 +17,13 @@
 	<div class="loader"></div>
 </body>
 
-<script src="node_modules/mithril/mithril.min.js"></script>
-<script src="bower_components/promise-polyfill/promise.min.js"></script>
-<script src="bower_components/fetch/fetch.js"></script>
-<script src="bower_components/jshint/dist/jshint.js"></script>
-<script src="bower_components/pikaday/pikaday.js"></script>
-<script src="bower_components/requirejs/require.js"></script>
-<script>
-	require.config({
-	    baseUrl: '/implicit/common/all/js/quest/0.0/',
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jshint/2.9.7/jshint.min.js" integrity="sha256-+6jKy3+VWioENBgtl4sULx4RnF+UKdrVJFb+mgWM0/4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha256-1fEPhSsRKlFKGfK3eO710tEweHh1fwokU5wFGDHO+vg=" crossorigin="anonymous"></script>
 
-		paths: {
-			underscore: 'bower_components/lodash-compat/lodash.min',
-			jquery: ["//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min","bower_components/jquery/dist/jquery.min"],
-			ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/'
-		},
-		map: {
-			'*': {
-				pipAPI: 'src/js/APIs/PIpipAPI',
-				questAPI: 'src/js/APIs/PIquestAPI',
-				managerAPI: 'src/js/APIs/PImanagerAPI'
-			}
-		},
-		packages:[
-			{
-				name: 'pipScorer',
-				location: '/implicit/common/all/js/pip/0.3/dist/js/extensions/dscore',
-				main: 'Scorer'
-			}
-		]
-
-	})
+ <script>
+require.config({
+    paths: { ace: '//cdnjs.cloudflare.com/ajax/libs/ace/1.2.2/' }
+});
 </script>
 
 <script src="dist/main.js?v=1543139930"></script>

@@ -1,5 +1,8 @@
 import bubel from 'rollup-plugin-buble';
-import { uglify } from "rollup-plugin-uglify";
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+import includePaths from 'rollup-plugin-includepaths';
+import { uglify } from 'rollup-plugin-uglify';
 
 const production = process.env.NODE_ENV == 'production';
 
@@ -11,14 +14,12 @@ export default {
         sourcemap: true
     },
     plugins: [
-        // load paths wihtout a leading slash of src
-        {resolveId: function(id, importer){
-            var path = require('path');
-            if (!importer) return;
-            if (!/^[\.]*\//.test(id)) {
-                return path.resolve( './src', id + '.js');
-            }
-        }},
+        resolve(),
+        commonjs(),
+        // load paths without a leading slash of src
+        includePaths({
+            paths: ['src']
+        }),
         bubel(),
         production && uglify({output:{comments:'some' }}) // minify, but only in production
     ]

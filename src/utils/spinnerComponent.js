@@ -1,6 +1,6 @@
 export default spinner;
 
-let spinner = {
+const spinner = {
     display: m.prop(false),
     show(response){
         spinner.display(true);

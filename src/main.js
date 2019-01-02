@@ -1,4 +1,4 @@
-import 'utils/polyfills';
+import './setup';
 import routes from './routes';
 import layoutWrapper from './layoutWrapper';
 
@@ -19,6 +19,7 @@ m.route(document.body, '/studies', wrappedRoutes);
  * where:
  *  callbackFunction :: any Function(any value, String key, Object object)
  */
+
 function mapObject(obj, cb) {
     return Object.keys(obj)
         .reduce(function(result, key) {
