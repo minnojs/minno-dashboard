@@ -16,7 +16,7 @@ Next you should install all dependencies:
 npm install
 ```
 
-You should see all dependencies being downloaded from `npm` and `bower`.
+You should see all dependencies being downloaded from `npm`. 
 
 ### Development
 This project is written in es6 (using [babel](https://babeljs.io/) and [rollup](http://rollupjs.org/)). CSS is generated using [SASS](http://sass-lang.com/). Source files are built from the `src` directory to `dist`. All build tasks are managed npm scripts.
