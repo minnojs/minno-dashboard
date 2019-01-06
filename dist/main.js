@@ -4591,7 +4591,7 @@
         return {level:'warn', message: message, test:test};
     }
 
-    function error(message, test){
+    function error$1(message, test){
         return {level:'error', message: message, test:test};
     }
 
@@ -4729,16 +4729,16 @@
             if (!interactions) {return;}
 
             if (!Array.isArray(interactions)){
-                return [error('Interactions must be an array.', true)];
+                return [error$1('Interactions must be an array.', true)];
             }
 
             return  interactions.map(function (interaction, index) {
                 return [
-                    !interaction.conditions ? error(("Interaction [" + index + "] must have conditions"), true) : [
-                        error(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function (c){ return !c.type; }))
+                    !interaction.conditions ? error$1(("Interaction [" + index + "] must have conditions"), true) : [
+                        error$1(("Interaction conditon [" + index + "] must have a type"), toArray(interaction.conditions).some(function (c){ return !c.type; }))
                     ],
-                    !interaction.actions ? error(("Interaction [" + index + "] must have actions"), true) : [
-                        error(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function (a){ return !a.type; }))
+                    !interaction.actions ? error$1(("Interaction [" + index + "] must have actions"), true) : [
+                        error$1(("Interaction action [" + index + "] must have a type"), toArray(interaction.actions).some(function (a){ return !a.type; }))
                     ]
                 ];
             });
@@ -4754,12 +4754,12 @@
             if (!input) {return;}
 
             if (!Array.isArray(trial.input)){
-                return [error('Input must be an Array', true)];
+                return [error$1('Input must be an Array', true)];
             }
 
             return [
-                error('Input must always have a handle', input.some(function (i){ return !i.handle; })),
-                error('Input must always have an on attribute', input.some(function (i){ return !i.on; }))
+                error$1('Input must always have a handle', input.some(function (i){ return !i.handle; })),
+                error$1('Input must always have an on attribute', input.some(function (i){ return !i.on; }))
             ];
         }
     }
@@ -6651,85 +6651,68 @@
             var versions = ref.versions;
             var close = ref.close;
 
-            var exp_id = m.prop('');
-            var version_id = m.prop('');
-            var all_exp_ids = m.prop('');
-            var all_versions = m.prop('');
-            var file_format = m.prop('csv');
-            var file_split = m.prop('taskName');
+            var ctrl = {
+                data_study_id: m.prop(''),
+                exp_id: m.prop(''),
+                study_id:m.prop(study_id),
+                exps: exps,
+                versions: versions,
+                studies: m.prop([]),
+                version_id: m.prop(''),
+                all_exp_ids: m.prop(''),
+                all_versions: m.prop(''),
+                file_format: m.prop('csv'),
+                file_split: m.prop('taskName'),
 
-            var loaded     = m.prop(false);
-            var downloaded = m.prop(true);
-            var link = m.prop('');
-            var error = m.prop(null);
-            dates ={
-                startDate: m.prop(daysAgo$1(3650)),
-                endDate: m.prop(daysAgo$1(-1))
+                loaded: m.prop(false),
+                downloaded: m.prop(true),
+                link: m.prop(''),
+                error: m.prop(null),
+                dates: {
+                    startDate: m.prop(daysAgo$1(3650)),
+                    endDate: m.prop(daysAgo$1(-1))
+                }
             };
 
-            get_exps(study_id)
+            load_studies()
                 .then(function (response) {
-                    exps(response.experiments);
-                    all_exp_ids(exps().map(function (exp){ return exp.id; }));
-                    exp_id(all_exp_ids());
-                    var tmp_exps = [];
-                    exps().forEach(function (exp){
-                        !tmp_exps.find(function (exp2find){ return exp2find.descriptive_id === exp.descriptive_id; })
-                            ?
-                            tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
-                            :
-                            tmp_exps.map(function (exp2update){ return exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update; });
-                        exps(tmp_exps);
-                    });
-                })
-                .then(function (){all_versions(versions.map(function (version){ return version.id; })); version_id(all_versions());})
-                .catch(error)
-                .then(loaded.bind(null, true))
-                .then(m.redraw);
+                    ctrl.studies(response.studies);
+                    ctrl.studies(ctrl.studies().filter(function (study){ return study.has_data_permission; }).sort(sort_studies_by_name));
+                }).then(function (){ return load_exps(ctrl); });
 
-            return {study_id: study_id, exp_id: exp_id, version_id: version_id, file_format: file_format, exps: exps, versions: versions, file_split: file_split, all_exp_ids: all_exp_ids, all_versions: all_versions, loaded: loaded, downloaded: downloaded, link: link, error: error, dates: dates, close: close};
+            return {ctrl: ctrl, close: close};
         },
         view: function (ref) {
-            var study_id = ref.study_id;
-            var exp_id = ref.exp_id;
-            var version_id = ref.version_id;
-            var file_format = ref.file_format;
-            var file_split = ref.file_split;
-            var exps = ref.exps;
-            var versions = ref.versions;
-            var all_exp_ids = ref.all_exp_ids;
-            var all_versions = ref.all_versions;
-            var loaded = ref.loaded;
-            var downloaded = ref.downloaded;
-            var link = ref.link;
-            var error = ref.error;
-            var dates = ref.dates;
+            var ctrl = ref.ctrl;
             var close = ref.close;
 
             return m('div', [
-
             m('.card-block', [
+                m('.input-group', [m('strong', 'Study id'),
+                    m('select.c-select.form-control',{onchange: function (e) { return select_study(ctrl, e.target.value); }}, [
+                        ctrl.studies().map(function (study){ return m('option', {value:study.id, selected:study.id==ctrl.study_id()} , study.name); })
+                    ])
+                ]),
                 m('.row', [
                     m('.col-sm-4', [
                         m('.input-group', [m('strong', 'Experimant id'),
-                            m('select.c-select.form-control',{onchange: function (e) { return exp_id(e.target.value); }}, [
-                                exps().length<=1 ? '' : m('option', {selected:true, value:all_exp_ids()}, 'All experiments'),
-                                exps().map(function (exp){ return m('option', {value:exp.ids} , exp.descriptive_id); })
+                            m('select.c-select.form-control',{onchange: function (e) { return ctrl.exp_id(e.target.value); }}, [
+                                ctrl.exps().length<=1 ? '' : m('option', {selected:true, value:ctrl.all_exp_ids()}, 'All experiments'),
+                                ctrl.exps().map(function (exp){ return m('option', {value:exp.ids} , exp.descriptive_id); })
                             ])
                         ])
                     ]),
                     m('.col-sm-5', [
                         m('.input-group', [m('strong', 'Version id'),
-                            m('select.c-select.form-control',{onchange: function (e) { return version_id(e.target.value); }}, [
-                                versions.length<=1 ? '' : m('option', {selected:true, value:all_versions()}, 'All versions'),
-                                versions.map(function (version){ return m('option', {value:version.id}, ((version.version) + " (" + (version.state) + ")")); })
+                            m('select.c-select.form-control',{onchange: function (e) { return ctrl.version_id(e.target.value); }}, [
+                                ctrl.versions.length<=1 ? '' : m('option', {selected:true, value:ctrl.all_versions()}, 'All versions'),
+                                ctrl.versions.map(function (version){ return m('option', {value:version.id}, ((version.version) + " (" + (version.state) + ")")); })
                             ])
                         ])
                     ]),
-                    m('p',exp_id),
                     m('.col-sm-3', [
                         m('.input-group', [m('strong', 'Output type'),
-                            m('select.c-select.form-control',{onchange: function (e) { return file_format(e.target.value); }}, [
+                            m('select.c-select.form-control',{onchange: function (e) { return ctrl.file_format(e.target.value); }}, [
                                 m('option', {value:'csv'}, 'csv'),
                                 m('option', {value:'tsv'}, 'tsv'),
                                 m('option', {value:'json'}, 'json')
@@ -6742,8 +6725,8 @@
                         m('span', 'Split to files by (clear text to download in one file):'),
                         m('input.form-control', {
                             placeholder: 'File split variable',
-                            value: file_split(),
-                            oninput: m.withAttr('value', file_split)
+                            value: ctrl.file_split(),
+                            oninput: m.withAttr('value', ctrl.file_split)
                         })
                     ])
 
@@ -6751,49 +6734,49 @@
                 m('.row.space', [
                     m('.col-sm-12', [
                         m('.form-group', [
-                            dateRangePicker(dates),
+                            dateRangePicker(ctrl.dates),
                             m('p.text-muted.btn-toolbar', [
-                                dayButtonView$2(dates, 'Last 7 Days', 7),
-                                dayButtonView$2(dates, 'Last 30 Days', 30),
-                                dayButtonView$2(dates, 'Last 90 Days', 90),
-                                dayButtonView$2(dates, 'All time', 3650)
+                                dayButtonView$2(ctrl.dates, 'Last 7 Days', 7),
+                                dayButtonView$2(ctrl.dates, 'Last 30 Days', 30),
+                                dayButtonView$2(ctrl.dates, 'Last 90 Days', 90),
+                                dayButtonView$2(ctrl.dates, 'All time', 3650)
                             ])
                         ])
                     ])
                 ])
             ]),
-            loaded() ? '' : m('.loader'),
-            error() ? m('.alert.alert-warning', error()): '',
-            !loaded() && exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet') : '',
+            ctrl.loaded() ? '' : m('.loader'),
+            ctrl.error() ? m('.alert.alert-warning', ctrl.error()): '',
+            !ctrl.loaded() && ctrl.exps().length<1 ? m('.alert.alert-info', 'You have no experiments yet') : '',
 
-            !link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: link()}, link())]),
+            !ctrl.link() ? '' : m('input-group-addon', ['Your file is ready for downloading: ', m('a', {href: ctrl.link()}, ctrl.link())]),
 
-            downloaded() ? '' : m('.loader'),
+            ctrl.downloaded() ? '' : m('.loader'),
             m('.text-xs-right.btn-toolbar',[
                 m('a.btn.btn-secondary.btn-sm', {onclick:function (){close(null);}}, 'Cancel'),
-                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error); }}, 'OK')
+                m('a.btn.btn-primary.btn-sm', {onclick:function (){ask_get_data(ctrl); }}, 'OK')
             ])
         ]);
     }
     };
 
-    function ask_get_data(study_id, exp_id, version_id, file_format, file_split, dates, downloaded, link, error){
-        error('');
-        if(exp_id() =='')
+    function ask_get_data(ctrl){
+        ctrl.error('');
+        if(ctrl.exp_id() ==='')
             return error('Please select experiment id');
 
-        if(!Array.isArray(exp_id()))
-            exp_id(exp_id().split(','));
-        downloaded(false);
+        if(!Array.isArray(ctrl.exp_id()))
+            ctrl.exp_id(ctrl.exp_id().split(','));
+        ctrl.downloaded(false);
 
-        return get_data(study_id, exp_id(), version_id(), file_format(), file_split(), dates.startDate(), dates.endDate())
+        return get_data(ctrl.study_id(), ctrl.exp_id(), ctrl.version_id(), ctrl.file_format(), ctrl.file_split(), ctrl.dates.startDate(), ctrl.dates.endDate())
             .then(function (response) {
                 var file_data = response.data_file;
                 if (file_data == null) return Promise.reject('There was a problem creating your file, please contact your administrator');
-                link((baseUrl + "/download?path=" + file_data), file_data);
+                ctrl.link((baseUrl + "/download?path=" + file_data), file_data);
             })
-            .catch(function (err){ return error(err.message); })
-            .then(function (){ return downloaded(true); })
+            .catch(function (err){ return ctrl.error(err.message); })
+            .then(function (){ return ctrl.downloaded(true); })
 
             .then(m.redraw);
     }
@@ -6819,6 +6802,48 @@
             dates.endDate(new Date());
         }
     }, name); };
+
+
+
+    function sort_studies_by_name(study1, study2){
+        return study1.name.toLowerCase() === study2.name.toLowerCase() ? 0 : study1.name.toLowerCase() > study2.name.toLowerCase() ? 1 : -1;
+    }
+
+
+
+    function select_study(ctrl, study_id){
+        ctrl.study_id(study_id);
+        ctrl.loaded.bind(null, false);
+        var new_study = ctrl.studies().filter(function (study){ return study.id==study_id; })[0];    ctrl.versions = new_study.versions;
+        return load_exps(ctrl);
+
+    }
+
+    function load_exps(ctrl){
+        get_exps(ctrl.study_id())
+            .then(function (response) {
+                ctrl.exps(response.experiments);
+                ctrl.all_exp_ids(ctrl.exps().map(function (exp){ return exp.id; }));
+                ctrl.exp_id(ctrl.all_exp_ids());
+                var tmp_exps = [];
+                ctrl.exps().forEach(function (exp){
+                    !tmp_exps.find(function (exp2find){ return exp2find.descriptive_id === exp.descriptive_id; })
+                        ?
+                        tmp_exps.push({ids:[exp.id], descriptive_id:exp.descriptive_id})
+                        :
+                        tmp_exps.map(function (exp2update){ return exp2update.descriptive_id === exp.descriptive_id ? exp2update.ids.push(exp.id) : exp2update; });
+                    ctrl.exps(tmp_exps);
+                });
+                console.log(ctrl.exps());
+            })
+            .then(function (){
+                ctrl.all_versions(ctrl.versions.map(function (version){ return version.id; }));
+                ctrl.version_id(ctrl.all_versions());
+            })
+            .catch(ctrl.error)
+            .then(ctrl.loaded.bind(null, true))
+            .then(m.redraw);
+    }
 
     function collaboration_url(study_id)
     {
