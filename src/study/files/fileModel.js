@@ -60,6 +60,7 @@ const filePrototype = {
     },
 
     define(context = window){
+        console.warn('This should be deprecated!!!');
         const requirejs = context.requirejs;
         const name = this.url;
         const content = this.content();
