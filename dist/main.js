@@ -15413,7 +15413,7 @@
 
             return m('div', [
             m('.card-block', [
-                m('.input-group', [m('strong', 'Study id'),
+                m('.input-group', [m('strong', 'Study name'),
                     m('select.c-select.form-control',{onchange: function (e) { return select_study(ctrl, e.target.value); }}, [
                         ctrl.studies().map(function (study){ return m('option', {value:study.id, selected:study.id==ctrl.study_id()} , study.name); })
                     ])
@@ -18415,6 +18415,7 @@
         controller: function controller(){
             var ctrl = {
                 password: m.prop(''),
+                external: m.prop(false),
                 confirm: m.prop(''),
                 password_error: m.prop(''),
                 activated:false,

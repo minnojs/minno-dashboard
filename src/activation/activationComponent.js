@@ -8,6 +8,7 @@ let activationComponent = {
     controller(){
         const ctrl = {
             password: m.prop(''),
+            external: m.prop(false),
             confirm: m.prop(''),
             password_error: m.prop(''),
             activated:false,
@@ -33,7 +34,7 @@ let activationComponent = {
         }
     },
     view(ctrl){
-        return m('.activation.centrify', {config:fullHeight},[
+            return m('.activation.centrify', {config:fullHeight},[
             ctrl.error() ?
                 m('p.text-center',
                     m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :

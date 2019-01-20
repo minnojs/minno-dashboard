@@ -41,7 +41,7 @@ let createMessage = {
     },
     view: ({ctrl, close}) => m('div', [
         m('.card-block', [
-            m('.input-group', [m('strong', 'Study id'),
+            m('.input-group', [m('strong', 'Study name'),
                 m('select.c-select.form-control',{onchange: e => select_study(ctrl, e.target.value)}, [
                     ctrl.studies().map(study=> m('option', {value:study.id, selected:study.id==ctrl.study_id()} , study.name))
                 ])
