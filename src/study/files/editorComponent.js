@@ -18,6 +18,8 @@ let editors = {
     c: textEditor,
     cs: textEditor,
     css: textEditor,
+    sass: textEditor,
+    scss: textEditor,
     h: textEditor,
     py: textEditor,
     xml: textEditor,

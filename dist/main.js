@@ -14433,12 +14433,15 @@
         jst: 'ejs',
         html: 'ejs',
         htm: 'ejs',
-        txt: 'ejs',
-        m: 'ejs',
-        c: 'ejs',
-        cs: 'ejs',
-        h: 'ejs',
-        py: 'ejs',
+        txt: 'txt',
+        css: 'css',
+        scss: 'scss',
+        sass: 'sass',
+        m: 'm',
+        c: 'cpp',
+        cs: 'cs',
+        h: 'txt',
+        py: 'py',
         xml: 'xml'
     };
 
@@ -14454,6 +14457,8 @@
         c: textEditor,
         cs: textEditor,
         css: textEditor,
+        sass: textEditor,
+        scss: textEditor,
         h: textEditor,
         py: textEditor,
         xml: textEditor,
@@ -18441,7 +18446,7 @@
             }
         },
         view: function view(ctrl){
-            return m('.activation.centrify', {config:fullHeight},[
+                return m('.activation.centrify', {config:fullHeight},[
                 ctrl.error() ?
                     m('p.text-center',
                         m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
