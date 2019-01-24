@@ -17409,7 +17409,7 @@
                             m('h5', [, ("Added " + (ctrl.username()) + " successfully")]),
                             m('.card.card-inverse.col-md-10',
                                 [m('label', 'Send the following link to user to allow them to activate their account and to change their password.'),
-                                 copyUrlContent('/static/?/activation/'+ctrl.activation_code())()
+                                 copyUrlContent(ctrl.activation_code())()
                             ])
                         ]:
                         [
@@ -18441,7 +18441,7 @@
             }
         },
         view: function view(ctrl){
-            return m('.activation.centrify', {config:fullHeight},[
+                return m('.activation.centrify', {config:fullHeight},[
                 ctrl.error() ?
                     m('p.text-center',
                         m('.alert.alert-danger', m('strong', 'Error: '), ctrl.error())) :
