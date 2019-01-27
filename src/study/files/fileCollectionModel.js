@@ -130,7 +130,9 @@ const studyPrototype = {
         return fetchJson(this.apiURL('/file'), {method:'post', body: {name, content, isDir}})
             .then(response => {
                 Object.assign(response, {studyId: this.id, content, path:name, isDir});
-                const file = fileFactory(response);
+                let file = fileFactory(response);
+                file.id = encodeURIComponent(file.id);
+
                 file.loaded = true;
                 this.addFile(file);
                 return response;

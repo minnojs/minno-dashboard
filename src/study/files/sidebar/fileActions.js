@@ -206,7 +206,6 @@ let pathProp = path => m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
 export let  createFile = (study, name, content) => {
     study.createFile({name:name(), content:content()})
         .then(response => {
-            console.log(response.id);
             m.route(`/editor/${study.id}/file/${encodeURIComponent(encodeURIComponent(response.id))}`);
             return response;
         })
