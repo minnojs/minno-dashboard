@@ -206,7 +206,8 @@ let pathProp = path => m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
 export let  createFile = (study, name, content) => {
     study.createFile({name:name(), content:content()})
         .then(response => {
-            m.route(`/editor/${study.id}/file/${response.id}`);
+            console.log(response.id);
+            m.route(`/editor/${study.id}/file/${encodeURIComponent(encodeURIComponent(response.id))}`);
             return response;
         })
         .catch(err => messages.alert({
@@ -242,7 +243,7 @@ export let createEmpty = (study, path = '') => () => {
         content: 'Please insert the file name:',
         prop: name
     }).then(response => {
-        if (response) return createFile(study, name,content);
+        if (response) return createFile(study, name, content);
     });
 };
 
