@@ -12,6 +12,8 @@ let resetPasswordComponent = {
             confirm:m.prop(''),
             password_error: m.prop(''),
             password_changed:false,
+            external: m.prop(false),
+
             code: m.prop(''),
             do_set_password
         };
@@ -38,6 +40,7 @@ let resetPasswordComponent = {
         }
     },
     view(ctrl){
+
         return m('.activation.centrify', {config:fullHeight},[
             ctrl.password_changed
                 ?
