@@ -31,6 +31,8 @@ let deployComponent = {
             completed_checklist: m.prop(''),
             approved_by_irb: m.prop(''),
             valid_study_name: m.prop(''),
+			m_version: m.prop(''),
+			e_version: m.prop(''),
             realstart: m.prop(''),
 
             experiment_file: m.prop(''),
@@ -117,6 +119,8 @@ let deployComponent = {
             m('.font-weight-bold', 'Study is ready for deploy: ', ASTERIX),
             m('.m-b-1', [
                 checkbox({description: 'The study\'s study-id starts with my user name', prop: ctrl.valid_study_name, form, required:true, isStack:true}),
+				checkbox({description: 'The expt.xml file refers to "1.0.jsp" & Minno-Time tasks refer to "type: time"', prop: ctrl.m_version, form, required:true, isStack:true}),
+				checkbox({description: ['I am using the latest versions of the implicit measure extensions at this page ',m('a', {href:'https://github.com/baranan/minno-tasks/blob/master/implicitmeasures.md', target:'_blank'}, 'this page')], prop: ctrl.e_version, form, required:true, isStack:true}),
                 checkbox({
                     description:  'This study has been approved by the appropriate IRB ', 
                     prop: ctrl.approved_by_irb,
@@ -125,9 +129,8 @@ let deployComponent = {
                 }),
                 checkbox({
                     description:  [
-                        'All items on "Study Testing" and "Study Approval" from ',  
-                        m('a', {href:'http://peoplescience.org/node/105', target:'_blank'}, 'Project Implicit Study Development Checklist'), 
-                        ' completed (items 9 - 17) '
+                        'I have completed all items on "Study Testing" and "Study Approval" from the ',  
+                        m('a', {href:'https://docs.google.com/document/d/1pglAQELqNLWbV1yscE2IVd7G5xVgZ8b4lkT8PYeumu8/edit#heading=h.e07cxg4g4wcx', target:'_blank'}, 'Study Development Guide')
                     ],
                     prop: ctrl.completed_checklist,
                     form, isStack:true,
@@ -142,7 +145,7 @@ let deployComponent = {
                 checkbox({description: 'I used a realstart and lastpage tasks', prop: ctrl.realstart, form, required:true, isStack:true})
             ]),
             radioInput({
-                label:['Study has been approved by a *User Experience* Reviewer (Calvin Lai): ', ASTERIX],
+                label:['Study has been approved by a *User Experience* Reviewer: ', ASTERIX],
                 prop: ctrl.approved_by_a_reviewer,
                 values: {
                     'No, this study is not for the Project Implicit pool.' : 'No, this study is not for the Project Implicit pool.',
