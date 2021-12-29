@@ -3,6 +3,11 @@ import imgEditor from './editors/imgEditor';
 import pdfEditor from './editors/pdfEditor';
 import unknowEditor from './editors/unknownEditor';
 import textEditor from './editors/textEditor';
+import iatEditor from './wizards/implicitMeasures/IAT/iat.js';
+import biatEditor from './wizards/implicitMeasures/BIAT/biat.js';
+import spfEditor from './wizards/implicitMeasures/SPF/spf.js';
+import stiatEditor from './wizards/implicitMeasures/STIAT/stiat.js';
+import epEditor from './wizards/implicitMeasures/EP/ep.js';
 
 export default fileEditorComponent;
 
@@ -25,7 +30,13 @@ let editors = {
     bmp: imgEditor,
     png: imgEditor,
 
-    pdf: pdfEditor
+    pdf: pdfEditor,
+
+    iat: iatEditor,
+    biat: biatEditor,
+    spf: spfEditor,
+    stiat: stiatEditor,
+    ep: epEditor
 };
 
 let fileEditorComponent = {

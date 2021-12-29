@@ -1,6 +1,6 @@
 import contextMenu from 'utils/contextMenuComponent';
 import messages from 'utils/messagesComponent';
-import {createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile} from './fileActions';
+import {createDir, createEmpty, moveFile, duplicateFile, copyFile, renameFile, downloadFile, resetFile, createImplicitMeasure} from './fileActions';
 import {createFromTemplate} from './wizardActions';
 import wizardHash from './wizardHash';
 import copyUrl from 'utils/copyUrl';
@@ -18,7 +18,12 @@ let fileContext = (file, study) => {
             {icon:'fa-file', text:'New File', action: createEmpty(study, path)},
             {icon:'fa-file-text', text:'New from template', menu: mapWizardHash(wizardHash)},
             {icon:'fa-magic', text:'New from wizard', menu: [
-                {text: 'Rating wizard', action: activateWizard(`rating`)}
+                {text: 'Rating wizard', action: activateWizard(`rating`)},
+                {text:'IAT task', action: createImplicitMeasure(study, path, 'iat')},
+                {text:'Brief-IAT task', action: createImplicitMeasure(study, path, 'biat')},
+                {text:'SPF task', action: createImplicitMeasure(study, path, 'spf')},
+                {text:'Single Target-IAT task', action: createImplicitMeasure(study, path, 'stiat')},
+                {text:'Evaluative Priming task', action: createImplicitMeasure(study, path, 'ep')}
             ]}
         ]);
     }

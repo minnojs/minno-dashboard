@@ -23,15 +23,17 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bower": "^1.6.8",
-    "mithril": "^0.2.8"
+    "mithril": "^0.2.8",
+    "mode-sass": "^1.0.0",
+    "node-sass": "^6.0.1"
   },
   "devDependencies": {
     "body-parser": "^1.14.2",
     "buble": "^0.12.3",
     "eslint": "^1.10.2",
     "express": "^4.14.0",
+    "mithril": "^0.2.8",
     "multer": "^1.1.0",
-    "node-sass": "^3.8.0",
     "npm-run-all": "^2.3.0",
     "rollup": "^0.33.0",
     "rollup-plugin-buble": "^0.12.1",

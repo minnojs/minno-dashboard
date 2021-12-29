@@ -3,6 +3,25 @@ import downloadUrl from 'utils/downloadUrl';
 import moveFileComponent from './moveFileComponent';
 import copyFileComponent from './copyFileComponent';
 
+export let createImplicitMeasure = (study, path = '', type) => () => {
+    let name = pathProp(path);
+
+    let content = ()=>'';
+
+    messages.prompt({
+        header: `Create ${type.toUpperCase()} task`,
+        content: 'Please insert task name:',
+        prop: name
+    })
+    .then(response => {
+        if (response){
+
+            return createFile(study, m.prop(`${name()}.js`), content)
+                .then(createFile(study, m.prop(`${name()}.${type}`), content));
+        }
+    });
+};
+
 export let uploadFiles = (path,study) => files => {
     // validation (make sure files do not already exist)
     let filePaths = Array.from(files, file => path === '/' ? file.name : path + '/' + file.name);
@@ -157,7 +176,7 @@ export let save = file => () => {
 let pathProp = path => m.prop(path.replace(/\/?$/, '/').replace(/^\//, ''));
 
 export let  createFile = (study, name, content) => {
-    study.createFile({name:name(), content:content()})
+    return study.createFile({name:name(), content:content()})
         .then(response => {
             m.route(`/editor/${study.id}/file/${encodeURIComponent(response.id)}`);
             return response;
@@ -266,3 +285,5 @@ export let downloadFile = (study, file) => () => {
 };
 
 export let resetFile = file => () => file.content(file.sourceContent());
+
+

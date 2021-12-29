@@ -158,3 +158,100 @@ a.no-decoration {text-decoration: none; color:inherit}
 @import "./dateRange";
 @import "./upload";
 // @import "./fab";
+
+
+.line{
+  margin-bottom: 20px;
+  width: 100%;
+  border-bottom: 1px solid #e3e1e1;
+  padding-top: 5px;
+  padding-bottom: 25px;
+}
+
+
+//For implicit measures
+/* Style the main tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  font-family:"Century Gothic", sans-serif;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the sub tab */
+.subtab {
+  overflow: hidden;
+  border: 1px solid #afd8e3;
+  background-color: #cee9f0;
+}
+
+/* Style the buttons inside the sub tab */
+.subtab button {
+  background-color: inherit;
+  border: none;
+  outline: none;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  font-family:"Century Gothic", sans-serif;
+}
+
+/* Change background color of buttons on hover */
+.subtab button:hover{background-color: #afd8e3;}
+
+/* Create an active/current tablink class */
+.subtab button.active{background-color: #85b9c9;}
+
+
+.note {
+  margin-bottom:  2em;
+  margin-left: 25%;
+  margin-right: 25%;
+  z-index: 10;
+  position:       fixed;
+  bottom:         0em;
+  right:          0em;
+  width:          50%;
+  text-align:     center;
+  vertical-align: middle;
+}
+
+.animated {
+  -webkit-animation: fadeinout 5s linear 1 forwards;
+  animation: fadeinout 5s linear 1 forwards;
+}
+
+@-webkit-keyframes fadeinout {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeinout {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
