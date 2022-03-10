@@ -38,8 +38,8 @@ function controller(settings){
 }
 
 export function validityCheck(error_msg, settings){
-    let temp1 = checkPrime(settings.prime1, 'First Prime Category', error_msg);
-    let temp2 = checkPrime(settings.prime2, 'Second Prime Category', error_msg);
+    let temp1 = checkPrime(settings.prime1, 'First Prime Category\'s', error_msg);
+    let temp2 = checkPrime(settings.prime2, 'Second Prime Category\'s', error_msg);
     let temp3 = checkMissingElementName(settings.rightAttTargets, 'First Target Category', error_msg);
     let temp4 = checkMissingElementName(settings.leftAttTargets, 'Second Target Category', error_msg);
 
@@ -63,6 +63,10 @@ export function toString(settings, external){
 export function updateMediaSettings(settings){
     //update attributes names to be compatible to EP
     let settings_output = clone(settings);
+
+    settings_output.primeDuration = settings_output.primeStimulusCSS.primeDuration;
+    delete settings_output.primeStimulusCSS.primeDuration;
+
     settings_output.targetCats = {};
     settings_output.targetCats.rightAttTargets = settings_output.rightAttTargets;
     settings_output.targetCats.rightAttTargets.mediaArray = settings_output.rightAttTargets.stimulusMedia;
@@ -85,9 +89,10 @@ export function updateSettings(settings){
     settings = updateMediaSettings(settings);
 
     let output={
-        primeStimulusCSS: settings.primeStimulusCSS,
         prime1: settings.prime1,
         prime2: settings.prime2,
+        primeStimulusCSS: settings.primeStimulusCSS,
+        primeDuration: settings.primeDuration,
         targetCats: settings.targetCats
     };
     if(settings.parameters.isQualtrics)

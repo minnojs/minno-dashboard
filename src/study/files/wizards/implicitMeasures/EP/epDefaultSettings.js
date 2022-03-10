@@ -1,10 +1,8 @@
 function defaultSettings(external) {
-
     return {
         parameters: {
             isQualtrics: false,
             separateStimulusSelection: true,
-            primeDuration: 200,
             fixationDuration: 0,
             deadlineDuration: 0,
             deadlineMsgDuration: 750,
@@ -19,11 +17,13 @@ function defaultSettings(external) {
             },
             base_url: {image: external ? 'https://cdn.jsdelivr.net/gh/baranan/minno-tasks@0.*/docs/images/' : './images'}
         },
-        primeStimulusCSS: {color: '#0000FF', 'font-size': '2.3em'}, //The CSS for all the prime stimuli.
+        primeStimulusCSS: { //The CSS for all the prime stimuli.
+            primeDuration: 200,
+            color: '#0000FF', 'font-size': '2.3em'
+        },
         prime1: {
             name: 'prime1',  //Will be used in the logging
             mediaArray: [{word: 'prime1Stim1'}, {word: 'prime1Stim2'}] //An array of all media objects for this category.
-
         },
         prime2: {
             name: 'prime2',

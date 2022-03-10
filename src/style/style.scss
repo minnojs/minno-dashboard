@@ -255,3 +255,14 @@ a.no-decoration {text-decoration: none; color:inherit}
   100% { opacity: 0; }
 }
 
+
+select.scroll{
+  overflow: auto;
+}
+
+input[type=color]{
+  height: 2.2em;
+}
+
+.wizard { height:100%; overflow: scroll; }
+

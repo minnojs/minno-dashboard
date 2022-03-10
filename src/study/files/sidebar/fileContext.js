@@ -23,8 +23,8 @@ let fileContext = (file, study) => {
                 {text:'Brief-IAT task', action: createImplicitMeasure(study, path, 'biat')},
                 {text:'SPF task', action: createImplicitMeasure(study, path, 'spf')},
                 {text:'Single Target-IAT task', action: createImplicitMeasure(study, path, 'stiat')},
-                {text:'Evaluative Priming task', action: createImplicitMeasure(study, path, 'ep')}
-            ]}
+                {text:'Evaluative Priming task', action: createImplicitMeasure(study, path, 'ep')},
+                {text:'AMP task', action: createImplicitMeasure(study, path, 'amp')}]}
         ]);
     }
      

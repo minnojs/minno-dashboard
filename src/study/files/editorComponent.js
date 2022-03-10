@@ -8,35 +8,37 @@ import biatEditor from './wizards/implicitMeasures/BIAT/biat.js';
 import spfEditor from './wizards/implicitMeasures/SPF/spf.js';
 import stiatEditor from './wizards/implicitMeasures/STIAT/stiat.js';
 import epEditor from './wizards/implicitMeasures/EP/ep.js';
+import ampEditor from './wizards/implicitMeasures/AMP/amp.js';
 
 export default fileEditorComponent;
 
 let editors = {
-    js: textEditor,
-    jsp: textEditor,
-    json: textEditor,
-    html: textEditor,
-    htm: textEditor,
-    jst: textEditor,
-    txt: textEditor,
-    m: textEditor,
-    c: textEditor,
-    cs: textEditor,
-    h: textEditor,
-    py: textEditor,
-    xml: textEditor,
+    js:     textEditor,
+    jsp:    textEditor,
+    json:   textEditor,
+    html:   textEditor,
+    htm:    textEditor,
+    jst:    textEditor,
+    txt:    textEditor,
+    m:      textEditor,
+    c:      textEditor,
+    cs:     textEditor,
+    h:      textEditor,
+    py:     textEditor,
+    xml:    textEditor,
 
-    jpg: imgEditor,
-    bmp: imgEditor,
-    png: imgEditor,
+    jpg:    imgEditor,
+    bmp:    imgEditor,
+    png:    imgEditor,
 
-    pdf: pdfEditor,
+    pdf:    pdfEditor,
 
-    iat: iatEditor,
-    biat: biatEditor,
-    spf: spfEditor,
-    stiat: stiatEditor,
-    ep: epEditor
+    iat:    iatEditor,
+    biat:   biatEditor,
+    spf:    spfEditor,
+    stiat:  stiatEditor,
+    ep:     epEditor,
+    amp:    ampEditor
 };
 
 let fileEditorComponent = {

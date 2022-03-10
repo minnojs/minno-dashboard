@@ -4,14 +4,14 @@ import textComponent from '../resources/textComponent.js';
 import blocksComponent from '../resources/blocksComponent.js';
 import categoriesComponent from '../resources/categoriesComponent.js';
 import importComponent from './spfImportComponent.js';
-import helpComponent from '../resources/helpComponent.js';
+import aboutComponent from '../resources/aboutComponent.js';
 
 let parametersDesc = [
-    {name: 'keyTopLeft', label:'Top left key'},
+    {name: 'keyTopLeft', label:'Top left key', desc: 'It\'s recommended to use upper case letters for the key values.'},
     {name: 'keyTopRight', label:'Top right key'},
     {name: 'keyBottomLeft', label:'Bottom left key'},
     {name: 'keyBottomRight', label:'Bottom right key'},
-    {name: 'base_url', label: 'Image\'s URL', desc: 'If your task has any images, enter here the path to that images folder. It can be a full url, or a relative URL to the folder that will host this script'},
+    {name: 'base_url', label: 'Image\'s URL'},
     {keyTopLeft: '', keyTopRight: '', keyBottomLeft: '', keyBottomRight: '', base_url:{image:''}}
 ];
 
@@ -27,8 +27,8 @@ let textDesc=[
 let blocksDesc = [
     {name: 'nBlocks', label: 'Number of blocks'},
     {name: 'nTrialsPerPrimeTargetPair', label: 'Number of trials in a block, per category-attribute combination', desc: 'How many trials in each block, for each of the four category-attribute combinations.'},
-    {name: 'randomCategoryLocation', label: 'Randomly choose categories location', desc: 'Whether to randomly select which category is on top. If false, then the first category is on top.'},
-    {name: 'randomAttributeLocation', label: 'Randomly choose attributes location', desc: 'Whether to randomly select which attribute is on the left. If false, the first attribute is on the left.'},
+    {name: 'randomCategoryLocation', label: 'Randomly choose categories location', desc: 'Whether to randomly select which category is on top.\nIf false, then the first category is on top.'},
+    {name: 'randomAttributeLocation', label: 'Randomly choose attributes location', desc: 'Whether to randomly select which attribute is on the left.\nIf false, the first attribute is on the left.'},
     {nBlocks: 0, nTrialsPerPrimeTargetPair: 0, randomCategoryLocation : false, randomAttributeLocation: false}
 ];
 
@@ -67,7 +67,7 @@ let tabs = {
     'text': {text: 'Texts', component: textComponent, rowsDesc: textDesc},
     'output': {text: 'Complete', component: outputComponent, rowsDesc: blocksDesc},
     'import': {text: 'Import', component: importComponent},
-    'help': {text: 'Help', component: helpComponent, rowsDesc: 'SPF'}
+    'about': {text: 'About', component: aboutComponent, rowsDesc: 'SPF'}
 };
 
 export default tabs;

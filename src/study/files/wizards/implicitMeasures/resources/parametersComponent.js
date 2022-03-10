@@ -9,10 +9,16 @@ function controller(settings, defaultSettings, rows) {
     let parameters = settings.parameters;
     let external = settings.external;
     let qualtricsParameters = ['leftKey', 'rightKey', 'fullscreen', 'showDebriefing'];
-    return {reset, clear, set, get, rows, qualtricsParameters, external};
+
+    //There is versions to the image url description so- I added a special base url description
+    let baseURLDesc =  'If your task has any images, enter here the path to that images folder.' +
+        '\nIt can be a full url, or a relative URL to the folder that will host this script.';
+    if (!settings.external)
+        baseURLDesc+='\nThe default value reflects the assumption that your images are under an \'images\' folder under this study.';
+
+    return {reset, clear, set, get, rows, qualtricsParameters, external, baseURLDesc};
 
     function reset(){showClearOrReset(parameters, defaultSettings.parameters, 'reset');}
-
     function clear(){showClearOrReset(parameters, rows.slice(-1)[0], 'clear');}
 
     function get(name, object, parameter) {
@@ -65,14 +71,15 @@ function view(ctrl, settings){
     return m('.space' ,[
         ctrl.rows.slice(0,-1).map((row) => {
             if(!ctrl.external && row.name === 'isQualtrics') return;
-            if ((ctrl.qualtricsParameters.includes(row.name)) && ctrl.get('isQualtrics') === 'Regular') return;
+            if((ctrl.qualtricsParameters.includes(row.name)) && ctrl.get('isQualtrics') === 'Regular') return;
             if(settings.parameters.isTouch && row.name.toLowerCase().includes('key')) return;
+            if(settings.parameters.responses === '7' && row.name.toLowerCase().includes('key')) return;
             return m('.row.line', [
                 m('.col-md-4',
-                    row.desc ?
+                    row.desc || row.name === 'base_url' ?
                         [
                             m('span', [' ', row.label, ' ']),
-                            m('i.fa.fa-info-circle.text-muted',{title:row.desc})
+                            m('i.fa.fa-info-circle.text-muted',{title: row.name === 'base_url' ? ctrl.baseURLDesc : row.desc})
                         ]
                         : m('span', [' ', row.label])
                 ),
@@ -80,7 +87,7 @@ function view(ctrl, settings){
                     m('.col-md-6',
                         m('input[type=text].form-control', {value:ctrl.get('base_url','image'), oninput: m.withAttr('value', ctrl.set(row.name, 'image'))}))
                     : row.name.toLowerCase().includes('key') ? //case of keys parameters
-                        m('.col-md-2.col-lg-1',
+                        m('.col-md-6.col-lg-1',
                             m('input[type=text].form-control',{value:ctrl.get(row.name), oninput:m.withAttr('value', ctrl.set(row.name))}))
                         : (row.name === 'fixationStimulus') ||  (row.name === 'deadlineStimulus' || row.name === 'maskStimulus') ?
                             editStimulusObject(row.name, ctrl.get, ctrl.set)

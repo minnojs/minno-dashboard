@@ -23,20 +23,20 @@ function controller(settings) {
     }
 }
 
-export function updateMediaSettings(settings, input){
+export function updateMediaSettings(settings){
     //update attributes to be compatible to IAT so that elementComponent can be used.
-    settings.category.stimulusMedia = input.category.media;
+    settings.category.stimulusMedia = settings.category.media;
     delete settings.category.media;
-    settings.attribute1.stimulusMedia = input.attribute1.media;
+    settings.attribute1.stimulusMedia = settings.attribute1.media;
     delete settings.attribute1.media;
-    settings.attribute2.stimulusMedia = input.attribute2.media;
+    settings.attribute2.stimulusMedia = settings.attribute2.media;
     delete settings.attribute2.media;
 
-    settings.category.stimulusCss = input.category.css;
+    settings.category.stimulusCss = settings.category.css;
     delete settings.category.css;
-    settings.attribute1.stimulusCss = input.attribute1.css;
+    settings.attribute1.stimulusCss = settings.attribute1.css;
     delete settings.attribute1.css;
-    settings.attribute2.stimulusCss = input.attribute2.css;
+    settings.attribute2.stimulusCss = settings.attribute2.css;
     delete settings.attribute2.css;
     return settings;
 }
@@ -59,7 +59,7 @@ export function updateSettings(settings, input) {
     settings.blockOrder = input.blockOrder;
     settings.switchSideBlock = input.switchSideBlock;
 
-    settings = updateMediaSettings(settings, input);
+    settings = updateMediaSettings(settings);
     return settings;
 
 }

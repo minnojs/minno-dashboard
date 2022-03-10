@@ -4,11 +4,11 @@ import textComponent from '../resources/textComponent.js';
 import blocksComponent from './stiatlBlocksComponent.js';
 import categoriesComponent from '../resources/categoriesComponent.js';
 import importComponent from './stiatImportComponent.js';
-import helpComponent from '../resources/helpComponent.js';
+import aboutComponent from '../resources/aboutComponent.js';
 
 let parametersDesc = [
     {name: 'isQualtrics', options:['Regular','Qualtrics'],label:'Regular script or Qualtrics?', desc: ['If you want this IAT to run from Qualtrics, read ', m('a',{href: 'https://minnojs.github.io/minnojs-blog/qualtrics-iat/'}, 'this blog post '),'to see how.']},
-    {name: 'base_url', label: 'Image\'s URL', desc: 'If your task has any images, enter here the path to that images folder. It can be a full url, or a relative URL to the folder that will host this script'},
+    {name: 'base_url', label: 'Image\'s URL'},
     {isQualtrics:false, base_url:{image:''}}
 ];
 
@@ -27,13 +27,16 @@ let textDesc = [
 ];
 
 let blocksDesc = [
-    {name: 'blockOrder', label: 'Block Order', options: ['startRight','startLeft','random'], desc: 'Change to \'startRight\' if you want the first block to show the single category on the right in the first block, \'startLeft\' if you want it to appear on the left side. If you choose \'random\', the program will randomly choose a side for each participant. The first attribute in the Attributes page appears on the left and the second attribute appears on the right. \n'},
+    {name: 'blockOrder', label: 'Block Order', options: ['startRight','startLeft','random'],
+        desc: 'Applies to the single category\'s location on the first block. \n' +
+            'Choose \'startRight\' for it to appear on the right side, \'startLeft\' for it to appear on the left side, or \'random\' if you want to randomize the location.\n' +
+            'Note that the first Attribute on the Attributes page appears on the left side, and the second attribute appears on the right.'},
     {name: 'switchSideBlock', label: 'Switch Side Block ', desc: 'By default, we switch on block 4 (i.e., after blocks 2 and 3 showed the first pairing condition).'},
     {name: 'instHTML', label:'Block\'s Instructions', desc: 'Empty field means we will create the instructions from a default template.'},
-    {name: 'miniBlocks', label:'Number of mini-blocks', desc: 'Higher number reduces repetition of same group/response. Set to 1 if you don\'t need mini blocks. 0 will break the task.'},
+    {name: 'miniBlocks', label:'Number of mini-blocks', desc: 'Higher number reduces repetition of same group/response.\nSet to 1 if you don\'t need mini blocks.\nValue of 0 will break the task.'},
     {name: 'singleAttTrials', label:'Number of single attribute trials', desc: 'Number of trials of the attribute that does not share key with the category (in a mini block).'},
     {name: 'sharedAttTrials', label:'Number of shared key attribute trials', desc: 'Number of trials of the attribute that shares key with the category (in a mini block).'},
-    {name: 'categoryTrials', label:'Number of category trials', desc: 'Number of trials of the category (in a mini-block). If 0, the label does not appear.'},
+    {name: 'categoryTrials', label:'Number of category trials', desc: 'Number of trials of the category (in a mini-block).\nIf 0, the label does not appear.'},
     {
         instHTML : '', 
         block : 1,
@@ -73,7 +76,7 @@ let tabs = {
     'text': {text: 'Texts', component: textComponent, rowsDesc: textDesc},
     'output': {text: 'Complete', component: outputComponent, rowsDesc: blocksDesc.slice(-1)[0]},
     'import': {text: 'Import', component: importComponent},
-    'help': {text: 'Help', component: helpComponent, rowsDesc: 'STIAT'}
+    'help': {text: 'Help', component: aboutComponent, rowsDesc: 'STIAT'}
 };
 
 export default tabs;

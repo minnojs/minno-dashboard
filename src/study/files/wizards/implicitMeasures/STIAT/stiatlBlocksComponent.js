@@ -141,14 +141,14 @@ function view(ctrl){
                         title:row.desc
                     })
                 ]),
-                    row.options ?
-                        m('.col-md-2',
-                            m('select.form-control',{value: ctrl.getParameters(row.name), onchange:m.withAttr('value',ctrl.setParameters(row.name, 'select'))},[
-                                row.options.map(function(option){return m('option', option);})])
-                            )
-                        : m('.col-md-2.col-lg-1',
-                            m('input[type=number].form-control',{placeholder:'0', value: ctrl.getParameters(row.name), onchange:m.withAttr('value',ctrl.setParameters(row.name)), min:0})
-                            )
+                row.options ?
+                    m('.col-md-2',
+                        m('select.form-control',{value: ctrl.getParameters(row.name), onchange:m.withAttr('value',ctrl.setParameters(row.name, 'select'))},[
+                            row.options.map(function(option){return m('option', option);})])
+                    )
+                    : m('.col-md-2.col-lg-1',
+                        m('input[type=number].form-control',{placeholder:'0', value: ctrl.getParameters(row.name), onchange:m.withAttr('value',ctrl.setParameters(row.name)), min:0})
+                    )
             ]);
         }),
         ctrl.blocks.map(function(block) {

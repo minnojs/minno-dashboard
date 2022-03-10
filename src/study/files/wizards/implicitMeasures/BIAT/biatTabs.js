@@ -5,15 +5,15 @@ import categoriesComponent from './biatCategoriesComponent.js';
 import attributesComponent from '../resources/categoriesComponent.js';
 import outputComponent from './biatOutputComponent.js';
 import importComponent from './biatImportComponent.js';
-import helpComponent from '../resources/helpComponent.js';
+import aboutComponent from '../resources/aboutComponent.js';
 
 let parametersDesc = [
-    {name: 'isTouch', options:['Keyboard', 'Touch'], label:'Keyboard input or touch input?', desc:'Minno does not auto-detect the input method. If you need a touch version and a keyboard version, create two different scripts with this tool.'},
+    {name: 'isTouch', options:['Keyboard', 'Touch'], label:'Keyboard input or touch input?', desc:'The script can run on a desktop computer or a touch device. \nMinno does not auto-detect the input method. If you need a touch version and a keyboard version, create two different scripts with this tool.'},
     {name: 'isQualtrics', options:['Regular','Qualtrics'], label:'Regular script or Qualtrics?', desc: ['If you want this BIAT to run from Qualtrics, read ', m('a',{href: 'https://minnojs.github.io/minnojs-blog/qualtrics-biat/'}, 'this blog post '),'to see how.']},
     {name: 'practiceBlock', label: 'Practice Block', desc: 'Should the task start with a practice block?'},
-    {name: 'remindError', label: 'Error feedback on incorrect responses', desc: 'It is recommended to show participants an error feedback on error responses'},
+    {name: 'remindError', label: 'Error feedback on incorrect responses', desc: 'Should we show error feedback?\nIt is recommended to show participants an error feedback on error responses.'},
     {name: 'showStimuliWithInst', label: 'Show Stimuli with Instructions', desc: 'Whether to show the stimuli of the IN categories at the beginning of the block.'},
-    {name: 'base_url', label: 'Image\'s URL', desc: 'If your task has any images, enter here the path to that images folder. It can be a full url, or a relative URL to the folder that will host this script'},
+    {name: 'base_url', label: 'Image\'s URL', desc: 'If your task has any images, enter here the path to that images folder.\nIt can be a full url, or a relative URL to the folder that will host this script.'},
     {istouch:false, isQualtrics:false, practiceBlock:false, showStimuliWithInst:false, remindError:false, base_url:{image:''}}
 ];
 
@@ -87,7 +87,7 @@ let tabs = {
     'text': {text: 'Texts', component: textComponent, rowsDesc: textDesc},
     'output': {text: 'Complete', component: outputComponent, rowsDesc: blocksDesc},
     'import': {text: 'Import', component: importComponent},
-    'help': {text: 'Help', component: helpComponent, rowsDesc: 'BIAT'}
+    'about': {text: 'About', component: aboutComponent, rowsDesc: 'BIAT'}
 };
 
 export default tabs;

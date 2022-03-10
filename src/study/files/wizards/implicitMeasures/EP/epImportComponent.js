@@ -23,18 +23,21 @@ function controller(settings) {
         };
     }
 }
-export function updateMediaSettings(settings, input){
+export function updateMediaSettings(settings){
     //update attributes to be compatible to IAT so that elementComponent can be used.
-    settings.rightAttTargets = input.targetCats.rightAttTargets;
-    settings.rightAttTargets.stimulusMedia = input.targetCats.rightAttTargets.mediaArray;
+    settings.primeStimulusCSS.primeDuration = settings.primeDuration;
+    delete settings.primeDuration;
+
+    settings.rightAttTargets = settings.targetCats.rightAttTargets;
+    settings.rightAttTargets.stimulusMedia = settings.targetCats.rightAttTargets.mediaArray;
     delete settings.targetCats.rightAttTargets.mediaArray;
 
-    settings.leftAttTargets = input.targetCats.leftAttTargets;
-    settings.leftAttTargets.stimulusMedia = input.targetCats.leftAttTargets.mediaArray;
+    settings.leftAttTargets = settings.targetCats.leftAttTargets;
+    settings.leftAttTargets.stimulusMedia = settings.targetCats.leftAttTargets.mediaArray;
     delete settings.targetCats.leftAttTargets.mediaArray;
 
-    settings.rightAttTargets.stimulusCss = input.targetCats.rightAttTargets.stimulusCSS;
-    settings.leftAttTargets.stimulusCss = input.targetCats.leftAttTargets.stimulusCSS;
+    settings.rightAttTargets.stimulusCss = settings.targetCats.rightAttTargets.stimulusCSS;
+    settings.leftAttTargets.stimulusCss = settings.targetCats.leftAttTargets.stimulusCSS;
     delete settings.rightAttTargets.stimulusCSS;
     delete settings.leftAttTargets.stimulusCSS;
     delete settings.targetCats.rightAttTargets;
@@ -66,7 +69,7 @@ export function updateSettings(settings, input) {
     settings.blocks.nTrialsPerPrimeTargetPair = input.nTrialsPerPrimeTargetPair;
     settings.blocks.nBlocks = input.nBlocks;
 
-    settings = updateMediaSettings(settings, input);
+    settings = updateMediaSettings(settings);
     return settings;
 }
 

@@ -4,7 +4,6 @@ let tabsComponent = {
         let subTabs = null;
         let currSubTab = null;
         return {tab, subTabs, currSubTab};
-
     },
     view:
         function(ctrl, tabs, settings, defaultSettings, external = false, notifications,
@@ -16,7 +15,9 @@ let tabsComponent = {
                             Object.keys(tabs).map(function(tab){
                                 if (!external && (tab === 'output' || tab === 'import'))
                                     return;
-                                if (tab === 'practice' && settings.parameters.practiceBlock === false)
+                                if (tab === 'practice' && !settings.parameters.practiceBlock)
+                                    return;
+                                if (tab === 'exampleBlock' && !settings.parameters.exampleBlock)
                                     return;
                                 return m('button.tablinks', {
                                     class: ctrl.tab === tab ? 'active' : '',
@@ -59,7 +60,7 @@ let tabsComponent = {
                 m('.row',[
                     external ? '' : m('div', notifications.view()),
                     m('.col-sm-11',{key:tabs[ctrl.tab]},
-                        m.component(tabs[ctrl.tab].component, settings, defaultSettings, tabs[ctrl.tab].rowsDesc, tabs[ctrl.tab].subTabs, tabs[ctrl.tab].type, ctrl.currSubTab))
+                        m.component(tabs[ctrl.tab].component, settings, defaultSettings, tabs[ctrl.tab].rowsDesc, tabs[ctrl.tab].type, ctrl.currSubTab))
                 ])
             ]);}
 };

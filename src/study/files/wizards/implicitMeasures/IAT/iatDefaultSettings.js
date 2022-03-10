@@ -46,7 +46,7 @@ function defaultSettings(external) {
             randomAttSide: false
         },
         text: {
-            remindErrorText: '<p style="font-size:0.6em;font-family:arial serif;text-align:center;">' + 'If you make a mistake, a red <font-color="#ff0000"><b>X</b></font> will appear. ' + 'Press the other key to continue.<p/>',
+            remindErrorText : '<p align="center" style="font-size:1em; font-family:arial; color:#000000">'+ 'If you make a mistake, a red <font color="#ff0000"><b>X</b></font> will appear. ' + 'Press the other key to continue.<p/>',
             leftKeyText: 'Press "E" for ',
             rightKeyText: 'Press "I" for',
             orText: 'or',

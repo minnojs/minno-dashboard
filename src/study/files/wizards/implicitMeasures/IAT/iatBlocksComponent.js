@@ -37,13 +37,13 @@ function view(ctrl){
                                 : [
                                     m('.row', [
                                         m('.col-sm-6', 'Number of trials: '),
-                                        m('.col-sm-4', [
+                                        m('.col-sm-3', [
                                             m('input[type=number].form-control',{placeholder:'0', onchange: m.withAttr('value', ctrl.set(row.numTrialBlocks, 'number')), value: ctrl.get(row.numTrialBlocks), min:'0'})
                                         ])
                                     ]),
                                     m('.row.space',[
                                         m('.col-sm-6', 'Number of mini-blocks: '),
-                                        m('.col-sm-4', [
+                                        m('.col-sm-3', [
                                             m('input[type=number].form-control',{placeholder:'0', onchange: m.withAttr('value', ctrl.set(row.numMiniBlocks, 'number')), value: ctrl.get(row.numMiniBlocks), min:'0'})
                                         ])
                                     ])
