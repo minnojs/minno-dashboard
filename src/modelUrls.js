@@ -1,4 +1,4 @@
-/************* PRODUCTION ************
+/************* PRODUCTION ************/
 const urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
 export const baseUrl            = `${urlPrefix}dashboard`;
@@ -14,7 +14,7 @@ export const activationUrl      = `${urlPrefix}dashboard/activation`;
 export const collaborationUrl   = `${urlPrefix}dashboard/collaboration`;
 export const downloadsAccessUrl = `${urlPrefix}DownloadsAccess`;
 
-/************* DEV ************/
+/************* DEV ************
 const urlPrefix = '//localhost:3001'; // first pathname section with slashes
 
 export const baseUrl            = `${urlPrefix}`;

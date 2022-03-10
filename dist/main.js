@@ -190,37 +190,37 @@
             .catch(catchJSON);
     }
 
-    /************* PRODUCTION ************
-    const urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
+    /************* PRODUCTION ************/
+    var urlPrefix = location.pathname.match(/^(?=\/)(.+?\/|$)/)[1]; // first pathname section with slashes
 
-    export const baseUrl            = `${urlPrefix}dashboard`;
-    export const studyUrl           = `${urlPrefix}dashboard/studies`;
-    export const templatesUrl       = `${urlPrefix}dashboard/templates`;
-    export const tagsUrl            = `${urlPrefix}dashboard/tags`;
-    export const translateUrl       = `${urlPrefix}dashboard/translate`;
-    export const poolUrl            = `${urlPrefix}StudyData`;
-    export const fileUrl            = `${urlPrefix}dashboard`;
-    export const statisticsUrl      = `${urlPrefix}PITracking`;
-    export const downloadsUrl       = `${urlPrefix}DashboardData`;
-    export const activationUrl      = `${urlPrefix}dashboard/activation`;
-    export const collaborationUrl   = `${urlPrefix}dashboard/collaboration`;
-    export const downloadsAccessUrl = `${urlPrefix}DownloadsAccess`;
-
-    /************* DEV ************/
-    var urlPrefix = '//localhost:3001'; // first pathname section with slashes
-
-    var baseUrl            = "" + urlPrefix;
-    var studyUrl           = urlPrefix + "/studies";
-    var templatesUrl       = urlPrefix + "/templates";
-    var tagsUrl            = urlPrefix + "/tags";
-    var translateUrl       = urlPrefix + "/translate";
+    var baseUrl            = urlPrefix + "dashboard";
+    var studyUrl           = urlPrefix + "dashboard/studies";
+    var templatesUrl       = urlPrefix + "dashboard/templates";
+    var tagsUrl            = urlPrefix + "dashboard/tags";
+    var translateUrl       = urlPrefix + "dashboard/translate";
     var poolUrl            = urlPrefix + "StudyData";
-    var fileUrl            = "" + urlPrefix;
+    var fileUrl            = urlPrefix + "dashboard";
     var statisticsUrl      = urlPrefix + "PITracking";
-    var downloadsUrl       = urlPrefix + "Data";
-    var activationUrl      = urlPrefix + "/activation";
-    var collaborationUrl   = urlPrefix + "/collaboration";
+    var downloadsUrl       = urlPrefix + "DashboardData";
+    var activationUrl      = urlPrefix + "dashboard/activation";
+    var collaborationUrl   = urlPrefix + "dashboard/collaboration";
     var downloadsAccessUrl = urlPrefix + "DownloadsAccess";
+
+    /************* DEV ************
+    const urlPrefix = '//localhost:3001'; // first pathname section with slashes
+
+    export const baseUrl            = `${urlPrefix}`;
+    export const studyUrl           = `${urlPrefix}/studies`;
+    export const templatesUrl       = `${urlPrefix}/templates`;
+    export const tagsUrl            = `${urlPrefix}/tags`;
+    export const translateUrl       = `${urlPrefix}/translate`;
+    export const poolUrl            = `${urlPrefix}StudyData`;
+    export const fileUrl            = `${urlPrefix}`;
+    export const statisticsUrl      = `${urlPrefix}PITracking`;
+    export const downloadsUrl       = `${urlPrefix}Data`;
+    export const activationUrl      = `${urlPrefix}/activation`;
+    export const collaborationUrl   = `${urlPrefix}/collaboration`;
+    export const downloadsAccessUrl = `${urlPrefix}DownloadsAccess`;
 
     /****************************************/
 
