@@ -10712,6 +10712,7 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    console.log(file);
                     if (ctrl.file.content().length>10) {
                         ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
