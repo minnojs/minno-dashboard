@@ -7408,8 +7408,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings );
                     }
@@ -8141,8 +8141,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -8523,8 +8523,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -9209,8 +9209,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -9704,8 +9704,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -10712,9 +10712,8 @@
             return ctrl.file.get()
                 .catch(ctrl.err)
                 .then(function () {
-                    console.log(file);
+                    ctrl.last_modify(file.last_modify);
                     if (ctrl.file.content().length>10) {
-                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -10757,7 +10756,7 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('amp', studyId, fileId, ctrl.settings, ctrl.last_modify())
+            save('amp', studyId, fileId, ctrl.settings, ctrl.last_modify)
                 .then (function () { return saveToJS('amp', studyId, jsFileId, toString(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("AMP Script successfully saved"); })
