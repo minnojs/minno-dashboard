@@ -21,6 +21,7 @@ function controller({file, study}, external = false){
         study: study ? study : null,
         file : file ? file : null,
         err : m.prop([]),
+        last_modify : m.prop(''),
         loaded : m.prop(false),
         notifications : createNotifications(),
         defaultSettings : clone(defaultSettings(external)),
@@ -38,6 +39,7 @@ function controller({file, study}, external = false){
             .catch(ctrl.err)
             .then(() => {
                 if (ctrl.file.content().length>10) {
+                    ctrl.last_modify(file.last_modify);
                     ctrl.settings = JSON.parse(ctrl.file.content());
                     ctrl.prev_settings = clone(ctrl.settings );
                 }
@@ -79,8 +81,8 @@ function controller({file, study}, external = false){
         let studyId  =  m.route.param('studyId');
         let fileId = m.route.param('fileId');
         let jsFileId =  fileId.split('.')[0]+'.js';
-        save('iat', studyId, fileId, ctrl.settings)
-            .then (() => saveToJS('iat', studyId, jsFileId, toString(ctrl.settings, ctrl.external)))
+        save('iat', studyId, fileId, ctrl.settings, ctrl.last_modify)
+            .then (() => saveToJS('iat', studyId, jsFileId, toString(ctrl.settings, ctrl.external), ctrl.last_modify))
             .then(ctrl.study.get())
             .then(() => ctrl.notifications.show_success(`IAT Script successfully saved`))
             .then(m.redraw)

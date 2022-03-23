@@ -18,8 +18,6 @@ export let createNotifications = function(){
 
 
     function view(){
-        console.log('bang!')
-
         return state.map(notes => m('.note.alert.animated.fade', {class: notes.type==='danger' ? 'alert-danger' : 'alert-success'},[
             notes.value
         ]));

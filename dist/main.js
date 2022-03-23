@@ -7336,14 +7336,14 @@
         return (baseUrl + "/files/" + (encodeURIComponent(study_id)) + "/file/" + (encodeURIComponent(file_id)));
     }
 
-    var save = function (study_type, study_id, file_id, content) { return fetchJson(url(study_type, study_id, file_id), {
+    var save = function (study_type, study_id, file_id, content, last_modify) { return fetchJson(url(study_type, study_id, file_id), {
         method: 'put',
-        body: {content: JSON.stringify(content)}
+        body: {content: JSON.stringify(content), last_modify: last_modify}
     }); };
 
-    var saveToJS = function (study_type, study_id, file_id, content) { return fetchJson(url(study_type, study_id, file_id), {
+    var saveToJS = function (study_type, study_id, file_id, content, last_modify) { return fetchJson(url(study_type, study_id, file_id), {
         method: 'put',
-        body: {content: content}
+        body: {content: content, last_modify: last_modify}
     }); };
 
     var createNotifications = function(){
@@ -7368,8 +7368,6 @@
 
 
         function view(){
-            console.log('bang!');
-
             return state.map(function (notes) { return m('.note.alert.animated.fade', {class: notes.type==='danger' ? 'alert-danger' : 'alert-success'},[
                 notes.value
             ]); });
@@ -7393,6 +7391,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             defaultSettings : clone(defaultSettings$5(external)),
@@ -7410,6 +7409,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings );
                     }
@@ -7451,8 +7451,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('iat', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('iat', studyId, jsFileId, toString$5(ctrl.settings, ctrl.external)); })
+            save('iat', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('iat', studyId, jsFileId, toString$5(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("IAT Script successfully saved"); })
                 .then(m.redraw)
@@ -8124,6 +8124,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             defaultSettings : clone(defaultSettings$4(external)),
@@ -8141,6 +8142,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -8183,8 +8185,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('biat', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('biat', studyId, jsFileId, toString$4(ctrl.settings, ctrl.external)); })
+            save('biat', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('biat', studyId, jsFileId, toString$4(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("BIAT Script successfully saved"); })
                 .then(m.redraw)
@@ -8504,6 +8506,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             defaultSettings : clone(defaultSettings$3(external)),
@@ -8521,6 +8524,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -8563,8 +8567,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('spf', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('spf', studyId, jsFileId, toString$3(ctrl.settings, ctrl.external)); })
+            save('spf', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('spf', studyId, jsFileId, toString$3(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("SPF Script successfully saved"); })
                 .then(m.redraw)
@@ -9188,6 +9192,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             settings : clone(defaultSettings$2(external)),
@@ -9205,6 +9210,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -9246,8 +9252,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('stiat', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('stiat', studyId, jsFileId, toString$2(ctrl.settings, ctrl.external)); })
+            save('stiat', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('stiat', studyId, jsFileId, toString$2(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("STIAT Script successfully saved"); })
                 .then(m.redraw)
@@ -9681,6 +9687,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             settings : clone(defaultSettings$1(external)),
@@ -9698,6 +9705,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -9739,8 +9747,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('ep', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('ep', studyId, jsFileId, toString$1(ctrl.settings, ctrl.external)); })
+            save('ep', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('ep', studyId, jsFileId, toString$1(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("EP Script successfully saved"); })
                 .then(m.redraw)
@@ -10687,6 +10695,7 @@
             study: study ? study : null,
             file : file ? file : null,
             err : m.prop([]),
+            last_modify : m.prop(''),
             loaded : m.prop(false),
             notifications : createNotifications(),
             defaultSettings : clone(defaultSettings(external)),
@@ -10704,6 +10713,7 @@
                 .catch(ctrl.err)
                 .then(function () {
                     if (ctrl.file.content().length>10) {
+                        ctrl.last_modify(file.last_modify);
                         ctrl.settings = JSON.parse(ctrl.file.content());
                         ctrl.prev_settings = clone(ctrl.settings);
                     }
@@ -10746,8 +10756,8 @@
             var studyId  =  m.route.param('studyId');
             var fileId = m.route.param('fileId');
             var jsFileId =  fileId.split('.')[0]+'.js';
-            save('amp', studyId, fileId, ctrl.settings)
-                .then (function () { return saveToJS('amp', studyId, jsFileId, toString(ctrl.settings, ctrl.external)); })
+            save('amp', studyId, fileId, ctrl.settings, ctrl.last_modify)
+                .then (function () { return saveToJS('amp', studyId, jsFileId, toString(ctrl.settings, ctrl.external), ctrl.last_modify); })
                 .then(ctrl.study.get())
                 .then(function () { return ctrl.notifications.show_success("AMP Script successfully saved"); })
                 .then(m.redraw)
