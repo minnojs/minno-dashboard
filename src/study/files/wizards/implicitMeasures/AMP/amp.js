@@ -83,7 +83,7 @@ function controller({file, study}, external = false){
         let studyId  =  m.route.param('studyId');
         let fileId = m.route.param('fileId');
         let jsFileId =  fileId.split('.')[0]+'.js';
-        save('amp', studyId, fileId, ctrl.settings, ctrl.last_modify)
+        save('amp', studyId, fileId, ctrl.settings, ctrl.last_modify())
             .then (() => saveToJS('amp', studyId, jsFileId, toString(ctrl.settings, ctrl.external), ctrl.last_modify))
             .then(ctrl.study.get())
             .then(() => ctrl.notifications.show_success(`AMP Script successfully saved`))
