@@ -96,7 +96,10 @@ let editComponent = {
                         class:inputClasses(validity.rulesUrl)
                     }),
                     m('p.text-muted.btn-toolbar', [
-                        miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml')
+                        miniButtonView(study.rulesUrl, 'Priority26', '/research/library/rules/Priority26.xml'),
+						miniButtonView(study.rulesUrl, 'Priority20', '/research/library/rules/Priority20.xml'),
+						miniButtonView(study.rulesUrl, 'Priority14', '/research/library/rules/Priority14.xml'),
+						miniButtonView(study.rulesUrl, 'Priority8', '/research/library/rules/Priority8.xml')
                     ]),
                     validationView(validity.rulesUrl, 'This row is required')
                 ]),
